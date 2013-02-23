@@ -62,7 +62,7 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+	virtual void members (const Members* const /* self */, ProductionVector<const TTerm*>* p_vars) {
 	    ProductionVector<const TTerm*>* newVec = new ProductionVector<const TTerm*>();
 	    for (std::vector<const TTerm*>::const_iterator it = p_vars->begin();
 		 it != p_vars->end(); it++) {
@@ -101,7 +101,7 @@ namespace w3c_sw {
 	virtual void rdfLiteral (const BooleanRDFLiteral* const self, bool p_value) {
 	    last.tterms.tterm = last.tterms.booleanRDFLiteral = atomFactory ? atomFactory->getBooleanRDFLiteral(p_value ? "true" : "false", p_value) : self;
 	}
-	virtual void nulltterm (const NULLtterm* const self) {
+	virtual void nulltterm (const NULLtterm* const /* self */) {
 	    last.tterms.tterm = TTerm::Unbound;
 	}
 
@@ -402,7 +402,7 @@ namespace w3c_sw {
 		p_delete->express(this);
 		del = dynamic_cast<const Delete*>(last.operation);
 	    }
-	    const Insert* ins;
+	    const Insert* ins = NULL;
 	    if (p_insert != NULL) {
 		p_insert->express(this);
 		ins = dynamic_cast<const Insert*>(last.operation);
@@ -767,14 +767,14 @@ namespace w3c_sw {
 	struct ReferenceCounter : public RecursiveExpressor {
 	    TermReferenceCount& vars;
 	    ReferenceCounter (TermReferenceCount& vars) : vars(vars) {  }
-	    virtual void base (const Base* const self, std::string productionName) {  }
-	    virtual void variable (const Variable* const self, std::string lexicalValue) {
+	    virtual void base (const Base* const /* self */, std::string /* productionName */) {  }
+	    virtual void variable (const Variable* const self, std::string /* lexicalValue */) {
 		vars[self]++;
 	    }
 	    /* specifically elide label->express(this) as labels in subselect
 	       expression aliases do not consitute co-references, I think.
 	    */
-	    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+	    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* /* label */) {
 		expr->express(this);
 	    }
 	};

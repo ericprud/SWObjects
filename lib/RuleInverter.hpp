@@ -638,7 +638,7 @@ namespace w3c_sw {
 #endif /* !REGEX_LIB == SWOb_BOOST */
 	}
 
-	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	virtual void aggregateCall (const AggregateCall* const /* self */, const URI* /* p_IRIref */ , const ArgList* /* p_ArgList */, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* /* scalarVals */) {
 	    w3c_sw_NEED_IMPL("AggregateCall inverter (can that even exist?)");
 	}
 

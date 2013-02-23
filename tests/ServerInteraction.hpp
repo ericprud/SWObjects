@@ -40,7 +40,7 @@ namespace w3c_sw {
 		throw std::runtime_error("unable to restore old SIGCHLD action");
 	}
 
-	static void childHandler (int signo) {
+	static void childHandler (int /* signo */) {
 	    int status, child_val;
 
 	    /* Wait for any child without blocking */

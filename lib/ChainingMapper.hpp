@@ -600,18 +600,18 @@ namespace w3c_sw {
 
 		virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-		virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+		virtual void filter (const Filter* const, const TableOperation* /* p_op */, const ProductionVector<const Expression*>* /* p_Constraints */) {
 		    throw(std::runtime_error("unexpected FILTER in construct template"));
 		}
-		virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_IRIref, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* /* p_IRIref */, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /* p_TriplePatterns */) {
 		    if (tripleGraphName == ruleGraphName)
 			bindings->addStuff(adds, ruleGraphName, self, rule, tripleGraphName, triple);
 		}
-		virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+		virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /* p_TriplePatterns */) {
 		    if (tripleGraphName == ruleGraphName)
 			bindings->addStuff(adds, ruleGraphName, self, rule, tripleGraphName, triple);
 		}
-		virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+		virtual void graphGraphPattern (const GraphGraphPattern* const /* self */, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
 		    const TTerm* oldRuleGraphName = ruleGraphName;
 		    ruleGraphName = p_TTerm;
 		    p_GroupGraphPattern->express(this);
@@ -623,10 +623,10 @@ namespace w3c_sw {
 		virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 		    p_TableOperations->express(this);
 		}
-		virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+		virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */, const ProductionVector<const Expression*>* /* p_Expressions */) {
 		    throw(std::runtime_error("unexpected OPTIONAL in construct template"));
 		}
-		virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+		virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */) {
 		    throw(std::runtime_error("unexpected MINUS in construct template"));
 		}
 	    };
@@ -646,7 +646,7 @@ namespace w3c_sw {
 	    return adds.size() > 0;
 	}
 
-	void addStuff (std::vector<Add>* adds, const TTerm* ruleGraphName, const BasicGraphPattern* asBgp, std::vector<Rule>::const_iterator rule, const TTerm* tripleGraphName, const TriplePattern* triple) {
+	void addStuff (std::vector<Add>* adds, const TTerm* /* ruleGraphName */, const BasicGraphPattern* asBgp, std::vector<Rule>::const_iterator rule, const TTerm* /* tripleGraphName */, const TriplePattern* triple) {
 	    /** For each triple in the rule head... */
 	    for (std::vector<const TriplePattern*>::const_iterator constraint = asBgp->begin();
 		 constraint != asBgp->end(); constraint++) {
@@ -727,7 +727,7 @@ namespace w3c_sw {
 	virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    _TriplePatterns(self, NULL, p_TriplePatterns);
 	}
-	virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+	virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* p_GroupGraphPattern) {
 	    // override SWObjectDuplicator, suppressing last.tableOperation = new GraphGraphPattern(name, last.tableOperation)
 	    p_GroupGraphPattern->express(this);
 	}

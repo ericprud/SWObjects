@@ -124,7 +124,7 @@ namespace w3c_sw {
 	    return ret;
 	}
 
-	const URI* nextAvailableGraph (std::string absURL, webserver::request& req, webserver::reply& rep) {
+	const URI* nextAvailableGraph (std::string absURL, webserver::request& /* req */, webserver::reply& rep) {
 	    for (unsigned int i = 0; i < 1000; ++i) {
 		std::string s = absURL + boost::lexical_cast<std::string>(i);
 		const URI* ret = engine.atomFactory.getURI(s);
@@ -136,7 +136,7 @@ namespace w3c_sw {
 	    throw std::runtime_error("exhausted available graph pool");
 	}
 
-	void stop_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
+	void stop_handler (webserver::request& /* req */, webserver::reply& rep, std::ostringstream& sout) {
 	    rep.status = webserver::reply::ok;
 	    head(sout, "Done!");
 	    sout << "    <p>Served " << engine.served << " queries.</p>\n";
@@ -313,7 +313,7 @@ namespace w3c_sw {
 		    foot(sout);
 	}
 
-	void html_interface_handler (webserver::request& req, webserver::reply& rep, std::ostringstream& sout) {
+	void html_interface_handler (webserver::request& /* req */, webserver::reply& rep, std::ostringstream& sout) {
 		    rep.status = webserver::reply::ok;
 		    head(sout, "Q&amp;D SPARQL Server");
 		    const char* method =
@@ -950,7 +950,7 @@ struct SimpleEngine {
 	    // 					atomFactory, nsMap);
 	}
 
-	static std::string genTempFile (std::string dir, std::istream& istr) {
+	static std::string genTempFile (std::string /* dir */, std::istream& istr) {
 #ifdef _MSC_VER
 	    TCHAR buffer[MAX_PATH+1];
 	    DWORD len = ::GetTempPath(MAX_PATH, &buffer[0]);
@@ -1207,7 +1207,7 @@ struct SimpleEngine {
 	    if (doSQLquery == true) {
 #ifdef SQL_CLIENT_NONE
 		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::error) <<
-		    "Unable to connect to " << sqlConnectString() << " .\n"
+		    "Unable to connect to " << sqlConnectInfo.sqlConnectString() << " .\n"
 		    "No SQL client libraries linked in.\n";
 #else /* !SQL_CLIENT_NONE */
 		SQLClientWrapper sqlClient(sqlConnectInfo);

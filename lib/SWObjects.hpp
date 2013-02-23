@@ -993,7 +993,7 @@ public:
     virtual std::string toXMLResults (TTerm::BNode2string*) const {
 	return std::string("<variable>") + terminal + "</variable> <!-- should not appear in XML Results -->";
     }
-    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "?" << terminal; return s.str(); }
+    virtual std::string toString (MediaType /* mediaType */ = MediaType()) const { std::stringstream s; s << "?" << terminal; return s.str(); }
     virtual const char * getToken () { return "-Variable-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* evalTTerm(const Result* r, BNodeEvaluator* evaluator) const;
@@ -1018,7 +1018,7 @@ public:
     virtual std::string toXMLResults (TTerm::BNode2string* map) const {
 	return std::string("<bnode>") + map->getString(this) + "</bnode>";
     }
-    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "_:" << terminal; return s.str(); }
+    virtual std::string toString (MediaType /* mediaType */ = MediaType()) const { std::stringstream s; s << "_:" << terminal; return s.str(); }
     virtual const char * getToken () { return "-BNode-"; }
     virtual void express(Expressor* p_expressor) const;
     virtual const TTerm* evalTTerm(const Result* r, BNodeEvaluator* evaluator) const;
@@ -1386,7 +1386,7 @@ protected:
 public:
     virtual const char * getToken () { return "-NULL-"; }
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<null/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "NULLterm"; return s.str(); }
+    virtual std::string toString (MediaType /* mediaType */ = MediaType()) const { std::stringstream s; s << "NULLterm"; return s.str(); }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
 };
@@ -1766,6 +1766,7 @@ public:
     };
 
     struct PathBase {
+	virtual ~PathBase () {  }
     public:
 	virtual const URI* release () { return NULL; }
 	virtual TriplesTemplates from(const TTerm* s, const TTerm* o) const = 0;
@@ -1835,7 +1836,7 @@ public:
     struct Sequence : public Binary {
     public:
 	Sequence (const PathBase* l, const PathBase* r) : Binary(l, r) {  }
-	virtual TriplesTemplates from (const TTerm* s, const TTerm* o) const {
+	virtual TriplesTemplates from (const TTerm* s, const TTerm* /* o */) const {
 	    return l->from(s, NULL);
 	}
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
@@ -1896,7 +1897,7 @@ public:
     virtual std::string toString (MediaType mediaType = MediaType()) const { return root->toString(mediaType); }
     virtual std::string str () const { return root->toString(); }
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
-    bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+    bool bindVariable (const TTerm* /* constant */, ResultSet* /* rs */, Result* /* provisional */, bool /* weaklyBound */) const {
 	throw(std::runtime_error(FUNCTION_STRING));
     }
     bool matchingTriples(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs& tps) const;
@@ -1960,10 +1961,10 @@ public:
     };
 
     virtual std::string toXMLResults (TTerm::BNode2string*) const { return std::string("<ListTerm/> <!-- should not appear in XML Results -->"); }
-    virtual std::string toString (MediaType mediaType = MediaType()) const { std::stringstream s; s << "@@ListTerm@@"; return s.str(); }
+    virtual std::string toString (MediaType /* mediaType */ = MediaType()) const { std::stringstream s; s << "@@ListTerm@@"; return s.str(); }
     virtual const char * getToken () { return "-ListTerm-"; }
     virtual std::string getBindingAttributeName () const { throw(std::runtime_error(FUNCTION_STRING)); }
-    bool bindVariable (const TTerm* constant, ResultSet* rs, Result* provisional, bool weaklyBound) const {
+    bool bindVariable (const TTerm* /* constant */, ResultSet* /* rs */, Result* /* provisional */, bool /* weaklyBound */) const {
 	throw(std::runtime_error(FUNCTION_STRING));
     }
     virtual bool getListElements(const TTerm* from, const BasicGraphPattern* data, VarValuePairs* vec) const = 0;
@@ -3252,7 +3253,7 @@ public:
     }
     // WhereClause* getWhereClause () { return m_WhereClause; }
     std::string str();
-    virtual void express (Expressor* p_expressor) const {  }
+    virtual void express (Expressor* /* p_expressor */) const {  }
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const;
     virtual bool operator== (const TableOperation&) const { return false; }
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
@@ -3521,8 +3522,8 @@ namespace AtomicFunction {
 
     struct Invocation {
 	size_t min, max;
-	const FPtr* func;
-	Invocation (size_t min, size_t max, const FPtr* func)
+	FPtr* func;
+	Invocation (size_t min, size_t max, FPtr* func)
 	    : min(min), max(max), func(func)
 	{  }
     };
@@ -3531,8 +3532,8 @@ namespace AtomicFunction {
 	struct Initializer {
 	    const TTerm* name;
 	    size_t min, max;
-	    const FPtr* func;
-	    Initializer (const TTerm* name, size_t min, size_t max, const FPtr* func)
+	    FPtr* func;
+	    Initializer (const TTerm* name, size_t min, size_t max, FPtr* func)
 		: name(name), min(min), max(max), func(func)
 	    {  }
 	};
@@ -3559,7 +3560,7 @@ namespace AtomicFunction {
 	 * Add a single function, e.g.
 	 *   w3c_sw::AtomicFunction::GlobalMap.add(TheServer.engine.atomFactory.getURI("tag:eric@w3.org,2012-swobjfunc/chatty_concat"), 1, 999, &my_chatty_concat);
 	 */
-	void add (const TTerm* name, size_t min, size_t max, const FPtr* func) {
+	void add (const TTerm* name, size_t min, size_t max, FPtr* func) {
 	    insert(std::make_pair(name, Invocation(min, max, func)));
 	}
 
@@ -4556,7 +4557,7 @@ public:
  */
 class RecursiveExpressor : public Expressor {
 public:
-    virtual void members(const Members* const self, ProductionVector<const TTerm*>* p_vars) {
+    virtual void members(const Members* const /* self */, ProductionVector<const TTerm*>* p_vars) {
 	p_vars->express(this);
     }
     virtual void uri (const URI* const, std::string) {  }
@@ -4708,7 +4709,7 @@ public:
 	p_WhereClause->express(this);
 	p_SolutionModifier->express(this);
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
+    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* /* with */, std::vector<s_UsingPair>* /* usingGraphs */) {
 	if (p_delete != NULL)
 	    p_delete->express(this);
 	if (p_insert != NULL)
@@ -4723,11 +4724,11 @@ public:
 	p_GraphTemplate->express(this);
 	p_WhereClause->express(this);
     }
-    virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
+    virtual void load (const Load* const, e_Silence /* p _Silence */, const URI* p_from, const URI* p_into) {
 	p_from->express(this);
 	p_into->express(this);
     }
-    virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (const Clear* const, e_Silence /* p _Silence */, const URI* p__QGraphIRI_E_Opt) {
 	p__QGraphIRI_E_Opt->express(this);
     }
     virtual void create (const Create* const, e_Silence, const URI* p_GraphIRI) {
@@ -4758,7 +4759,7 @@ public:
 	p_IRIref->express(this);
 	p_ArgList->express(this);
     }
-    virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* /* scalarVals */) {
 	p_IRIref->express(this);
 	p_ArgList->express(this);
     }
@@ -4921,113 +4922,113 @@ public:
 	w3c_sw_NEED_IMPL("propertyPath");
     }
 
-    virtual void triplePattern (const TriplePattern* const, const TTerm* p_s, const TTerm* p_p, const TTerm* p_o) {
+    virtual void triplePattern (const TriplePattern* const, const TTerm* /* p_s */, const TTerm* /* p_p */, const TTerm* /* p_o */) {
 	w3c_sw_NEED_IMPL("triplePattern");
     }
-    virtual void filter (const Filter* const, const TableOperation* p_op, const ProductionVector<const Expression*>* p_Constraints) {
+    virtual void filter (const Filter* const, const TableOperation* /* p_op */, const ProductionVector<const Expression*>* /* p_Constraints */) {
 	w3c_sw_NEED_IMPL("filter");
     }
-    virtual void bind (const Bind* const, const TableOperation* p_op, const Expression* p_expr, const Variable* p_label) {
+    virtual void bind (const Bind* const, const TableOperation* /* p_op */, const Expression* /* p_expr */, const Variable* /* p_label */) {
 	w3c_sw_NEED_IMPL("bind");
     }
-    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+    virtual void namedGraphPattern (const NamedGraphPattern* const, const TTerm* /* p_name */, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /* p_TriplePatterns */) {
 	w3c_sw_NEED_IMPL("namedGraphPattern");
     }
-    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
+    virtual void defaultGraphPattern (const DefaultGraphPattern* const, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* /* p_TriplePatterns */) {
 	w3c_sw_NEED_IMPL("defaultGraphPattern");
     }
-    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+    virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* /* p_TableOperations */) {
 	w3c_sw_NEED_IMPL("tableConjunction");
     }
-    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+    virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* /* p_TableOperations */) {
 	w3c_sw_NEED_IMPL("tableDisjunction");
     }
-    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* p_GroupGraphPattern, const ProductionVector<const Expression*>* p_Expressions) {
+    virtual void optionalGraphPattern (const OptionalGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */, const ProductionVector<const Expression*>* /* p_Expressions */) {
 	w3c_sw_NEED_IMPL("optionalGraphPattern");
     }
-    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* p_GroupGraphPattern) {
+    virtual void minusGraphPattern (const MinusGraphPattern* const, const TableOperation* /* p_GroupGraphPattern */) {
 	w3c_sw_NEED_IMPL("minusGraphPattern");
     }
-    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern) {
+    virtual void graphGraphPattern (const GraphGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */) {
 	w3c_sw_NEED_IMPL("graphGraphPattern");
     }
-    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+    virtual void serviceGraphPattern (const ServiceGraphPattern* const, const TTerm* /* p_TTerm */, const TableOperation* /* p_GroupGraphPattern */, e_Silence /* p_Silence */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 	w3c_sw_NEED_IMPL("serviceGraphPattern");
     }
-    virtual void expressionAlias (const ExpressionAlias* const, const Expression* expr, const Bindable* label) {
+    virtual void expressionAlias (const ExpressionAlias* const, const Expression* /* expr */, const Bindable* /* label */) {
 	w3c_sw_NEED_IMPL("expressionAlias");
     }
-    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* p_Expressions) {
+    virtual void expressionAliasList (const ExpressionAliasList* const, const ProductionVector<const ExpressionAlias*>* /* p_Expressions */) {
 	w3c_sw_NEED_IMPL("expressionAliasList");
     }
-    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+    virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* /* p_TTerms */) {
 	w3c_sw_NEED_IMPL("posList");
     }
     virtual void starVarSet (const StarVarSet* const) {
 	w3c_sw_NEED_IMPL("starVarSet");
     }
-    virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* p_IRIref) {
+    virtual void defaultGraphClause (const DefaultGraphClause* const, const TTerm* /* p_IRIref */) {
 	w3c_sw_NEED_IMPL("defaultGraphClause");
     }
-    virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* p_IRIref) {
+    virtual void namedGraphClause (const NamedGraphClause* const, const TTerm* /* p_IRIref */) {
 	w3c_sw_NEED_IMPL("namedGraphClause");
     }
-    virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* groupBy, ProductionVector<const Expression*>* having, std::vector<s_OrderConditionPair>* p_OrderConditions, int, int) {
+    virtual void solutionModifier (const SolutionModifier* const, ExpressionAliasList* /* groupBy */, ProductionVector<const Expression*>* /* having */, std::vector<s_OrderConditionPair>* /* p_OrderConditions */, int, int) {
 	w3c_sw_NEED_IMPL("solutionModifier");
     }
-    virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {
+    virtual void valuesClause (const ValuesClause* const, const ResultSet* /* p_ResultSet */) {
 	w3c_sw_NEED_IMPL("valuesClause");
     }
-    virtual void whereClause (const WhereClause* const, const TableOperation* p_GroupGraphPattern) {
+    virtual void whereClause (const WhereClause* const, const TableOperation* /* p_GroupGraphPattern */) {
 	w3c_sw_NEED_IMPL("whereClause");
     }
-    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+    virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* /* p_Operations */) {
 	w3c_sw_NEED_IMPL("operationSet");
     }
-    virtual void select (const Select* const, e_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void select (const Select* const, e_distinctness, VarSet* /* p_VarSet */, ProductionVector<const DatasetClause*>* /* p_DatasetClauses */, WhereClause* /* p_WhereClause */, SolutionModifier* /* p_SolutionModifier */) {
 	w3c_sw_NEED_IMPL("select");
     }
-    virtual void subSelect (const SubSelect* const, const Select* p_Select) {
+    virtual void subSelect (const SubSelect* const, const Select* /* p_Select */) {
 	w3c_sw_NEED_IMPL("subSelect");
     }
     // !!!2 -- use ConstructableOperation for p_ConstructTemplate
-    virtual void construct (const Construct* const, const TableOperation* p_ConstructTemplate, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void construct (const Construct* const, const TableOperation* /* p_ConstructTemplate */, ProductionVector<const DatasetClause*>* /* p_DatasetClauses */, WhereClause* /* p_WhereClause */, SolutionModifier* /* p_SolutionModifier */) {
 	w3c_sw_NEED_IMPL("construct");
     }
-    virtual void describe (const Describe* const, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void describe (const Describe* const, VarSet* /* p_VarSet */, ProductionVector<const DatasetClause*>* /* p_DatasetClauses */, WhereClause* /* p_WhereClause */, SolutionModifier* /* p_SolutionModifier */) {
 	w3c_sw_NEED_IMPL("describe");
     }
-    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
+    virtual void ask (const Ask* const, ProductionVector<const DatasetClause*>* /* p_DatasetClauses */, WhereClause* /* p_WhereClause */, SolutionModifier* /* p_SolutionModifier */) {
 	w3c_sw_NEED_IMPL("ask");
     }
-    virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
+    virtual void modify (const Modify* const, const Delete* /* p_delete */, const Insert* /* p_insert */, WhereClause* /* p_WhereClause */, const URI* /* with */, std::vector<s_UsingPair>* /* usingGraphs */) {
 	w3c_sw_NEED_IMPL("modify");
     }
-    virtual void insert (const Insert* const, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void insert (const Insert* const, const TableOperation* /* p_GraphTemplate */, WhereClause* /* p_WhereClause */) {
 	w3c_sw_NEED_IMPL("insert");
     }
-    virtual void del (const Delete* const, bool rangeOverUnboundVars, const TableOperation* p_GraphTemplate, WhereClause* p_WhereClause) {
+    virtual void del (const Delete* const, bool /* rangeOverUnboundVars */, const TableOperation* /* p_GraphTemplate */, WhereClause* /* p_WhereClause */) {
 	w3c_sw_NEED_IMPL("del");
     }
-    virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
+    virtual void load (const Load* const, e_Silence /* p_Silence */, const URI* /* p_from */, const URI* /* p_into */) {
 	w3c_sw_NEED_IMPL("load");
     }
-    virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
+    virtual void clear (const Clear* const, e_Silence /* p_Silence */, const URI* /* p__QGraphIRI_E_Opt */) {
 	w3c_sw_NEED_IMPL("clear");
     }
-    virtual void create (const Create* const, e_Silence, const URI* p_GraphIRI) {
+    virtual void create (const Create* const, e_Silence, const URI* /* p_GraphIRI */) {
 	w3c_sw_NEED_IMPL("create");
     }
-    virtual void drop (const Drop* const, e_Silence, const URI* p_GraphIRI) {
+    virtual void drop (const Drop* const, e_Silence, const URI* /* p_GraphIRI */) {
 	w3c_sw_NEED_IMPL("drop");
     }
-    virtual void add (const Add* const, e_Silence, const URI* from, const URI* to) {
+    virtual void add (const Add* const, e_Silence, const URI* /* from */, const URI* /* to */) {
 	w3c_sw_NEED_IMPL("add");
     }
-    virtual void move (const Move* const, e_Silence, const URI* from, const URI* to) {
+    virtual void move (const Move* const, e_Silence, const URI* /* from */, const URI* /* to */) {
 	w3c_sw_NEED_IMPL("add");
     }
-    virtual void copy (const Copy* const, e_Silence, const URI* from, const URI* to) {
+    virtual void copy (const Copy* const, e_Silence, const URI* /* from */, const URI* /* to */) {
 	w3c_sw_NEED_IMPL("add");
     }
 };

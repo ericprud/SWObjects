@@ -733,7 +733,7 @@ namespace w3c_sw {
 	    CountState (std::string& groupIndexRef, const TTerm* storeAs)
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_count) {  }
 	    ~CountState () {  }
-	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
+	    virtual const TTerm* evalAggregate (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
 		int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
 		return atomFactory->getNumericRDFLiteral(c);
 	    }
@@ -861,14 +861,14 @@ namespace w3c_sw {
 	    delMes->insert(ret);
 	    return ret;
 	}
-	virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* p_ArgList) {
+	virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* /* p_ArgList */) {
 	    // !! fix -- SELECT (CONCAT("b:", GROUP_CONCAT(?b)) AS ?bz)
 	    last.functionCall = new NoDelWrapper(p_IRIref, self);
 	}
 	/**
 	 * Aggregate function invocations:
 	 */
-	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* scalarVals) {
 	    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
 
 	    if (p_IRIref == TTerm::FUNC_sample) {

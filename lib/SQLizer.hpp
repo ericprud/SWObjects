@@ -51,7 +51,7 @@ namespace w3c_sw {
 	    SQLQueryGenerator (SQLQueryGenerator* parent)
 		: query(new sql::SQLQuery()), parent(parent), nextUnionAlias(0), nextOptAlias(0)
 	    {  }
-	    ~SQLQueryGenerator () {
+	    virtual ~SQLQueryGenerator () {
 		for (std::map<std::string, sql::Expression*>::iterator it = attachments.begin();
 		     it != attachments.end(); ++it)
 		    delete it->second;
@@ -59,7 +59,7 @@ namespace w3c_sw {
 		 * shared with AliasAttrConstraint in attachments. */
 		delete query;
 	    }
- 	    virtual std::string toString (std::string pad = "") {
+ 	    virtual std::string toString (std::string /* pad */ = "") {
 		std::stringstream ss;
 		for (std::map<std::string, sql::Expression*>::const_iterator att = attachments.begin();
 		     att != attachments.end(); ++att)
@@ -248,6 +248,7 @@ namespace w3c_sw {
 	    {
 		onion = new sql::SQLUnion();
 	    }
+	    virtual ~SQLUnionGenerator () {  }
             // std::string toString () {
             //     std::stringstream ss;
             //     ss << "Union " << name << " corefs: " << corefs;
@@ -395,7 +396,7 @@ namespace w3c_sw {
 	{  }
 	SQLizer (AtomFactory* atomFactory, std::string stem, char predicateDelims[], char nodeDelims[], sql::schema::Database* tables, std::string driver) : 
 	    atomFactory(atomFactory), stem(stem), mode(MODE_outside), curQuery(NULL), curAliasAttr(sql::RelVar("bogusAlias"), sql::Attribute("bogusAttr")), selectVars(NULL), 
-	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), tables(tables), keyMap(keyMap),
+	    predicateDelims(predicateDelims), nodeDelims(nodeDelims), tables(tables), // keyMap(keyMap),
 	    driver(driver)
 	{
 	    // populate keyMap from tables (std::map<sql::RelationName, sql::schema::Relation*>)
@@ -414,9 +415,9 @@ namespace w3c_sw {
 
 	virtual void base (const Base* const, std::string productionName) { throw(std::runtime_error(productionName)); };
 
-	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) { w3c_sw_NEED_IMPL("SQLizer of members()"); }
+	virtual void members (const Members* const /* self */, ProductionVector<const TTerm*>* /* p_vars */) { w3c_sw_NEED_IMPL("SQLizer of members()"); }
 
-	virtual void uri (const URI* const self, std::string lexicalValue) {
+	virtual void uri (const URI* const /* self */, std::string lexicalValue) {
 	    w3c_sw_MARK;
 	    std::string relation, attribute;
 	    int value;
@@ -893,7 +894,7 @@ namespace w3c_sw {
 		 it != p_Expressions->end(); ++it)
 		(*it)->express(this);
 	}
-	virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* p_TTerms) {
+	virtual void posList (const TTermList* const, const ProductionVector<const TTerm*>* /* p_TTerms */) {
 	    w3c_sw_FAIL("no SQL for TTermList");
 	}
 	virtual void starVarSet (const StarVarSet* const) {
@@ -947,7 +948,7 @@ namespace w3c_sw {
 		delete bindingExpression;
 	    }
 	}
-	virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* p_Operations) {
+	virtual void operationSet (const OperationSet* const, const ProductionVector<const Operation*>* /* p_Operations */) {
 	    w3c_sw_NEED_IMPL("SQLizer(operationSet)");
 	}
 	virtual void select (const Select* const, e_distinctness p_distinctness, VarSet* p_VarSet, ProductionVector<const DatasetClause*>* p_DatasetClauses, WhereClause* p_WhereClause, SolutionModifier* p_SolutionModifier) {
@@ -964,7 +965,7 @@ namespace w3c_sw {
 	    mode = MODE_selectVar;
 	    p_VarSet->express(this);
 	}
-	virtual void subSelect (const SubSelect* const self, const Select* p_Select) {
+	virtual void subSelect (const SubSelect* const /* self */, const Select* p_Select) {
 	    w3c_sw_MARK;
 	    SQLQueryGenerator* parent = curQuery;
 	    //std::cerr << "checking for "<<curTableOperation<<" or "<<p_GroupGraphPattern<<std::endl;
@@ -1001,7 +1002,7 @@ namespace w3c_sw {
 	    p_WhereClause->express(this);
 	    p_SolutionModifier->express(this);
 	}
-	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* with, std::vector<s_UsingPair>* usingGraphs) {
+	virtual void modify (const Modify* const, const Delete* p_delete, const Insert* p_insert, WhereClause* p_WhereClause, const URI* /* with */, std::vector<s_UsingPair>* /* usingGraphs */) {
 	    w3c_sw_FAIL("REPLACE");
 	    if (p_delete != NULL)
 		p_delete->express(this);
@@ -1019,13 +1020,13 @@ namespace w3c_sw {
 	    p_GraphTemplate->express(this);
 	    p_WhereClause->express(this);
 	}
-	virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
+	virtual void load (const Load* const, e_Silence /* p_Silence */, const URI* p_from, const URI* p_into) {
 	    w3c_sw_FAIL("LOAD");
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_from->express(this);
 	    p_into->express(this);
 	}
-	virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
+	virtual void clear (const Clear* const, e_Silence /* p_Silence */, const URI* p__QGraphIRI_E_Opt) {
 	    w3c_sw_FAIL("CLEAR");
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p__QGraphIRI_E_Opt->express(this);
@@ -1039,17 +1040,17 @@ namespace w3c_sw {
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_GraphIRI->express(this);
 	}
-	virtual void add (const Add* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	virtual void add (const Add* const, e_Silence /* p_Silence */, const URI* from, const URI* to) {
 	    w3c_sw_FAIL("add");
 	    from->express(this);
 	    to->express(this);
 	}
-	virtual void move (const Move* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	virtual void move (const Move* const, e_Silence /* p_Silence */, const URI* from, const URI* to) {
 	    w3c_sw_FAIL("move");
 	    from->express(this);
 	    to->express(this);
 	}
-	virtual void copy (const Copy* const, e_Silence p_Silence, const URI* from, const URI* to) {
+	virtual void copy (const Copy* const, e_Silence /* p_Silence */, const URI* from, const URI* to) {
 	    w3c_sw_FAIL("copy");
 	    from->express(this);
 	    to->express(this);
@@ -1058,7 +1059,7 @@ namespace w3c_sw {
 	    w3c_sw_MARK;
 	    p_TTerm->express(this);
 	}
-	virtual void argList (const ArgList* const, ProductionVector<const w3c_sw::Expression*>* expressions) {
+	virtual void argList (const ArgList* const, ProductionVector<const w3c_sw::Expression*>* /* expressions */) {
 	    w3c_sw_FAIL("argList");
 	}
 	// !!!
@@ -1170,14 +1171,14 @@ namespace w3c_sw {
 	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
 		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	virtual void aggregateCall (const AggregateCall* const /* self */, const URI* /* p_IRIref */, const ArgList* /* p_ArgList */, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* /* scalarVals */) {
 	    w3c_sw_NEED_IMPL("AggregateCall SQLizer (this will be super cool)");
 	}
 	virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	    w3c_sw_MARK;
 	    p_FunctionCall->express(this);
 	}
-	virtual void existsExpression (const ExistsExpression* const, const TableOperation* p_TableOperation) {
+	virtual void existsExpression (const ExistsExpression* const, const TableOperation* /* p_TableOperation */) {
 	    w3c_sw_NEED_IMPL("SQLizer(existsExpression)");
 	}
 	/* Expressions */
@@ -1293,7 +1294,7 @@ namespace w3c_sw {
 	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
 		<< "SQLizing " << *self << " to " << curConstraint->toString();
 	}
-	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
+	virtual void naryIn (const NaryIn* const, const Expression* /* p_left */, const ProductionVector<const Expression*>* /* p_right */) {
 	    w3c_sw_NEED_IMPL("SQLizer of IN()");
 	}
 	virtual void comparatorExpression (const w3c_sw::ComparatorExpression* const, const w3c_sw::GeneralComparator* p_GeneralComparator) {

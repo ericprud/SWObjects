@@ -30,13 +30,13 @@ namespace w3c_sw {
 	    delete last.args; // discoverd by valgrind -- not really investigated.
 	}
 
-	virtual void base(const Base* const self, std::string productionName) { throw "why did we call base?"; }
+	virtual void base(const Base* const /* self */, std::string /* productionName */) { throw "why did we call base?"; }
 
-	virtual void members (const Members* const self, ProductionVector<const TTerm*>* p_vars) { w3c_sw_NEED_IMPL("inverse of members()"); }
+	virtual void members (const Members* const /* self */, ProductionVector<const TTerm*>* /* p_vars */) { w3c_sw_NEED_IMPL("inverse of members()"); }
 	virtual void uri (const URI* const self, std::string) { setTerm(self); }
 	virtual void variable (const Variable* const self, std::string) { setTerm(self); }
 	virtual void bnode (const BNode* const self, std::string) { setTerm(self); }
-	virtual void rdfLiteral (const RDFLiteral* const self, std::string, const URI* datatype, const LANGTAG* p_LANGTAG) { setTerm(self); }
+	virtual void rdfLiteral (const RDFLiteral* const self, std::string, const URI* /* datatype */, const LANGTAG* /* p_LANGTAG */) { setTerm(self); }
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, int   , const URI*) { setTerm(self); }
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, float , const URI*) { setTerm(self); }
 	virtual void rdfLiteral (const NumericRDFLiteral* const self, double, const URI*) { setTerm(self); }
@@ -95,33 +95,33 @@ namespace w3c_sw {
 	    }
 	    func = oldFunc;
 	}
-	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	virtual void aggregateCall (const AggregateCall* const /* self */, const URI* /* p_IRIref */, const ArgList* /* p_ArgList */, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* /* scalarVals */) {
 	    w3c_sw_NEED_IMPL("AggregateCall inverter (can that even exist?)");
 	}
-	virtual void functionCallExpression (const FunctionCallExpression* const self, FunctionCall* p_FunctionCall) {
+	virtual void functionCallExpression (const FunctionCallExpression* const /* self */, FunctionCall* p_FunctionCall) {
 	    p_FunctionCall->express(this);
 	}
-	virtual void existsExpression (const ExistsExpression* const self, const TableOperation* p_TableOperation) {
+	virtual void existsExpression (const ExistsExpression* const /* self */, const TableOperation* /* p_TableOperation */) {
 	    w3c_sw_NEED_IMPL("ExistsExpression inverter");
 	}
 
-	virtual void booleanNegation (const BooleanNegation* const, const Expression* p_Expression) {  }
-	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* p_Expression) {  }
-	virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* p_Expression) {  }
-	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* p_Expressions) {  }
-	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* p_Expressions) {  }
-	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* p_Expressions) {  }
-	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* p_Expressions) {  }
-	virtual void arithmeticInverse (const ArithmeticInverse* const, ProductionVector<const Expression*>* p_Expressions) {  }
-	virtual void booleanEQ (const BooleanEQ* const, const Expression* p_left, const Expression* p_right) {  }
-	virtual void booleanNE (const BooleanNE* const, const Expression* p_left, const Expression* p_right) {  }
-	virtual void booleanLT (const BooleanLT* const, const Expression* p_left, const Expression* p_right) {  }
-	virtual void booleanGT (const BooleanGT* const, const Expression* p_left, const Expression* p_right) {  }
-	virtual void booleanLE (const BooleanLE* const, const Expression* p_left, const Expression* p_right) {  }
-	virtual void booleanGE (const BooleanGE* const, const Expression* p_left, const Expression* p_right) {  }
-	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {  }
-	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* p_GeneralComparator) {  }
-	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* p_NumericRDFLiteral) {  }
+	virtual void booleanNegation (const BooleanNegation* const, const Expression* /* p_Expression */) {  }
+	virtual void arithmeticNegation (const ArithmeticNegation* const, const Expression* /* p_Expression */) {  }
+	virtual void arithmeticInverse (const ArithmeticInverse* const, const Expression* /* p_Expression */) {  }
+	virtual void booleanConjunction (const BooleanConjunction* const, const ProductionVector<const Expression*>* /* p_Expressions */) {  }
+	virtual void booleanDisjunction (const BooleanDisjunction* const, const ProductionVector<const Expression*>* /* p_Expressions */) {  }
+	virtual void arithmeticSum (const ArithmeticSum* const, const ProductionVector<const Expression*>* /* p_Expressions */) {  }
+	virtual void arithmeticProduct (const ArithmeticProduct* const, const ProductionVector<const Expression*>* /* p_Expressions */) {  }
+	virtual void arithmeticInverse (const ArithmeticInverse* const, ProductionVector<const Expression*>* /* p_Expressions */) {  }
+	virtual void booleanEQ (const BooleanEQ* const, const Expression* /* p_left */, const Expression* /* p_right */) {  }
+	virtual void booleanNE (const BooleanNE* const, const Expression* /* p_left */, const Expression* /* p_right */) {  }
+	virtual void booleanLT (const BooleanLT* const, const Expression* /* p_left */, const Expression* /* p_right */) {  }
+	virtual void booleanGT (const BooleanGT* const, const Expression* /* p_left */, const Expression* /* p_right */) {  }
+	virtual void booleanLE (const BooleanLE* const, const Expression* /* p_left */, const Expression* /* p_right */) {  }
+	virtual void booleanGE (const BooleanGE* const, const Expression* /* p_left */, const Expression* /* p_right */) {  }
+	virtual void naryIn (const NaryIn* const, const Expression* /* p_left */, const ProductionVector<const Expression*>* /* p_right */) {  }
+	virtual void comparatorExpression (const ComparatorExpression* const, const GeneralComparator* /* p_GeneralComparator */) {  }
+	virtual void numberExpression (const NumberExpression* const, const NumericRDFLiteral* /* p_NumericRDFLiteral */) {  }
     };
 
 }

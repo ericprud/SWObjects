@@ -63,7 +63,7 @@ namespace w3c_sw {
 	GraphInclusion getOperationStrength (const TableOperation* bgp) {
 	    std::map<const TableOperation*, _BindingStrength>::iterator it = find(bgp);
 	    if (it == end() || 
-		(it->second & _Binding_WEAK && 0)) // !(it->second & _Binding_INTRODUCED)))
+		(it->second & _Binding_WEAK && false)) // !(it->second & _Binding_INTRODUCED)))
 		return GraphInclusion_NONE;
 	    return it->second & _Binding_GRAPH ? GraphInclusion_STRONG : GraphInclusion_WEAK;
 	}
@@ -243,7 +243,7 @@ namespace w3c_sw {
 		graphName = oldGraphName;
 	    }
 
-	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence p_Silence, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* p_TTerm, const TableOperation* p_GroupGraphPattern, e_Silence /* p_Silence */, AtomFactory* /* atomFactory */, bool /* lexicalCompare */) {
 		const TTerm* oldGraphName = graphName;
 		graphName = p_TTerm;
 		const TableOperation* parent = currentBGP;
