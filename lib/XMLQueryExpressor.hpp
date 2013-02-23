@@ -338,7 +338,8 @@ public:
 	xml->open("Load");
 	if (p_Silence == SILENT_Yes) xml->attribute("silent", "YES");
 	p_from->express(this);
-	p_into->express(this);
+	if (p_into)
+	    p_into->express(this);
 	xml->close();
     }
     virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {

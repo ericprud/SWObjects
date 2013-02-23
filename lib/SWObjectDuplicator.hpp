@@ -434,8 +434,12 @@ namespace w3c_sw {
 	virtual void load (const Load* const, e_Silence p_Silence, const URI* p_from, const URI* p_into) {
 	    p_from->express(this);
 	    const URI* from = last.tterms.uri;
-	    p_into->express(this);
-	    last.operation = new Load(p_Silence, from, last.tterms.uri);
+	    if (p_into) {
+		p_into->express(this);
+		last.operation = new Load(p_Silence, from, last.tterms.uri);
+	    } else {
+		last.operation = new Load(p_Silence, from, NULL);
+	    }
 	}
 	virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	    last.tterms.tterm = NULL;

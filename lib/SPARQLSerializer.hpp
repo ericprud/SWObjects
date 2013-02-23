@@ -585,7 +585,8 @@ public:
 	ret << "LOAD ";
 	if (p_Silence != SILENT_Yes) ret << "SILENT";
 	p_from->express(this);
-	p_into->express(this);
+	if (p_into)
+	    p_into->express(this);
     }
     virtual void clear (const Clear* const, e_Silence p_Silence, const URI* p__QGraphIRI_E_Opt) {
 	lead();
