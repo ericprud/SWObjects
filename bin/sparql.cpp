@@ -117,7 +117,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
     /** runServer - start an HTTP server
      * servicePath: (optional) add some service description about the service.
      */
-    void runServer (sw::WebHandler& handler, std::string serviceURIstr, std::string serviceHost, int servicePort, std::string servicePath = "", bool addServiceDesc = true) {
+    void runServer (sw::WebHandler& handler, unsigned int httpThreads, std::string serviceURIstr, std::string serviceHost, int servicePort, std::string servicePath = "", bool addServiceDesc = true) {
 
 	std::string startupMessage; // messages which get printed after a successful call to ::bind.
 
@@ -193,7 +193,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 			"                a sd:Graph ;\n"
 			"                void:triples " + boost::lexical_cast<std::string>(thisSize) + "\n"
 			"            ]\n"
-			"        ]\n";
+			"        ] ;\n";
 		}
 		sdesc +=
 		    "    ] .\n"
@@ -215,7 +215,7 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	tmpss << servicePort;
 	const char* bindMe = serviceHost.c_str(); // "0.0.0.0";
 	try {
-	    serve(bindMe, tmpss.str().c_str(), (int)1 /* one thread */, handler, config, startupMessage);
+	    serve(bindMe, tmpss.str().c_str(), httpThreads, handler, config, startupMessage);
 	} catch (boost::system::system_error e) {
 	    throw std::string("Error binding ") + bindMe + ":" + tmpss.str().c_str() + ": " + e.what();
 	}
@@ -927,6 +927,7 @@ int main(int ac, char* av[])
 	     "\"--header ’Accept: text/turtle,text/html;q=.8’\" prefers turtle over HTML.")
             ("header+", po::value<headerAppend>(), 
 	     "append earlier value of header.")
+            ("http-threads", po::value<unsigned int>(), "HTTP server threads [5].")
             ("stop-after", po::value<unsigned int>(), "SPARQL server handles n requests, then exits.")
             ("stop", po::value<std::string>(), "query string to stop the server.")
             ("post", "use POST (while GET is obviously superior) for SPARQL services.")
@@ -1326,7 +1327,8 @@ int main(int ac, char* av[])
 		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
 		handler.add_handler(&stat);
 
-		TheServer.runServer(handler, ServerURI, serviceHost, servicePort, servicePath, vm.count("server-no-description") == 0);
+		unsigned int httpThreads = vm.count("http-threads") ? vm["http-threads"].as<unsigned int>() : 5;
+		TheServer.runServer(handler, httpThreads, ServerURI, serviceHost, servicePort, servicePath, vm.count("server-no-description") == 0);
 	    }
 
 	    // For operations which create a new database.
