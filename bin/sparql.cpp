@@ -853,6 +853,7 @@ int main(int ac, char* av[])
             ("ResultSetDebugEnumerateLimit", po::value<size_t>(),
 	     "max number of results to serialize in debug stream")
             ("no-exec,n", "don't execute (or load data)")
+            ("force", "ignore errors and guess at contents")
             ("pipe,p", "pipe query to output (print final query)")
             ("quiet,q", "quiet")
             ("version,v", "print version string")
@@ -1191,6 +1192,8 @@ int main(int ac, char* av[])
 		    }
 		}
 
+		if (vm.count("force"))
+		    TheServer.engine.bestEffort = true;
 		LoadList.loadAll();
 
 #ifndef _MSC_VER

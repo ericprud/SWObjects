@@ -1107,7 +1107,7 @@ struct SimpleEngine {
     std::string stemURI;
     std::string serviceURI;
     std::string defaultGraphURI;
-    bool printQuery;
+    bool printQuery, bestEffort;
     SPARQLfedDriver sparqlParser;
     TurtleSDriver turtleParser;
     std::string pkAttribute;
@@ -1146,7 +1146,7 @@ struct SimpleEngine {
 	  rdfDBHandlers(*this), db(*this),
 	  resultSet(&atomFactory), stopAfter(RunForever), inPlace(false),
 	  done(false), served(0), stemURI(""), serviceURI(""),
-	  defaultGraphURI(""), printQuery(false), 
+	  defaultGraphURI(""), printQuery(false), bestEffort(false), 
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory),
@@ -1341,8 +1341,20 @@ struct SimpleEngine {
 		baseURI ? uriString(baseURI) :
 		nameStr.find("data:") == 0 ? "" : // EGP: decided data: URIs don't contribute a base.
 		nameStr;
-	    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
-			 parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
+	    if (bestEffort) {
+		try {
+		    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
+				 parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
+		} catch (ParserExceptions& ex) {
+		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::error)
+			<< "proceeding despite " << ex.size()
+			<< " error" << (ex.size()==1 ? "" : "s")
+			<< " from parsing \"" << nameStr << "\":\n" << ex.what();
+		}
+	    } else {
+		db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
+			     parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
+	    }
 	    rs.resultType = ResultSet::RESULT_Graphs;
 	    return false;
 	}
