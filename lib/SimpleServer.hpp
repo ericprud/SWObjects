@@ -1341,20 +1341,8 @@ struct SimpleEngine {
 		baseURI ? uriString(baseURI) :
 		nameStr.find("data:") == 0 ? "" : // EGP: decided data: URIs don't contribute a base.
 		nameStr;
-	    if (bestEffort) {
-		try {
-		    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
-				 parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
-		} catch (ParserExceptions& ex) {
-		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::error)
-			<< "proceeding despite " << ex.size()
-			<< " error" << (ex.size()==1 ? "" : "s")
-			<< " from parsing \"" << nameStr << "\":\n" << ex.what();
-		}
-	    } else {
-		db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
-			     parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
-	    }
+	    db->loadData(db->ensureGraph(graph), istr, uriString(baseURI), 
+			 parserBaseURI, &atomFactory, &nsAccumulator, &grddlMap);
 	    rs.resultType = ResultSet::RESULT_Graphs;
 	    return false;
 	}

@@ -153,6 +153,10 @@ namespace w3c_sw {
     %mutable;
 #endif /* defined(SWIG) */
 
+    namespace Global {
+	extern bool Force;
+    }; // namespace Global
+
 class StringException : public std::exception {
 public:
 #if defined(SWIG)

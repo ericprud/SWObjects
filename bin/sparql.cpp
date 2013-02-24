@@ -1193,7 +1193,7 @@ int main(int ac, char* av[])
 		}
 
 		if (vm.count("force"))
-		    TheServer.engine.bestEffort = true;
+		    sw::Global::Force = true;
 		LoadList.loadAll();
 
 #ifndef _MSC_VER
