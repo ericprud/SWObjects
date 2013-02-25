@@ -137,13 +137,13 @@ BOOST_AUTO_TEST_CASE( extra_po_objects_plus ) { ERROR_RECOVERY_TEST
 }
 BOOST_AUTO_TEST_CASE( unterminated_url ) { ERROR_RECOVERY_TEST
 	("<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .",
-	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.10-12: malformed single-quoted simple literal \"'o1\"\n"
-	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.41-43: malformed IRI \"<o3\"",
+	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.10-12: Malformed single-quoted simple literal \"'o1\"\n"
+	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.41-43: Malformed IRI \"<o3\"",
 	 "<s1> <p1> 'o1'. <s2> <p2> <o2>.<s3> <p3> <o3>.", 0, 2);
 }
 BOOST_AUTO_TEST_CASE( commas_and_semis ) { ERROR_RECOVERY_TEST
 	("<s1> <p1> 'o1a', 'o1b ; <o2>.",
-	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.17-20: malformed single-quoted simple literal \"'o1b\"\n"
+	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.17-20: Malformed single-quoted simple literal \"'o1b\"\n"
 	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.24-28: syntax error, unexpected '.'", // @@ improving the error grammar should eliminate this.
 	 "<s1> <p1> 'o1a', 'o1b';     .", 0, 2);
 }
