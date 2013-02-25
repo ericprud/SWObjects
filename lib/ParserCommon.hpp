@@ -198,7 +198,14 @@ public:
 	    return;
 	// if (errors.size() == 1)
 	//     throw errors[0];
-	throw errors;
+	if (Global::Force)
+	    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::error)
+		<< "proceeding despite " << errors.size()
+		<< " error" << (errors.size()==1 ? "" : "s")
+		// << " from parsing \"" << nameStr << "\""
+		<< ":\n" << errors.what();
+	else
+	    throw errors;
 	// std::stringstream ss;
 	// for (std::vector<ParserException>::const_iterator it = errors.begin();
 	//      it != errors.end(); ++it) {

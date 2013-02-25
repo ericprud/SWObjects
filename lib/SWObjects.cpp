@@ -274,9 +274,9 @@ namespace w3c_sw {
 MediaTypeMap StreamContextMediaTypes::MediaTypes;
 
 template<class T>
-StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
+StreamContext<T>::StreamContext (std::string name, T* def, e_opts opts,
 				 const char* p_mediaType, SWWEBagent* webAgent)
-    : nameStr(nameStr), malloced(true), p(NULL)
+    : nameStr(name), malloced(true), p(NULL)
 {
     if (opts & STRING) {
 	p = new std::stringstream(nameStr);
@@ -304,9 +304,10 @@ StreamContext<T>::StreamContext (std::string nameStr, T* def, e_opts opts,
 	malloced = false;
     } else {
 	/* Remove file://[^/]+ . */
-	if (nameStr.substr(0, 7) == "file://") {
-	    size_t slash = nameStr.find_first_of('/', 7);
-	    nameStr = nameStr.substr(slash);
+	if (!strncmp(nameStr.c_str(), "file:", 5)) {
+	    nameStr.erase(0,5);
+	    if (!strncmp(nameStr.c_str(), "//", 2))
+		nameStr.erase(0,nameStr.find_first_of("/", 2));
 	}
 	p = NULL;
 	malloced = false;
@@ -2875,7 +2876,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	} else if (RdfDB::DynamicLoading) {
 	    std::string nameStr = m_from->getLexicalValue();
 	    IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
-	    if (db->loadData(db->ensureGraph(m_from), iptr, nameStr, nameStr, rs->getAtomFactory()))
+	    if (db->loadData(db->ensureGraph(m_into), iptr, nameStr, nameStr, rs->getAtomFactory()))
 		throw nameStr + ":0: error: unable to parse web document";
 	} else if (m_Silence == SILENT_No)
 	    throw std::runtime_error(m_from
@@ -3302,6 +3303,7 @@ compared against
 	*/
     }
 
+    bool Global::Force = false;
     CanonicalRDFLiteral::e_CANON CanonicalRDFLiteral::format = CANON_brief;
     std::ostream* BasicGraphPattern::DiffStream = NULL;
     bool (*BasicGraphPattern::MappableTerm)(const TTerm*) = &BasicGraphPattern::MapVarsAndBNodes;

@@ -168,6 +168,7 @@ ERROR_PNAME_LN		({PNAME_NS})({ERROR_PN_LOCAL})
 {ERROR_STRING_LITERAL_LONG1}	{ scanError("single-quoted long literal", '"', yylloc);    return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG1); }
 {ERROR_STRING_LITERAL_LONG2}	{ scanError("double-quoted long literal", '\'', yylloc);   return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG2); }
 {ERROR_IRIREF}			{ scanError("IRI", '"', yylloc); yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-1, yylloc); return token::IRIREF; }
+{PN_LOCAL}			{ scanError("prefixed name - no ':' in", '"', yylloc); yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN; }
 .			{
     std::stringstream ss;
     ss << "unexpected input '" << yytext << "'";

@@ -153,6 +153,10 @@ namespace w3c_sw {
     %mutable;
 #endif /* defined(SWIG) */
 
+    namespace Global {
+	extern bool Force;
+    }; // namespace Global
+
 class StringException : public std::exception {
 public:
 #if defined(SWIG)
@@ -4726,7 +4730,8 @@ public:
     }
     virtual void load (const Load* const, e_Silence /* p _Silence */, const URI* p_from, const URI* p_into) {
 	p_from->express(this);
-	p_into->express(this);
+	if (p_into)
+	    p_into->express(this);
     }
     virtual void clear (const Clear* const, e_Silence /* p _Silence */, const URI* p__QGraphIRI_E_Opt) {
 	p__QGraphIRI_E_Opt->express(this);

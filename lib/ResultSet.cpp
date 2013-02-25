@@ -599,7 +599,7 @@ namespace w3c_sw {
 	    for (std::vector<const TTerm*>::const_iterator col = ordered.begin();
 		 col != ordered.end(); ++col) {
 		if (col != ordered.begin())
-		    rowString << ", ";
+		    rowString << " ";
 		const TTerm* v = (*row)->get(*col);
 		rowString <<
 		    (v != NULL

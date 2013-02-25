@@ -1107,7 +1107,7 @@ struct SimpleEngine {
     std::string stemURI;
     std::string serviceURI;
     std::string defaultGraphURI;
-    bool printQuery;
+    bool printQuery, bestEffort;
     SPARQLfedDriver sparqlParser;
     TurtleSDriver turtleParser;
     std::string pkAttribute;
@@ -1146,7 +1146,7 @@ struct SimpleEngine {
 	  rdfDBHandlers(*this), db(*this),
 	  resultSet(&atomFactory), stopAfter(RunForever), inPlace(false),
 	  done(false), served(0), stemURI(""), serviceURI(""),
-	  defaultGraphURI(""), printQuery(false), 
+	  defaultGraphURI(""), printQuery(false), bestEffort(false), 
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory),

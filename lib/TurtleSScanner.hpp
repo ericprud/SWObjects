@@ -105,13 +105,18 @@ public:
 	return tok;
     }
 
+    /** resolvePrefix
+     * Assumes barewords are localnames in the default namespace.
+     * This leaves it to the lexer to warn about missing prefixes.
+     */
     const URI* resolvePrefix (const char* yytext, TurtleSParser::location_type* yylloc) {
 	std::string stripped;
 	YaccDriver::unescapeReserved(yytext, ::strlen(yytext), &stripped, yylloc);
 
 	size_t index = stripped.find(':');
 	if (index == std::string::npos)
-	    throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+	    // throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+	    index = 0;
 	std::string prefix = stripped.substr(0, index);
 	const URI* nspace = driver->getNamespace(prefix, true);
 	if (nspace == NULL)
@@ -129,7 +134,7 @@ public:
 
     void scanError (const char* msg, char quote, TurtleSParser::location_type* yylloc) {
 	std::stringstream ss;
-	ss << "malformed " << msg << " " << quote << yytext << quote;
+	ss << "Malformed " << msg << " " << quote << yytext << quote;
 	driver->error(*yylloc, ss.str());
     }
 

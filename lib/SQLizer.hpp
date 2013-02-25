@@ -1024,7 +1024,8 @@ namespace w3c_sw {
 	    w3c_sw_FAIL("LOAD");
 	    // !!! if (p_Silence != SILENT_Yes) ;
 	    p_from->express(this);
-	    p_into->express(this);
+	    if (p_into)
+		p_into->express(this);
 	}
 	virtual void clear (const Clear* const, e_Silence /* p_Silence */, const URI* p__QGraphIRI_E_Opt) {
 	    w3c_sw_FAIL("CLEAR");
