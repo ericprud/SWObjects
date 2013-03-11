@@ -99,8 +99,8 @@ struct EARL {
     EARL () : theConsumer(this), reportStream(NULL) {
 	Initializer::consumers.push_back(&theConsumer);
     }
-    void report (std::string test, bool passed) {
-	if (reportStream == NULL || test == "")
+    void report (const char* test, bool passed) {
+	if (reportStream == NULL || test == NULL)
 	    return;
 	*reportStream <<
 	    "[] a earl:Assertion ;\n"
