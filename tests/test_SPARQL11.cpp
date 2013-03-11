@@ -100,7 +100,7 @@ struct EARL {
 	Initializer::consumers.push_back(&theConsumer);
     }
     void report (std::string test, bool passed) {
-	if (reportStream == NULL)
+	if (reportStream == NULL || test == "")
 	    return;
 	*reportStream <<
 	    "[] a earl:Assertion ;\n"
@@ -422,6 +422,18 @@ BOOST_AUTO_TEST_SUITE( sparql11_update )
     } catch (std::exception& s) {					       \
 	BOOST_ERROR ( s.what() );					       \
     }
+
+BOOST_AUTO_TEST_CASE( construct_filter ) {
+    const char* test = NULL; // disable EARL report.
+    // name: ADD 1
+    // manifest: data-sparql11/add/manifest.ttl
+    const char* defaultGraph_in = "sparql11/dates.ttl";
+    LabeledGraph namedGraphs_in[] = {};
+    const char* request = "sparql11/insert_filter.ru";
+    const char* defaultGraph_out = "sparql11/dates.ttl";
+    LabeledGraph namedGraphs_out[] = {LG("sparql11/insert_filter-res.ttl", "sparql11/g1")};
+    UPDATE_TEST();
+} /* BOOST_AUTO_TEST_CASE( construct_filter ) */
 
 // update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_update.rq -L text/raw > IMPORTED_sparql11_update.hpp 
 #include "tests/IMPORTED_sparql11_update.hpp"
