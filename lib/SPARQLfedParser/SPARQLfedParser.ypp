@@ -1030,6 +1030,7 @@ _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E
 DescribeQuery:
     // 'DESCRIBE' ( VarOrIri+ | '*' ) DatasetClause* WhereClause? SolutionModifier
     IT_DESCRIBE _O_QVarOrIri_E_Plus_Or_QGT_TIMES_E_C _QDatasetClause_E_Star _QWhereClause_E_Opt SolutionModifier	{
+	driver.restoreFilter(NULL);
 	driver.lastWhereClause = $4 ? $4 : new WhereClause(new DefaultGraphPattern());
 	$$ = new Describe($2, $3, $4, $5);
     }
@@ -1467,6 +1468,7 @@ DeleteWhere:
 Modify:
     // $1:WITH <iri>                 $2:DEL|INS|DEL INS                                            $3:USING NAMED? <iri> $4:CONSTRUCT { ... }                         $5:WHERE $6:{ ... }
     _Q_O_QIT_WITH_E_S_Qiri_E_C_E_Opt _O_QDeleteClause_E_S_QInsertClause_E_Opt_Or_QInsertClause_E_C _QUsingClause_E_Star _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt IT_WHERE GroupGraphPattern	{
+	driver.restoreFilter(NULL);
 	$$ = new Modify($2.del, $2.ins, new WhereClause(driver.ensureGraphPattern()), $4, $1, $3);
 	driver.curOp = NULL;
     }
