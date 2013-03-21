@@ -701,8 +701,17 @@ public:
 	p_ArgList->express(this);
 	ret << ")";
     }
-    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* /* p_IRIref */, const ArgList* /* p_ArgList  */, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* /* scalarVals */) {
-	w3c_sw_NEED_IMPL("AggregateCall algebra serializer");
+    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+	p_IRIref->express(this);
+	ret << "(";
+	p_ArgList->express(this);
+	if (scalarVals->size() > 0) {
+	    ret << ";";
+	    for (AggregateCall::ScalarVals::const_iterator it = scalarVals->begin();
+		 it != scalarVals->end(); ++it)
+		ret << " " << it->first << "=" << it->second;
+	}
+	ret << ")";
     }
     virtual void functionCallExpression (const FunctionCallExpression* const, FunctionCall* p_FunctionCall) {
 	p_FunctionCall->express(this);
