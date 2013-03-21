@@ -854,7 +854,7 @@ namespace w3c_sw {
 	    }
 	};
 	AggregateStateInjector (AtomFactory* atomFactory, std::string& groupIndexRef, std::set<const TTerm*>* delMes) : SWObjectDuplicator(atomFactory), groupIndexRef(groupIndexRef), delMes(delMes) {  }
-	const TTerm* sample (const FunctionCall* const f) {
+	const TTerm* stringize (const FunctionCall* const f) {
 	    SPARQLSerializer ss;
 	    f->express(&ss);
 	    const TTerm* ret = atomFactory->getRDFLiteral(ss.str());
@@ -873,25 +873,25 @@ namespace w3c_sw {
 
 	    if (p_IRIref == TTerm::FUNC_sample) {
 		(*it)->express(this);
-		last.functionCall = new SampleState(groupIndexRef, sample(self), last.expression);
+		last.functionCall = new SampleState(groupIndexRef, stringize(self), last.expression);
 	    } else if (p_IRIref == TTerm::FUNC_count) {
-		last.functionCall = new CountState(groupIndexRef, sample(self));
+		last.functionCall = new CountState(groupIndexRef, stringize(self));
 	    } else if (p_IRIref == TTerm::FUNC_sum) {
 		(*it)->express(this);
-		last.functionCall = new SumState(groupIndexRef, sample(self), last.expression);
+		last.functionCall = new SumState(groupIndexRef, stringize(self), last.expression);
 	    } else if (p_IRIref == TTerm::FUNC_avg) {
 		(*it)->express(this);
-		last.functionCall = new AvgState(groupIndexRef, sample(self), last.expression);
+		last.functionCall = new AvgState(groupIndexRef, stringize(self), last.expression);
 	    } else if (p_IRIref == TTerm::FUNC_min) {
 		(*it)->express(this);
-		last.functionCall = new MinState(groupIndexRef, sample(self), last.expression);
+		last.functionCall = new MinState(groupIndexRef, stringize(self), last.expression);
 	    } else if (p_IRIref == TTerm::FUNC_max) {
 		(*it)->express(this);
-		last.functionCall = new MaxState(groupIndexRef, sample(self), last.expression);
+		last.functionCall = new MaxState(groupIndexRef, stringize(self), last.expression);
 	    } else if (p_IRIref == TTerm::FUNC_group_concat) {
 		(*it)->express(this);
 		std::string sep = scalarVals->getOrDefault("separator", " ");
-		last.functionCall = new GroupConcatState(groupIndexRef, sample(self), last.expression, sep);
+		last.functionCall = new GroupConcatState(groupIndexRef, stringize(self), last.expression, sep);
 	    } else {
 		throw "program flow exception -- unknown aggregate function: " + p_IRIref->toString();
 	    }
@@ -911,8 +911,8 @@ namespace w3c_sw {
 		 it != groupBy->end(); ++it)
 		delMes.insert((*it)->getLabel(atomFactory));
 
-	/* Replace the known vars and the select order. */
-	knownVars.clear();
+
+	/* Replace the known vars and the select order. */	knownVars.clear();
 	selectOrder.clear();
 	orderedSelect = true;
 
@@ -945,6 +945,31 @@ namespace w3c_sw {
 	    AggregateStateInjector inj(atomFactory, groupIndex, &delMes);
 	    (*varExpr)->expr->express(&inj);
 	    pos2expr[label] = inj.last.expression;
+	}
+
+	/* Walk the HAVING list as well. */
+	if (having != NULL)
+	    for (std::vector<const w3c_sw::Expression*>::const_iterator expr = having->begin();
+		 expr != having->end(); ++expr) {
+		AggregateStateInjector inj(atomFactory, groupIndex, &delMes);
+		(*expr)->express(&inj);
+		SPARQLSerializer ss;
+		(*expr)->express(&ss);
+		const TTerm* label = atomFactory->getRDFLiteral(ss.str());
+		pos2expr[label] = inj.last.expression;
+		knownVars.insert(label);
+		delMes.insert(label);
+	    }
+
+	if (Logger::Logging(Logger::GraphMatchLog_level, Logger::info)) {
+	    std::stringstream ss;
+	    for (std::set<const TTerm*>::const_iterator it = delMes.begin();
+		 it != delMes.end(); ++it) {
+		if (it != delMes.begin())
+		    ss << ", ";
+		ss << (*it)->str();
+	    }
+	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "vars and exprs tracked during project: " << ss.str() << "\n";
 	}
 
 	/* Map groupIndex to sole row with that GROUP BY pattern. */
@@ -1020,8 +1045,8 @@ namespace w3c_sw {
 			aggregateRow->erase(aggregateRow->find(*delMe));
 	}
 
-	// Empty (size() == 0) aggregates (delMes.size() > 0) need an empty row.
-	if (size() == 0 && delMes.size() > 0)
+	// Empty (size() == 0) aggregates (groupBy.size() > 0) need an empty row.
+	if (size() == 0 && groupBy != NULL && groupBy->size() > 0)
 	    results.insert(results.begin(), new Result(this));
 
 

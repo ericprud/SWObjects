@@ -79,35 +79,38 @@ LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
 INTEGER		([+-])?([0-9])+
 DECIMAL		([+-])?([0-9])*"."([0-9])+
 EXPONENT	[Ee]([+-])?([0-9])+
-DOUBLE		([+-])?((([0-9])+"."([0-9])*({EXPONENT}))|((".")?([0-9])+({EXPONENT})))
+DOUBLE		([+-])?([0-9]+"."[0-9]*{EXPONENT}|"."?[0-9]+{EXPONENT})
 ECHAR		"\\"[\"\'\\bfnrt]
 WS		(" ")|(("\t")|(("\r")|("\n")))
 ANON		"\["(({WS}))*"\]"
 PN_CHARS_BASE	[A-Z]|[a-z]|\xC3[\x80-\x96]|\xC3[\x98-\xB6]|\xC3[\xB8-\xBF]|[\xC4-\xCB][\x80-\xBF]|\xCD[\xB0-\xBD]|\xCD\xBF|[\xCE-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|\xE1[\x80-\xBF][\x80-\xBF]|\xE2\x80[\x8C-\x8D]|\xE2(\x81[\xB0-\xBF]|[\x82-\x85][\x80-\xBF]|\x86[\x80-\x8F])|\xE2([\xB0-\xBE][\x80-\xBF]|\xBF[\x80-\xAF])|\xE3(\x80[\x81-\xBF]|[\x81-\xBF][\x80-\xBF])|[\xE4-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|\xEF([\xA4-\xB6][\x80-\xBF]|\xB7[\x80-\x8F])|\xEF(\xB7[\xB0-\xBF]|[\xB8-\xBE][\x80-\xBF]|\xBF[\x80-\xBD])|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF2][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF3[\x80-\xAF][\x80-\xBF][\x80-\xBF]
-PN_CHARS_U	(({PN_CHARS_BASE}))|("_")
-PN_CHARS	(({PN_CHARS_U}))|(("-")|(([0-9])|(((\xC2\xB7))|(((\xCD[\x80-\xAF]))|((\xE2(\x80\xBF)|(\x81\x80)))))))|[\xCC\xCD][\x80-\xBF]
-BLANK_NODE_LABEL	"_:"((({PN_CHARS_U}))|([0-9]))(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
-PN_PREFIX	({PN_CHARS_BASE})(((((({PN_CHARS}))|(".")))*({PN_CHARS})))?
-PNAME_NS	(({PN_PREFIX}))?":"
-HEX		([0-9])|(([A-F])|([a-f]))
-PERCENT		"%"({HEX})({HEX})
-UCHAR		("\\u"({HEX})({HEX})({HEX})({HEX}))|("\\U"({HEX})({HEX})({HEX})({HEX})({HEX})({HEX})({HEX})({HEX}))
+PN_CHARS_U	{PN_CHARS_BASE}|"_"
+PN_CHARS	{PN_CHARS_U}|"-"|[0-9]|\xC2\xB7|\xCC[\x80-\xBF]|\xCD[\x80-\xAF]|\xE2(\x80\xBF|\x81\x80)
+BLANK_NODE_LABEL	"_:"({PN_CHARS_U}|[0-9])(({PN_CHARS}|".")*{PN_CHARS})?
+PN_PREFIX	{PN_CHARS_BASE}(({PN_CHARS}|".")*{PN_CHARS})?
+PNAME_NS	{PN_PREFIX}?":"
+HEX		[0-9]|[A-F]|[a-f]
+PERCENT		"%"{HEX}{HEX}
+UCHAR		"\\u"{HEX}{HEX}{HEX}{HEX}|"\\U"{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}
 
-STRING_LITERAL1		 "'"([\x00-\x09\x0B-\x0C\x0E-\x26\x28-\x5B\x5D-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBF]))|{ECHAR}|{UCHAR})*"'"
-STRING_LITERAL2		"\""([\x00-\x09\x0B-\x0C\x0E-\x21\x23-\x5B\x5D-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBF]))|{ECHAR}|{UCHAR})*"\""
-STRING_LITERAL_LONG1	      "'''"(("'"|"''")?[\x00-\x26\x28-\x5B\x5D-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBF]))|{ECHAR}|{UCHAR})*"'''"
-STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?[\x00-\x21\x23-\x5B\x5D-\x7F]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBF]))|{ECHAR}|{UCHAR})*"\"\"\""
+NON_ASCII	[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBD]))
 
-IRIREF		"<"((([!#-;=?-\[\]_a-z~-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|(({UCHAR}))))*">"
-PN_LOCAL_ESC	"\\"(("_")|(("~")|((".")|(("-")|(("!")|(("$")|(("&")|(("'")|(("(")|((")")|(("*")|(("+")|((",")|((";")|(("=")|(("/")|(("?")|(("#")|(("@")|("%"))))))))))))))))))))
-PLX		(({PERCENT}))|(({PN_LOCAL_ESC}))
-PN_LOCAL	((({PN_CHARS_U}))|((":")|(([0-9])|(({PLX})))))(((((({PN_CHARS}))|((".")|((":")|(({PLX}))))))*((({PN_CHARS}))|((":")|(({PLX}))))))?
-LINEFEED	(\r\n|\r|\n)
-PNAME_LN	({PNAME_NS})({PN_LOCAL})
-PASSED_TOKENS	(([\t ])+)|("#"([\x00-\t\x0B-\x0C\x0E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])*)
 
-ERROR_NO_PUNCT	((([\x00-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x26\x2A\x2B\x2D\x30-\x3A\x3D\x3F-\x5A\x5C\x5E-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|((({ERROR_ECHAR}))|(({ERROR_UCHAR})))))
-		/*--       \t\n      \r  SPACE   "        '()      ,  ./       ;<  >        [   ]         --*/
+STRING_LITERAL1		 "'"([\x00-\x09\x0B-\x0C\x0E-\x26\x28-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"'"
+STRING_LITERAL2		"\""([\x00-\x09\x0B-\x0C\x0E-\x21\x23-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"\""
+STRING_LITERAL_LONG1	      "'''"(("'"|"''")?[\x00-\x26\x28-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"'''"
+STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?[\x00-\x21\x23-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"\"\"\""
+
+IRIREF		"<"([\x21\x23-\x3b\x3d\x3f-\x5b\x5d\x5fa-z\x7e-\x7F]|{NON_ASCII}|{UCHAR})*">"
+PN_LOCAL_ESC	"\\"("_"|"~"|"."|"-"|"!"|"$"|"&"|"'"|"("|")"|"*"|"+"|","|";"|"="|"/"|"?"|"#"|"@"|"%")
+PLX		{PERCENT}|{PN_LOCAL_ESC}
+PN_LOCAL	({PN_CHARS_U}|":"|[0-9]|{PLX})(({PN_CHARS}|"."|":"|{PLX})*({PN_CHARS}|":"|{PLX}))?
+LINEFEED	\r\n|\r|\n
+PNAME_LN	{PNAME_NS}{PN_LOCAL}
+PASSED_TOKENS	[\t ]+|"#"([\x00-\x09\x0B-\x0C\x0E-\x7F]|{NON_ASCII})*
+
+ERROR_NO_PUNCT	[\x00-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x26\x2A\x2B\x2D\x30-\x3A\x3D\x3F-\x5A\x5C\x5E-\x7F]|{NON_ASCII}]|{ERROR_ECHAR}|{ERROR_UCHAR}
+		/*--    \t\n      \r  SPACE   "        '()      ,  ./       ;<  >        [   ]         --*/
 
 ERROR_ECHAR		"\\".
 ERROR_BLANK_NODE_LABEL		"_:"{ERROR_NO_PUNCT}*
@@ -122,8 +125,8 @@ ERROR_IRIREF			     "<"{ERROR_NO_PUNCT}*
 
 ERROR_PN_LOCAL_ESC	"\\".
 ERROR_PLX		(({ERROR_PERCENT}))|(({ERROR_PN_LOCAL_ESC}))
-ERROR_PN_LOCAL		((({PN_CHARS_U}))|((":")|(([0-9])|(({ERROR_PLX})))))(((((({PN_CHARS}))|((".")|((":")|(({ERROR_PLX}))))))*((({PN_CHARS}))|((":")|(({ERROR_PLX}))))))?
-ERROR_PNAME_LN		({PNAME_NS})({ERROR_PN_LOCAL})
+ERROR_PN_LOCAL		({PN_CHARS_U}|":"|[0-9]|{ERROR_PLX})(({PN_CHARS}|"."|":"|{ERROR_PLX})*({PN_CHARS}|":"|{ERROR_PLX}))?
+ERROR_PNAME_LN		{PNAME_NS}{ERROR_PN_LOCAL}
 
 
 /* END patterns for SPARQLfed terminals */

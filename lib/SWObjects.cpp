@@ -3061,7 +3061,8 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     const TTerm* AggregateCall::eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator*  /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB*  /* db */) const {
 	SPARQLSerializer ss;
 	express(&ss);
-	return r->get(atomFactory->getRDFLiteral(ss.str()));
+	const TTerm* ret = r->get(atomFactory->getRDFLiteral(ss.str()));
+	return ret == NULL ? TTerm::Unbound : ret;
     }
 
     std::string Expression::toString (MediaType mediaType, NamespaceMap* namespaces) const {
