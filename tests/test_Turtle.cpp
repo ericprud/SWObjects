@@ -184,81 +184,110 @@ BOOST_AUTO_TEST_SUITE_END(/* error_recovery */)
 	BOOST_ERROR ( s.what() );					       \
     }
 
+/** command-line tests:
+
+./bin/sparql -d ../../WWW/rdf/rdf-turtle/tests-ttl/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -b " REPLACE(STR(?ttl), "../../WWW/rdf/rdf-turtle/tests-ttl/", "http://example/base/") " -d " ?ttl " --compare " ?nt " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtleEval ; mf:action ?ttl ; mf:result ?nt ; mf:name ?name } ' -L text/raw | bash
+
+./bin/sparql -d ../../WWW/rdf/rdf-turtle/tests-ttl/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -b " REPLACE(STR(?ttl), "../../WWW/rdf/rdf-turtle/tests-ttl/", "http://example/base/") " -d " ?ttl " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtlePositiveSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+./bin/sparql -d ../../WWW/rdf/rdf-turtle/tests-ttl/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -b " REPLACE(STR(?ttl), "../../WWW/rdf/rdf-turtle/tests-ttl/", "http://example/base/") " -d " ?ttl " && echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtleNegativeSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+see also test_Turtle-WG.sh
+
+ */
+
+
 BOOST_AUTO_TEST_SUITE( coverage )
-BOOST_AUTO_TEST_CASE( IRI_subject ) { TURTLE_TEST("IRI_subject", "tests-coverage/IRI_subject.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( IRI_with_four_digit_numeric_escape ) { TURTLE_TEST("IRI_with_four_digit_numeric_escape", "tests-coverage/IRI_with_four_digit_numeric_escape.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( IRI_with_eight_digit_numeric_escape ) { TURTLE_TEST("IRI_with_eight_digit_numeric_escape", "tests-coverage/IRI_with_eight_digit_numeric_escape.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( IRI_with_all_punctuation ) { TURTLE_TEST("IRI_with_all_punctuation", "tests-coverage/IRI_with_all_punctuation.ttl", "tests-coverage/IRI_with_all_punctuation.nt"); }
-BOOST_AUTO_TEST_CASE( bareword_a_predicate ) { TURTLE_TEST("bareword_a_predicate", "tests-coverage/bareword_a_predicate.ttl", "tests-coverage/bareword_a_predicate.nt"); }
-BOOST_AUTO_TEST_CASE( old_style_prefix ) { TURTLE_TEST("old_style_prefix", "tests-coverage/old_style_prefix.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( SPARQL_style_prefix ) { TURTLE_TEST("SPARQL_style_prefix", "tests-coverage/SPARQL_style_prefix.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( prefixed_IRI_predicate ) { TURTLE_TEST("prefixed_IRI_predicate", "tests-coverage/prefixed_IRI_predicate.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( prefixed_IRI_object ) { TURTLE_TEST("prefixed_IRI_object", "tests-coverage/prefixed_IRI_object.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( prefix_only_IRI ) { TURTLE_TEST("prefix_only_IRI", "tests-coverage/prefix_only_IRI.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( default_namespace_IRI ) { TURTLE_TEST("default_namespace_IRI", "tests-coverage/default_namespace_IRI.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( prefix_reassigned_and_used ) { TURTLE_TEST("prefix_reassigned_and_used", "tests-coverage/prefix_reassigned_and_used.ttl", "tests-coverage/prefix_reassigned_and_used.nt"); }
-BOOST_AUTO_TEST_CASE( reserved_escaped_local_name ) { TURTLE_TEST("reserved_escaped_local_name", "tests-coverage/reserved_escaped_local_name.ttl", "tests-coverage/reserved_escaped_local_name.nt"); }
-BOOST_AUTO_TEST_CASE( percent_escaped_local_name ) { TURTLE_TEST("percent_escaped_local_name", "tests-coverage/percent_escaped_local_name.ttl", "tests-coverage/percent_escaped_local_name.nt"); }
-BOOST_AUTO_TEST_CASE( HYPHEN_MINUS_in_local_name ) { TURTLE_TEST("HYPHEN_MINUS_in_local_name", "tests-coverage/HYPHEN_MINUS_in_local_name.ttl", "tests-coverage/HYPHEN_MINUS_in_local_name.nt"); }
-BOOST_AUTO_TEST_CASE( underscore_in_local_name ) { TURTLE_TEST("underscore_in_local_name", "tests-coverage/underscore_in_local_name.ttl", "tests-coverage/underscore_in_local_name.nt"); }
-BOOST_AUTO_TEST_CASE( localname_with_COLON ) { TURTLE_TEST("localname_with_COLON", "tests-coverage/localname_with_COLON.ttl", "tests-coverage/localname_with_COLON.nt"); }
-BOOST_AUTO_TEST_CASE( old_style_base ) { TURTLE_TEST("old_style_base", "tests-coverage/old_style_base.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( SPARQL_style_base ) { TURTLE_TEST("SPARQL_style_base", "tests-coverage/SPARQL_style_base.ttl", "tests-coverage/IRI_subject.nt"); }
-BOOST_AUTO_TEST_CASE( labeled_blank_node_subject ) { TURTLE_TEST("labeled_blank_node_subject", "tests-coverage/labeled_blank_node_subject.ttl", "tests-coverage/labeled_blank_node_subject.nt"); }
-BOOST_AUTO_TEST_CASE( labeled_blank_node_object ) { TURTLE_TEST("labeled_blank_node_object", "tests-coverage/labeled_blank_node_object.ttl", "tests-coverage/labeled_blank_node_object.nt"); }
-BOOST_AUTO_TEST_CASE( anonymous_blank_node_subject ) { TURTLE_TEST("anonymous_blank_node_subject", "tests-coverage/anonymous_blank_node_subject.ttl", "tests-coverage/labeled_blank_node_subject.nt"); }
-BOOST_AUTO_TEST_CASE( anonymous_blank_node_object ) { TURTLE_TEST("anonymous_blank_node_object", "tests-coverage/anonymous_blank_node_object.ttl", "tests-coverage/labeled_blank_node_object.nt"); }
-BOOST_AUTO_TEST_CASE( sole_blankNodePropertyList ) { TURTLE_TEST("sole_blankNodePropertyList", "tests-coverage/sole_blankNodePropertyList.ttl", "tests-coverage/labeled_blank_node_subject.nt"); }
-BOOST_AUTO_TEST_CASE( blankNodePropertyList_as_subject ) { TURTLE_TEST("blankNodePropertyList_as_subject", "tests-coverage/blankNodePropertyList_as_subject.ttl", "tests-coverage/blankNodePropertyList_as_subject.nt"); }
-BOOST_AUTO_TEST_CASE( blankNodePropertyList_as_object ) { TURTLE_TEST("blankNodePropertyList_as_object", "tests-coverage/blankNodePropertyList_as_object.ttl", "tests-coverage/blankNodePropertyList_as_object.nt"); }
-BOOST_AUTO_TEST_CASE( blankNodePropertyList_with_multiple_triples ) { TURTLE_TEST("blankNodePropertyList_with_multiple_triples", "tests-coverage/blankNodePropertyList_with_multiple_triples.ttl", "tests-coverage/blankNodePropertyList_with_multiple_triples.nt"); }
-BOOST_AUTO_TEST_CASE( nested_blankNodePropertyLists ) { TURTLE_TEST("nested_blankNodePropertyLists", "tests-coverage/nested_blankNodePropertyLists.ttl", "tests-coverage/nested_blankNodePropertyLists.nt"); }
-BOOST_AUTO_TEST_CASE( blankNodePropertyList_containing_collection ) { TURTLE_TEST("blankNodePropertyList_containing_collection", "tests-coverage/blankNodePropertyList_containing_collection.ttl", "tests-coverage/blankNodePropertyList_containing_collection.nt"); }
-BOOST_AUTO_TEST_CASE( collection_subject ) { TURTLE_TEST("collection_subject", "tests-coverage/collection_subject.ttl", "tests-coverage/collection_subject.nt"); }
-BOOST_AUTO_TEST_CASE( collection_object ) { TURTLE_TEST("collection_object", "tests-coverage/collection_object.ttl", "tests-coverage/collection_object.nt"); }
-BOOST_AUTO_TEST_CASE( empty_collection ) { TURTLE_TEST("empty_collection", "tests-coverage/empty_collection.ttl", "tests-coverage/empty_collection.nt"); }
-BOOST_AUTO_TEST_CASE( nested_collection ) { TURTLE_TEST("nested_collection", "tests-coverage/nested_collection.ttl", "tests-coverage/nested_collection.nt"); }
-BOOST_AUTO_TEST_CASE( first ) { TURTLE_TEST("first", "tests-coverage/first.ttl", "tests-coverage/first.nt"); }
-BOOST_AUTO_TEST_CASE( last ) { TURTLE_TEST("last", "tests-coverage/last.ttl", "tests-coverage/last.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL1 ) { TURTLE_TEST("LITERAL1", "tests-coverage/LITERAL1.ttl", "tests-coverage/LITERAL1.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL_LONG1 ) { TURTLE_TEST("LITERAL_LONG1", "tests-coverage/LITERAL_LONG1.ttl", "tests-coverage/LITERAL1.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL_LONG1_with_1_squote ) { TURTLE_TEST("LITERAL_LONG1_with_1_squote", "tests-coverage/LITERAL_LONG1_with_1_squote.ttl", "tests-coverage/LITERAL_LONG1_with_1_squote.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL_LONG1_with_2_squotes ) { TURTLE_TEST("LITERAL_LONG1_with_2_squotes", "tests-coverage/LITERAL_LONG1_with_2_squotes.ttl", "tests-coverage/LITERAL_LONG1_with_2_squotes.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL2 ) { TURTLE_TEST("LITERAL2", "tests-coverage/LITERAL2.ttl", "tests-coverage/LITERAL1.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL_LONG2 ) { TURTLE_TEST("LITERAL_LONG2", "tests-coverage/LITERAL_LONG2.ttl", "tests-coverage/LITERAL1.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL_LONG2_with_1_squote ) { TURTLE_TEST("LITERAL_LONG2_with_1_squote", "tests-coverage/LITERAL_LONG2_with_1_squote.ttl", "tests-coverage/LITERAL_LONG2_with_1_squote.nt"); }
-BOOST_AUTO_TEST_CASE( LITERAL_LONG2_with_2_squotes ) { TURTLE_TEST("LITERAL_LONG2_with_2_squotes", "tests-coverage/LITERAL_LONG2_with_2_squotes.ttl", "tests-coverage/LITERAL_LONG2_with_2_squotes.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_CHARACTER_TABULATION ) { TURTLE_TEST("literal_with_CHARACTER_TABULATION", "tests-coverage/literal_with_CHARACTER_TABULATION.ttl", "tests-coverage/literal_with_CHARACTER_TABULATION.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_BACKSPACE ) { TURTLE_TEST("literal_with_BACKSPACE", "tests-coverage/literal_with_BACKSPACE.ttl", "tests-coverage/literal_with_BACKSPACE.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_LINE_FEED ) { TURTLE_TEST("literal_with_LINE_FEED", "tests-coverage/literal_with_LINE_FEED.ttl", "tests-coverage/literal_with_LINE_FEED.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_CARRIAGE_RETURN ) { TURTLE_TEST("literal_with_CARRIAGE_RETURN", "tests-coverage/literal_with_CARRIAGE_RETURN.ttl", "tests-coverage/literal_with_CARRIAGE_RETURN.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_FORM_FEED ) { TURTLE_TEST("literal_with_FORM_FEED", "tests-coverage/literal_with_FORM_FEED.ttl", "tests-coverage/literal_with_FORM_FEED.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_REVERSE_SOLIDUS ) { TURTLE_TEST("literal_with_REVERSE_SOLIDUS", "tests-coverage/literal_with_REVERSE_SOLIDUS.ttl", "tests-coverage/literal_with_REVERSE_SOLIDUS.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_escaped_CHARACTER_TABULATION ) { TURTLE_TEST("literal_with_escaped_CHARACTER_TABULATION", "tests-coverage/literal_with_escaped_CHARACTER_TABULATION.ttl", "tests-coverage/literal_with_CHARACTER_TABULATION.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_escaped_BACKSPACE ) { TURTLE_TEST("literal_with_escaped_BACKSPACE", "tests-coverage/literal_with_escaped_BACKSPACE.ttl", "tests-coverage/literal_with_BACKSPACE.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_escaped_LINE_FEED ) { TURTLE_TEST("literal_with_escaped_LINE_FEED", "tests-coverage/literal_with_escaped_LINE_FEED.ttl", "tests-coverage/literal_with_LINE_FEED.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_escaped_CARRIAGE_RETURN ) { TURTLE_TEST("literal_with_escaped_CARRIAGE_RETURN", "tests-coverage/literal_with_escaped_CARRIAGE_RETURN.ttl", "tests-coverage/literal_with_CARRIAGE_RETURN.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_escaped_FORM_FEED ) { TURTLE_TEST("literal_with_escaped_FORM_FEED", "tests-coverage/literal_with_escaped_FORM_FEED.ttl", "tests-coverage/literal_with_FORM_FEED.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_numeric_escape4 ) { TURTLE_TEST("literal_with_numeric_escape4", "tests-coverage/literal_with_numeric_escape4.ttl", "tests-coverage/literal_with_numeric_escape4.nt"); }
-BOOST_AUTO_TEST_CASE( literal_with_numeric_escape8 ) { TURTLE_TEST("literal_with_numeric_escape8", "tests-coverage/literal_with_numeric_escape8.ttl", "tests-coverage/literal_with_numeric_escape4.nt"); }
-BOOST_AUTO_TEST_CASE( IRIREF_datatype ) { TURTLE_TEST("IRIREF_datatype", "tests-coverage/IRIREF_datatype.ttl", "tests-coverage/IRIREF_datatype.nt"); }
-BOOST_AUTO_TEST_CASE( prefixed_name_datatype ) { TURTLE_TEST("prefixed_name_datatype", "tests-coverage/prefixed_name_datatype.ttl", "tests-coverage/IRIREF_datatype.nt"); }
-BOOST_AUTO_TEST_CASE( bareword_integer ) { TURTLE_TEST("bareword_integer", "tests-coverage/bareword_integer.ttl", "tests-coverage/IRIREF_datatype.nt"); }
-BOOST_AUTO_TEST_CASE( bareword_decimal ) { TURTLE_TEST("bareword_decimal", "tests-coverage/bareword_decimal.ttl", "tests-coverage/bareword_decimal.nt"); }
-BOOST_AUTO_TEST_CASE( bareword_double ) { TURTLE_TEST("bareword_double", "tests-coverage/bareword_double.ttl", "tests-coverage/bareword_double.nt"); }
-BOOST_AUTO_TEST_CASE( double_lower_case_e ) { TURTLE_TEST("double_lower_case_e", "tests-coverage/double_lower_case_e.ttl", "tests-coverage/double_lower_case_e.nt"); }
-BOOST_AUTO_TEST_CASE( negative_numeric ) { TURTLE_TEST("negative_numeric", "tests-coverage/negative_numeric.ttl", "tests-coverage/negative_numeric.nt"); }
-BOOST_AUTO_TEST_CASE( positive_numeric ) { TURTLE_TEST("positive_numeric", "tests-coverage/positive_numeric.ttl", "tests-coverage/positive_numeric.nt"); }
-BOOST_AUTO_TEST_CASE( numeric_with_leading_0 ) { TURTLE_TEST("numeric_with_leading_0", "tests-coverage/numeric_with_leading_0.ttl", "tests-coverage/numeric_with_leading_0.nt"); }
-BOOST_AUTO_TEST_CASE( literal_true ) { TURTLE_TEST("literal_true", "tests-coverage/literal_true.ttl", "tests-coverage/literal_true.nt"); }
-BOOST_AUTO_TEST_CASE( literal_false ) { TURTLE_TEST("literal_false", "tests-coverage/literal_false.ttl", "tests-coverage/literal_false.nt"); }
-BOOST_AUTO_TEST_CASE( langtagged_non_LONG ) { TURTLE_TEST("langtagged_non_LONG", "tests-coverage/langtagged_non_LONG.ttl", "tests-coverage/langtagged_non_LONG.nt"); }
-BOOST_AUTO_TEST_CASE( langtagged_LONG ) { TURTLE_TEST("langtagged_LONG", "tests-coverage/langtagged_LONG.ttl", "tests-coverage/langtagged_non_LONG.nt"); }
-BOOST_AUTO_TEST_CASE( lantag_with_subtag ) { TURTLE_TEST("lantag_with_subtag", "tests-coverage/lantag_with_subtag.ttl", "tests-coverage/lantag_with_subtag.nt"); }
-BOOST_AUTO_TEST_CASE( objectList_with_two_objects ) { TURTLE_TEST("objectList_with_two_objects", "tests-coverage/objectList_with_two_objects.ttl", "tests-coverage/objectList_with_two_objects.nt"); }
-BOOST_AUTO_TEST_CASE( predicateObjectList_with_two_objectLists ) { TURTLE_TEST("predicateObjectList_with_two_objectLists", "tests-coverage/predicateObjectList_with_two_objectLists.ttl", "tests-coverage/predicateObjectList_with_two_objectLists.nt"); }
-BOOST_AUTO_TEST_CASE( repeated_semis_at_end ) { TURTLE_TEST("repeated_semis_at_end", "tests-coverage/repeated_semis_at_end.ttl", "tests-coverage/predicateObjectList_with_two_objectLists.nt"); }
-BOOST_AUTO_TEST_CASE( repeated_semis_not_at_end ) { TURTLE_TEST("repeated_semis_not_at_end", "tests-coverage/repeated_semis_not_at_end.ttl", "tests-coverage/repeated_semis_not_at_end.nt"); }
+BOOST_AUTO_TEST_CASE( IRI_subject ) { TURTLE_TEST("IRI_subject", "tests-ttl/IRI_subject.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( IRI_with_four_digit_numeric_escape ) { TURTLE_TEST("IRI_with_four_digit_numeric_escape", "tests-ttl/IRI_with_four_digit_numeric_escape.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( IRI_with_eight_digit_numeric_escape ) { TURTLE_TEST("IRI_with_eight_digit_numeric_escape", "tests-ttl/IRI_with_eight_digit_numeric_escape.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( IRI_with_all_punctuation ) { TURTLE_TEST("IRI_with_all_punctuation", "tests-ttl/IRI_with_all_punctuation.ttl", "tests-ttl/IRI_with_all_punctuation.nt"); }
+BOOST_AUTO_TEST_CASE( bareword_a_predicate ) { TURTLE_TEST("bareword_a_predicate", "tests-ttl/bareword_a_predicate.ttl", "tests-ttl/bareword_a_predicate.nt"); }
+BOOST_AUTO_TEST_CASE( old_style_prefix ) { TURTLE_TEST("old_style_prefix", "tests-ttl/old_style_prefix.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( SPARQL_style_prefix ) { TURTLE_TEST("SPARQL_style_prefix", "tests-ttl/SPARQL_style_prefix.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( prefixed_IRI_predicate ) { TURTLE_TEST("prefixed_IRI_predicate", "tests-ttl/prefixed_IRI_predicate.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( prefixed_IRI_object ) { TURTLE_TEST("prefixed_IRI_object", "tests-ttl/prefixed_IRI_object.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( prefix_only_IRI ) { TURTLE_TEST("prefix_only_IRI", "tests-ttl/prefix_only_IRI.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( prefix_with_PN_CHARS_BASE_character_boundaries ) { TURTLE_TEST("prefix_only_IRI", "tests-ttl/prefix_with_PN_CHARS_BASE_character_boundaries.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( default_namespace_IRI ) { TURTLE_TEST("default_namespace_IRI", "tests-ttl/default_namespace_IRI.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( prefix_reassigned_and_used ) { TURTLE_TEST("prefix_reassigned_and_used", "tests-ttl/prefix_reassigned_and_used.ttl", "tests-ttl/prefix_reassigned_and_used.nt"); }
+BOOST_AUTO_TEST_CASE( reserved_escaped_localName ) { TURTLE_TEST("reserved_escaped_localName", "tests-ttl/reserved_escaped_localName.ttl", "tests-ttl/reserved_escaped_localName.nt"); }
+BOOST_AUTO_TEST_CASE( percent_escaped_localName ) { TURTLE_TEST("percent_escaped_localName", "tests-ttl/percent_escaped_localName.ttl", "tests-ttl/percent_escaped_localName.nt"); }
+BOOST_AUTO_TEST_CASE( HYPHEN_MINUS_in_localName ) { TURTLE_TEST("HYPHEN_MINUS_in_localName", "tests-ttl/HYPHEN_MINUS_in_localName.ttl", "tests-ttl/HYPHEN_MINUS_in_localName.nt"); }
+BOOST_AUTO_TEST_CASE( underscore_in_localName ) { TURTLE_TEST("underscore_in_localName", "tests-ttl/underscore_in_localName.ttl", "tests-ttl/underscore_in_localName.nt"); }
+BOOST_AUTO_TEST_CASE( localname_with_COLON ) { TURTLE_TEST("localname_with_COLON", "tests-ttl/localname_with_COLON.ttl", "tests-ttl/localname_with_COLON.nt"); }
+BOOST_AUTO_TEST_CASE( localName_with_PN_CHARS_BASE_character_boundaries ) { TURTLE_TEST("prefix_only_IRI", "tests-ttl/localName_with_PN_CHARS_BASE_character_boundaries.ttl", "tests-ttl/localName_with_PN_CHARS_BASE_character_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( old_style_base ) { TURTLE_TEST("old_style_base", "tests-ttl/old_style_base.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( SPARQL_style_base ) { TURTLE_TEST("SPARQL_style_base", "tests-ttl/SPARQL_style_base.ttl", "tests-ttl/IRI_spo.nt"); }
+BOOST_AUTO_TEST_CASE( labeled_blank_node_subject ) { TURTLE_TEST("labeled_blank_node_subject", "tests-ttl/labeled_blank_node_subject.ttl", "tests-ttl/labeled_blank_node_subject.nt"); }
+BOOST_AUTO_TEST_CASE( labeled_blank_node_object ) { TURTLE_TEST("labeled_blank_node_object", "tests-ttl/labeled_blank_node_object.ttl", "tests-ttl/labeled_blank_node_object.nt"); }
+BOOST_AUTO_TEST_CASE( labeled_blank_node_with_PN_CHARS_BASE_character_boundaries ) { TURTLE_TEST("anonymous_blank_node_object", "tests-ttl/labeled_blank_node_with_PN_CHARS_BASE_character_boundaries.ttl", "tests-ttl/labeled_blank_node_object.nt"); }
+BOOST_AUTO_TEST_CASE( labeled_blank_node_with_leading_underscore ) { TURTLE_TEST("anonymous_blank_node_object", "tests-ttl/labeled_blank_node_with_leading_underscore.ttl", "tests-ttl/labeled_blank_node_object.nt"); }
+BOOST_AUTO_TEST_CASE( labeled_blank_node_with_leading_digit ) { TURTLE_TEST("anonymous_blank_node_object", "tests-ttl/labeled_blank_node_with_leading_digit.ttl", "tests-ttl/labeled_blank_node_object.nt"); }
+BOOST_AUTO_TEST_CASE( labeled_blank_node_with_non_leading_extras ) { TURTLE_TEST("anonymous_blank_node_object", "tests-ttl/labeled_blank_node_with_non_leading_extras.ttl", "tests-ttl/labeled_blank_node_object.nt"); }
+BOOST_AUTO_TEST_CASE( anonymous_blank_node_subject ) { TURTLE_TEST("anonymous_blank_node_subject", "tests-ttl/anonymous_blank_node_subject.ttl", "tests-ttl/labeled_blank_node_subject.nt"); }
+BOOST_AUTO_TEST_CASE( anonymous_blank_node_object ) { TURTLE_TEST("anonymous_blank_node_object", "tests-ttl/anonymous_blank_node_object.ttl", "tests-ttl/labeled_blank_node_object.nt"); }
+BOOST_AUTO_TEST_CASE( sole_blankNodePropertyList ) { TURTLE_TEST("sole_blankNodePropertyList", "tests-ttl/sole_blankNodePropertyList.ttl", "tests-ttl/labeled_blank_node_subject.nt"); }
+BOOST_AUTO_TEST_CASE( blankNodePropertyList_as_subject ) { TURTLE_TEST("blankNodePropertyList_as_subject", "tests-ttl/blankNodePropertyList_as_subject.ttl", "tests-ttl/blankNodePropertyList_as_subject.nt"); }
+BOOST_AUTO_TEST_CASE( blankNodePropertyList_as_object ) { TURTLE_TEST("blankNodePropertyList_as_object", "tests-ttl/blankNodePropertyList_as_object.ttl", "tests-ttl/blankNodePropertyList_as_object.nt"); }
+BOOST_AUTO_TEST_CASE( blankNodePropertyList_with_multiple_triples ) { TURTLE_TEST("blankNodePropertyList_with_multiple_triples", "tests-ttl/blankNodePropertyList_with_multiple_triples.ttl", "tests-ttl/blankNodePropertyList_with_multiple_triples.nt"); }
+BOOST_AUTO_TEST_CASE( nested_blankNodePropertyLists ) { TURTLE_TEST("nested_blankNodePropertyLists", "tests-ttl/nested_blankNodePropertyLists.ttl", "tests-ttl/nested_blankNodePropertyLists.nt"); }
+BOOST_AUTO_TEST_CASE( blankNodePropertyList_containing_collection ) { TURTLE_TEST("blankNodePropertyList_containing_collection", "tests-ttl/blankNodePropertyList_containing_collection.ttl", "tests-ttl/blankNodePropertyList_containing_collection.nt"); }
+BOOST_AUTO_TEST_CASE( collection_subject ) { TURTLE_TEST("collection_subject", "tests-ttl/collection_subject.ttl", "tests-ttl/collection_subject.nt"); }
+BOOST_AUTO_TEST_CASE( collection_object ) { TURTLE_TEST("collection_object", "tests-ttl/collection_object.ttl", "tests-ttl/collection_object.nt"); }
+BOOST_AUTO_TEST_CASE( empty_collection ) { TURTLE_TEST("empty_collection", "tests-ttl/empty_collection.ttl", "tests-ttl/empty_collection.nt"); }
+BOOST_AUTO_TEST_CASE( nested_collection ) { TURTLE_TEST("nested_collection", "tests-ttl/nested_collection.ttl", "tests-ttl/nested_collection.nt"); }
+BOOST_AUTO_TEST_CASE( first ) { TURTLE_TEST("first", "tests-ttl/first.ttl", "tests-ttl/first.nt"); }
+BOOST_AUTO_TEST_CASE( last ) { TURTLE_TEST("last", "tests-ttl/last.ttl", "tests-ttl/last.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL1 ) { TURTLE_TEST("LITERAL1", "tests-ttl/LITERAL1.ttl", "tests-ttl/LITERAL1.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL1_ascii_boundaries ) { TURTLE_TEST("LITERAL1", "tests-ttl/LITERAL1_ascii_boundaries.ttl", "tests-ttl/LITERAL1_ascii_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL1_all_controls ) { TURTLE_TEST("LITERAL1", "tests-ttl/LITERAL1_all_controls.ttl", "tests-ttl/LITERAL1_all_controls.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL1_all_punctuation ) { TURTLE_TEST("LITERAL1", "tests-ttl/LITERAL1_all_punctuation.ttl", "tests-ttl/LITERAL1_all_punctuation.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL1_with_UTF8_boundaries ) { TURTLE_TEST("LITERAL1", "tests-ttl/LITERAL1_with_UTF8_boundaries.ttl", "tests-ttl/LITERAL_with_UTF8_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG1 ) { TURTLE_TEST("LITERAL_LONG1", "tests-ttl/LITERAL_LONG1.ttl", "tests-ttl/LITERAL1.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG1_ascii_boundaries ) { TURTLE_TEST("LITERAL_LONG1", "tests-ttl/LITERAL_LONG1_ascii_boundaries.ttl", "tests-ttl/LITERAL_LONG1_ascii_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG1_with_UTF8_boundaries ) { TURTLE_TEST("LITERAL_LONG1", "tests-ttl/LITERAL_LONG1_with_UTF8_boundaries.ttl", "tests-ttl/LITERAL_with_UTF8_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG1_with_1_squote ) { TURTLE_TEST("LITERAL_LONG1_with_1_squote", "tests-ttl/LITERAL_LONG1_with_1_squote.ttl", "tests-ttl/LITERAL_LONG1_with_1_squote.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG1_with_2_squotes ) { TURTLE_TEST("LITERAL_LONG1_with_2_squotes", "tests-ttl/LITERAL_LONG1_with_2_squotes.ttl", "tests-ttl/LITERAL_LONG1_with_2_squotes.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL2 ) { TURTLE_TEST("LITERAL2", "tests-ttl/LITERAL2.ttl", "tests-ttl/LITERAL1.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL2_ascii_boundaries ) { TURTLE_TEST("LITERAL2", "tests-ttl/LITERAL2_ascii_boundaries.ttl", "tests-ttl/LITERAL2_ascii_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL2_with_UTF8_boundaries ) { TURTLE_TEST("LITERAL2", "tests-ttl/LITERAL2_with_UTF8_boundaries.ttl", "tests-ttl/LITERAL_with_UTF8_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG2 ) { TURTLE_TEST("LITERAL_LONG2", "tests-ttl/LITERAL_LONG2.ttl", "tests-ttl/LITERAL1.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG2_ascii_boundaries ) { TURTLE_TEST("LITERAL_LONG2", "tests-ttl/LITERAL_LONG2_ascii_boundaries.ttl", "tests-ttl/LITERAL_LONG2_ascii_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG2_with_UTF8_boundaries ) { TURTLE_TEST("LITERAL_LONG2", "tests-ttl/LITERAL_LONG2_with_UTF8_boundaries.ttl", "tests-ttl/LITERAL_with_UTF8_boundaries.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG2_with_1_squote ) { TURTLE_TEST("LITERAL_LONG2_with_1_squote", "tests-ttl/LITERAL_LONG2_with_1_squote.ttl", "tests-ttl/LITERAL_LONG2_with_1_squote.nt"); }
+BOOST_AUTO_TEST_CASE( LITERAL_LONG2_with_2_squotes ) { TURTLE_TEST("LITERAL_LONG2_with_2_squotes", "tests-ttl/LITERAL_LONG2_with_2_squotes.ttl", "tests-ttl/LITERAL_LONG2_with_2_squotes.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_CHARACTER_TABULATION ) { TURTLE_TEST("literal_with_CHARACTER_TABULATION", "tests-ttl/literal_with_CHARACTER_TABULATION.ttl", "tests-ttl/literal_with_CHARACTER_TABULATION.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_BACKSPACE ) { TURTLE_TEST("literal_with_BACKSPACE", "tests-ttl/literal_with_BACKSPACE.ttl", "tests-ttl/literal_with_BACKSPACE.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_LINE_FEED ) { TURTLE_TEST("literal_with_LINE_FEED", "tests-ttl/literal_with_LINE_FEED.ttl", "tests-ttl/literal_with_LINE_FEED.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_CARRIAGE_RETURN ) { TURTLE_TEST("literal_with_CARRIAGE_RETURN", "tests-ttl/literal_with_CARRIAGE_RETURN.ttl", "tests-ttl/literal_with_CARRIAGE_RETURN.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_FORM_FEED ) { TURTLE_TEST("literal_with_FORM_FEED", "tests-ttl/literal_with_FORM_FEED.ttl", "tests-ttl/literal_with_FORM_FEED.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_REVERSE_SOLIDUS ) { TURTLE_TEST("literal_with_REVERSE_SOLIDUS", "tests-ttl/literal_with_REVERSE_SOLIDUS.ttl", "tests-ttl/literal_with_REVERSE_SOLIDUS.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_escaped_CHARACTER_TABULATION ) { TURTLE_TEST("literal_with_escaped_CHARACTER_TABULATION", "tests-ttl/literal_with_escaped_CHARACTER_TABULATION.ttl", "tests-ttl/literal_with_CHARACTER_TABULATION.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_escaped_BACKSPACE ) { TURTLE_TEST("literal_with_escaped_BACKSPACE", "tests-ttl/literal_with_escaped_BACKSPACE.ttl", "tests-ttl/literal_with_BACKSPACE.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_escaped_LINE_FEED ) { TURTLE_TEST("literal_with_escaped_LINE_FEED", "tests-ttl/literal_with_escaped_LINE_FEED.ttl", "tests-ttl/literal_with_LINE_FEED.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_escaped_CARRIAGE_RETURN ) { TURTLE_TEST("literal_with_escaped_CARRIAGE_RETURN", "tests-ttl/literal_with_escaped_CARRIAGE_RETURN.ttl", "tests-ttl/literal_with_CARRIAGE_RETURN.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_escaped_FORM_FEED ) { TURTLE_TEST("literal_with_escaped_FORM_FEED", "tests-ttl/literal_with_escaped_FORM_FEED.ttl", "tests-ttl/literal_with_FORM_FEED.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_numeric_escape4 ) { TURTLE_TEST("literal_with_numeric_escape4", "tests-ttl/literal_with_numeric_escape4.ttl", "tests-ttl/literal_with_numeric_escape4.nt"); }
+BOOST_AUTO_TEST_CASE( literal_with_numeric_escape8 ) { TURTLE_TEST("literal_with_numeric_escape8", "tests-ttl/literal_with_numeric_escape8.ttl", "tests-ttl/literal_with_numeric_escape4.nt"); }
+BOOST_AUTO_TEST_CASE( IRIREF_datatype ) { TURTLE_TEST("IRIREF_datatype", "tests-ttl/IRIREF_datatype.ttl", "tests-ttl/IRIREF_datatype.nt"); }
+BOOST_AUTO_TEST_CASE( prefixed_name_datatype ) { TURTLE_TEST("prefixed_name_datatype", "tests-ttl/prefixed_name_datatype.ttl", "tests-ttl/IRIREF_datatype.nt"); }
+BOOST_AUTO_TEST_CASE( bareword_integer ) { TURTLE_TEST("bareword_integer", "tests-ttl/bareword_integer.ttl", "tests-ttl/IRIREF_datatype.nt"); }
+BOOST_AUTO_TEST_CASE( bareword_decimal ) { TURTLE_TEST("bareword_decimal", "tests-ttl/bareword_decimal.ttl", "tests-ttl/bareword_decimal.nt"); }
+BOOST_AUTO_TEST_CASE( bareword_double ) { TURTLE_TEST("bareword_double", "tests-ttl/bareword_double.ttl", "tests-ttl/bareword_double.nt"); }
+BOOST_AUTO_TEST_CASE( double_lower_case_e ) { TURTLE_TEST("double_lower_case_e", "tests-ttl/double_lower_case_e.ttl", "tests-ttl/double_lower_case_e.nt"); }
+BOOST_AUTO_TEST_CASE( negative_numeric ) { TURTLE_TEST("negative_numeric", "tests-ttl/negative_numeric.ttl", "tests-ttl/negative_numeric.nt"); }
+BOOST_AUTO_TEST_CASE( positive_numeric ) { TURTLE_TEST("positive_numeric", "tests-ttl/positive_numeric.ttl", "tests-ttl/positive_numeric.nt"); }
+BOOST_AUTO_TEST_CASE( numeric_with_leading_0 ) { TURTLE_TEST("numeric_with_leading_0", "tests-ttl/numeric_with_leading_0.ttl", "tests-ttl/numeric_with_leading_0.nt"); }
+BOOST_AUTO_TEST_CASE( literal_true ) { TURTLE_TEST("literal_true", "tests-ttl/literal_true.ttl", "tests-ttl/literal_true.nt"); }
+BOOST_AUTO_TEST_CASE( literal_false ) { TURTLE_TEST("literal_false", "tests-ttl/literal_false.ttl", "tests-ttl/literal_false.nt"); }
+BOOST_AUTO_TEST_CASE( langtagged_non_LONG ) { TURTLE_TEST("langtagged_non_LONG", "tests-ttl/langtagged_non_LONG.ttl", "tests-ttl/langtagged_non_LONG.nt"); }
+BOOST_AUTO_TEST_CASE( langtagged_LONG ) { TURTLE_TEST("langtagged_LONG", "tests-ttl/langtagged_LONG.ttl", "tests-ttl/langtagged_non_LONG.nt"); }
+BOOST_AUTO_TEST_CASE( lantag_with_subtag ) { TURTLE_TEST("lantag_with_subtag", "tests-ttl/lantag_with_subtag.ttl", "tests-ttl/lantag_with_subtag.nt"); }
+BOOST_AUTO_TEST_CASE( objectList_with_two_objects ) { TURTLE_TEST("objectList_with_two_objects", "tests-ttl/objectList_with_two_objects.ttl", "tests-ttl/objectList_with_two_objects.nt"); }
+BOOST_AUTO_TEST_CASE( predicateObjectList_with_two_objectLists ) { TURTLE_TEST("predicateObjectList_with_two_objectLists", "tests-ttl/predicateObjectList_with_two_objectLists.ttl", "tests-ttl/predicateObjectList_with_two_objectLists.nt"); }
+BOOST_AUTO_TEST_CASE( repeated_semis_at_end ) { TURTLE_TEST("repeated_semis_at_end", "tests-ttl/repeated_semis_at_end.ttl", "tests-ttl/predicateObjectList_with_two_objectLists.nt"); }
+BOOST_AUTO_TEST_CASE( repeated_semis_not_at_end ) { TURTLE_TEST("repeated_semis_not_at_end", "tests-ttl/repeated_semis_not_at_end.ttl", "tests-ttl/repeated_semis_not_at_end.nt"); }
 
 BOOST_AUTO_TEST_CASE( nestedCollections ) { TURTLE_TEST("nestedCollections", "Turtle/nestedCollections.ttl", "Turtle/nestedCollections.nt"); }
 BOOST_AUTO_TEST_SUITE_END(/* coverage */)
