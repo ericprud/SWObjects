@@ -60,73 +60,78 @@ typedef w3c_sw::TurtleSParser::token_type token_type;
 %}
 
 /* START patterns for SPARQLfed terminals */
-GT_DOT		"."
-GT_SEMI		";"
-GT_COMMA	","
-GT_LBRACKET	"\["
-GT_RBRACKET	"\]"
-GT_LPAREN	"("
-GT_RPAREN	")"
-GT_DTYPE	"^^"
-IT_true		[Tt][Rr][Uu][Ee]
-IT_false	[Ff][Aa][Ll][Ss][Ee]
-SPARQL_PREFIX	[Pp][Rr][Ee][Ff][Ii][Xx]
-SPARQL_BASE	[Bb][Aa][Ss][Ee]
-BASE		"@base"
-PREFIX		"@prefix"
-RDF_TYPE	"a"
-LANGTAG		"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
-INTEGER		([+-])?([0-9])+
-DECIMAL		([+-])?([0-9])*"."([0-9])+
-EXPONENT	[Ee]([+-])?([0-9])+
-DOUBLE		([+-])?([0-9]+"."[0-9]*{EXPONENT}|"."?[0-9]+{EXPONENT})
-ECHAR		"\\"[\"\'\\bfnrt]
-WS		(" ")|(("\t")|(("\r")|("\n")))
-ANON		"\["(({WS}))*"\]"
-PN_CHARS_BASE	[A-Z]|[a-z]|\xC3[\x80-\x96]|\xC3[\x98-\xB6]|\xC3[\xB8-\xBF]|[\xC4-\xCB][\x80-\xBF]|\xCD[\xB0-\xBD]|\xCD\xBF|[\xCE-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|\xE1[\x80-\xBF][\x80-\xBF]|\xE2\x80[\x8C-\x8D]|\xE2(\x81[\xB0-\xBF]|[\x82-\x85][\x80-\xBF]|\x86[\x80-\x8F])|\xE2([\xB0-\xBE][\x80-\xBF]|\xBF[\x80-\xAF])|\xE3(\x80[\x81-\xBF]|[\x81-\xBF][\x80-\xBF])|[\xE4-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|\xEF([\xA4-\xB6][\x80-\xBF]|\xB7[\x80-\x8F])|\xEF(\xB7[\xB0-\xBF]|[\xB8-\xBE][\x80-\xBF]|\xBF[\x80-\xBD])|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF2][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF3[\x80-\xAF][\x80-\xBF][\x80-\xBF]
-PN_CHARS_U	{PN_CHARS_BASE}|"_"
-PN_CHARS	{PN_CHARS_U}|"-"|[0-9]|\xC2\xB7|\xCC[\x80-\xBF]|\xCD[\x80-\xAF]|\xE2(\x80\xBF|\x81\x80)
+GT_DOT			"."
+GT_SEMI			";"
+GT_COMMA		","
+GT_LBRACKET		"\["
+GT_RBRACKET		"\]"
+GT_LPAREN		"("
+GT_RPAREN		")"
+GT_DTYPE		"^^"
+IT_true			[Tt][Rr][Uu][Ee]
+IT_false		[Ff][Aa][Ll][Ss][Ee]
+SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
+SPARQL_BASE		[Bb][Aa][Ss][Ee]
+BASE			"@base"
+PREFIX			"@prefix"
+RDF_TYPE		"a"
+LANGTAG			"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
+INTEGER			([+-])?([0-9])+
+DECIMAL			([+-])?([0-9])*"."([0-9])+
+EXPONENT		[Ee]([+-])?([0-9])+
+DOUBLE			([+-])?([0-9]+"."[0-9]*{EXPONENT}|"."?[0-9]+{EXPONENT})
+ECHAR			"\\"[\"\'\\bfnrt]
+WS			(" ")|(("\t")|(("\r")|("\n")))
+ANON			"\["(({WS}))*"\]"
+PN_CHARS_BASE		[A-Z]|[a-z]|\xC3[\x80-\x96]|\xC3[\x98-\xB6]|\xC3[\xB8-\xBF]|[\xC4-\xCB][\x80-\xBF]|\xCD[\xB0-\xBD]|\xCD\xBF|[\xCE-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|\xE1[\x80-\xBF][\x80-\xBF]|\xE2\x80[\x8C-\x8D]|\xE2(\x81[\xB0-\xBF]|[\x82-\x85][\x80-\xBF]|\x86[\x80-\x8F])|\xE2([\xB0-\xBE][\x80-\xBF]|\xBF[\x80-\xAF])|\xE3(\x80[\x81-\xBF]|[\x81-\xBF][\x80-\xBF])|[\xE4-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|\xEF([\xA4-\xB6][\x80-\xBF]|\xB7[\x80-\x8F])|\xEF(\xB7[\xB0-\xBF]|[\xB8-\xBE][\x80-\xBF]|\xBF[\x80-\xBD])|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF2][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF3[\x80-\xAF][\x80-\xBF][\x80-\xBF]
+PN_CHARS_U		{PN_CHARS_BASE}|"_"
+
+/*	        	 #x00B7 |        [#x0300-#x036F]        |             [#x203F-#x2040]
+	        	   c2b7             cc80-cdaf                          e280b4-e28180 */
+HIGH_PN_CHARS		\xC2\xB7|\xCC[\x80-\xBF]|\xCD[\x80-\xAF]|\xE2(\x80[\xB4-\xBF]|\x81\x80)
+PN_CHARS		{PN_CHARS_U}|"-"|[0-9]|{HIGH_PN_CHARS}
 BLANK_NODE_LABEL	"_:"({PN_CHARS_U}|[0-9])(({PN_CHARS}|".")*{PN_CHARS})?
-PN_PREFIX	{PN_CHARS_BASE}(({PN_CHARS}|".")*{PN_CHARS})?
-PNAME_NS	{PN_PREFIX}?":"
-HEX		[0-9]|[A-F]|[a-f]
-PERCENT		"%"{HEX}{HEX}
-UCHAR		"\\u"{HEX}{HEX}{HEX}{HEX}|"\\U"{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}
+PN_PREFIX		{PN_CHARS_BASE}(({PN_CHARS}|".")*{PN_CHARS})?
+PNAME_NS		{PN_PREFIX}?":"
+HEX			[0-9]|[A-F]|[a-f]
+PERCENT			"%"{HEX}{HEX}
+UCHAR			"\\u"{HEX}{HEX}{HEX}{HEX}|"\\U"{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}{HEX}
 
-NON_ASCII	[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBD]))
+HIGH_UCS		[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|[\xE1-\xEC][\x80-\xBF][\x80-\xBF]|\xED[\x80-\x9F][\x80-\xBF]|[\xEE-\xEF][\x80-\xBF][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF][\x80-\xBF]|[\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF]|\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF]|\x8F([\x80-\xBE][\x80-\xBF]|\xBF[\x80-\xBD]))
 
 
-STRING_LITERAL1		 "'"([\x00-\x09\x0B-\x0C\x0E-\x26\x28-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"'"
-STRING_LITERAL2		"\""([\x00-\x09\x0B-\x0C\x0E-\x21\x23-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"\""
-STRING_LITERAL_LONG1	      "'''"(("'"|"''")?[\x00-\x26\x28-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"'''"
-STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?[\x00-\x21\x23-\x5B\x5D-\x7F]|{NON_ASCII}|{ECHAR}|{UCHAR})*"\"\"\""
+STRING_LITERAL1		 "'"([\x00-\x09\x0B-\x0C\x0E-\x26\x28-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"'"
+STRING_LITERAL2		"\""([\x00-\x09\x0B-\x0C\x0E-\x21\x23-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"\""
+STRING_LITERAL_LONG1	      "'''"(("'"|"''")?[\x00-\x26\x28-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"'''"
+STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?[\x00-\x21\x23-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"\"\"\""
 
-IRIREF		"<"([\x21\x23-\x3b\x3d\x3f-\x5b\x5d\x5fa-z\x7e-\x7F]|{NON_ASCII}|{UCHAR})*">"
-PN_LOCAL_ESC	"\\"("_"|"~"|"."|"-"|"!"|"$"|"&"|"'"|"("|")"|"*"|"+"|","|";"|"="|"/"|"?"|"#"|"@"|"%")
-PLX		{PERCENT}|{PN_LOCAL_ESC}
-PN_LOCAL	({PN_CHARS_U}|":"|[0-9]|{PLX})(({PN_CHARS}|"."|":"|{PLX})*({PN_CHARS}|":"|{PLX}))?
-LINEFEED	\r\n|\r|\n
-PNAME_LN	{PNAME_NS}{PN_LOCAL}
-PASSED_TOKENS	[\t ]+|"#"([\x00-\x09\x0B-\x0C\x0E-\x7F]|{NON_ASCII})*
+IRIREF			"<"([\x21\x23-\x3b\x3d\x3f-\x5b\x5d\x5fa-z\x7e-\x7F]|{HIGH_UCS}|{UCHAR})*">"
+PN_LOCAL_ESC		"\\"("_"|"~"|"."|"-"|"!"|"$"|"&"|"'"|"("|")"|"*"|"+"|","|";"|"="|"/"|"?"|"#"|"@"|"%")
+PLX			{PERCENT}|{PN_LOCAL_ESC}
+PN_LOCAL		({PN_CHARS_U}|":"|[0-9]|{PLX})(({PN_CHARS}|"."|":"|{PLX})*({PN_CHARS}|":"|{PLX}))?
+LINEFEED		\r\n|\r|\n
+PNAME_LN		{PNAME_NS}{PN_LOCAL}
+LOW_NON_WHITE		[\x00-\x09\x0B-\x0C\x0E-\x7F]
+PASSED_TOKENS		[\t ]+|"#"({LOW_NON_WHITE}|{HIGH_UCS})*
 
-ERROR_NO_PUNCT	[\x00-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x26\x2A\x2B\x2D\x30-\x3A\x3D\x3F-\x5A\x5C\x5E-\x7F]|{NON_ASCII}]|{ERROR_ECHAR}|{ERROR_UCHAR}
-		/*--    \t\n      \r  SPACE   "        '()      ,  ./       ;<  >        [   ]         --*/
+ERR_NO_PUNCT		[\x00-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x26\x2A\x2B\x2D\x30-\x3A\x3D\x3F-\x5A\x5C\x5E-\x7F]|{HIGH_UCS}]|{ERR_ECHAR}|{ERR_UCHAR}
+			/*--    \t\n      \r  SPACE   "        '()      ,  ./       ;<  >        [   ]         --*/
 
-ERROR_ECHAR		"\\".
-ERROR_BLANK_NODE_LABEL		"_:"{ERROR_NO_PUNCT}*
-ERROR_PERCENT		"%"..
-ERROR_UCHAR		("\\u"...)|("\\U"........)
+ERR_ECHAR		"\\".
+ERR_BLANK_NODE_LABEL	"_:"{ERR_NO_PUNCT}*
+ERR_PERCENT		"%"..
+ERR_UCHAR		("\\u"...)|("\\U"........)
 
-ERROR_STRING_LITERAL1		     "'"{ERROR_NO_PUNCT}*
-ERROR_STRING_LITERAL2		    "\""{ERROR_NO_PUNCT}*
-ERROR_STRING_LITERAL_LONG1	   "'''"{ERROR_NO_PUNCT}*
-ERROR_STRING_LITERAL_LONG2	"\"\"\""{ERROR_NO_PUNCT}*
-ERROR_IRIREF			     "<"{ERROR_NO_PUNCT}*
+ERR_STRING_LITERAL1		     "'"{ERR_NO_PUNCT}*
+ERR_STRING_LITERAL2		    "\""{ERR_NO_PUNCT}*
+ERR_STRING_LITERAL_LONG1	   "'''"{ERR_NO_PUNCT}*
+ERR_STRING_LITERAL_LONG2	"\"\"\""{ERR_NO_PUNCT}*
+ERR_IRIREF			     "<"{ERR_NO_PUNCT}*
 
-ERROR_PN_LOCAL_ESC	"\\".
-ERROR_PLX		(({ERROR_PERCENT}))|(({ERROR_PN_LOCAL_ESC}))
-ERROR_PN_LOCAL		({PN_CHARS_U}|":"|[0-9]|{ERROR_PLX})(({PN_CHARS}|"."|":"|{ERROR_PLX})*({PN_CHARS}|":"|{ERROR_PLX}))?
-ERROR_PNAME_LN		{PNAME_NS}{ERROR_PN_LOCAL}
+ERR_PN_LOCAL_ESC	"\\".
+ERR_PLX			{ERR_PERCENT}|{ERR_PN_LOCAL_ESC}
+ERR_PN_LOCAL		({PN_CHARS_U}|":"|[0-9]|{ERR_PLX})(({PN_CHARS}|"."|":"|{ERR_PLX})*({PN_CHARS}|":"|{ERR_PLX}))?
+ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
 
 
 /* END patterns for SPARQLfed terminals */
@@ -147,32 +152,32 @@ ERROR_PNAME_LN		{PNAME_NS}{ERROR_PN_LOCAL}
 {IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
 {SPARQL_PREFIX}		{return token::SPARQL_PREFIX;}
 {SPARQL_BASE}		{return token::SPARQL_BASE;}
-{BASE}		{return token::BASE;}
+{BASE}			{return token::BASE;}
 {PREFIX}		{return token::PREFIX;}
 {RDF_TYPE}		{return token::RDF_TYPE;}
 {IRIREF}		{yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-2, yylloc); return token::IRIREF;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext, yylloc); return token::PNAME_NS;}
 {PNAME_LN}		{yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN;}
-{BLANK_NODE_LABEL}		{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
+{BLANK_NODE_LABEL}	{yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL;}
 {LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
 {DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
 {DOUBLE}		{return typedLiteral(yylval, token::DOUBLE);}
-{STRING_LITERAL1}		{return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL1);}
-{STRING_LITERAL2}		{return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL2);}
-{STRING_LITERAL_LONG1}		{return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG1);}
-{STRING_LITERAL_LONG2}		{return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG2);}
+{STRING_LITERAL1}	{return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL1);}
+{STRING_LITERAL2}	{return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL2);}
+{STRING_LITERAL_LONG1}	{return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG1);}
+{STRING_LITERAL_LONG2}	{return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG2);}
 {ANON}		{yylval->p_TTerm = driver->createBNode(); return token::ANON;}
 
 <<EOF>>			{ yyterminate();}
 
-{ERROR_PNAME_LN}		{ scanError("local name", '"', yylloc); yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN; }
-{ERROR_BLANK_NODE_LABEL}	{ scanError("BLANK_NODE_LABEL", '"', yylloc); yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL; }
-{ERROR_STRING_LITERAL1}		{ scanError("single-quoted simple literal", '"', yylloc);  return unescapeString(yylval, yylloc, yytext+1, yyleng-1, token::STRING_LITERAL1); }
-{ERROR_STRING_LITERAL2}		{ scanError("double-quoted simple literal", '\'', yylloc); return unescapeString(yylval, yylloc, yytext+1, yyleng-1, token::STRING_LITERAL2); }
-{ERROR_STRING_LITERAL_LONG1}	{ scanError("single-quoted long literal", '"', yylloc);    return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG1); }
-{ERROR_STRING_LITERAL_LONG2}	{ scanError("double-quoted long literal", '\'', yylloc);   return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG2); }
-{ERROR_IRIREF}			{ scanError("IRI", '"', yylloc); yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-1, yylloc); return token::IRIREF; }
+{ERR_PNAME_LN}		{ scanError("local name", '"', yylloc); yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN; }
+{ERR_BLANK_NODE_LABEL}	{ scanError("BLANK_NODE_LABEL", '"', yylloc); yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL; }
+{ERR_STRING_LITERAL1}		{ scanError("single-quoted simple literal", '"', yylloc);  return unescapeString(yylval, yylloc, yytext+1, yyleng-1, token::STRING_LITERAL1); }
+{ERR_STRING_LITERAL2}		{ scanError("double-quoted simple literal", '\'', yylloc); return unescapeString(yylval, yylloc, yytext+1, yyleng-1, token::STRING_LITERAL2); }
+{ERR_STRING_LITERAL_LONG1}	{ scanError("single-quoted long literal", '"', yylloc);    return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG1); }
+{ERR_STRING_LITERAL_LONG2}	{ scanError("double-quoted long literal", '\'', yylloc);   return unescapeString(yylval, yylloc, yytext+3, yyleng-3, token::STRING_LITERAL_LONG2); }
+{ERR_IRIREF}			{ scanError("IRI", '"', yylloc); yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-1, yylloc); return token::IRIREF; }
 {PN_LOCAL}			{ scanError("prefixed name - no ':' in", '"', yylloc); yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN; }
 .			{
     std::stringstream ss;
