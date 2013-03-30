@@ -35,30 +35,30 @@ BASE="'-b ' REPLACE(STR(?ttl), 'tests/tests-ttl/', 'http://example/base/')"
 WORKY="'echo \"[] earl:test t:' StrAfter(STR(?entry), 'manifest.ttl#') ' ; earl:subject swobj:sparql ; earl:assertedBy test: ; earl:result [ earl:outcome earl:passed; dct:date \'' NOW() '\'^^xsd:dateTime ] .\" '"
 FAIL="'echo fail ' ?name"
 
-# ./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
-#   PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
-#   PREFIX rdft: <http://www.w3.org/ns/rdftest#>
-#   SELECT './bin/sparql -q ' $BASE ' -d ' ?ttl ' --compare ' ?nt
-#          ' && ' $WORKY ' || ' $FAIL '\n'
-#   WHERE {
-#     ?l mf:entries MEMBERS(?entry) .
-#     ?entry a rdft:TestTurtleEval ;
-#            mf:action ?ttl ;
-#            mf:result ?nt ;
-#            mf:name ?name
-#   }" -L text/raw | bash
-# 
-# ./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
-#   PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
-#   PREFIX rdft: <http://www.w3.org/ns/rdftest#>
-#   SELECT './bin/sparql -q ' $BASE ' -d ' ?ttl
-#          ' && ' $WORKY ' || ' $FAIL '\n'
-#   WHERE {
-#     ?l mf:entries MEMBERS(?entry) .
-#     ?entry a rdft:TestTurtlePositiveSyntax ;
-#            mf:action ?ttl ;
-#            mf:name ?name
-#   }" -L text/raw | bash
+./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
+  PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+  PREFIX rdft: <http://www.w3.org/ns/rdftest#>
+  SELECT './bin/sparql -q ' $BASE ' -d ' ?ttl ' --compare ' ?nt
+         ' && ' $WORKY ' || ' $FAIL '\n'
+  WHERE {
+    ?l mf:entries MEMBERS(?entry) .
+    ?entry a rdft:TestTurtleEval ;
+           mf:action ?ttl ;
+           mf:result ?nt ;
+           mf:name ?name
+  }" -L text/raw | bash
+
+./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
+  PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
+  PREFIX rdft: <http://www.w3.org/ns/rdftest#>
+  SELECT './bin/sparql -q ' $BASE ' -d ' ?ttl
+         ' && ' $WORKY ' || ' $FAIL '\n'
+  WHERE {
+    ?l mf:entries MEMBERS(?entry) .
+    ?entry a rdft:TestTurtlePositiveSyntax ;
+           mf:action ?ttl ;
+           mf:name ?name
+  }" -L text/raw | bash
 
 ./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
   PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
@@ -70,5 +70,5 @@ FAIL="'echo fail ' ?name"
     ?entry a rdft:TestTurtleNegativeSyntax ;
            mf:action ?ttl ;
            mf:name ?name
-  }" -L text/raw > a.sh
+  }" -L text/raw | bash
 
