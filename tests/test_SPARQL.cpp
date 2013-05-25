@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE( resultsFormat ) {
     }
 }
 BOOST_AUTO_TEST_CASE( table ) { PARSE_RESULTS("SPARQL/D.srt", Doutput) }
-BOOST_AUTO_TEST_CASE( flat_text ) { PARSE_RESULTS("SPARQL/D.txt", Doutput) }
+BOOST_AUTO_TEST_CASE( flat_text ) { PARSE_RESULTS("SPARQL/D.col", Doutput) }
 BOOST_AUTO_TEST_CASE( tab_separated ) { PARSE_RESULTS("SPARQL/D.tsv", Doutput) }
 BOOST_AUTO_TEST_CASE( comma_separated ) { PARSE_RESULTS("SPARQL/D.csv", DCSVoutput) }
 BOOST_AUTO_TEST_CASE( xml ) { PARSE_RESULTS("SPARQL/D.srx", Doutput) }

@@ -404,7 +404,7 @@ namespace w3c_sw {
 				 "|(--|UNDEF)"		// no binding
 				 "))");
 	const boost::regex& expr =
-	    sptr.mediaType.match("text/plain") ? plain : srt;
+	    sptr.mediaType.match("text/columns") ? plain : srt;
 
 	while (regex_search(start, end, what, expr, flags)) {
 	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
@@ -475,7 +475,7 @@ namespace w3c_sw {
 #if REGEX_LIB != SWOb_DISABLED
 	if (!sptr.mediaType.is_initialized() ||
 	    sptr.mediaType.match("text/sparql-results") ||
-	    sptr.mediaType.match("text/plain") ||
+	    sptr.mediaType.match("text/columns") ||
 	    sptr.mediaType.match("text/tab-separated-values") ||
 	    sptr.mediaType.match("text/csv")) {
 	    parseTable(sptr, ordered, bnodeMap);

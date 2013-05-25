@@ -204,7 +204,7 @@ namespace w3c_sw {
 	    atomFactory(atomFactory), knownVars(), 
 	    results(), ordered(ordered), db(NULL), selectOrder(), 
 	    orderedSelect(false), resultType(RESULT_Tabular) {
-	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING, "text/plain");
+	    IStreamContext sptr(srt.c_str(), IStreamContext::STRING, "text/columns");
 	    parseTable(sptr, ordered, bnodeMap);
 	}
 

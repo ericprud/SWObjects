@@ -353,6 +353,7 @@ struct MediaTypeMap : public std::map<const std::string, const char*> {
 	insert(pair("srj" , "application/sparql-results+json"));
 	insert(pair("rq"  , "text/sparql-query"));
 	insert(pair("txt" , "text/plain"));
+	insert(pair("col" , "text/columns"));
 	insert(pair("tsv" , "text/tab-separated-values"));
 	insert(pair("tab" , "text/tab-separated-values"));
 	insert(pair("csv" , "text/csv"));

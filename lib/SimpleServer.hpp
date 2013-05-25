@@ -1303,7 +1303,7 @@ struct SimpleEngine {
 	    rs.resultType = loaded.resultType;
 	    return true;
 	} else if // ResultSet media types:
-		(istr.mediaType.match("text/plain") ||
+		(istr.mediaType.match("text/columns") ||
 		 istr.mediaType.match("text/sparql-results") ||
 		 istr.mediaType.match("text/csv") ||
 		 istr.mediaType.match("text/tab-separated-values") ||
