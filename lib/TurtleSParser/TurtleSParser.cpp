@@ -1377,18 +1377,6 @@ namespace w3c_sw {
 #line 476 "lib/TurtleSParser/TurtleSParser.ypp"
  /*** Additional Code ***/
 
-void _subs (std::string& txt, const char*from, size_t fromLen, const char*to, size_t toLen) {
-    for (size_t at = 0; ; ) {
-	at = txt.find(from, at);
-	if (at == std::string::npos)
-	    break;
-	txt.replace(at, fromLen, to);
-	at += toLen;
-    }
-}
-
-#define _SUBS(S, F, T) _subs(S, F, sizeof(F)-1, T, sizeof(T)-1);
-
 void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
 			    const std::string& m)
 {

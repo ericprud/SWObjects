@@ -109,7 +109,8 @@ public:
      * Assumes barewords are localnames in the default namespace.
      * This leaves it to the lexer to warn about missing prefixes.
      */
-    const URI* resolvePrefix (const char* yytext, TurtleSParser::location_type* yylloc) {
+    template <typename T> // e.g. TurtleSParser::location_type
+    const URI* resolvePrefix (const char* yytext, T* yylloc) {
 	std::string stripped;
 	YaccDriver::unescapeReserved(yytext, ::strlen(yytext), &stripped, yylloc);
 
@@ -126,13 +127,15 @@ public:
 	return driver->getAbsoluteURI(stripped.c_str());
     }
 
-    const URI* unescapeAndResolveBase (const char* p_rel, size_t len, TurtleSParser::location_type* yylloc) {
+    template <typename T> // e.g. TurtleSParser::location_type
+    const URI* unescapeAndResolveBase (const char* p_rel, size_t len, T* yylloc) {
 	std::string stripped;
 	YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc);
 	return driver->getAbsoluteURI(stripped.c_str());
     }
 
-    void scanError (const char* msg, char quote, TurtleSParser::location_type* yylloc) {
+    template <typename T> // e.g. TurtleSParser::location_type
+    void scanError (const char* msg, char quote, T* yylloc) {
 	std::stringstream ss;
 	ss << "Malformed " << msg << " " << quote << yytext << quote;
 	driver->error(*yylloc, ss.str());

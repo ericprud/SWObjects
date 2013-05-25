@@ -70,8 +70,35 @@ public:
 
     SPARQLfedParser::token_type typedLiteral(SPARQLfedParser::semantic_type*&, SPARQLfedParser::token_type tok);
     SPARQLfedParser::token_type unescape(SPARQLfedParser::semantic_type*&, SPARQLfedParser::location_type*&, size_t skip, SPARQLfedParser::token_type tok);
-    const URI* resolvePrefix(const char*, SPARQLfedParser::location_type*& yylloc);
-    const URI* resolveBase(const char*, bool stripDelims);
+
+    /** resolvePrefix
+     * Assumes barewords are localnames in the default namespace.
+     * This leaves it to the lexer to warn about missing prefixes.
+     */
+    const URI* resolvePrefix (const char* yytext, SPARQLfedParser::location_type* yylloc) {
+	std::string stripped;
+	YaccDriver::unescapeReserved(yytext, ::strlen(yytext), &stripped, yylloc);
+
+	size_t index = stripped.find(':');
+	if (index == std::string::npos)
+	    // throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
+	    index = 0;
+	std::string prefix = stripped.substr(0, index);
+	const URI* nspace = driver->getNamespace(prefix, true);
+	if (nspace == NULL)
+	    nspace = driver->prefixError(prefix, *yylloc);
+	stripped.replace(0, index+1, nspace->getLexicalValue());
+
+	return driver->getAbsoluteURI(stripped.c_str());
+    }
+
+    const URI* unescapeAndResolveBase (const char* p_rel, size_t len, SPARQLfedParser::location_type* yylloc) {
+	std::string stripped;
+	YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc);
+	return driver->getAbsoluteURI(stripped.c_str());
+    }
+
+
 };
 
 } // namespace w3c_sw

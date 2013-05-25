@@ -3920,7 +3920,7 @@ YY_RULE_SETUP
 case 151:
 YY_RULE_SETUP
 #line 426 "lib/SPARQLfedScanner.lpp"
-{yylval->p_URI = resolveBase(yytext, true); return token::IRIREF;}
+{yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-2, yylloc); return token::IRIREF;}
 	YY_BREAK
 case 152:
 YY_RULE_SETUP
@@ -5181,20 +5181,6 @@ SPARQLfedParser::token_type SPARQLfedScanner::unescape (SPARQLfedParser::semanti
     return tok;
 }
 
-
-const URI* SPARQLfedScanner::resolvePrefix (const char* yytext, SPARQLfedParser::location_type*& yylloc){
-    std::string ret(yytext);
-    size_t index = ret.find(':');
-    if (index == std::string::npos)
-	driver->error(*yylloc, std::string() + "Inexplicable lack of ':' in prefix: \"" + yytext + "\"");
-    const URI* nspace = driver->getNamespace(ret.substr(0, index), true);
-    if (nspace == NULL)
-	driver->error(*yylloc, std::string() + "Unknown prefix: \"" + ret.substr(0, index) + "\"");
-
-    ret.replace(0, index+1, nspace->getLexicalValue());
-    return resolveBase(ret.c_str(), false);
-}
-
 void SPARQLfedScanner::set_debug(bool b)
 {
     yy_flex_debug = b;
@@ -5202,51 +5188,6 @@ void SPARQLfedScanner::set_debug(bool b)
 
 /* END SPARQLfedScanner */
 
-const URI* SPARQLfedScanner::resolveBase (const char* p_rel, bool stripDelims) {
-    std::string stripped(p_rel);
-    if (stripDelims) {
-	stripped.replace(0, 1, "");
-	stripped.replace(stripped.size()-1, 1, "");
-    }
-    return driver->getAbsoluteURI(stripped.c_str());
-
-#if 0
-    // was a transliteration of _generic.pm
-    static const boost::regex re_scheme("^([a-zA-Z][a-zA-Z0-9.+-]*):");
-    static const boost::regex re_authority("^((?:[a-zA-Z][a-zA-Z0-9.+-]*)?)(?://([^/?\\#]*))?(.*)$");
-    static const boost::regex re_path("^((?:[^:/?\\#]+:)?(?://[^/?\\#]*)?)([^?\\#]*)(.*)$");
-
-    boost::smatch what;
-    URI* baseURI = driver->getBase();
-    std::string base;
-    if (baseURI != NULL)
-	std::string base = baseURI->getLexicalValue();
-    std::string base_scheme;
-    if (base.size() > 0 && boost::regex_search(base, what, re_scheme))
-	base_scheme = what[1];
-    if (boost::regex_search(self, what, re_scheme) &&
-	what[1] != base_schema)
-	return driver->getURI(self.c_str());
-    if (base.size() == 0)
-	throw(std::runtime_error(((std::string)"no base declared while resolving relative URI ").append(abs)));
-
-    std::string abs(self);
-    if (!boost::regex_search(base, what, re_scheme))
-	throw(std::runtime_error(((std::string)"resolving against base URI with no scheme ").append(base)));
-    // !!! abs->scheme = base_scheme
-    if (false) ; // ...
-
-    if (!boost::regex_search(base, what, re_authority))
-	throw(std::runtime_error(((std::string)"resolving against base URI with no authority ").append(base)));
-    std::string base_authority(what[2]);
-
-    if (!boost::regex_search(rel, what, re_path))
-	throw(std::runtime_error(((std::string)"oddly failed to match re_path on ").append(rel)));
-    std::string rel_path(what[2]);
-    if (rel_path.find("/") == 0) return driver->getURI(abs.c_str());
-
-#endif
-}
 } // END namespace w3c_sw
 
 /* This implementation of SPARQLfedFlexLexer::yylex() is required to fill the

@@ -119,6 +119,7 @@ protected:
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
 public:
+    static size_t DefaultAbortErrorCount;
     typedef enum {VALIDATE_none = 0,
 		  VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
 		  VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
@@ -126,6 +127,17 @@ public:
 		  VALIDATE_all = 0x3f} e_Validation;
     e_Validation validate;
     static e_Validation DefaultValidation;
+
+    SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory,
+		     size_t abortErrorCount = DefaultAbortErrorCount) : 
+	YaccDriver(baseURI, atomFactory, abortErrorCount), curSubject(NULL), curPredicate(NULL), 
+	curBGP(NULL), curFilter(NULL), curResultSet(NULL), curResult(NULL),
+	curExprList(NULL), validate(DefaultValidation), root(NULL), unnestTree(false)
+    {  }
+
+    ~SPARQLfedDriver ()
+    {  }
+
 protected:
 
     const Variable* getVariable (std::string name) {
@@ -258,8 +270,6 @@ protected:
     }
 
 public:
-    SPARQLfedDriver(std::string baseURI, AtomFactory* atomFactory);
-    ~SPARQLfedDriver();
 
     Operation* parse(IStreamContext& in);
     Operation* parse(std::string queryStr);
@@ -384,8 +394,8 @@ public:
        INSERTDATA DELETEDATA DELETEWHERE
        IT_MINUTES IT_SUBSTR IT_SHA256 IT_HOURS IT_ENCODE_FOR_URI IT_STRSTARTS IT_CEIL
        IT_DAY IT_LCASE IT_ABS IT_UCASE IT_STRENDS IT_STRLEN IT_SHA1 IT_MONTH
-       IT_PRINT GT_H_2192_ GT_MINUS_GT ABOX_HR ABOX_CELL UBOX_UHR UBOX_LHR GT_H_2502_
-       UBOX_UL UBOX_U UBOX_UR UBOX_SEP UBOX_LL UBOX_L UBOX_LR RSREF GT_MINUS_MINUS
+       IT_PRINT GT_H_2192_ GT_MINUS_GT ABOX_HR UBOX_UHR UBOX_LHR GT_H_2502_
+       UBOX_UL UBOX_U UBOX_UR UBOX_LL UBOX_L UBOX_LR RSREF GT_MINUS_MINUS
 
 %token <p_BooleanRDFLiteral> IT_true IT_false
 %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE
@@ -649,6 +659,7 @@ Result:
 ABox:
     ABoxTop ABoxHeader _QABoxRow_E_Star ABoxBottom	
   | ABoxHeader _QABoxRow_E_Star GT_DOT	
+  | ABoxHeader _QABoxRow_E_Star error GT_DOT	
 ;
 
 _QABoxRow_E_Star:
@@ -695,6 +706,7 @@ ABoxBottom:
 UBox:
     UBoxTop UBoxHeader _QUBoxRow_E_Star UBoxBottom	
   | UBoxHeader _QUBoxRow_E_Star GT_DOT	
+  | UBoxHeader _QUBoxRow_E_Star error GT_DOT	
 ;
 
 _QUBoxRow_E_Star:
@@ -885,6 +897,10 @@ SelectClause:
 	$$.distinctness = $2;
 	$$.varSet = $3;
     }
+  // | IT_SELECT error _Q_O_QIT_DISTINCT_E_Or_QIT_REDUCED_E_C_E_Opt _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_Plus_Or_QGT_TIMES_E_C	{
+  // 	$$.distinctness = DIST_all;
+  // 	$$.varSet = new StarVarSet();
+  //   }
 ;
 
 // 'DISTINCT' | 'REDUCED'
@@ -927,6 +943,11 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
 	    error(yylloc, $2->str() + " must be selected AS some variable");
 	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
+ // |  GT_LPAREN Expression error GT_RPAREN	{
+ // 	if (driver.validate & SPARQLfedDriver::VALIDATE_namedProjection)
+ // 	    error(yylloc, $2->str() + " must be selected AS some variable");
+ // 	$$ = new ExpressionAlias($2);
+ //    }
 ;
 
 // ( Var | Aggregate | BuiltInCall | FunctionCall | RDFLiteral | NumericLiteral | BooleanLiteral | ( '(' Expression ( 'AS' Var )? ')' ) )+
@@ -1185,6 +1206,12 @@ GroupCondition:
   | GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
 	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
+  // | GT_LPAREN Expression error GT_RPAREN	{
+  // 	$$ = new ExpressionAlias($2);
+  //   }
+  // | GT_LPAREN error GT_RPAREN	{
+  //     $$ = new ExpressionAlias(new TTermExpression(TTerm::Unbound));
+  //   }
   | Var	{
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
@@ -1632,6 +1659,7 @@ _QTriplesTemplate_E_Opt:
 _QGT_DOT_E_Opt:
     
   | GT_DOT	
+  | error GT_DOT	
 ;
 
 _O_QQuadsNotTriples_E_S_QGT_DOT_E_Opt_S_QTriplesTemplate_E_Opt_C:
@@ -1693,6 +1721,7 @@ GroupGraphPattern:
 _O_QSubSelect_E_Or_QGroupGraphPatternSub_E_C:
     SubSelect	
   | GroupGraphPatternSub	
+  | error	
 ;
 
 _O_QGT_LCURLEY_E_S_QSubSelect_E_Or_QGroupGraphPatternSub_E_S_QGT_RCURLEY_E_C:
@@ -1753,6 +1782,7 @@ TriplesBlock:
 // '.' TriplesBlock?
 _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C:
     GT_DOT _QTriplesBlock_E_Opt	
+  | error GT_DOT _QTriplesBlock_E_Opt	
 ;
 
 // ( '.' TriplesBlock? )?
@@ -1760,6 +1790,7 @@ _Q_O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C_E_Opt:
     
   | // '.' TriplesBlock?
     _O_QGT_DOT_E_S_QTriplesBlock_E_Opt_C	
+  | error	
 ;
 
 GraphPatternNotTriples:
@@ -2074,6 +2105,7 @@ _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star:
   | _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star _O_QGT_COMMA_E_S_QExpression_E_C	{
 	driver.curExprList->push_back($2);
     }
+  // | _Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star error	
 ;
 
 // '(' 'DISTINCT'? Expression  ')'
@@ -2360,6 +2392,9 @@ PathPrimary:
   | GT_LPAREN Path GT_RPAREN	{
 	$$ = $2;
     }
+  // | GT_LPAREN Path error GT_RPAREN	{
+  // 	$$ = $2;
+  //   }
 ;
 
 PathNegatedPropertySet:
@@ -2367,6 +2402,9 @@ PathNegatedPropertySet:
   | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt GT_RPAREN	{
 	$$ = $2;
     }
+  // | GT_LPAREN _Q_O_QPathOneInPropertySet_E_S_QGT_PIPE_E_S_QPathOneInPropertySet_E_Star_C_E_Opt error GT_RPAREN	{
+  // 	$$ = $2;
+  //   }
 ;
 
 _O_QGT_PIPE_E_S_QPathOneInPropertySet_E_C:
@@ -2861,6 +2899,12 @@ BrackettedExpression:
     GT_LPAREN Expression GT_RPAREN	{
 	$$ = $2;
     }
+ // |  GT_LPAREN Expression error GT_RPAREN	{
+ // 	$$ = $2;
+ //    }
+ // |  GT_LPAREN error GT_RPAREN	{
+ // 	$$ = new TTermExpression(TTerm::Unbound);
+ //    }
 ;
 
 BuiltInCall:
@@ -3025,6 +3069,12 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QGT_RPAREN_E_Or_QNIL_E_C:
     GT_LPAREN Expression GT_RPAREN	{
 	$$ = $2;
     }
+  // | GT_LPAREN Expression error GT_RPAREN	{
+  // 	$$ = $2;
+  //   }
+  // | GT_LPAREN error GT_RPAREN	{
+  // 	$$ = new TTermExpression(TTerm::Unbound);
+  //   }
   | NIL	{
 	$$ = NULL;
     }
@@ -3093,10 +3143,18 @@ Aggregate:
 	driver.countStar = true;
 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $3, $4, AggregateCall::ScalarVals()));
     }
+  // | IT_COUNT GT_LPAREN _QIT_DISTINCT_E_Opt _O_QGT_TIMES_E_Or_QExpression_E_C error GT_RPAREN	{
+  // 	driver.countStar = true;
+  // 	$$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, $3, $4, AggregateCall::ScalarVals()));
+  //   }
   | _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C GT_LPAREN _QIT_DISTINCT_E_Opt Expression GT_RPAREN	{
 	driver.countStar = true;
 	$$ = new FunctionCallExpression(new AggregateCall($1, $3, $4, AggregateCall::ScalarVals()));
     }
+  // | _O_QIT_SUM_E_Or_QIT_MIN_E_Or_QIT_MAX_E_Or_QIT_AVG_E_Or_QIT_SAMPLE_E_C GT_LPAREN _QIT_DISTINCT_E_Opt Expression error GT_RPAREN	{
+  // 	driver.countStar = true;
+  // 	$$ = new FunctionCallExpression(new AggregateCall($1, $3, $4, AggregateCall::ScalarVals()));
+  //   }
   | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? ')'
     IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt GT_RPAREN	{
 	  AggregateCall::ScalarVals svals;
@@ -3104,6 +3162,13 @@ Aggregate:
 	      svals["separator"] = $5->getLexicalValue();
 	  $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $3, $4, svals));
     }
+  // | // 'GROUP_CONCAT' '(' 'DISTINCT'? Expression  ( ',' Expression  )* ( ';' 'SEPARATOR'  '=' String  )? error ')'
+  //   IT_GROUP_CONCAT GT_LPAREN _QIT_DISTINCT_E_Opt Expression _Q_O_QGT_SEMI_E_S_QIT_SEPARATOR_E_S_QGT_EQUAL_E_S_QString_E_C_E_Opt error GT_RPAREN	{
+  // 	  AggregateCall::ScalarVals svals;
+  // 	  if ($5 != NULL)
+  // 	      svals["separator"] = $5->getLexicalValue();
+  // 	  $$ = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, $3, $4, svals));
+  //   }
 ;
 
 _O_QGT_TIMES_E_Or_QExpression_E_C:
@@ -3287,64 +3352,217 @@ BlankNode:
 %% /*** Additional Code ***/
 
 void w3c_sw::SPARQLfedParser::error(const SPARQLfedParser::location_type& l,
-				    const std::string& constM)
+				    const std::string& m)
 {
-    std::string m = constM;
-    static struct { const char* from; const char* to; } tokens[] = {
-	{ "GT_LPAREN",		"'('" },
-	{ "GT_RPAREN",		"')'" },
-	{ "GT_TIMES",		"'*'" },
-	{ "GT_LCURLEY",		"'{'" },
-	{ "GT_RCURLEY",		"'}'" },
-	{ "GT_SEMI",		"';'" },
-	{ "GT_DOT",		"'.'" },
-	{ "GT_COMMA",		"','" },
-	{ "GT_LBRACKET",	"'['" },
-	{ "GT_RBRACKET",	"']'" },
-	{ "GT_OR",		"'||'" },
-	{ "GT_AND",		"'&&'" },
-	{ "GT_EQUAL",		"'='" },
-	{ "GT_NEQUAL",		"'!='" },
-	{ "GT_LT",		"'<'" },
-	{ "GT_GT",		"'>'" },
-	{ "GT_LE",		"'<='" },
-	{ "GT_GE",		"'>='" },
-	{ "GT_DIVIDE",		"'/'" },
-	{ "GT_PLUS",		"'+'" },
-	{ "GT_MINUS",		"'-'" },
-	{ "GT_NOT",		"'!'" },
-	{ "GT_DTYPE",		"'^^'" },
-	{ "GT_", "" }
-    };
-    for (size_t i = 0; i < sizeof(tokens)/sizeof(tokens[0]); ++i) {
-	size_t p = m.find(tokens[i].from);
-	if (p != std::string::npos) {
-	    m.replace(p, strlen(tokens[i].from) + 1, tokens[i].to);
-	    break;
-	}
-    }
-    driver.error(l, m);
+    std::string s = m;
+    _SUBS(s, "GT_DOT", "'.'");
+    _SUBS(s, "GT_SEMI", "';'");
+    _SUBS(s, "GT_LBRACKET", "'['");
+    _SUBS(s, "GT_RBRACKET", "']'");
+    _SUBS(s, "GT_LPAREN", "'('");
+    _SUBS(s, "GT_RPAREN", "')'");
+    _SUBS(s, "GT_DTYPE", "'^^'");
+    _SUBS(s, "IT_true", "boolean true");
+    _SUBS(s, "IT_false", "boolean false");
+    _SUBS(s, "IT_BASE", "@base");
+    _SUBS(s, "IT_PREFIX", "@prefix");
+    _SUBS(s, "IT_a", "keyword 'a'");
+    _SUBS(s, "IRIREF", "IRI");
+    _SUBS(s, "PNAME_NS", "namespace prefix");
+    _SUBS(s, "PNAME_LN", "local name");
+    _SUBS(s, "BLANK_NODE_LABEL", "blank node label");
+    _SUBS(s, "LANGTAG", "language tag");
+    _SUBS(s, "INTEGER", "integer");
+    _SUBS(s, "DECIMAL", "decimal");
+    _SUBS(s, "DOUBLE", "double");
+    _SUBS(s, "STRING_LITERAL1", "'string'");
+    _SUBS(s, "STRING_LITERAL2", "\"string\"");
+    _SUBS(s, "STRING_LITERAL_LONG1", "'''string'''");
+    _SUBS(s, "STRING_LITERAL_LONG2", "\"\"\"string\"\"\"");
+    _SUBS(s, "ANON", "anonymous blank node");
+
+    _SUBS(s, "GT_TIMES", "'*'");
+    _SUBS(s, "GT_LCURLEY", "'{'");
+    _SUBS(s, "GT_RCURLEY", "'}'");
+    _SUBS(s, "GT_COMMA", "','");
+    _SUBS(s, "GT_OR", "'||'");
+    _SUBS(s, "GT_AND", "'&&'");
+    _SUBS(s, "GT_EQUAL", "'='");
+    _SUBS(s, "GT_NEQUAL", "'!='");
+    _SUBS(s, "GT_LT", "'<'");
+    _SUBS(s, "GT_GT", "'>'");
+    _SUBS(s, "GT_LE", "'<='");
+    _SUBS(s, "GT_GE", "'>='");
+    _SUBS(s, "GT_DIVIDE", "'/'");
+    _SUBS(s, "GT_PLUS", "'+'");
+    _SUBS(s, "GT_MINUS", "'-'");
+    _SUBS(s, "GT_NOT", "'!'");
+
+    _SUBS(s, "GT_CARROT", "'^'");
+    _SUBS(s, "GT_OPT", "'?'");
+    _SUBS(s, "GT_PIPE", "'|'");
+    _SUBS(s, "GT_MINUS_GT", "'->'");
+    _SUBS(s, "GT_MINUS_MINUS", "'--'");
+
+    _SUBS(s, "INTEGER_POSITIVE", "+integer");
+    _SUBS(s, "DECIMAL_POSITIVE", "+decimal");
+    _SUBS(s, "DOUBLE_POSITIVE", "+double");
+    _SUBS(s, "INTEGER_NEGATIVE", "-integer");
+    _SUBS(s, "DECIMAL_NEGATIVE", "-decimal");
+    _SUBS(s, "DOUBLE_NEGATIVE", "-double");
+
+    _SUBS(s, "GT_H_2192_", "→");
+
+
+
+    _SUBS(s, "ABOX_HR", "'-'");
+    _SUBS(s, "UBOX_UHR", "'┌─┬┐'");
+    _SUBS(s, "UBOX_LHR", "'└─┴┘'");
+    _SUBS(s, "GT_H_2502_", "'│'");
+    _SUBS(s, "UBOX_UL", "'┌'");
+    _SUBS(s, "UBOX_U", "'─'");
+    _SUBS(s, "UBOX_UR", "'┐'");
+    _SUBS(s, "UBOX_LL", "'└'");
+    _SUBS(s, "UBOX_L", "'─'");
+    _SUBS(s, "UBOX_LR", "'┘'");
+    _SUBS(s, "RSREF", "*<name>");
+
+    _SUBS(s, "INSERTDATA", "'INSERT DATA'");
+    _SUBS(s, "DELETEDATA", "'DELETE DATA'");
+    _SUBS(s, "DELETEWHERE", "'DELETE WHERE'");
+
+    _SUBS(s, "IT_DELETE", "'DELETE'");
+    _SUBS(s, "IT_INSERT", "'INSERT'");
+    _SUBS(s, "IT_DATA", "'DATA'");
+    _SUBS(s, "IT_GRAPH", "'GRAPH'");
+    _SUBS(s, "IT_SERVICE", "'SERVICE'");
+    _SUBS(s, "IT_SADI", "'SADI'");
+    _SUBS(s, "IT_LOAD", "'LOAD'");
+    _SUBS(s, "IT_INTO", "'INTO'");
+    _SUBS(s, "IT_CLEAR", "'CLEAR'");
+    _SUBS(s, "IT_CREATE", "'CREATE'");
+    _SUBS(s, "IT_SILENT", "'SILENT'");
+    _SUBS(s, "IT_DROP", "'DROP'");
+    _SUBS(s, "IT_SELECT", "'SELECT'");
+    _SUBS(s, "IT_DISTINCT", "'DISTINCT'");
+    _SUBS(s, "IT_REDUCED", "'REDUCED'");
+    _SUBS(s, "IT_CONSTRUCT", "'CONSTRUCT'");
+    _SUBS(s, "IT_DESCRIBE", "'DESCRIBE'");
+    _SUBS(s, "IT_FROM", "'FROM'");
+    _SUBS(s, "IT_NAMED", "'NAMED'");
+    _SUBS(s, "IT_ORDER", "'ORDER'");
+    _SUBS(s, "IT_BY", "'BY'");
+    _SUBS(s, "IT_ASC", "'ASC'");
+    _SUBS(s, "IT_DESC", "'DESC'");
+    _SUBS(s, "IT_LIMIT", "'LIMIT'");
+    _SUBS(s, "IT_OFFSET", "'OFFSET'");
+    _SUBS(s, "IT_VALUES", "'VALUES'");
+    _SUBS(s, "IT_MEMBERS", "'MEMBERS'");
+    _SUBS(s, "IT_STARTS", "'STARTS'");
+    _SUBS(s, "IT_ENDS", "'ENDS'");
+    _SUBS(s, "IT_ANY", "'ANY'");
+    _SUBS(s, "IT_UNORDERED", "'UNORDERED'");
+    _SUBS(s, "IT_ASK", "'ASK'");
+    _SUBS(s, "IT_WHERE", "'WHERE'");
+    _SUBS(s, "IT_UNDEF", "'UNDEF'");
+    _SUBS(s, "IT_OPTIONAL", "'OPTIONAL'");
+    _SUBS(s, "IT_MINUS", "'MINUS'");
+    _SUBS(s, "IT_UNION", "'UNION'");
+    _SUBS(s, "IT_FILTER", "'FILTER'");
+    _SUBS(s, "IT_NOT", "'NOT'");
+    _SUBS(s, "IT_IN", "'IN'");
+    _SUBS(s, "IT_IRI", "'IRI'");
+    _SUBS(s, "IT_URI", "'URI'");
+    _SUBS(s, "IT_BNODE", "'BNODE'");
+    _SUBS(s, "IT_COALESCE", "'COALESCE'");
+    _SUBS(s, "IT_IF", "'IF'");
+    _SUBS(s, "IT_STRLANG", "'STRLANG'");
+    _SUBS(s, "IT_STRDT", "'STRDT'");
+    _SUBS(s, "IT_REPLACE", "'REPLACE'");
+    _SUBS(s, "IT_EXISTS", "'EXISTS'");
+    _SUBS(s, "IT_SEPARATOR", "'SEPARATOR'");
+    _SUBS(s, "IT_STR", "'STR'");
+    _SUBS(s, "IT_LANG", "'LANG'");
+    _SUBS(s, "IT_LANGMATCHES", "'LANGMATCHES'");
+    _SUBS(s, "IT_DATATYPE", "'DATATYPE'");
+    _SUBS(s, "IT_BOUND", "'BOUND'");
+    _SUBS(s, "IT_sameTerm", "'sameTerm'");
+    _SUBS(s, "IT_isIRI", "'isIRI'");
+    _SUBS(s, "IT_isURI", "'isURI'");
+    _SUBS(s, "IT_isBLANK", "'isBLANK'");
+    _SUBS(s, "IT_isLITERAL", "'isLITERAL'");
+    _SUBS(s, "IT_REGEX", "'REGEX'");
+    _SUBS(s, "IT_CONCAT", "'CONCAT'");
+    _SUBS(s, "IT_AS", "'AS'");
+    _SUBS(s, "IT_GROUP", "'GROUP'");
+    _SUBS(s, "IT_HAVING", "'HAVING'");
+    _SUBS(s, "IT_COUNT", "'COUNT'");
+    _SUBS(s, "IT_SUM", "'SUM'");
+    _SUBS(s, "IT_MIN", "'MIN'");
+    _SUBS(s, "IT_MAX", "'MAX'");
+    _SUBS(s, "IT_AVG", "'AVG'");
+    _SUBS(s, "IT_GROUP_CONCAT", "'GROUP_CONCAT'");
+    _SUBS(s, "IT_SAMPLE", "'SAMPLE'");
+    _SUBS(s, "IT_isNUMERIC", "'isNUMERIC'");
+    _SUBS(s, "IT_WITH", "'WITH'");
+    _SUBS(s, "IT_DEFAULT", "'DEFAULT'");
+    _SUBS(s, "IT_ALL", "'ALL'");
+    _SUBS(s, "IT_USING", "'USING'");
+    _SUBS(s, "IT_UUID", "'UUID'");
+    _SUBS(s, "IT_STRUUID", "'STRUUID'");
+    _SUBS(s, "IT_MD5", "'MD5'");
+    _SUBS(s, "IT_TO", "'TO'");
+    _SUBS(s, "IT_STRBEFORE", "'STRBEFORE'");
+    _SUBS(s, "IT_STRAFTER", "'STRAFTER'");
+    _SUBS(s, "IT_YEAR", "'YEAR'");
+    _SUBS(s, "IT_ADD", "'ADD'");
+    _SUBS(s, "IT_COPY", "'COPY'");
+    _SUBS(s, "IT_RAND", "'RAND'");
+    _SUBS(s, "IT_SHA512", "'SHA512'");
+    _SUBS(s, "IT_NOW ", "'NOW '");
+    _SUBS(s, "IT_TZ", "'TZ'");
+    _SUBS(s, "IT_TIMEZONE", "'TIMEZONE'");
+    _SUBS(s, "IT_ROUND", "'ROUND'");
+    _SUBS(s, "IT_SHA384", "'SHA384'");
+    _SUBS(s, "IT_BIND", "'BIND'");
+    _SUBS(s, "IT_CONTAINS", "'CONTAINS'");
+    _SUBS(s, "IT_SECONDS", "'SECONDS'");
+    _SUBS(s, "IT_MOVE", "'MOVE'");
+    _SUBS(s, "IT_FLOOR", "'FLOOR'");
+    _SUBS(s, "IT_MINUTES", "'MINUTES'");
+    _SUBS(s, "IT_SUBSTR", "'SUBSTR'");
+    _SUBS(s, "IT_SHA256", "'SHA256'");
+    _SUBS(s, "IT_HOURS", "'HOURS'");
+    _SUBS(s, "IT_ENCODE_FOR_URI", "'ENCODE_FOR_URI'");
+    _SUBS(s, "IT_STRSTARTS", "'STRSTARTS'");
+    _SUBS(s, "IT_CEIL", "'CEIL'");
+    _SUBS(s, "IT_DAY", "'DAY'");
+    _SUBS(s, "IT_LCASE", "'LCASE'");
+    _SUBS(s, "IT_ABS", "'ABS'");
+    _SUBS(s, "IT_UCASE", "'UCASE'");
+    _SUBS(s, "IT_STRENDS", "'STRENDS'");
+    _SUBS(s, "IT_STRLEN", "'STRLEN'");
+    _SUBS(s, "IT_SHA1", "'SHA1'");
+    _SUBS(s, "IT_MONTH", "'MONTH'");
+    _SUBS(s, "IT_PRINT", "'PRINT'");
+
+    _SUBS(s, "VAR1", "?VAR");
+    _SUBS(s, "VAR2", "$VAR");
+    _SUBS(s, "NIL", "'()'");
+    driver.error(l, s);
 }
 
 /* START Driver (@@ stand-alone would allow it to be shared with other parsers */
 
 namespace w3c_sw {
 
+size_t SPARQLfedDriver::DefaultAbortErrorCount = 100;
+
     SPARQLfedDriver::e_Validation SPARQLfedDriver::DefaultValidation = SPARQLfedDriver::VALIDATE_all;
-
-    SPARQLfedDriver::SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory) : 
-	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), curFilter(NULL), curResultSet(NULL), curResult(NULL),
-	curExprList(NULL), validate(DefaultValidation), root(NULL), unnestTree(false)
-{
-}
-
-    SPARQLfedDriver::~SPARQLfedDriver ()
-{
-}
 
 Operation* SPARQLfedDriver::parse (IStreamContext& in)
 {
+    reset();
     root = NULL;
     curBGP = NULL;
     curOp = NULL;
@@ -3373,6 +3591,7 @@ Operation* SPARQLfedDriver::parse (IStreamContext& in)
     bnode2bgp.clear();
     bnodesInOldOpperations.clear();
     bnodesInThisOpperation.clear();
+    checkErrors();
     return root;
 }
 

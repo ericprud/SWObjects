@@ -46,7 +46,7 @@
 namespace w3c_sw {
 
 /* Line 37 of location.cc  */
-#line 50 "position.hh"
+#line 50 "lib/TurtleSParser/position.hh"
   /// Abstract a position.
   class position
   {
@@ -157,5 +157,5 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 144 of location.cc  */
-#line 161 "position.hh"
+#line 161 "lib/TurtleSParser/position.hh"
 #endif // not BISON_POSITION_HH

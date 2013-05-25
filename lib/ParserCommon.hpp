@@ -439,6 +439,18 @@ public:
     }
 };
 
+inline void _subs (std::string& txt, const char*from, size_t fromLen, const char*to, size_t toLen) {
+    for (size_t at = 0; ; ) {
+	at = txt.find(from, at);
+	if (at == std::string::npos)
+	    break;
+	txt.replace(at, fromLen, to);
+	at += toLen;
+    }
+}
+
+#define _SUBS(S, F, T) _subs(S, F, sizeof(F)-1, T, sizeof(T)-1);
+
 } //namespace w3c_sw
 
 #endif /* ! defined PARSER_COMMON_HH */

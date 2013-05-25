@@ -109,6 +109,7 @@ protected:
     bool inDELETEWHERE;
     bool inDELETECLAUSE;
 public:
+    static size_t DefaultAbortErrorCount;
     typedef enum {VALIDATE_none = 0,
 		  VALIDATE_selectGrouped = 1, VALIDATE_uniqueProjection = 2,
 		  VALIDATE_namedProjection = 4, VALIDATE_noReassign = 8,
@@ -116,6 +117,17 @@ public:
 		  VALIDATE_all = 0x3f} e_Validation;
     e_Validation validate;
     static e_Validation DefaultValidation;
+
+    SPARQLfedDriver (std::string baseURI, AtomFactory* atomFactory,
+		     size_t abortErrorCount = DefaultAbortErrorCount) : 
+	YaccDriver(baseURI, atomFactory, abortErrorCount), curSubject(NULL), curPredicate(NULL), 
+	curBGP(NULL), curFilter(NULL), curResultSet(NULL), curResult(NULL),
+	curExprList(NULL), validate(DefaultValidation), root(NULL), unnestTree(false)
+    {  }
+
+    ~SPARQLfedDriver ()
+    {  }
+
 protected:
 
     const Variable* getVariable (std::string name) {
@@ -248,8 +260,6 @@ protected:
     }
 
 public:
-    SPARQLfedDriver(std::string baseURI, AtomFactory* atomFactory);
-    ~SPARQLfedDriver();
 
     Operation* parse(IStreamContext& in);
     Operation* parse(std::string queryStr);
@@ -275,7 +285,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 279 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 289 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 #include <string>
@@ -305,7 +315,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 309 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 319 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
   /// A Bison parser.
   class SPARQLfedParser
@@ -317,7 +327,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 288 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
+#line 298 "lib/SPARQLfedParser/SPARQLfedParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -392,7 +402,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 396 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 406 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -554,43 +564,41 @@ namespace w3c_sw {
      GT_H_2192_ = 404,
      GT_MINUS_GT = 405,
      ABOX_HR = 406,
-     ABOX_CELL = 407,
-     UBOX_UHR = 408,
-     UBOX_LHR = 409,
-     GT_H_2502_ = 410,
-     UBOX_UL = 411,
-     UBOX_U = 412,
-     UBOX_UR = 413,
-     UBOX_SEP = 414,
-     UBOX_LL = 415,
-     UBOX_L = 416,
-     UBOX_LR = 417,
-     RSREF = 418,
-     GT_MINUS_MINUS = 419,
-     IT_true = 420,
-     IT_false = 421,
-     INTEGER = 422,
-     DECIMAL = 423,
-     DOUBLE = 424,
-     INTEGER_POSITIVE = 425,
-     DECIMAL_POSITIVE = 426,
-     DOUBLE_POSITIVE = 427,
-     INTEGER_NEGATIVE = 428,
-     DECIMAL_NEGATIVE = 429,
-     DOUBLE_NEGATIVE = 430,
-     STRING_LITERAL1 = 431,
-     STRING_LITERAL_LONG1 = 432,
-     STRING_LITERAL2 = 433,
-     STRING_LITERAL_LONG2 = 434,
-     IRIREF = 435,
-     PNAME_NS = 436,
-     PNAME_LN = 437,
-     BLANK_NODE_LABEL = 438,
-     ANON = 439,
-     VAR1 = 440,
-     VAR2 = 441,
-     LANGTAG = 442,
-     NIL = 443
+     UBOX_UHR = 407,
+     UBOX_LHR = 408,
+     GT_H_2502_ = 409,
+     UBOX_UL = 410,
+     UBOX_U = 411,
+     UBOX_UR = 412,
+     UBOX_LL = 413,
+     UBOX_L = 414,
+     UBOX_LR = 415,
+     RSREF = 416,
+     GT_MINUS_MINUS = 417,
+     IT_true = 418,
+     IT_false = 419,
+     INTEGER = 420,
+     DECIMAL = 421,
+     DOUBLE = 422,
+     INTEGER_POSITIVE = 423,
+     DECIMAL_POSITIVE = 424,
+     DOUBLE_POSITIVE = 425,
+     INTEGER_NEGATIVE = 426,
+     DECIMAL_NEGATIVE = 427,
+     DOUBLE_NEGATIVE = 428,
+     STRING_LITERAL1 = 429,
+     STRING_LITERAL_LONG1 = 430,
+     STRING_LITERAL2 = 431,
+     STRING_LITERAL_LONG2 = 432,
+     IRIREF = 433,
+     PNAME_NS = 434,
+     PNAME_LN = 435,
+     BLANK_NODE_LABEL = 436,
+     ANON = 437,
+     VAR1 = 438,
+     VAR2 = 439,
+     LANGTAG = 440,
+     NIL = 441
    };
 
     };
@@ -770,7 +778,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 774 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
+#line 782 "lib/SPARQLfedParser/SPARQLfedParser.hpp"
 
 
 

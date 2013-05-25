@@ -46,7 +46,7 @@
 namespace w3c_sw {
 
 /* Line 162 of location.cc  */
-#line 50 "location.hh"
+#line 50 "lib/TurtleSParser/location.hh"
 
   /// Abstract a location.
   class location
@@ -159,6 +159,6 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 271 of location.cc  */
-#line 163 "location.hh"
+#line 163 "lib/TurtleSParser/location.hh"
 
 #endif // not BISON_LOCATION_HH
