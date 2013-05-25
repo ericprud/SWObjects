@@ -1042,6 +1042,9 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
 		if (dynamic_cast<const URI*>(args[0]) != NULL)
 		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
+		// @@@ non-compliant feature
+		if (dynamic_cast<const BNode*>(args[0]) != NULL)
+		    return atomFactory->getRDFLiteral(args[0]->getLexicalValue());
 		throw TypeError(args[0]->toString(), "name");
 	    }
 
@@ -1760,7 +1763,9 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	    };
 	} // namespace BuiltIn
 
+#if !defined(SWIG)
 	Map GlobalMap(BuiltIn::List, BuiltIn::List + (sizeof(BuiltIn::List)/sizeof(BuiltIn::List[0])));
+#endif /* defined(SWIG) */
     } // namespace AtomicFunction
 
     /* <AtomFactory> */
