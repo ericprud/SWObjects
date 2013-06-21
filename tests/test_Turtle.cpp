@@ -186,11 +186,28 @@ BOOST_AUTO_TEST_SUITE_END(/* error_recovery */)
 
 /** command-line tests:
 
+from the web:
+
+semantics tests:
+./bin/sparql -d http://www.w3.org/2013/TurtleTests/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -d " ?ttl " --compare " ?nt " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtleEval ; mf:action ?ttl ; mf:result ?nt ; mf:name ?name } ' -L text/raw | bash
+
+positive syntax tests:
+./bin/sparql -d http://www.w3.org/2013/TurtleTests/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -d " ?ttl " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtlePositiveSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+negative syntax tests:
+./bin/sparql -d http://www.w3.org/2013/TurtleTests/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -d " ?ttl " && echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtleNegativeSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+
+or from disk:
 ./bin/sparql -d ../../WWW/rdf/rdf-turtle/tests-ttl/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -b " REPLACE(STR(?ttl), "../../WWW/rdf/rdf-turtle/tests-ttl/", "http://example/base/") " -d " ?ttl " --compare " ?nt " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtleEval ; mf:action ?ttl ; mf:result ?nt ; mf:name ?name } ' -L text/raw | bash
 
 ./bin/sparql -d ../../WWW/rdf/rdf-turtle/tests-ttl/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -b " REPLACE(STR(?ttl), "../../WWW/rdf/rdf-turtle/tests-ttl/", "http://example/base/") " -d " ?ttl " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtlePositiveSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
 
 ./bin/sparql -d ../../WWW/rdf/rdf-turtle/tests-ttl/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -b " REPLACE(STR(?ttl), "../../WWW/rdf/rdf-turtle/tests-ttl/", "http://example/base/") " -d " ?ttl " && echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTurtleNegativeSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+Note that [[ -b " ?ttl " ]] fails turtle-subm-01 turtle-subm-27 .
+      and [[]] fails turtle-subm-01 turtle-subm-19 turtle-subm-20 turtle-subm-22 turtle-subm-27
+
 
 see also test_Turtle-WG.sh
 
