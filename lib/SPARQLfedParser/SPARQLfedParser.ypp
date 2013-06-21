@@ -70,7 +70,7 @@ struct RSName {
     std::string name;
 };
 
-struct BindingsMap : public std::map<std::string, ResultSet*> {
+struct BindingsMap : public std::map<std::string, const TableOperation*> {
     ~BindingsMap () {
 	for (const_iterator it = begin(); it != end(); ++it)
 	    delete it->second;
@@ -451,7 +451,7 @@ public:
 %type <p_RSName> RSREF _O_QRSREF_E_S_QGT_EQUAL_E_C _Q_O_QRSREF_E_S_QGT_EQUAL_E_C_E_Opt
 %type <p_ValuesClause> ValuesClause _Q_O_QIT_VALUES_E_S_QDataBlock_E_C_E_Opt _O_QIT_VALUES_E_S_QDataBlock_E_C DataBlock InlineData InlineDataOneVar InlineDataFull
 
-%type <p_TableOperation> QuadPattern QuadData Quads _O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt
+%type <p_TableOperation> Result QuadPattern QuadData Quads _O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C _Q_O_QIT_CONSTRUCT_E_S_QQuadPattern_E_C_E_Opt
 
 %type <p_ArgList> ArgList _QArgList_E_Opt
 %type <p_Expressions> _Q_O_QGT_OR_E_S_QConditionalAndExpression_E_C_E_Star
@@ -621,15 +621,14 @@ LoadResults:
 	$<p_TableOperation>$ = driver.curOp;
 	driver.startBindingSet();
       } Result	{
-	  ResultSet* r = driver.endBindingSet();
 	  if ($1 != NULL) {
 	      std::string s = $1->name;
 	      delete $1;
-	      driver.bindingsMap[s] = r;
+	      driver.bindingsMap[s] = $3;
 	      driver.curOp = $<p_TableOperation>2;
 	  } else {
 	      // if ($<p_TableOperation>2 != NULL)
-	      driver.curOp = driver.makeConjunction($<p_TableOperation>2, new ValuesClause(r));
+	      driver.curOp = driver.makeConjunction($<p_TableOperation>2, $3);
 	  }
       }
 ;
@@ -648,11 +647,23 @@ _Q_O_QRSREF_E_S_QGT_EQUAL_E_C_E_Opt:
 ;
 
 Result:
-    ABox	
-  | UBox	
-  | CurlySet	
+    ABox	{
+	$$ = new ValuesClause(driver.endBindingSet());
+    }
+  | UBox	{
+	$$ = new ValuesClause(driver.endBindingSet());
+    }
+  | CurlySet	{
+	$$ = new ValuesClause(driver.endBindingSet());
+    }
   | SourceSelector	{
 	throw std::runtime_error("need to partition out results set part of SimpleEngine::loadDataOrResults");
+    }
+  | GT_TIMES GroupGraphPattern	{
+	driver.restoreFilter(NULL);
+	$$ = driver.ensureGraphPattern();
+	driver.curOp = NULL;
+	//throw std::runtime_error("IMPL");
     }
 ;
 
@@ -1708,12 +1719,15 @@ GroupGraphPattern:
     _O_QGT_LCURLEY_E_S_QSubSelect_E_Or_QGroupGraphPatternSub_E_S_QGT_RCURLEY_E_C	
   | RSREF	{
 	BindingsMap::const_iterator rs = driver.bindingsMap.find($1->name);
-	if (rs == driver.bindingsMap.end())
+	if (rs == driver.bindingsMap.end() || rs->second == NULL) {
 	    error(yylloc, std::string("") + "unknown named result set " + $1->name);
-	ResultSet* copy = new ResultSet(*rs->second);
-	delete $1;
-	ValuesClause* b = new ValuesClause(copy);
-	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, b) : b;
+	    driver.curOp = new DefaultGraphPattern();
+	} else {
+	    SWObjectDuplicator dup(driver.atomFactory);
+	    rs->second->express(&dup);
+	    TableOperation* b = dup.last.tableOperation;
+	    driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, b) : b;
+	}
       }
 ;
 

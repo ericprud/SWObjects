@@ -60,7 +60,7 @@ struct RSName {
     std::string name;
 };
 
-struct BindingsMap : public std::map<std::string, ResultSet*> {
+struct BindingsMap : public std::map<std::string, const TableOperation*> {
     ~BindingsMap () {
 	for (const_iterator it = begin(); it != end(); ++it)
 	    delete it->second;
