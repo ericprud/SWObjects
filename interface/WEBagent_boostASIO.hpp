@@ -129,7 +129,7 @@ namespace w3c_sw {
 		request_stream << "\r\n";
 
 		request_stream << "Accept: "
-		    /* 1. */ "application/binary-rdf-results-table,application/x-binary-rdf-results-table,"
+		    /* 1. */ "application/binary-rdf-results-table,application/x-binary-rdf-results-table,text/turtle,"
 		    /* .9 */ "application/sparql-results+xml;q=.9,text/sparql-results;q=.9,"
 		    /* .8 */ "application/xml;q=.8,application/html+xml;q=.8,"
 		    /* .7 */ "text/html;q=.7"
