@@ -1334,7 +1334,9 @@ struct SimpleEngine {
 		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
 		if (istr.mediaType)
 		    o << " with media type " << *istr.mediaType;
-		o << " into " << graph->toString() << ".\n";
+		if (graph != NULL)
+		    o << " into " << graph->toString();
+		o << ".\n";
 		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
 	    }
 	    std::string parserBaseURI =
