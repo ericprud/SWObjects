@@ -130,7 +130,31 @@ public:
     template <typename T> // e.g. TurtleSParser::location_type
     const URI* unescapeAndResolveBase (const char* p_rel, size_t len, T* yylloc) {
 	std::string stripped;
-	YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc);
+	try {
+	    YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc,
+					AtomFactory::validate & AtomFactory::VALIDATE_IRIcharacters
+					? &CharacterRange::NonIRI
+					: NULL);
+#if 0
+	    /*
+	      In principle, something like this could be done to pass this back
+	      to the parser to make sure that the unescaped value complies with
+	      IRIREF, but the overhead of creating another driver and scanner
+	      and adding some way to limit recursion aren't worth the mild
+	      cleverness.
+	     */
+	    std::istringstream is("<" + stripped + ">");
+	    TurtleSDriver parser2(stripped, driver->atomFactory);
+	    TurtleSScanner s(&parser2, &is);
+	    TurtleSParser::semantic_type yylval2;
+	    TurtleSParser::location_type yylloc2;
+	    TurtleSParser::token_type yychar = s.lexWrapper(&yylval2, &yylloc2);
+	    if (yychar != TurtleSParser::token::IRIREF)
+		throw;
+#endif
+	} catch (std::runtime_error& e) {
+	    driver->error(*yylloc, e.what());
+	}
 	return driver->getAbsoluteURI(stripped.c_str());
     }
 

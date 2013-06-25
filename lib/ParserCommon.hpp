@@ -129,13 +129,42 @@ public:
 	setBase(baseURI);
     }
 
-
     void setNamespaceMap (NamespaceMap* newMap, bool pFreeNamespaces = false) {
 	if (freeNamespaces)
 	    delete namespaces;
 	namespaces = newMap;
 	freeNamespaces = pFreeNamespaces;
     }
+};
+
+struct CharacterRange {
+    const wchar_t (*ranges)[2];
+    size_t size;
+
+    CharacterRange (const wchar_t (*ranges)[2], size_t size)
+	: ranges(ranges), size(size) {  }
+
+    bool includes (wchar_t ch) const {
+	for (size_t pair = 0; pair < size; ++pair) {
+	    if (ranges[pair][0] >  ch) return false;
+	    if (ranges[pair][1] >= ch) return true;
+	}
+	return false;
+    }
+
+    static std::string label (wchar_t ch) {
+	if (ch == 0x00000) return "NULL";
+	if (ch  < 0x00020) return "control";
+	if (ch == 0x00020) return "space";
+	if (ch == 0x00022) return "'\"'";
+	if (ch  < 0x0007e) return  '"' + std::string(1, (char)ch) +  '"';
+	if (ch >= 0x0d800 && ch <= 0x0dfff) return "surrogate";
+	if ((ch & 0xffff) == 0xfffe || (ch & 0xffff) == 0xffff) return "non";
+	if (ch  > 0x10ffff) return "oversized";
+	return "normal";
+    }
+
+    static const CharacterRange NonIRI;
 };
 
 class YaccDriver : public ParserDriver {
@@ -269,39 +298,35 @@ public:
 	    c<='f'?c-'a'+10:
 	    throw;
     }
-    static void unescapeNumeric (const char* yytext, size_t len, std::string* space, location* yylloc) {
+    static void unescapeNumeric (const char* yytext, size_t len, std::string* space, location* yylloc, const CharacterRange* exclude = NULL) {
 	for (size_t i = 0; i < len; i++) {
 	    if (yytext[i] == '\\') {
 		switch (yytext[++i]) {
 		case 'u':
-		    if (i < len-4) {
-			wchar_t w[2] = {
-			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
-			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4]),
-			    0};
-			utf8::utf32to8(w, w+1, back_inserter(*space));
-			i += 4;
-			break;
-		    } else
-			throw std::runtime_error
-			    ("\"" + std::string(yytext, len) + "\""
-			     " leaves insufficent space for escape sequence at \""
-			     + std::string(yytext+i, len-i) + "\"");
 		case 'U':
-		    if (i < len-8) {
+		    if (i < len - (yytext[i] == 'u' ? 4 : 8)) {
 			wchar_t w[2] = {
+			    yytext[i] == 'u' ?
+			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
+			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4])
+			    :
 			    _h2n(yytext[i+1])<<28 | _h2n(yytext[i+2])<<24|
 			    _h2n(yytext[i+3])<<20 | _h2n(yytext[i+4])<<16 |
 			    _h2n(yytext[i+5])<<12 | _h2n(yytext[i+6])<<8 |
 			    _h2n(yytext[i+7])<<04 | _h2n(yytext[i+8]),
 			    0};
+			if (exclude != NULL && exclude->includes(w[0]))
+			    throw std::runtime_error
+				("\"" + std::string(yytext+i-1, yytext[i] == 'u' ? 6 : 10) + "\""
+				 " encodes an invalid " + CharacterRange::label(w[0]) + " character");
+
 			utf8::utf32to8(w, w+1, back_inserter(*space));
-			i += 8;
+			i += (yytext[i] == 'u' ? 4 : 8);
 			break;
 		    } else
 			throw std::runtime_error
 			    ("\"" + std::string(yytext, len) + "\""
-			     " leaves insufficent space for escape sequence at \""
+			     " has an incomplete escape sequence at \""
 			     + std::string(yytext+i, len-i) + "\"");
 		default:
 		    throw std::runtime_error
@@ -340,7 +365,7 @@ public:
 		    } else
 			throw std::runtime_error
 			    ("\"" + std::string(yytext, len) + "\""
-			     " leaves insufficent space for escape sequence at \""
+			     " has an incomplete escape sequence at \""
 			     + std::string(yytext+i, len-i) + "\"");
 		case 'U':
 		    if (i < len-8) {
@@ -356,7 +381,7 @@ public:
 		    } else
 			throw std::runtime_error
 			    ("\"" + std::string(yytext, len) + "\""
-			     " leaves insufficent space for escape sequence at \""
+			     " has an incomplete escape sequence at \""
 			     + std::string(yytext+i, len-i) + "\"");
 		default:
 		    throw std::runtime_error

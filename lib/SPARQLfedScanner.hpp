@@ -94,7 +94,10 @@ public:
 
     const URI* unescapeAndResolveBase (const char* p_rel, size_t len, SPARQLfedParser::location_type* yylloc) {
 	std::string stripped;
-	YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc);
+	YaccDriver::unescapeNumeric(p_rel, len, &stripped, yylloc,
+				    AtomFactory::validate & AtomFactory::VALIDATE_IRIcharacters
+				    ? &CharacterRange::NonIRI
+				    : NULL);
 	return driver->getAbsoluteURI(stripped.c_str());
     }
 
