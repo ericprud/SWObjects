@@ -14,6 +14,145 @@
 
 w3c_sw_DEBUGGING_FUNCTIONS();
 
+namespace coverage {
+    /*
+      Basic UTF-8 manipulation routines
+      by Jeff Bezanson
+      placed in the public domain Fall 2005
+      found at <http://www.cprogramming.com/tutorial/utf8.c> on 2013-06-29
+    */
+
+    /* srcsz = number of source characters, or -1 if 0-terminated
+       sz = size of dest buffer in bytes
+
+       returns # characters converted
+       dest will only be '\0'-terminated if there is enough space. this is
+       for consistency; imagine there are 2 bytes of space left, but the next
+       character requires 3 bytes. in this case we could NUL-terminate, but in
+       general we can't when there's insufficient space. therefore this function
+       only NUL-terminates if all the characters fit, and there's space for
+       the NUL as well.
+       the destination string will never be bigger than the source string.
+    */
+    int u8_toutf8(char *dest, int sz, u_int32_t *src, int srcsz)
+    {
+	u_int32_t ch;
+	int i = 0;
+	char *dest_end = dest + sz;
+
+	while (srcsz<0 ? src[i]!=0 : i < srcsz) {
+	    ch = src[i];
+	    if (ch < 0x80) {
+		if (dest >= dest_end)
+		    return i;
+		*dest++ = (char)ch;
+	    }
+	    else if (ch < 0x800) {
+		if (dest >= dest_end-1)
+		    return i;
+		*dest++ = (ch>>6) | 0xC0;
+		*dest++ = (ch & 0x3F) | 0x80;
+	    }
+	    else if (ch < 0x10000) {
+		if (dest >= dest_end-2)
+		    return i;
+		*dest++ = (ch>>12) | 0xE0;
+		*dest++ = ((ch>>6) & 0x3F) | 0x80;
+		*dest++ = (ch & 0x3F) | 0x80;
+	    }
+	    else if (ch < 0x110000) {
+		if (dest >= dest_end-3)
+		    return i;
+		*dest++ = (ch>>18) | 0xF0;
+		*dest++ = ((ch>>12) & 0x3F) | 0x80;
+		*dest++ = ((ch>>6) & 0x3F) | 0x80;
+		*dest++ = (ch & 0x3F) | 0x80;
+	    }
+	    i++;
+	}
+	if (dest < dest_end)
+	    *dest = '\0';
+	return i;
+    }
+
+    char* literal (u_int32_t value, char test[15]) {
+	u8_toutf8(test+9, 6, &value, 1);
+	int size = ::strlen(test);
+	test[size  ] = '\'';
+	test[size+1] = ' ' ;
+	test[size+2] = '.' ;
+	test[size+3] = '\0';
+	return test;
+    }
+
+    BOOST_AUTO_TEST_CASE( x ) {
+	u_int32_t value = 0x10fffd;
+	char test[16] = "<s> <p> '";
+	BOOST_CHECK_EQUAL(literal(value, test), "<s> <p> '\xf4\x8f\xbf\xbd' .");
+    }
+
+    bool legal (u_int32_t value) {
+	char test[15] = "<s> <p> '";
+
+	literal(value, test);
+	DefaultGraphPattern parsed;
+	AtomFactory::validate = AtomFactory::VALIDATE_all;
+	IStreamContext testStream(test, IStreamContext::STRING);
+	turtleParser.setGraph(&parsed);
+	turtleParser.clear(BASE_URI);
+	turtleParser.abortErrorCount = 1;
+	try {
+	    turtleParser.parse(testStream);
+	} catch (ParserException& e) {
+	    return false;
+	}
+	return true;
+    }
+
+    BOOST_AUTO_TEST_CASE( y ) {
+
+	for (u_int32_t i = 0x000080; i <= 0x00d7ff; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x00d800; i <= 0x00dfff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x00e000; i <= 0x00fdcf; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x00fdd0; i <= 0x00fdef; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x00fdf0; i <= 0x00fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x00fffe; i <= 0x00ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x010000; i <= 0x01fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x01fffe; i <= 0x01ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x020000; i <= 0x02fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x02fffe; i <= 0x02ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x030000; i <= 0x03fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x03fffe; i <= 0x03ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x040000; i <= 0x04fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x04fffe; i <= 0x04ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x050000; i <= 0x05fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x05fffe; i <= 0x05ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x060000; i <= 0x06fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x06fffe; i <= 0x06ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x070000; i <= 0x07fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x07fffe; i <= 0x07ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x080000; i <= 0x08fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x08fffe; i <= 0x08ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x090000; i <= 0x09fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x09fffe; i <= 0x09ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x0a0000; i <= 0x0afffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x0afffe; i <= 0x0affff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x0b0000; i <= 0x0bfffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x0bfffe; i <= 0x0bffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x0c0000; i <= 0x0cfffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x0cfffe; i <= 0x0cffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x0d0000; i <= 0x0dfffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x0dfffe; i <= 0x0dffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x0e0000; i <= 0x0efffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x0efffe; i <= 0x0effff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x0f0000; i <= 0x0ffffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x0ffffe; i <= 0x0fffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+	for (u_int32_t i = 0x100000; i <= 0x10fffd; ++i) BOOST_CHECK_EQUAL(legal(i), true);
+	for (u_int32_t i = 0x10fffe; i <= 0x10ffff; ++i) BOOST_CHECK_EQUAL(legal(i), false);
+    }
+
+}; // namespace coverage
+
 BOOST_AUTO_TEST_SUITE( error_recovery )
 struct ErrorRecoveryTest {
     DefaultGraphPattern parsed, expected;
@@ -40,8 +179,8 @@ struct ErrorRecoveryTest {
 	    errorCount = e.errors.size();
 	    errorReport = e.what();
 	}
-	turtleParser.trace_parsing = false;
-	turtleParser.trace_scanning = false;
+	// turtleParser.trace_parsing = false;
+	// turtleParser.trace_scanning = false;
 	// w3c_sw_LINEN << parsed << "\n";
 	if (expectedTurtle) {
 	    IStreamContext refStream(expectedTurtle, IStreamContext::STRING);

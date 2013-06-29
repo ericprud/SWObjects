@@ -33,8 +33,9 @@ namespace w3c_sw {
  * because the yylex() defined in TurtleSFlexLexer has no parameters. */
 class TurtleSScanner : public TurtleSFlexLexer
 {
-private:
+protected:
     TurtleSDriver* driver;
+
 public:
     /** Create a new scanner object. The streams arg_yyin and arg_yyout default
      * to cin and cout, but that assignment is only made when initializing in
@@ -71,6 +72,7 @@ public:
 	yy_flex_debug = b;
     }
 
+protected:
     TurtleSParser::token_type typedLiteral (TurtleSParser::semantic_type*& yylval, TurtleSParser::token_type tok) {
 	std::istringstream is(yytext);
 	std::ostringstream normalized;
@@ -155,7 +157,20 @@ public:
 	} catch (std::runtime_error& e) {
 	    driver->error(*yylloc, e.what());
 	}
-	return driver->getAbsoluteURI(stripped.c_str());
+	try {
+	    return driver->getAbsoluteURI(stripped.c_str());
+	} catch (std::runtime_error& e) {
+	    driver->error(*yylloc, e.what());
+
+	    // We're here because we've noted this error and are
+	    // continuing. We turn off validation so we can get this
+	    // IRI from the AtomFactory and then restore the original
+	    // state.
+	    disableValidation();
+	    const URI* ret = driver->getAbsoluteURI(stripped.c_str());
+	    restoreValidation();
+	    return ret;
+	}
     }
 
     template <typename T> // e.g. TurtleSParser::location_type
@@ -163,6 +178,17 @@ public:
 	std::stringstream ss;
 	ss << "Malformed " << msg << " " << quote << yytext << quote;
 	driver->error(*yylloc, ss.str());
+    }
+
+    AtomFactory::e_Validation validation;
+    void disableValidation () {
+	validation = AtomFactory::validate;
+	AtomFactory::validate = static_cast<AtomFactory::e_Validation>
+	    // enums become ints when you & them so cast back to enum.
+	    (AtomFactory::validate&~AtomFactory::VALIDATE_IRIcharacters);
+    }
+    void restoreValidation () {
+	    AtomFactory::validate = validation;	
     }
 
 };
