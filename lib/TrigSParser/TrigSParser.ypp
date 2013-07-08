@@ -147,7 +147,7 @@ public:
 
 //%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate
 
-%type <p_TTerm> Verb VarOriri VarOrTerm GraphNode Object GraphTerm BlankNode _O_Qiri_E_Or_QBlankNode_E_Or_QCollection_E_Or_QBlankNodePropertyList_E_C _O_Qiri_E_Or_QBlankNode_E_C subject
+%type <p_TTerm> Verb VarOriri VarOrTerm GraphNode Object GraphTerm BlankNode _O_QCollection_E_Or_QBlankNodePropertyList_E_C _O_Qiri_E_Or_QBlankNode_E_C subject
 %type <p_RDFLiteral> RDFLiteral
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
@@ -201,23 +201,19 @@ statement:
 
 // [3]    	tripleOrBareGraph  ::=    	( iri | BlankNode | Collection | BlankNodePropertyList ) ( "{" (TriplesTemplate)? "}" | PropertyListNotEmpty "." )
 tripleOrBareGraph:
-    _O_Qiri_E_Or_QBlankNode_E_Or_QCollection_E_Or_QBlankNodePropertyList_E_C {
+    _O_Qiri_E_Or_QBlankNode_E_C {
 	driver.curSubject = $1;
-      } _O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmpty_E_S_QGT_DOT_E_C	{
-      }
+      } _O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmpty_E_S_QGT_DOT_E_C	
+  | _O_QCollection_E_Or_QBlankNodePropertyList_E_C {
+	driver.curSubject = $1;
+      } _O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmpty_E_Opt_S_QGT_DOT_E_C	
 ;
 
-_O_Qiri_E_Or_QBlankNode_E_Or_QCollection_E_Or_QBlankNodePropertyList_E_C:
+_O_Qiri_E_Or_QBlankNode_E_C:
     iri	{
       $$ = $1;
     }
   | BlankNode	{
-      $$ = $1;
-    }
-  | Collection	{
-      $$ = $1;
-    }
-  | BlankNodePropertyList	{
       $$ = $1;
     }
 ;
@@ -238,19 +234,37 @@ _O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmp
       } PropertyListNotEmpty GT_DOT	
 ;
 
+_O_QCollection_E_Or_QBlankNodePropertyList_E_C:
+    Collection	{
+      $$ = $1;
+    }
+  | BlankNodePropertyList	{
+      $$ = $1;
+    }
+;
+
+_QPropertyListNotEmpty_E_Opt:
+    
+  | PropertyListNotEmpty	
+;
+
+_O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmpty_E_Opt_S_QGT_DOT_E_C:
+    GT_LCURLEY {
+	driver.curBGP = driver.db->ensureGraph(driver.curSubject);
+	driver.curSubject = NULL;
+      } _QTriplesTemplate_E_Opt GT_RCURLEY	
+  | {
+	driver.curBGP = driver.db->ensureGraph(NULL);
+	driver.neededBGP = NULL;
+      } _QPropertyListNotEmpty_E_Opt GT_DOT	
+;
+
 // [4]    	graphword 	   ::=    	"GRAPH" ( iri | BlankNode ) "{" (TriplesTemplate)? "}"
 graphword:
     IT_GRAPH _O_Qiri_E_Or_QBlankNode_E_C GT_LCURLEY {
 	driver.curBGP = driver.db->ensureGraph($2);
 	driver.neededBGP = NULL;
       } _QTriplesTemplate_E_Opt GT_RCURLEY	
-;
-
-_O_Qiri_E_Or_QBlankNode_E_C:
-    iri	{
-	$$ = $1;
-    }
-  | BlankNode	
 ;
 
 // [5]    	wrappedDefault 	   ::=    	"{" (TriplesTemplate)? "}"
@@ -339,11 +353,6 @@ TriplesSameSubject:
 // [13]    	PropertyList 		   ::=    	PropertyListNotEmpty?
 PropertyList:
     _QPropertyListNotEmpty_E_Opt	
-;
-
-_QPropertyListNotEmpty_E_Opt:
-    
-  | PropertyListNotEmpty	
 ;
 
 // [14]    	PropertyListNotEmpty 	   ::=    	Verb ObjectList ( ";" (Verb ObjectList)? )*
