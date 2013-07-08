@@ -45,12 +45,12 @@
 /* User implementation prologue.  */
 
 /* Line 299 of lalr1.cc  */
-#line 126 "lib/TrigSParser/TrigSParser.ypp"
+#line 125 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
 
 /* Line 299 of lalr1.cc  */
-#line 178 "lib/TrigSParser/TrigSParser.ypp"
+#line 166 "lib/TrigSParser/TrigSParser.ypp"
 
 #include "../TrigSScanner.hpp"
 
@@ -463,175 +463,220 @@ namespace w3c_sw {
 	  case 2:
 
 /* Line 690 of lalr1.cc  */
-#line 195 "lib/TrigSParser/TrigSParser.ypp"
+#line 183 "lib/TrigSParser/TrigSParser.ypp"
     {
-	driver.root = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern); // last graph -- kinda useless
-    }
-    break;
-
-  case 8:
-
-/* Line 690 of lalr1.cc  */
-#line 218 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
+	driver.root = driver.defaultBGP;
+	// driver.root = $<p_DefaultGraphPattern>1;
     }
     break;
 
   case 9:
 
 /* Line 690 of lalr1.cc  */
-#line 224 "lib/TrigSParser/TrigSParser.ypp"
+#line 204 "lib/TrigSParser/TrigSParser.ypp"
     {
-	driver.ignorePrefix(true);
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
       }
     break;
 
   case 10:
 
 /* Line 690 of lalr1.cc  */
-#line 226 "lib/TrigSParser/TrigSParser.ypp"
+#line 206 "lib/TrigSParser/TrigSParser.ypp"
     {
-	  driver.ignorePrefix(false);
       }
     break;
 
   case 11:
 
 /* Line 690 of lalr1.cc  */
-#line 228 "lib/TrigSParser/TrigSParser.ypp"
+#line 211 "lib/TrigSParser/TrigSParser.ypp"
+    {
+      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 12:
+
+/* Line 690 of lalr1.cc  */
+#line 214 "lib/TrigSParser/TrigSParser.ypp"
+    {
+      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+    }
+    break;
+
+  case 13:
+
+/* Line 690 of lalr1.cc  */
+#line 217 "lib/TrigSParser/TrigSParser.ypp"
+    {
+      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
+    }
+    break;
+
+  case 14:
+
+/* Line 690 of lalr1.cc  */
+#line 220 "lib/TrigSParser/TrigSParser.ypp"
+    {
+      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
+    }
+    break;
+
+  case 17:
+
+/* Line 690 of lalr1.cc  */
+#line 231 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.curBGP = driver.db->ensureGraph(driver.curSubject);
+	driver.curSubject = NULL;
+      }
+    break;
+
+  case 19:
+
+/* Line 690 of lalr1.cc  */
+#line 235 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.curBGP = driver.db->ensureGraph(NULL);
+	driver.neededBGP = NULL;
+      }
+    break;
+
+  case 21:
+
+/* Line 690 of lalr1.cc  */
+#line 243 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.curBGP = driver.db->ensureGraph((yysemantic_stack_[(3) - (2)].p_TTerm));
+	driver.neededBGP = NULL;
+      }
+    break;
+
+  case 23:
+
+/* Line 690 of lalr1.cc  */
+#line 250 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 25:
+
+/* Line 690 of lalr1.cc  */
+#line 258 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.curBGP = driver.defaultBGP;
+	driver.neededBGP = NULL;
+      }
+    break;
+
+  case 31:
+
+/* Line 690 of lalr1.cc  */
+#line 274 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.ignorePrefix(true);
+      }
+    break;
+
+  case 32:
+
+/* Line 690 of lalr1.cc  */
+#line 276 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	  driver.ignorePrefix(false);
+      }
+    break;
+
+  case 33:
+
+/* Line 690 of lalr1.cc  */
+#line 278 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
       }
     break;
 
-  case 13:
+  case 35:
 
 /* Line 690 of lalr1.cc  */
-#line 236 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; }
-    break;
-
-  case 14:
-
-/* Line 690 of lalr1.cc  */
-#line 237 "lib/TrigSParser/TrigSParser.ypp"
+#line 286 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
-    }
-    break;
-
-  case 15:
-
-/* Line 690 of lalr1.cc  */
-#line 244 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	driver.curBGP = (yysemantic_stack_[(2) - (1)].p_TTerm) ? driver.db->ensureGraph((yysemantic_stack_[(2) - (1)].p_TTerm)) : driver.defaultBGP;
-	driver.neededBGP = NULL;
+	driver.ignorePrefix(true);
       }
     break;
 
-  case 16:
+  case 36:
 
 /* Line 690 of lalr1.cc  */
-#line 247 "lib/TrigSParser/TrigSParser.ypp"
+#line 288 "lib/TrigSParser/TrigSParser.ypp"
     {
-	  (yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(5) - (4)].p_DefaultGraphPattern);
-	  driver.neededBGP = NULL;
-	  driver.curBGP = NULL;
+	  driver.ignorePrefix(false);
       }
     break;
 
-  case 17:
+  case 37:
 
 /* Line 690 of lalr1.cc  */
-#line 255 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_TTerm) = NULL; }
+#line 290 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+      }
     break;
 
-  case 18:
+  case 38:
 
 /* Line 690 of lalr1.cc  */
-#line 256 "lib/TrigSParser/TrigSParser.ypp"
+#line 298 "lib/TrigSParser/TrigSParser.ypp"
     {
-      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
     }
     break;
 
-  case 19:
+  case 39:
 
 /* Line 690 of lalr1.cc  */
-#line 259 "lib/TrigSParser/TrigSParser.ypp"
+#line 305 "lib/TrigSParser/TrigSParser.ypp"
     {
-      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
+	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     }
     break;
 
-  case 20:
+  case 40:
 
 /* Line 690 of lalr1.cc  */
-#line 266 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; }
-    break;
-
-  case 21:
-
-/* Line 690 of lalr1.cc  */
-#line 267 "lib/TrigSParser/TrigSParser.ypp"
+#line 314 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(1) - (1)].p_DefaultGraphPattern);
-    }
-    break;
-
-  case 22:
-
-/* Line 690 of lalr1.cc  */
-#line 274 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_DefaultGraphPattern) = driver.neededBGP ? driver.neededBGP : (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
 	driver.neededBGP = NULL;
-    }
-    break;
-
-  case 23:
-
-/* Line 690 of lalr1.cc  */
-#line 282 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_DefaultGraphPattern) = (yysemantic_stack_[(2) - (2)].p_DefaultGraphPattern);
-    }
-    break;
-
-  case 24:
-
-/* Line 690 of lalr1.cc  */
-#line 289 "lib/TrigSParser/TrigSParser.ypp"
-    { (yyval.p_DefaultGraphPattern) = NULL; }
-    break;
-
-  case 26:
-
-/* Line 690 of lalr1.cc  */
-#line 294 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
-  case 28:
-
-/* Line 690 of lalr1.cc  */
-#line 297 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 
   case 44:
 
 /* Line 690 of lalr1.cc  */
-#line 357 "lib/TrigSParser/TrigSParser.ypp"
+#line 331 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+    }
+    break;
+
+  case 46:
+
+/* Line 690 of lalr1.cc  */
+#line 334 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
+    }
+    break;
+
+  case 62:
+
+/* Line 690 of lalr1.cc  */
+#line 390 "lib/TrigSParser/TrigSParser.ypp"
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
@@ -640,48 +685,75 @@ namespace w3c_sw {
     }
     break;
 
-  case 45:
+  case 63:
 
 /* Line 690 of lalr1.cc  */
-#line 366 "lib/TrigSParser/TrigSParser.ypp"
+#line 399 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
-  case 46:
+  case 64:
 
 /* Line 690 of lalr1.cc  */
-#line 370 "lib/TrigSParser/TrigSParser.ypp"
+#line 403 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
-  case 47:
+  case 65:
 
 /* Line 690 of lalr1.cc  */
-#line 377 "lib/TrigSParser/TrigSParser.ypp"
+#line 410 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 66:
+
+/* Line 690 of lalr1.cc  */
+#line 413 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+    }
+    break;
+
+  case 67:
+
+/* Line 690 of lalr1.cc  */
+#line 416 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
+    }
+    break;
+
+  case 68:
+
+/* Line 690 of lalr1.cc  */
+#line 422 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 
-  case 48:
+  case 69:
 
 /* Line 690 of lalr1.cc  */
-#line 380 "lib/TrigSParser/TrigSParser.ypp"
+#line 425 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 
-  case 49:
+  case 70:
 
 /* Line 690 of lalr1.cc  */
-#line 386 "lib/TrigSParser/TrigSParser.ypp"
+#line 431 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -689,10 +761,10 @@ namespace w3c_sw {
       }
     break;
 
-  case 50:
+  case 71:
 
 /* Line 690 of lalr1.cc  */
-#line 390 "lib/TrigSParser/TrigSParser.ypp"
+#line 435 "lib/TrigSParser/TrigSParser.ypp"
     {
 	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -700,10 +772,10 @@ namespace w3c_sw {
       }
     break;
 
-  case 51:
+  case 72:
 
 /* Line 690 of lalr1.cc  */
-#line 399 "lib/TrigSParser/TrigSParser.ypp"
+#line 444 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_BNode) = driver.createBNode();
 	const TTerm* tail = (yyval.p_BNode);
@@ -724,384 +796,384 @@ namespace w3c_sw {
     }
     break;
 
-  case 52:
-
-/* Line 690 of lalr1.cc  */
-#line 421 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerms) = new ProductionVector<const TTerm*>((yysemantic_stack_[(1) - (1)].p_TTerm));
-    }
-    break;
-
-  case 53:
-
-/* Line 690 of lalr1.cc  */
-#line 424 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
-	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
-    }
-    break;
-
-  case 54:
-
-/* Line 690 of lalr1.cc  */
-#line 431 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
-  case 55:
-
-/* Line 690 of lalr1.cc  */
-#line 434 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    }
-    break;
-
-  case 56:
-
-/* Line 690 of lalr1.cc  */
-#line 440 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
-  case 57:
-
-/* Line 690 of lalr1.cc  */
-#line 446 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
-  case 58:
-
-/* Line 690 of lalr1.cc  */
-#line 452 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
-  case 59:
-
-/* Line 690 of lalr1.cc  */
-#line 455 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
-    }
-    break;
-
-  case 60:
-
-/* Line 690 of lalr1.cc  */
-#line 458 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 61:
-
-/* Line 690 of lalr1.cc  */
-#line 461 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    }
-    break;
-
-  case 62:
-
-/* Line 690 of lalr1.cc  */
-#line 464 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
-  case 63:
-
-/* Line 690 of lalr1.cc  */
-#line 467 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
-    }
-    break;
-
-  case 64:
-
-/* Line 690 of lalr1.cc  */
-#line 474 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
-	delete (yysemantic_stack_[(2) - (1)].p_string);
-    }
-    break;
-
-  case 65:
-
-/* Line 690 of lalr1.cc  */
-#line 482 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
-    }
-    break;
-
-  case 66:
-
-/* Line 690 of lalr1.cc  */
-#line 489 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
-    }
-    break;
-
-  case 67:
-
-/* Line 690 of lalr1.cc  */
-#line 493 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
-	(yyval.p_uri_or_langtag).langtag = NULL;
-    }
-    break;
-
-  case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 501 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = NULL;
-    }
-    break;
-
-  case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 505 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
-    }
-    break;
-
-  case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 511 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 71:
-
-/* Line 690 of lalr1.cc  */
-#line 514 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 72:
-
-/* Line 690 of lalr1.cc  */
-#line 517 "lib/TrigSParser/TrigSParser.ypp"
-    {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
   case 73:
 
 /* Line 690 of lalr1.cc  */
-#line 523 "lib/TrigSParser/TrigSParser.ypp"
+#line 466 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerms) = new ProductionVector<const TTerm*>((yysemantic_stack_[(1) - (1)].p_TTerm));
     }
     break;
 
   case 74:
 
 /* Line 690 of lalr1.cc  */
-#line 526 "lib/TrigSParser/TrigSParser.ypp"
+#line 469 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
+	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
     }
     break;
 
   case 75:
 
 /* Line 690 of lalr1.cc  */
-#line 529 "lib/TrigSParser/TrigSParser.ypp"
+#line 476 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 76:
 
 /* Line 690 of lalr1.cc  */
-#line 535 "lib/TrigSParser/TrigSParser.ypp"
+#line 479 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
     break;
 
   case 77:
 
 /* Line 690 of lalr1.cc  */
-#line 538 "lib/TrigSParser/TrigSParser.ypp"
+#line 485 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 78:
 
 /* Line 690 of lalr1.cc  */
-#line 541 "lib/TrigSParser/TrigSParser.ypp"
+#line 491 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 79:
 
 /* Line 690 of lalr1.cc  */
-#line 547 "lib/TrigSParser/TrigSParser.ypp"
+#line 497 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 80:
 
 /* Line 690 of lalr1.cc  */
-#line 550 "lib/TrigSParser/TrigSParser.ypp"
+#line 500 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
     break;
 
   case 81:
 
 /* Line 690 of lalr1.cc  */
-#line 553 "lib/TrigSParser/TrigSParser.ypp"
+#line 503 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
   case 82:
 
 /* Line 690 of lalr1.cc  */
-#line 559 "lib/TrigSParser/TrigSParser.ypp"
+#line 506 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
     break;
 
   case 83:
 
 /* Line 690 of lalr1.cc  */
-#line 562 "lib/TrigSParser/TrigSParser.ypp"
+#line 509 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 84:
 
 /* Line 690 of lalr1.cc  */
-#line 568 "lib/TrigSParser/TrigSParser.ypp"
+#line 512 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
     break;
 
   case 85:
 
 /* Line 690 of lalr1.cc  */
-#line 571 "lib/TrigSParser/TrigSParser.ypp"
+#line 519 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
+	delete (yysemantic_stack_[(2) - (1)].p_string);
     }
     break;
 
   case 86:
 
 /* Line 690 of lalr1.cc  */
-#line 574 "lib/TrigSParser/TrigSParser.ypp"
+#line 527 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
     break;
 
   case 87:
 
 /* Line 690 of lalr1.cc  */
-#line 577 "lib/TrigSParser/TrigSParser.ypp"
+#line 534 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+	(yyval.p_uri_or_langtag).uri = NULL;
+	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
     }
     break;
 
   case 88:
 
 /* Line 690 of lalr1.cc  */
-#line 583 "lib/TrigSParser/TrigSParser.ypp"
+#line 538 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_uri_or_langtag).langtag = NULL;
     }
     break;
 
   case 89:
 
 /* Line 690 of lalr1.cc  */
-#line 586 "lib/TrigSParser/TrigSParser.ypp"
+#line 546 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_uri_or_langtag).uri = NULL;
+	(yyval.p_uri_or_langtag).langtag = NULL;
     }
     break;
 
   case 90:
 
 /* Line 690 of lalr1.cc  */
-#line 592 "lib/TrigSParser/TrigSParser.ypp"
+#line 550 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
     }
     break;
 
   case 91:
 
 /* Line 690 of lalr1.cc  */
-#line 595 "lib/TrigSParser/TrigSParser.ypp"
+#line 556 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
   case 92:
 
 /* Line 690 of lalr1.cc  */
-#line 601 "lib/TrigSParser/TrigSParser.ypp"
+#line 559 "lib/TrigSParser/TrigSParser.ypp"
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
     break;
 
   case 93:
 
 /* Line 690 of lalr1.cc  */
+#line 562 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 94:
+
+/* Line 690 of lalr1.cc  */
+#line 568 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 95:
+
+/* Line 690 of lalr1.cc  */
+#line 571 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 96:
+
+/* Line 690 of lalr1.cc  */
+#line 574 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 97:
+
+/* Line 690 of lalr1.cc  */
+#line 580 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 98:
+
+/* Line 690 of lalr1.cc  */
+#line 583 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 99:
+
+/* Line 690 of lalr1.cc  */
+#line 586 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 100:
+
+/* Line 690 of lalr1.cc  */
+#line 592 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 101:
+
+/* Line 690 of lalr1.cc  */
+#line 595 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 102:
+
+/* Line 690 of lalr1.cc  */
+#line 598 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+    }
+    break;
+
+  case 103:
+
+/* Line 690 of lalr1.cc  */
 #line 604 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+    }
+    break;
+
+  case 104:
+
+/* Line 690 of lalr1.cc  */
+#line 607 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+    }
+    break;
+
+  case 105:
+
+/* Line 690 of lalr1.cc  */
+#line 613 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+    }
+    break;
+
+  case 106:
+
+/* Line 690 of lalr1.cc  */
+#line 616 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+    }
+    break;
+
+  case 107:
+
+/* Line 690 of lalr1.cc  */
+#line 619 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+    }
+    break;
+
+  case 108:
+
+/* Line 690 of lalr1.cc  */
+#line 622 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
+    }
+    break;
+
+  case 109:
+
+/* Line 690 of lalr1.cc  */
+#line 628 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 110:
+
+/* Line 690 of lalr1.cc  */
+#line 631 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 111:
+
+/* Line 690 of lalr1.cc  */
+#line 637 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 112:
+
+/* Line 690 of lalr1.cc  */
+#line 640 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+    }
+    break;
+
+  case 113:
+
+/* Line 690 of lalr1.cc  */
+#line 646 "lib/TrigSParser/TrigSParser.ypp"
+    {
+	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
+    }
+    break;
+
+  case 114:
+
+/* Line 690 of lalr1.cc  */
+#line 649 "lib/TrigSParser/TrigSParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
     }
@@ -1110,7 +1182,7 @@ namespace w3c_sw {
 
 
 /* Line 690 of lalr1.cc  */
-#line 1114 "lib/TrigSParser/TrigSParser.cpp"
+#line 1186 "lib/TrigSParser/TrigSParser.cpp"
 	default:
           break;
       }
@@ -1384,21 +1456,25 @@ namespace w3c_sw {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char TrigSParser::yypact_ninf_ = -67;
-  const signed char
+  const signed char TrigSParser::yypact_ninf_ = -94;
+  const short int
   TrigSParser::yypact_[] =
   {
-        10,     7,    41,   -67,   -67,   -67,    33,   -67,     3,    39,
-     -67,   -67,   -67,   -67,   -67,   -67,    40,   -67,   -67,   -67,
-     -67,   -67,    12,    49,   -67,    49,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,    43,   -67,    42,   -67,   -67,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,    17,
-     -67,   -67,    19,   -67,    -4,   -67,   -67,    75,   -67,    49,
-     -67,   -67,    75,    75,   -23,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,    36,    49,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,    44,   -67,   -67,   -67,   -67,   -67,    46,
-      48,    75,   -67,    49,   -67,   -67,   -67,    49,   -67,   -67
+       -94,     4,    10,   -94,   -29,   -94,   -22,   -94,   143,   -94,
+      21,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+     -94,   -94,     6,   -16,   -94,   -13,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,   -94,   112,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,   -94,    -9,   -94,   -94,    -3,     7,
+     -94,   -94,    16,    17,   -94,   -94,   -94,   -94,   -94,     3,
+     -94,   -94,   -94,   -94,   -94,    13,   143,   -94,   -94,   -94,
+      23,   -94,    32,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+      -3,    26,    27,   -94,   -94,   -94,   -94,   -94,    16,   -94,
+      16,   -94,   -94,    -3,    -3,    16,    33,   -94,   -94,    50,
+      52,    47,   -94,   -94,   -94,   -94,   -94,    48,   -94,    57,
+      -3,   -94,   143,   -94,   -94,   -94,   -94,   -94,   -94,   143,
+     -94,   -94
   };
 
   /* YYDEFACT[S] -- default reduction number in state S.  Performed when
@@ -1407,80 +1483,100 @@ namespace w3c_sw {
   const unsigned char
   TrigSParser::yydefact_[] =
   {
-         4,     0,     0,    13,     6,     5,     0,     1,     2,     3,
-       8,    88,    91,    90,    19,    14,     0,    18,    89,     9,
-       7,    15,     0,    20,    10,     0,    49,    82,    83,    73,
-      74,    75,    76,    77,    78,    79,    80,    81,    84,    85,
-      86,    87,    92,    93,    63,     0,    21,    24,    28,    48,
-      47,    26,    56,    59,    60,    70,    71,    72,    61,    68,
-      58,    62,     0,    55,     0,    52,    54,     0,    16,    20,
-      25,    22,    38,     0,     0,    66,    67,    69,    64,    11,
-      51,    53,    46,     0,     0,    45,    57,    23,    39,    29,
-      37,    27,    65,     0,    50,    35,    42,    44,    12,    30,
-      40,    32,    36,     0,    43,    33,    34,     0,    41,    31
+         3,     0,     2,     1,     0,    31,     0,    35,     0,    70,
+       0,    25,   109,   112,   111,   113,   114,     4,     6,     9,
+       7,     8,     5,    27,    29,    28,    30,    14,    13,    11,
+     110,    12,     0,     0,    39,     0,   103,   104,    94,    95,
+      96,    97,    98,    99,   100,   101,   102,   105,   106,   107,
+     108,    84,    76,    69,    68,     0,    73,    75,    77,    80,
+      81,    91,    92,    93,    82,    89,    79,    83,     0,     0,
+      23,    24,    15,    19,    38,    32,    36,    72,    74,     0,
+      87,    88,    90,    85,    64,     0,     0,    63,    78,    21,
+       0,    16,    42,    44,    46,    67,    65,    66,    17,    10,
+       0,     0,     0,    86,    71,    56,    60,    62,    15,    26,
+      15,    43,    40,     0,    49,    15,     0,    33,    37,    51,
+      58,     0,    41,    45,    47,    48,    50,     0,    20,     0,
+      53,    57,     0,    61,    22,    18,    34,    54,    55,     0,
+      59,    52
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const signed char
   TrigSParser::yypgoto_[] =
   {
-       -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,   -67,   -67,   -15,   -67,   -67,   -67,   -67,   -67,
-     -67,   -66,   -67,   -67,   -67,   -67,   -67,   -67,   -47,   -67,
-     -67,   -42,   -38,   -22,   -67,   -67,   -67,   -67,   -20,   -21,
-     -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,   -67,
-     -67,   -67,    -8,   -67,   -67
+       -94,   -94,   -94,   -94,   -94,   -94,   -94,   -74,   -94,   -94,
+     -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,   -93,   -94,   -94,   -94,   -94,   -71,
+     -94,   -94,   -63,   -58,   -94,   -94,     8,   -94,     9,   -94,
+      -6,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,   -94,
+     -94,   -94,   -94,   -94,    -2,   -94,    -1
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
-  const signed char
+  const short int
   TrigSParser::yydefgoto_[] =
   {
-        -1,     2,     3,     4,     9,     5,    20,    22,    62,    93,
-       8,    15,    23,    16,    45,    46,    70,    71,    47,    73,
-      72,    83,   105,   106,   102,    99,    89,    90,    95,   104,
-     100,    96,    84,    63,    49,    67,    50,    64,    97,    66,
-      85,    52,    53,    76,    77,    78,    54,    55,    56,    57,
-      58,    59,    60,    18,    61
+        -1,     1,     2,    17,    18,    73,    19,    90,    99,   115,
+     100,    20,   108,    69,    21,    72,    22,    23,    33,   101,
+     129,    24,    35,   102,    25,    26,    91,   111,   112,    92,
+     113,   114,   124,   125,    85,   137,   138,   131,   119,   105,
+     133,   120,   106,    86,    93,    52,    53,    68,    54,    55,
+     107,    57,    87,    58,    59,    81,    82,    83,    60,    61,
+      62,    63,    64,    65,    66,    30,    67
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
      number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const signed char TrigSParser::yytable_ninf_ = -18;
-  const signed char
+  const signed char TrigSParser::yytable_ninf_ = -1;
+  const unsigned char
   TrigSParser::yytable_[] =
   {
-        17,    48,    51,    25,    80,    65,    88,    91,   -17,    26,
-      11,    12,    13,     1,    27,    28,    29,    30,    31,    32,
-      33,    34,    35,    36,    37,    38,    39,    40,    41,    11,
-      12,    13,    42,    43,    74,    44,    11,    12,    13,    14,
-       6,     7,    10,    19,    81,    21,    24,    48,    51,    68,
-      94,    69,    79,    98,    87,    75,    25,   101,   103,    86,
-     109,   108,    26,   107,    86,    86,    92,    27,    28,    29,
-      30,    31,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    11,    12,    13,    42,    43,    82,    44,     0,
-       0,     0,     0,    86,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,    11,    12,
-      13
+        29,    31,    56,    84,     3,    32,    79,   116,    70,    71,
+      27,    28,    34,     4,     5,     6,    74,     7,     8,    75,
+     123,   126,    76,     9,     8,    89,    10,   104,    11,     9,
+      80,    12,    13,    14,   121,    98,   122,    12,    13,    14,
+     109,   127,   110,   128,    12,    13,    14,    15,    16,    78,
+      12,    13,    14,    15,    16,    12,    13,    14,    15,    16,
+     117,   118,   130,   132,   134,   135,    88,   136,   141,   140,
+      96,    97,   139,     0,     0,     0,     0,   103,     0,     0,
+      94,    95,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,    88,     0,
+       0,     0,     0,     0,     0,     0,    96,    97,    96,    97,
+       0,    88,    88,    96,    97,     0,    94,    95,    94,    95,
+       8,    77,     0,    94,    95,     9,     0,     0,    88,     0,
+       0,    36,    37,    38,    39,    40,    41,    42,    43,    44,
+      45,    46,    47,    48,    49,    50,    12,    13,    14,    15,
+      16,     8,    51,     0,     0,     0,     9,     0,     0,     0,
+       0,     0,    36,    37,    38,    39,    40,    41,    42,    43,
+      44,    45,    46,    47,    48,    49,    50,    12,    13,    14,
+      15,    16,     0,    51
   };
 
   /* YYCHECK.  */
-  const signed char
+  const short int
   TrigSParser::yycheck_[] =
   {
-         8,    23,    23,     7,     8,    25,    72,    73,     5,    13,
-      33,    34,    35,     3,    18,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    29,    30,    31,    32,    33,
-      34,    35,    36,    37,    17,    39,    33,    34,    35,    36,
-      33,     0,     9,     4,    64,     5,    34,    69,    69,     6,
-      14,     9,    33,     9,    69,    38,     7,    11,    10,    67,
-     107,   103,    13,   101,    72,    73,    74,    18,    19,    20,
-      21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
-      31,    32,    33,    34,    35,    36,    37,    12,    39,    -1,
-      -1,    -1,    -1,   101,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    33,    34,
-      35
+         2,     2,     8,     6,     0,    34,    15,   100,    10,    10,
+       2,     2,    34,     3,     4,     5,    10,     7,     8,    35,
+     113,   114,    35,    13,     8,    18,    16,    14,    18,    13,
+      39,    34,    35,    36,   108,    18,   110,    34,    35,    36,
+      17,   115,    10,    10,    34,    35,    36,    37,    38,    55,
+      34,    35,    36,    37,    38,    34,    35,    36,    37,    38,
+      34,    34,    12,    11,    17,    17,    68,    10,   139,   132,
+      72,    72,   130,    -1,    -1,    -1,    -1,    79,    -1,    -1,
+      72,    72,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   100,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,   108,   108,   110,   110,
+      -1,   113,   114,   115,   115,    -1,   108,   108,   110,   110,
+       8,     9,    -1,   115,   115,    13,    -1,    -1,   130,    -1,
+      -1,    19,    20,    21,    22,    23,    24,    25,    26,    27,
+      28,    29,    30,    31,    32,    33,    34,    35,    36,    37,
+      38,     8,    40,    -1,    -1,    -1,    13,    -1,    -1,    -1,
+      -1,    -1,    19,    20,    21,    22,    23,    24,    25,    26,
+      27,    28,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,    38,    -1,    40
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1488,17 +1584,21 @@ namespace w3c_sw {
   const unsigned char
   TrigSParser::yystos_[] =
   {
-         0,     3,    41,    42,    43,    45,    33,     0,    50,    44,
-       9,    33,    34,    35,    36,    51,    53,    92,    93,     4,
-      46,     5,    47,    52,    34,     7,    13,    18,    19,    20,
-      21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
-      31,    32,    36,    37,    39,    54,    55,    58,    73,    74,
-      76,    79,    81,    82,    86,    87,    88,    89,    90,    91,
-      92,    94,    48,    73,    77,    78,    79,    75,     6,     9,
-      56,    57,    60,    59,    17,    38,    83,    84,    85,    33,
-       8,    78,    12,    61,    72,    80,    92,    54,    61,    66,
-      67,    61,    92,    49,    14,    68,    71,    78,     9,    65,
-      70,    11,    64,    10,    69,    62,    63,    72,    71,    68
+         0,    42,    43,     0,     3,     4,     5,     7,     8,    13,
+      16,    18,    34,    35,    36,    37,    38,    44,    45,    47,
+      52,    55,    57,    58,    62,    65,    66,    87,    89,   105,
+     106,   107,    34,    59,    34,    63,    19,    20,    21,    22,
+      23,    24,    25,    26,    27,    28,    29,    30,    31,    32,
+      33,    40,    86,    87,    89,    90,    91,    92,    94,    95,
+      99,   100,   101,   102,   103,   104,   105,   107,    88,    54,
+     105,   107,    56,    46,    10,    35,    35,     9,    91,    15,
+      39,    96,    97,    98,     6,    75,    84,    93,   105,    18,
+      48,    67,    70,    85,    87,    89,   105,   107,    18,    49,
+      51,    60,    64,   105,    14,    80,    83,    91,    53,    17,
+      10,    68,    69,    71,    72,    50,    75,    34,    34,    79,
+      82,    48,    48,    75,    73,    74,    75,    48,    10,    61,
+      12,    78,    11,    81,    17,    17,    10,    76,    77,    84,
+      83,    80
   };
 
 #if YYDEBUG
@@ -1510,7 +1610,8 @@ namespace w3c_sw {
          0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295
   };
 #endif
 
@@ -1518,32 +1619,36 @@ namespace w3c_sw {
   const unsigned char
   TrigSParser::yyr1_[] =
   {
-         0,    40,    41,    42,    43,    43,    44,    44,    45,    47,
-      48,    49,    46,    50,    50,    52,    51,    53,    53,    53,
-      54,    54,    55,    56,    57,    57,    59,    58,    60,    58,
-      61,    62,    63,    63,    64,    65,    65,    66,    67,    67,
-      68,    69,    70,    70,    71,    72,    72,    73,    73,    75,
-      74,    76,    77,    77,    78,    78,    79,    80,    81,    81,
-      81,    81,    81,    81,    82,    83,    84,    84,    85,    85,
-      86,    86,    86,    87,    87,    87,    88,    88,    88,    89,
-      89,    89,    90,    90,    91,    91,    91,    91,    92,    92,
-      93,    93,    94,    94
+         0,    41,    42,    43,    43,    44,    44,    44,    44,    46,
+      45,    47,    47,    47,    47,    48,    48,    50,    49,    51,
+      49,    53,    52,    54,    54,    56,    55,    57,    57,    57,
+      57,    59,    60,    61,    58,    63,    64,    62,    65,    66,
+      67,    68,    69,    69,    71,    70,    72,    70,    73,    74,
+      74,    75,    76,    77,    77,    78,    79,    79,    80,    81,
+      82,    82,    83,    84,    84,    85,    85,    85,    86,    86,
+      88,    87,    89,    90,    90,    91,    91,    92,    93,    94,
+      94,    94,    94,    94,    94,    95,    96,    97,    97,    98,
+      98,    99,    99,    99,   100,   100,   100,   101,   101,   101,
+     102,   102,   102,   103,   103,   104,   104,   104,   104,   105,
+     105,   106,   106,   107,   107
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
   TrigSParser::yyr2_[] =
   {
-         0,     2,     2,     2,     0,     1,     0,     2,     3,     0,
-       0,     0,     7,     0,     2,     0,     5,     0,     1,     1,
-       0,     1,     2,     2,     0,     1,     0,     3,     0,     3,
-       3,     2,     0,     1,     2,     0,     2,     1,     0,     1,
-       2,     2,     0,     2,     1,     1,     1,     1,     1,     0,
-       4,     3,     1,     2,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     2,     2,     1,     1,     0,     1,
+         0,     2,     1,     0,     2,     1,     1,     1,     1,     0,
+       3,     1,     1,     1,     1,     0,     1,     0,     4,     0,
+       3,     0,     6,     1,     1,     0,     4,     1,     1,     1,
+       1,     0,     0,     0,     7,     0,     0,     5,     3,     2,
+       2,     2,     0,     1,     0,     3,     0,     3,     1,     0,
+       1,     3,     2,     0,     1,     2,     0,     2,     2,     2,
+       0,     2,     1,     1,     1,     1,     1,     1,     1,     1,
+       0,     4,     3,     1,     2,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     2,     2,     1,     1,     0,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1
+       1,     1,     1,     1,     1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1552,33 +1657,38 @@ namespace w3c_sw {
   const char*
   const TrigSParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_BASE", "IT_PREFIX",
-  "GT_LCURLEY", "GT_RCURLEY", "GT_LPAREN", "GT_RPAREN", "GT_DOT",
-  "GT_COMMA", "GT_SEMI", "IT_a", "GT_LBRACKET", "GT_RBRACKET", "GT_PLUS",
-  "GT_MINUS", "GT_DTYPE", "IT_true", "IT_false", "INTEGER", "DECIMAL",
-  "DOUBLE", "INTEGER_POSITIVE", "DECIMAL_POSITIVE", "DOUBLE_POSITIVE",
-  "INTEGER_NEGATIVE", "DECIMAL_NEGATIVE", "DOUBLE_NEGATIVE",
-  "STRING_LITERAL1", "STRING_LITERAL2", "STRING_LITERAL_LONG1",
-  "STRING_LITERAL_LONG2", "IRI_REF", "PNAME_NS", "PNAME_LN",
-  "BLANK_NODE_LABEL", "ANON", "LANGTAG", "NIL", "$accept", "Query",
-  "Prologue", "_QBaseDecl_E_Opt", "_QPrefixDecl_E_Star", "BaseDecl",
-  "PrefixDecl", "$@1", "$@2", "$@3", "_QTrigTemplate_E_Star",
-  "TrigTemplate", "$@4", "GraphName_Opt", "_QConstructTriples_E_Opt",
-  "ConstructTriples", "_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C",
-  "_Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt", "TriplesSameSubject",
-  "$@5", "$@6", "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
+    "\"end of file\"", "error", "$undefined", "BASE", "PREFIX",
+  "SPARQL_BASE", "RDF_TYPE", "SPARQL_PREFIX", "GT_LPAREN", "GT_RPAREN",
+  "GT_DOT", "GT_COMMA", "GT_SEMI", "GT_LBRACKET", "GT_RBRACKET",
+  "GT_DTYPE", "IT_GRAPH", "GT_RCURLEY", "GT_LCURLEY", "IT_true",
+  "IT_false", "INTEGER", "DECIMAL", "DOUBLE", "INTEGER_POSITIVE",
+  "DECIMAL_POSITIVE", "DOUBLE_POSITIVE", "INTEGER_NEGATIVE",
+  "DECIMAL_NEGATIVE", "DOUBLE_NEGATIVE", "STRING_LITERAL1",
+  "STRING_LITERAL2", "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2",
+  "IRIREF", "PNAME_NS", "PNAME_LN", "BLANK_NODE_LABEL", "ANON", "LANGTAG",
+  "NIL", "$accept", "trigDoc", "_Qstatement_E_Star", "statement",
+  "tripleOrBareGraph", "$@1",
+  "_O_Qiri_E_Or_QBlankNode_E_Or_QCollection_E_Or_QBlankNodePropertyList_E_C",
+  "_QTriplesTemplate_E_Opt",
+  "_O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmpty_E_S_QGT_DOT_E_C",
+  "$@2", "$@3", "graphword", "$@4", "_O_Qiri_E_Or_QBlankNode_E_C",
+  "wrappedDefault", "$@5", "directive", "prefixID", "$@6", "$@7", "$@8",
+  "sparqlPrefix", "$@9", "$@10", "base", "sparqlBase", "TriplesTemplate",
+  "_O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C",
+  "_Q_O_QGT_DOT_E_S_QTriplesTemplate_E_Opt_C_E_Opt", "TriplesSameSubject",
+  "$@11", "$@12", "PropertyList", "_QPropertyListNotEmpty_E_Opt",
+  "PropertyListNotEmpty", "_O_QVerb_E_S_QObjectList_E_C",
   "_Q_O_QVerb_E_S_QObjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C",
-  "_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star", "PropertyList",
-  "_QPropertyListNotEmpty_E_Opt", "ObjectList",
+  "_Q_O_QGT_SEMI_E_S_QVerb_E_S_QObjectList_E_Opt_C_E_Star", "ObjectList",
   "_O_QGT_COMMA_E_S_QObject_E_C", "_Q_O_QGT_COMMA_E_S_QObject_E_C_E_Star",
-  "Object", "Verb", "TriplesNode", "BlankNodePropertyList", "@7",
-  "Collection", "_QGraphNode_E_Plus", "GraphNode", "VarOrTerm",
-  "VarOrIRIref", "GraphTerm", "RDFLiteral", "_O_QGT_DTYPE_E_S_QIRIref_E_C",
-  "_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C",
-  "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt", "NumericLiteral",
+  "Object", "Verb", "subject", "TriplesNode", "BlankNodePropertyList",
+  "@13", "Collection", "_QGraphNode_E_Plus", "GraphNode", "VarOrTerm",
+  "VarOriri", "GraphTerm", "RDFLiteral", "_O_QGT_DTYPE_E_S_Qiri_E_C",
+  "_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C",
+  "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt", "NumericLiteral",
   "NumericLiteralUnsigned", "NumericLiteralPositive",
-  "NumericLiteralNegative", "BooleanLiteral", "String", "IRIref",
+  "NumericLiteralNegative", "BooleanLiteral", "String", "iri",
   "PrefixedName", "BlankNode", 0
   };
 #endif
@@ -1588,60 +1698,69 @@ namespace w3c_sw {
   const TrigSParser::rhs_number_type
   TrigSParser::yyrhs_[] =
   {
-        41,     0,    -1,    42,    50,    -1,    43,    44,    -1,    -1,
-      45,    -1,    -1,    44,    46,    -1,     3,    33,     9,    -1,
-      -1,    -1,    -1,     4,    47,    34,    48,    33,    49,     9,
-      -1,    -1,    50,    51,    -1,    -1,    53,     5,    52,    54,
-       6,    -1,    -1,    92,    -1,    36,    -1,    -1,    55,    -1,
-      58,    57,    -1,     9,    54,    -1,    -1,    56,    -1,    -1,
-      79,    59,    61,    -1,    -1,    73,    60,    66,    -1,    72,
-      68,    65,    -1,    72,    68,    -1,    -1,    62,    -1,    11,
-      63,    -1,    -1,    65,    64,    -1,    67,    -1,    -1,    61,
-      -1,    71,    70,    -1,    10,    71,    -1,    -1,    70,    69,
-      -1,    78,    -1,    80,    -1,    12,    -1,    76,    -1,    74,
-      -1,    -1,    13,    75,    61,    14,    -1,     7,    77,     8,
-      -1,    78,    -1,    77,    78,    -1,    79,    -1,    73,    -1,
-      81,    -1,    92,    -1,    92,    -1,    82,    -1,    86,    -1,
-      90,    -1,    94,    -1,    39,    -1,    91,    85,    -1,    17,
-      92,    -1,    38,    -1,    83,    -1,    -1,    84,    -1,    87,
-      -1,    88,    -1,    89,    -1,    20,    -1,    21,    -1,    22,
+        42,     0,    -1,    43,    -1,    -1,    43,    44,    -1,    57,
+      -1,    45,    -1,    52,    -1,    55,    -1,    -1,    47,    46,
+      49,    -1,   105,    -1,   107,    -1,    89,    -1,    87,    -1,
+      -1,    67,    -1,    -1,    18,    50,    48,    17,    -1,    -1,
+      51,    75,    10,    -1,    -1,    16,    54,    18,    53,    48,
+      17,    -1,   105,    -1,   107,    -1,    -1,    18,    56,    48,
+      17,    -1,    58,    -1,    65,    -1,    62,    -1,    66,    -1,
+      -1,    -1,    -1,     4,    59,    35,    60,    34,    61,    10,
+      -1,    -1,    -1,     7,    63,    35,    64,    34,    -1,     3,
+      34,    10,    -1,     5,    34,    -1,    70,    69,    -1,    10,
+      48,    -1,    -1,    68,    -1,    -1,    85,    71,    75,    -1,
+      -1,    87,    72,    73,    -1,    74,    -1,    -1,    75,    -1,
+      84,    80,    79,    -1,    84,    80,    -1,    -1,    76,    -1,
+      12,    77,    -1,    -1,    79,    78,    -1,    83,    82,    -1,
+      11,    83,    -1,    -1,    82,    81,    -1,    91,    -1,    93,
+      -1,     6,    -1,   105,    -1,   107,    -1,    89,    -1,    89,
+      -1,    87,    -1,    -1,    13,    88,    75,    14,    -1,     8,
+      90,     9,    -1,    91,    -1,    90,    91,    -1,    92,    -1,
+      86,    -1,    94,    -1,   105,    -1,   105,    -1,    95,    -1,
+      99,    -1,   103,    -1,   107,    -1,    40,    -1,   104,    98,
+      -1,    15,   105,    -1,    39,    -1,    96,    -1,    -1,    97,
+      -1,   100,    -1,   101,    -1,   102,    -1,    21,    -1,    22,
       -1,    23,    -1,    24,    -1,    25,    -1,    26,    -1,    27,
-      -1,    28,    -1,    18,    -1,    19,    -1,    29,    -1,    30,
-      -1,    31,    -1,    32,    -1,    33,    -1,    93,    -1,    35,
-      -1,    34,    -1,    36,    -1,    37,    -1
+      -1,    28,    -1,    29,    -1,    19,    -1,    20,    -1,    30,
+      -1,    31,    -1,    32,    -1,    33,    -1,    34,    -1,   106,
+      -1,    36,    -1,    35,    -1,    37,    -1,    38,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
      YYRHS.  */
-  const unsigned char
+  const unsigned short int
   TrigSParser::yyprhs_[] =
   {
-         0,     0,     3,     6,     9,    10,    12,    13,    16,    20,
-      21,    22,    23,    31,    32,    35,    36,    42,    43,    45,
-      47,    48,    50,    53,    56,    57,    59,    60,    64,    65,
-      69,    73,    76,    77,    79,    82,    83,    86,    88,    89,
-      91,    94,    97,    98,   101,   103,   105,   107,   109,   111,
-     112,   117,   121,   123,   126,   128,   130,   132,   134,   136,
-     138,   140,   142,   144,   146,   149,   152,   154,   156,   157,
-     159,   161,   163,   165,   167,   169,   171,   173,   175,   177,
-     179,   181,   183,   185,   187,   189,   191,   193,   195,   197,
-     199,   201,   203,   205
+         0,     0,     3,     5,     6,     9,    11,    13,    15,    17,
+      18,    22,    24,    26,    28,    30,    31,    33,    34,    39,
+      40,    44,    45,    52,    54,    56,    57,    62,    64,    66,
+      68,    70,    71,    72,    73,    81,    82,    83,    89,    93,
+      96,    99,   102,   103,   105,   106,   110,   111,   115,   117,
+     118,   120,   124,   127,   128,   130,   133,   134,   137,   140,
+     143,   144,   147,   149,   151,   153,   155,   157,   159,   161,
+     163,   164,   169,   173,   175,   178,   180,   182,   184,   186,
+     188,   190,   192,   194,   196,   198,   201,   204,   206,   208,
+     209,   211,   213,   215,   217,   219,   221,   223,   225,   227,
+     229,   231,   233,   235,   237,   239,   241,   243,   245,   247,
+     249,   251,   253,   255,   257
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   TrigSParser::yyrline_[] =
   {
-         0,   195,   195,   202,   206,   208,   212,   214,   218,   224,
-     226,   228,   224,   236,   237,   244,   244,   255,   256,   259,
-     266,   267,   274,   282,   289,   290,   294,   294,   297,   297,
-     304,   309,   313,   315,   320,   324,   326,   331,   335,   337,
-     342,   347,   351,   353,   357,   366,   370,   377,   380,   386,
-     386,   399,   421,   424,   431,   434,   440,   446,   452,   455,
-     458,   461,   464,   467,   474,   482,   489,   493,   501,   505,
-     511,   514,   517,   523,   526,   529,   535,   538,   541,   547,
-     550,   553,   559,   562,   568,   571,   574,   577,   583,   586,
-     592,   595,   601,   604
+         0,   183,   183,   189,   191,   196,   197,   198,   199,   204,
+     204,   211,   214,   217,   220,   225,   227,   231,   231,   235,
+     235,   243,   243,   250,   253,   258,   258,   266,   267,   268,
+     269,   274,   276,   278,   274,   286,   288,   286,   298,   305,
+     314,   321,   324,   326,   331,   331,   334,   334,   341,   344,
+     346,   351,   355,   358,   360,   364,   367,   369,   375,   380,
+     384,   386,   390,   399,   403,   410,   413,   416,   422,   425,
+     431,   431,   444,   466,   469,   476,   479,   485,   491,   497,
+     500,   503,   506,   509,   512,   519,   527,   534,   538,   546,
+     550,   556,   559,   562,   568,   571,   574,   580,   583,   586,
+     592,   595,   598,   604,   607,   613,   616,   619,   622,   628,
+     631,   637,   640,   646,   649
   };
 
   // Print the state stack on the debug stream.
@@ -1710,7 +1829,7 @@ namespace w3c_sw {
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39
+      35,    36,    37,    38,    39,    40
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -1719,26 +1838,26 @@ namespace w3c_sw {
   }
 
   const int TrigSParser::yyeof_ = 0;
-  const int TrigSParser::yylast_ = 110;
-  const int TrigSParser::yynnts_ = 55;
+  const int TrigSParser::yylast_ = 183;
+  const int TrigSParser::yynnts_ = 67;
   const int TrigSParser::yyempty_ = -2;
-  const int TrigSParser::yyfinal_ = 7;
+  const int TrigSParser::yyfinal_ = 3;
   const int TrigSParser::yyterror_ = 1;
   const int TrigSParser::yyerrcode_ = 256;
-  const int TrigSParser::yyntokens_ = 40;
+  const int TrigSParser::yyntokens_ = 41;
 
-  const unsigned int TrigSParser::yyuser_token_number_max_ = 294;
+  const unsigned int TrigSParser::yyuser_token_number_max_ = 295;
   const TrigSParser::token_number_type TrigSParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
 
 /* Line 1136 of lalr1.cc  */
-#line 1738 "lib/TrigSParser/TrigSParser.cpp"
+#line 1857 "lib/TrigSParser/TrigSParser.cpp"
 
 
 /* Line 1138 of lalr1.cc  */
-#line 611 "lib/TrigSParser/TrigSParser.ypp"
+#line 656 "lib/TrigSParser/TrigSParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::TrigSParser::error(const TrigSParser::location_type& l,

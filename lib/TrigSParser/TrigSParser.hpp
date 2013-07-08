@@ -140,7 +140,6 @@ namespace w3c_sw {
 /* Line 35 of lalr1.cc  */
 #line 102 "lib/TrigSParser/TrigSParser.ypp"
 
-    void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
@@ -165,7 +164,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 169 "lib/TrigSParser/TrigSParser.hpp"
+#line 168 "lib/TrigSParser/TrigSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -178,43 +177,44 @@ namespace w3c_sw {
       /* Tokens.  */
    enum yytokentype {
      __EOF__ = 0,
-     IT_BASE = 258,
-     IT_PREFIX = 259,
-     GT_LCURLEY = 260,
-     GT_RCURLEY = 261,
-     GT_LPAREN = 262,
-     GT_RPAREN = 263,
-     GT_DOT = 264,
-     GT_COMMA = 265,
-     GT_SEMI = 266,
-     IT_a = 267,
+     BASE = 258,
+     PREFIX = 259,
+     SPARQL_BASE = 260,
+     RDF_TYPE = 261,
+     SPARQL_PREFIX = 262,
+     GT_LPAREN = 263,
+     GT_RPAREN = 264,
+     GT_DOT = 265,
+     GT_COMMA = 266,
+     GT_SEMI = 267,
      GT_LBRACKET = 268,
      GT_RBRACKET = 269,
-     GT_PLUS = 270,
-     GT_MINUS = 271,
-     GT_DTYPE = 272,
-     IT_true = 273,
-     IT_false = 274,
-     INTEGER = 275,
-     DECIMAL = 276,
-     DOUBLE = 277,
-     INTEGER_POSITIVE = 278,
-     DECIMAL_POSITIVE = 279,
-     DOUBLE_POSITIVE = 280,
-     INTEGER_NEGATIVE = 281,
-     DECIMAL_NEGATIVE = 282,
-     DOUBLE_NEGATIVE = 283,
-     STRING_LITERAL1 = 284,
-     STRING_LITERAL2 = 285,
-     STRING_LITERAL_LONG1 = 286,
-     STRING_LITERAL_LONG2 = 287,
-     IRI_REF = 288,
-     PNAME_NS = 289,
-     PNAME_LN = 290,
-     BLANK_NODE_LABEL = 291,
-     ANON = 292,
-     LANGTAG = 293,
-     NIL = 294
+     GT_DTYPE = 270,
+     IT_GRAPH = 271,
+     GT_RCURLEY = 272,
+     GT_LCURLEY = 273,
+     IT_true = 274,
+     IT_false = 275,
+     INTEGER = 276,
+     DECIMAL = 277,
+     DOUBLE = 278,
+     INTEGER_POSITIVE = 279,
+     DECIMAL_POSITIVE = 280,
+     DOUBLE_POSITIVE = 281,
+     INTEGER_NEGATIVE = 282,
+     DECIMAL_NEGATIVE = 283,
+     DOUBLE_NEGATIVE = 284,
+     STRING_LITERAL1 = 285,
+     STRING_LITERAL2 = 286,
+     STRING_LITERAL_LONG1 = 287,
+     STRING_LITERAL_LONG2 = 288,
+     IRIREF = 289,
+     PNAME_NS = 290,
+     PNAME_LN = 291,
+     BLANK_NODE_LABEL = 292,
+     ANON = 293,
+     LANGTAG = 294,
+     NIL = 295
    };
 
     };
@@ -300,7 +300,7 @@ namespace w3c_sw {
     typedef unsigned char token_number_type;
     /* Tables.  */
     /// For a state, the index in \a yytable_ of its portion.
-    static const signed char yypact_[];
+    static const short int yypact_[];
     static const signed char yypact_ninf_;
 
     /// For a state, default reduction number.
@@ -309,17 +309,17 @@ namespace w3c_sw {
     static const unsigned char yydefact_[];
 
     static const signed char yypgoto_[];
-    static const signed char yydefgoto_[];
+    static const short int yydefgoto_[];
 
     /// What to do in a state.
     /// \a yytable_[yypact_[s]]: what to do in state \a s.
     /// - if positive, shift that token.
     /// - if negative, reduce the rule which number is the opposite.
     /// - if zero, do what YYDEFACT says.
-    static const signed char yytable_[];
+    static const unsigned char yytable_[];
     static const signed char yytable_ninf_;
 
-    static const signed char yycheck_[];
+    static const short int yycheck_[];
 
     /// For a state, its accessing symbol.
     static const unsigned char yystos_[];
@@ -343,7 +343,7 @@ namespace w3c_sw {
     /// A `-1'-separated list of the rules' RHS.
     static const rhs_number_type yyrhs_[];
     /// For each rule, the index of the first RHS symbol in \a yyrhs_.
-    static const unsigned char yyprhs_[];
+    static const unsigned short int yyprhs_[];
     /// For each rule, its source line number.
     static const unsigned short int yyrline_[];
     /// For each scanner token number, its symbol number.
