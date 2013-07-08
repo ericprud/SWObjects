@@ -62,6 +62,9 @@ typedef w3c_sw::TrigSParser::token_type token_type;
 /* START patterns for SPARQLfed terminals */
 IT_PREFIX		"@"[Pp][Rr][Ee][Ff][Ii][Xx]
 IT_BASE		"@"[Bb][Aa][Ss][Ee]
+SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
+SPARQL_BASE		[Bb][Aa][Ss][Ee]
+IT_GRAPH		[Gg][Rr][Aa][Pp][Hh]
 GT_LCURLEY		"{"
 GT_RCURLEY		"}"
 GT_LPAREN		"("
@@ -115,8 +118,11 @@ LINEFEED		(\r\n|\r|\n)
 %%
 {LINEFEED}		{ yylloc->end.lines(1); }
 {PASSED_TOKENS}		{ yylloc->step(); /* @@ needed? useful? */ }
-{IT_PREFIX}		{return token::IT_PREFIX;}
-{IT_BASE}		{return token::IT_BASE;}
+{IT_PREFIX}		{return token::PREFIX;}
+{IT_BASE}		{return token::BASE;}
+{SPARQL_PREFIX}		{return token::SPARQL_PREFIX;}
+{SPARQL_BASE}		{return token::SPARQL_BASE;}
+{IT_GRAPH}		{return token::IT_GRAPH;}
 {GT_LCURLEY}		{return token::GT_LCURLEY;}
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
@@ -124,15 +130,13 @@ LINEFEED		(\r\n|\r|\n)
 {GT_DOT}		{return token::GT_DOT;}
 {GT_COMMA}		{return token::GT_COMMA;}
 {GT_SEMI}		{return token::GT_SEMI;}
-{IT_a}		{return token::IT_a;}
+{IT_a}		{return token::RDF_TYPE;}
 {GT_LBRACKET}		{return token::GT_LBRACKET;}
 {GT_RBRACKET}		{return token::GT_RBRACKET;}
-{GT_PLUS}		{return token::GT_PLUS;}
-{GT_MINUS}		{return token::GT_MINUS;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
 {IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
 {IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
-{IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRI_REF;}
+{IRI_REF}		{yylval->p_URI = resolveBase(yytext, true); return token::IRIREF;}
 {LANGTAG}		{yylval->p_LANGTAG = new LANGTAG(yytext+1); return token::LANGTAG;}
 {INTEGER}		{return typedLiteral(yylval, token::INTEGER);}
 {DECIMAL}		{return typedLiteral(yylval, token::DECIMAL);}
