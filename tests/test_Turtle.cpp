@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_SUITE_END(/* error_recovery */)
 	BOOST_ERROR ( s.what() );					       \
     }
 
-/** command-line tests:
+/** command-line Turtle tests:
 
 from the web:
 
@@ -715,6 +715,19 @@ BOOST_AUTO_TEST_CASE( syntax_bad_uri_04 ) { NEGATIVE_SYNTAX_TEST("syntax-bad-uri
 BOOST_AUTO_TEST_CASE( syntax_bad_uri_05 ) { NEGATIVE_SYNTAX_TEST("syntax-bad-uri-05", "TurtleTests/turtle-syntax-bad-uri-05.ttl"); }
 
 BOOST_AUTO_TEST_SUITE_END(/* turtle_syntax_negative */)
+
+
+/** command-line Trig tests:
+
+from the web: no worky 'cause of https and redirects.
+
+or from disk:
+./bin/sparql -d ../../WWW/rdf/trig/tests2/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -d " ?ttl " || echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTrigPositiveSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+./bin/sparql -d ../../WWW/rdf/trig/tests2/manifest.ttl -e 'PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> PREFIX rdft:   <http://www.w3.org/ns/rdftest#> SELECT "./bin/sparql -q -d " ?ttl " && echo fail " ?name "\n" WHERE { ?l mf:entries MEMBERS(?entry) . ?entry a rdft:TestTrigNegativeSyntax ; mf:action ?ttl ; mf:name ?name } ' -L text/raw | bash
+
+ */
+
 
 // EOF
 
