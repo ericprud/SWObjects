@@ -1,0 +1,1858 @@
+diff --git a/CONFIG b/CONFIG
+index f7ccbe7..732c1cc 100644
+--- a/CONFIG
++++ b/CONFIG
+@@ -13,7 +13,7 @@
+ #   http://xmlsoft.org/
+ #   expat 1.5.2
+ #   http://sourceforge.net/projects/expat/
+-XML_PARSER= EXPAT1
++XML_PARSER= LIBXML2
+ 
+ # CONSOLE_ENCODING: UTF8 |  - what encoding to use for console output
+ # controls whether tables should be printed like "┌──┬┐" or "+--++"
+@@ -53,9 +53,9 @@ HTTP_SERVER= ASIO
+ #   ODBC
+ #   
+ #SQL_CLIENTS= MYSQL|ORACLE|ODBC|POSTGRES
+-SQL_CLIENTS= MYSQL|ODBC|POSTGRES
++SQL_CLIENTS= 
+ #SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
+-SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM
++#SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM
+ DM_BASE_URI?= http://example.com/base/
+ # connect with:
+ #   mysql -u root DM
+@@ -88,13 +88,14 @@ NLS_LANG=_.UTF8
+ # It's generally better to use INCLUDES and LIBS, though you'll still need LD_LIBRARY_PATH
+ #CPATH=
+ #LIBRARY_PATH=
+-INCLUDES=-I/home/eric/checkouts/libbooost.inst/include/ -I/usr/local/instantclient_11_2/sdk/include/
+-LIBS=-L/home/eric/checkouts/libbooost.inst/lib/ -L/usr/local/instantclient_11_2/
+-LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/
++INCLUDES=-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/usr/include/libxml2 -I/Users/eric/checkouts/boost_1_49_0
++LIBS=-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/usr/lib -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/usr/lib/system -L/Users/eric/checkouts/boost_1_49_0/stage/lib
++LD_LIBRARY_PATH=~/checkouts/boost_1_49_0/stage/lib
++#LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/
+ 
+ 
+ # boost-log on linux requires clock_gettime so need a -lrt after -lboost-log
+-LRT=-lrt
++LRT=
+ 
+ # LINK: STATIC | DYNAMIC - build executables requiring dynamic libraries . ####
+ # Needed when building any executables.
+@@ -108,5 +109,5 @@ LINK= DYNAMIC
+ #OSX: flex=/opt/local/bin/flex
+ #OSX: bison=/opt/local/bin/bison
+ 
+-CRYPTLIB= ../cryptopp561
++#CRYPTLIB= ../cryptopp561
+ 
+diff --git a/Makefile b/Makefile
+index 2c83472..ceb7579 100644
+--- a/Makefile
++++ b/Makefile
+@@ -32,13 +32,13 @@ PERL_HOME:=/usr/lib/perl/5.10.1
+ JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
+ # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
+ #ECHO:=`which echo`
+-#OSX: ECHO:= /bin/echo
+-ECHO ?= echo
++ECHO:= /bin/echo
++#ECHO ?= echo
+ #LIBS
+ DEBUG:=-g -O0
+ OPT=-fPIC
+ DEFS += -DYYTEXT_POINTER=1
+-WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
++WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98 -Wno-overloaded-virtual -Wno-invalid-source-encoding
+ # --pedantic
+ # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
+ 
+@@ -207,13 +207,14 @@ TOONOISEY=-ansi
+ # fussiness directives removed from CFLAGS:
+ #   -std=c++0x -- can't count on 0x on all platforms
+ #   -pedantic-errors -- breaks on OSX, aborts on #pragma
+-CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe -Wno-empty-body -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros -ftemplate-depth-128 -fno-merge-constants
++CFLAGS += $(DEFS) $(OPT) $(DEBUG) $(WARN) $(INCLUDES) -pipe -Wno-empty-body -Wno-missing-field-initializers -Wwrite-strings -Wno-deprecated -Wno-unused -Wno-non-virtual-dtor -Wno-variadic-macros -ftemplate-depth-128
++# -fno-merge-constants
+ CXXFLAGS += $(CFLAGS)
+ 
+ ### absolutely neccessry for c++ linking ###
+ LD = $(CXX)
+ #LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -lrt
+-LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB) -luuid
++LDFLAGS += $(STATICITY) $(LIBINC) $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
+ LDAPPFLAGS += $(LDFLAGS) -lboost_program_options$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX)
+ VER=0.1
+ COMPILE=CPATH=$(CPATH) $(CXX)
+@@ -364,7 +365,7 @@ lib/%.cpp  lib/%.hpp : lib/%.ypp
+ 
+ lib/%.cpp : lib/%.lpp
+ 	$(FLEX) -o $@  $<
+-	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
++	# $(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
+ 
+ 
+ # Parser maintenance
+@@ -480,7 +481,7 @@ tests/test_%: tests/test_%.o $(LIB) $(BOOST_TARGET)lib/lib$(BOOST_LOG_LIB).so
+ 
+ t_%: tests/test_%
+ 	@# Most of the tests are run from the tests dir to make it easier to find errant files.
+-	( cd tests && LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
++	( cd tests && DYLD_LIBRARY_PATH=$(LD_LIBRARY_PATH):../$(BOOST_TARGET)lib ./$(notdir $<) $(TEST_ARGS) )
+ 
+ 
+ ## Rules specific to certain tests ##
+diff --git a/boost-log-1.46/boost/log/detail/light_function.hpp b/boost-log-1.46/boost/log/detail/light_function.hpp
+index b7f0575..7cd0f5a 100644
+--- a/boost-log-1.46/boost/log/detail/light_function.hpp
++++ b/boost-log-1.46/boost/log/detail/light_function.hpp
+@@ -175,12 +175,12 @@ public:
+         return *this;
+     }
+     //! Assignment of NULL
+-    BOOST_LOG_LWFUNCTION_NAME& operator= (int p)
+-    {
+-        BOOST_ASSERT(p == 0);
+-        clear();
+-        return *this;
+-    }
++//     BOOST_LOG_LWFUNCTION_NAME& operator= (int p)
++//     {
++//         BOOST_ASSERT(p == 0);
++//         clear();
++//         return *this;
++//     }
+ #if !defined(BOOST_NO_RVALUE_REFERENCES)
+     template< typename FunT >
+     BOOST_LOG_LWFUNCTION_NAME& operator= (FunT const& fun)
+@@ -336,12 +336,12 @@ public:
+         return *this;
+     }
+     //! Assignment of NULL
+-    BOOST_LOG_LWFUNCTION_NAME& operator= (int p)
+-    {
+-        BOOST_ASSERT(p == 0);
+-        clear();
+-        return *this;
+-    }
++//     BOOST_LOG_LWFUNCTION_NAME& operator= (int p)
++//     {
++//         BOOST_ASSERT(p == 0);
++//         clear();
++//         return *this;
++//     }
+ #if !defined(BOOST_NO_RVALUE_REFERENCES)
+     template< typename FunT >
+     BOOST_LOG_LWFUNCTION_NAME& operator= (FunT const& fun)
+diff --git a/boost-log-1.46/boost/log/formatters/attr.hpp b/boost-log-1.46/boost/log/formatters/attr.hpp
+index 4d92640..337af26 100644
+--- a/boost-log-1.46/boost/log/formatters/attr.hpp
++++ b/boost-log-1.46/boost/log/formatters/attr.hpp
+@@ -99,7 +99,7 @@ namespace aux {
+         typedef typename type::attribute_name_type attribute_name_type;
+ 
+         template< typename ArgsT >
+-        static type construct(attribute_name_type const& name, ArgsT const& args)
++        static type construct(attribute_name_type const& name, ArgsT const& /* args */)
+         {
+             return type(name);
+         }
+diff --git a/boost-log-1.46/libs/log/src/default_filter_factory.cpp b/boost-log-1.46/libs/log/src/default_filter_factory.cpp
+index 8684c42..be1caec 100644
+--- a/boost-log-1.46/libs/log/src/default_filter_factory.cpp
++++ b/boost-log-1.46/libs/log/src/default_filter_factory.cpp
+@@ -103,9 +103,14 @@ default_filter_factory< CharT >::on_custom_relation(string_type const& name, str
+         return filter_type(log::filters::attr< string_type >(name).contains(arg));
+     else if (rel == constants::matches_keyword())
+     {
++#if 0
++	assert(false);
++	return filter_type();
++#else
+         typedef xpressive::basic_regex< typename string_type::const_iterator > regex_t;
+         regex_t rex = regex_t::compile(arg, regex_t::ECMAScript | regex_t::optimize);
+         return filter_type(log::filters::attr< string_type >(name, std::nothrow).matches(rex));
++#endif
+     }
+     else
+     {
+diff --git a/boost-log-1.46/libs/log/src/init_from_settings.cpp b/boost-log-1.46/libs/log/src/init_from_settings.cpp
+index a6da491..057e8cd 100644
+--- a/boost-log-1.46/libs/log/src/init_from_settings.cpp
++++ b/boost-log-1.46/libs/log/src/init_from_settings.cpp
+@@ -800,6 +800,22 @@ void register_sink_factory(
+ {
+     sinks_repository< CharT >& repo = sinks_repository< CharT >::get();
+     BOOST_LOG_EXPR_IF_MT(lock_guard< log::aux::light_rw_mutex > _(repo.m_Mutex);)
++
++    typedef CharT char_type;
++    typedef std::basic_string< char_type > string_type;
++    typedef boost::log::aux::char_constants< char_type > constants;
++    typedef std::map< string_type, any > params_t;
++    typedef boost::log::aux::light_function1<
++        shared_ptr< sinks::sink< char_type > >,
++        params_t const&
++    > sink_factory;
++
++    typename std::map< string_type, sink_factory >::iterator it = repo.m_Factories.find(sink_name);
++//     if (it == repo.m_Factories.end())
++// 	repo.m_Factories.insert(std::make_pair(sink_name, factory));
++//     else
++// 	it->second = (boost::log2_mt_posix::aux::light_function1<boost::shared_ptr<boost::log2_mt_posix::sinks::sink<char> >,
++// 		      const std::map<std::basic_string<char>, boost::any, std::less<std::basic_string<char> >, std::allocator<std::pair<const std::basic_string<char>, boost::any> > > &>)factory;
+     repo.m_Factories[sink_name] = factory;
+ }
+ 
+diff --git a/interface/SQLclient.hpp b/interface/SQLclient.hpp
+index b34b120..1b9f4f2 100644
+--- a/interface/SQLclient.hpp
++++ b/interface/SQLclient.hpp
+@@ -371,7 +371,11 @@ namespace w3c_sw {
+ 	    if (client != NULL)
+ 		delete client;
+ 	}
+-	static SQLclient* makeClient (std::string driver, bool useODBC) {
++	static SQLclient* makeClient (std::string driver, bool
++#ifdef SQL_CLIENT_ODBC
++				      useODBC
++#endif
++				      ) {
+ #ifdef SQL_CLIENT_ODBC
+ 	    if (useODBC) return new SQLclient_ODBC(driver);
+ #endif
+diff --git a/lib/JSONresultsScanner.cpp b/lib/JSONresultsScanner.cpp
+index c5fda1f..1f06f43 100644
+--- a/lib/JSONresultsScanner.cpp
++++ b/lib/JSONresultsScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -799,7 +790,7 @@ typedef w3c_sw::JSONresultsParser::token_type token_type;
+ /* <STRING_LITERAL_LONG2> ::= "'''" (( (( "'" | "''" ))? ( [^'\\] | ECHAR ) ))* "'''" */
+ /* END patterns for SPARUL_EGP terminals */
+ /* START semantic actions for SPARUL_EGP terminals */
+-#line 803 "lib/JSONresultsScanner.cpp"
++#line 794 "lib/JSONresultsScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -856,12 +847,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -963,7 +949,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 115 "lib/JSONresultsScanner.lpp"
+ 
+-#line 967 "lib/JSONresultsScanner.cpp"
++#line 953 "lib/JSONresultsScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -1291,7 +1277,7 @@ YY_RULE_SETUP
+ #line 164 "lib/JSONresultsScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 1295 "lib/JSONresultsScanner.cpp"
++#line 1281 "lib/JSONresultsScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -1483,9 +1469,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -1512,7 +1498,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -1577,7 +1563,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -1591,7 +1577,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -1622,7 +1608,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -1749,7 +1735,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -1800,7 +1786,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -1824,7 +1810,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -1988,7 +1974,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -2132,7 +2118,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/lib/MapSetScanner.cpp b/lib/MapSetScanner.cpp
+index 2f25c33..41c4ae2 100644
+--- a/lib/MapSetScanner.cpp
++++ b/lib/MapSetScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -4627,7 +4618,7 @@ typedef w3c_sw::MapSetParser::token_type token_type;
+ /* <STRING_LITERAL_LONG2> ::= "'''" (( (( "'" | "''" ))? ( [^'\\] | ECHAR ) ))* "'''" */
+ /* END patterns for MapSet terminals */
+ /* START semantic actions for MapSet terminals */
+-#line 4631 "lib/MapSetScanner.cpp"
++#line 4622 "lib/MapSetScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -4684,12 +4675,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -4791,7 +4777,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 247 "lib/MapSetScanner.lpp"
+ 
+-#line 4795 "lib/MapSetScanner.cpp"
++#line 4781 "lib/MapSetScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -5713,7 +5699,7 @@ YY_RULE_SETUP
+ #line 414 "lib/MapSetScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 5717 "lib/MapSetScanner.cpp"
++#line 5703 "lib/MapSetScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -5905,9 +5891,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -5934,7 +5920,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -5999,7 +5985,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -6013,7 +5999,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -6044,7 +6030,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -6171,7 +6157,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -6222,7 +6208,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -6246,7 +6232,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -6410,7 +6396,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -6554,7 +6540,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/lib/SPARQLalgebraScanner.cpp b/lib/SPARQLalgebraScanner.cpp
+index ea38675..5cedc69 100644
+--- a/lib/SPARQLalgebraScanner.cpp
++++ b/lib/SPARQLalgebraScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -3345,7 +3336,7 @@ typedef w3c_sw::SPARQLalgebraParser::token_type token_type;
+ /* START patterns for SPARQLalgebra terminals */
+ /* END patterns for SPARQLalgebra terminals */
+ /* START semantic actions for SPARQLalgebra terminals */
+-#line 3349 "lib/SPARQLalgebraScanner.cpp"
++#line 3340 "lib/SPARQLalgebraScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -3402,12 +3393,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -3509,7 +3495,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 241 "lib/SPARQLalgebraScanner.lpp"
+ 
+-#line 3513 "lib/SPARQLalgebraScanner.cpp"
++#line 3499 "lib/SPARQLalgebraScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -4427,7 +4413,7 @@ YY_RULE_SETUP
+ #line 403 "lib/SPARQLalgebraScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 4431 "lib/SPARQLalgebraScanner.cpp"
++#line 4417 "lib/SPARQLalgebraScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -4619,9 +4605,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -4648,7 +4634,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -4713,7 +4699,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -4727,7 +4713,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -4758,7 +4744,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -4885,7 +4871,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -4936,7 +4922,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -4960,7 +4946,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -5124,7 +5110,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -5268,7 +5254,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/lib/SPARQLfedScanner.cpp b/lib/SPARQLfedScanner.cpp
+index 3db1a26..e2bf643 100644
+--- a/lib/SPARQLfedScanner.cpp
++++ b/lib/SPARQLfedScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -3632,7 +3623,7 @@ typedef w3c_sw::SPARQLfedParser::token_type token_type;
+ /* <STRING_LITERAL_LONG2> ::= "'''" (( (( "'" | "''" ))? ( [^'\\] | ECHAR ) ))* "'''" */
+ /* END patterns for SPARUL_EGP terminals */
+ /* START semantic actions for SPARUL_EGP terminals */
+-#line 3636 "lib/SPARQLfedScanner.cpp"
++#line 3627 "lib/SPARQLfedScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -3689,12 +3680,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -3796,7 +3782,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 266 "lib/SPARQLfedScanner.lpp"
+ 
+-#line 3800 "lib/SPARQLfedScanner.cpp"
++#line 3786 "lib/SPARQLfedScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -4826,7 +4812,7 @@ YY_RULE_SETUP
+ #line 454 "lib/SPARQLfedScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 4830 "lib/SPARQLfedScanner.cpp"
++#line 4816 "lib/SPARQLfedScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -5018,9 +5004,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -5047,7 +5033,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -5112,7 +5098,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -5126,7 +5112,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -5157,7 +5143,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -5284,7 +5270,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -5335,7 +5321,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -5359,7 +5345,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -5523,7 +5509,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -5667,7 +5653,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/lib/SQLScanner.cpp b/lib/SQLScanner.cpp
+index a910885..f970245 100644
+--- a/lib/SQLScanner.cpp
++++ b/lib/SQLScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -1040,7 +1031,7 @@ typedef w3c_sw::SQLParser::token_type token_type;
+ /*" for syntax hilighting */
+ /* END patterns for SQL terminals */
+ /* START semantic actions for SQL terminals */
+-#line 1044 "lib/SQLScanner.cpp"
++#line 1035 "lib/SQLScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -1097,12 +1088,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -1204,7 +1190,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 185 "lib/SQLScanner.lpp"
+ 
+-#line 1208 "lib/SQLScanner.cpp"
++#line 1194 "lib/SQLScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -1853,7 +1839,7 @@ YY_RULE_SETUP
+ #line 298 "lib/SQLScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 1857 "lib/SQLScanner.cpp"
++#line 1843 "lib/SQLScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -2045,9 +2031,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -2074,7 +2060,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -2139,7 +2125,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -2153,7 +2139,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -2184,7 +2170,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -2311,7 +2297,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -2362,7 +2348,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -2386,7 +2372,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -2550,7 +2536,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -2694,7 +2680,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/lib/TrigSScanner.cpp b/lib/TrigSScanner.cpp
+index 0e6f618..bd16b22 100644
+--- a/lib/TrigSScanner.cpp
++++ b/lib/TrigSScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -1722,7 +1713,7 @@ typedef w3c_sw::TrigSParser::token_type token_type;
+ /* START patterns for SPARQLfed terminals */
+ /* END patterns for SPARQLfed terminals */
+ /* START semantic actions for SPARQLfed terminals */
+-#line 1726 "lib/TrigSScanner.cpp"
++#line 1717 "lib/TrigSScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -1779,12 +1770,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -1886,7 +1872,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 115 "lib/TrigSScanner.lpp"
+ 
+-#line 1890 "lib/TrigSScanner.cpp"
++#line 1876 "lib/TrigSScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -2213,7 +2199,7 @@ YY_RULE_SETUP
+ #line 163 "lib/TrigSScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 2217 "lib/TrigSScanner.cpp"
++#line 2203 "lib/TrigSScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -2405,9 +2391,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -2434,7 +2420,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -2499,7 +2485,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -2513,7 +2499,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -2544,7 +2530,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -2671,7 +2657,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -2722,7 +2708,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -2746,7 +2732,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -2910,7 +2896,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -3054,7 +3040,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/lib/TurtleSScanner.cpp b/lib/TurtleSScanner.cpp
+index 00417b0..7cffb31 100644
+--- a/lib/TurtleSScanner.cpp
++++ b/lib/TurtleSScanner.cpp
+@@ -72,6 +72,7 @@ typedef int16_t flex_int16_t;
+ typedef uint16_t flex_uint16_t;
+ typedef int32_t flex_int32_t;
+ typedef uint32_t flex_uint32_t;
++typedef uint64_t flex_uint64_t;
+ #else
+ typedef signed char flex_int8_t;
+ typedef short int flex_int16_t;
+@@ -79,6 +80,7 @@ typedef int flex_int32_t;
+ typedef unsigned char flex_uint8_t; 
+ typedef unsigned short int flex_uint16_t;
+ typedef unsigned int flex_uint32_t;
++#endif /* ! C99 */
+ 
+ /* Limits of integral types. */
+ #ifndef INT8_MIN
+@@ -109,8 +111,6 @@ typedef unsigned int flex_uint32_t;
+ #define UINT32_MAX             (4294967295U)
+ #endif
+ 
+-#endif /* ! C99 */
+-
+ #endif /* ! FLEXINT_H */
+ 
+ /* %endif */
+@@ -120,7 +120,6 @@ typedef unsigned int flex_uint32_t;
+ #include <iostream> 
+ #include <errno.h>
+ #include <cstdlib>
+-#include <cstdio>
+ #include <cstring>
+ /* end standard C++ headers. */
+ /* %endif */
+@@ -192,15 +191,7 @@ typedef unsigned int flex_uint32_t;
+ 
+ /* Size of default input buffer. */
+ #ifndef YY_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k.
+- * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+- * Ditto for the __ia64__ case accordingly.
+- */
+-#define YY_BUF_SIZE 32768
+-#else
+ #define YY_BUF_SIZE 16384
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* The state buf must be large enough to hold one state per character in the main buffer.
+@@ -212,8 +203,13 @@ typedef unsigned int flex_uint32_t;
+ typedef struct yy_buffer_state *YY_BUFFER_STATE;
+ #endif
+ 
++#ifndef YY_TYPEDEF_YY_SIZE_T
++#define YY_TYPEDEF_YY_SIZE_T
++typedef size_t yy_size_t;
++#endif
++
+ /* %if-not-reentrant */
+-extern int yyleng;
++extern yy_size_t yyleng;
+ /* %endif */
+ 
+ /* %if-c-only */
+@@ -243,11 +239,6 @@ extern int yyleng;
+ 
+ #define unput(c) yyunput( c, (yytext_ptr)  )
+ 
+-#ifndef YY_TYPEDEF_YY_SIZE_T
+-#define YY_TYPEDEF_YY_SIZE_T
+-typedef size_t yy_size_t;
+-#endif
+-
+ #ifndef YY_STRUCT_YY_BUFFER_STATE
+ #define YY_STRUCT_YY_BUFFER_STATE
+ struct yy_buffer_state
+@@ -270,7 +261,7 @@ struct yy_buffer_state
+ 	/* Number of characters read into yy_ch_buf, not including EOB
+ 	 * characters.
+ 	 */
+-	int yy_n_chars;
++	yy_size_t yy_n_chars;
+ 
+ 	/* Whether we "own" the buffer - i.e., we know we created it,
+ 	 * and can realloc() it to grow it, and should free() it to
+@@ -402,7 +393,7 @@ int yyFlexLexer::yywrap() { return 1; }
+ #define YY_DO_BEFORE_ACTION \
+ 	(yytext_ptr) = yy_bp; \
+ /* %% [2.0] code to fiddle yytext and yyleng for yymore() goes here \ */\
+-	yyleng = (size_t) (yy_cp - yy_bp); \
++	yyleng = (yy_size_t) (yy_cp - yy_bp); \
+ 	(yy_hold_char) = *yy_cp; \
+ 	*yy_cp = '\0'; \
+ /* %% [3.0] code to copy yytext_ptr to yytext[] goes here, if %array \ */\
+@@ -187110,7 +187101,7 @@ typedef w3c_sw::TurtleSParser::token_type token_type;
+ /*--       \t\n      \r  SPACE   "        '()      ,  ./       ;<  >        [   ]         --*/
+ /* END patterns for SPARQLfed terminals */
+ /* START semantic actions for SPARQLfed terminals */
+-#line 187114 "lib/TurtleSScanner.cpp"
++#line 187105 "lib/TurtleSScanner.cpp"
+ 
+ #define INITIAL 0
+ 
+@@ -187167,12 +187158,7 @@ static int yy_flex_strlen (yyconst char * );
+ 
+ /* Amount of stuff to slurp up with each read. */
+ #ifndef YY_READ_BUF_SIZE
+-#ifdef __ia64__
+-/* On IA-64, the buffer size is 16k, not 8k */
+-#define YY_READ_BUF_SIZE 16384
+-#else
+ #define YY_READ_BUF_SIZE 8192
+-#endif /* __ia64__ */
+ #endif
+ 
+ /* Copy whatever the last rule matched to the standard output. */
+@@ -187274,7 +187260,7 @@ YY_DECL
+ /* %% [7.0] user's declarations go here */
+ #line 130 "lib/TurtleSScanner.lpp"
+ 
+-#line 187278 "lib/TurtleSScanner.cpp"
++#line 187264 "lib/TurtleSScanner.cpp"
+ 
+ 	if ( !(yy_init) )
+ 		{
+@@ -187590,7 +187576,7 @@ YY_RULE_SETUP
+ #line 177 "lib/TurtleSScanner.lpp"
+ YY_FATAL_ERROR( "flex scanner jammed" );
+ 	YY_BREAK
+-#line 187594 "lib/TurtleSScanner.cpp"
++#line 187580 "lib/TurtleSScanner.cpp"
+ 
+ 	case YY_END_OF_BUFFER:
+ 		{
+@@ -187782,9 +187768,9 @@ void yyFlexLexer::switch_streams( std::istream* new_in, std::ostream* new_out )
+ }
+ 
+ #ifdef YY_INTERACTIVE
+-int yyFlexLexer::LexerInput( char* buf, int /* max_size */ )
++size_t yyFlexLexer::LexerInput( char* buf, size_t /* max_size */ )
+ #else
+-int yyFlexLexer::LexerInput( char* buf, int max_size )
++size_t yyFlexLexer::LexerInput( char* buf, size_t max_size )
+ #endif
+ {
+ 	if ( yyin->eof() || yyin->fail() )
+@@ -187811,7 +187797,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
+ #endif
+ }
+ 
+-void yyFlexLexer::LexerOutput( const char* buf, int size )
++void yyFlexLexer::LexerOutput( const char* buf, size_t size )
+ {
+ 	(void) yyout->write( buf, size );
+ }
+@@ -187876,7 +187862,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 	else
+ 		{
+-			int num_to_read =
++			yy_size_t num_to_read =
+ 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
+ 
+ 		while ( num_to_read <= 0 )
+@@ -187890,7 +187876,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 			if ( b->yy_is_our_buffer )
+ 				{
+-				int new_size = b->yy_buf_size * 2;
++				yy_size_t new_size = b->yy_buf_size * 2;
+ 
+ 				if ( new_size <= 0 )
+ 					b->yy_buf_size += b->yy_buf_size / 8;
+@@ -187921,7 +187907,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		/* Read in more data. */
+ 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
+-			(yy_n_chars), (size_t) num_to_read );
++			(yy_n_chars), num_to_read );
+ 
+ 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
+ 		}
+@@ -188048,7 +188034,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
+ 		{ /* need to shift things up to make room */
+ 		/* +2 for EOB chars. */
+-		register int number_to_move = (yy_n_chars) + 2;
++		register yy_size_t number_to_move = (yy_n_chars) + 2;
+ 		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+ 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
+ 		register char *source =
+@@ -188099,7 +188085,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ 		else
+ 			{ /* need more input */
+-			int offset = (yy_c_buf_p) - (yytext_ptr);
++			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
+ 			++(yy_c_buf_p);
+ 
+ 			switch ( yy_get_next_buffer(  ) )
+@@ -188123,7 +188109,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 				case EOB_ACT_END_OF_FILE:
+ 					{
+ 					if ( yywrap(  ) )
+-						return EOF;
++						return 0;
+ 
+ 					if ( ! (yy_did_buffer_switch_on_eof) )
+ 						YY_NEW_FILE;
+@@ -188287,7 +188273,7 @@ int yyFlexLexer::yy_get_next_buffer()
+ 
+ /* %if-c++-only */
+ 
+-extern "C" int isatty (int ) throw();
++extern "C" int isatty (int );
+ 
+ /* %endif */
+ 
+@@ -188431,7 +188417,7 @@ void yyFlexLexer::yypop_buffer_state (void)
+ void yyFlexLexer::yyensure_buffer_stack(void)
+ /* %endif */
+ {
+-	int num_to_alloc;
++	yy_size_t num_to_alloc;
+     
+ 	if (!(yy_buffer_stack)) {
+ 
+diff --git a/win/version.h b/win/version.h
+index 4bba266..92e4ac8 100644
+--- a/win/version.h
++++ b/win/version.h
+@@ -1,10 +1 @@
+-#define SVN_Path "."
+-#define SVN_URL "https://swobjects.svn.sourceforge.net/svnroot/swobjects/branches/sparql11"
+-#define SVN_Repository_Root "https://swobjects.svn.sourceforge.net/svnroot/swobjects"
+-#define SVN_Repository_UUID "c173ddf6-5f59-417b-9a21-957fd6f9372a"
+-#define SVN_Revision "1758"
+-#define SVN_Node_Kind "directory"
+-#define SVN_Schedule "normal"
+-#define SVN_Last_Changed_Author "ericprud"
+-#define SVN_Last_Changed_Rev "1758"
+-#define SVN_Last_Changed_Date "2012-07-16 05:55:49 -0400 (Mon, 16 Jul 2012)"
++#define SVN_Last_Changed_Author "eric"
