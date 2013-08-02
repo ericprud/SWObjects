@@ -143,16 +143,16 @@ public:
 /* Productions */
 %type <p_trigDoc> trigDoc
 
-%type <p_TTerms> _QGraphNode_E_Plus
+%type <p_TTerms> _QGraphNode_E_Star
 
 //%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate
 
-%type <p_TTerm> Verb VarOriri VarOrTerm GraphNode Object GraphTerm BlankNode _O_QCollection_E_Or_QBlankNodePropertyList_E_C _O_Qiri_E_Or_QBlankNode_E_C subject
+%type <p_TTerm> Verb VarOriri VarOrTerm GraphNode Object GraphTerm _O_QCollection_E_Or_QBlankNodePropertyList_E_C _O_Qiri_E_Or_QBlankNode_E_C _O_Qiri_E_Or_QBlankNode_E_Or_Qcollection_E_Or_QBlankNodePropertyList_E_C subject
 %type <p_RDFLiteral> RDFLiteral
 %type <p_NumericRDFLiteral> NumericLiteralUnsigned NumericLiteralPositive NumericLiteralNegative NumericLiteral
 %type <p_BooleanRDFLiteral> BooleanLiteral
 %type <p_string> String
-%type <p_BNode> TriplesNode BlankNodePropertyList Collection
+%type <p_BNode> BlankNode TriplesNode BlankNodePropertyList Collection
 
 %type <p_URI> _O_QGT_DTYPE_E_S_Qiri_E_C iri PrefixedName
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
@@ -261,10 +261,25 @@ _O_QGT_LCURLEY_E_S_QTriplesTemplate_E_Opt_S_QGT_RCURLEY_E_Or_QPropertyListNotEmp
 
 // [4]    	graphword 	   ::=    	"GRAPH" ( iri | BlankNode ) "{" (TriplesTemplate)? "}"
 graphword:
-    IT_GRAPH _O_Qiri_E_Or_QBlankNode_E_C GT_LCURLEY {
+    IT_GRAPH _O_Qiri_E_Or_QBlankNode_E_Or_Qcollection_E_Or_QBlankNodePropertyList_E_C GT_LCURLEY {
 	driver.curBGP = driver.db->ensureGraph($2);
 	driver.neededBGP = NULL;
       } _QTriplesTemplate_E_Opt GT_RCURLEY	
+;
+
+_O_Qiri_E_Or_QBlankNode_E_Or_Qcollection_E_Or_QBlankNodePropertyList_E_C:
+    iri	{
+      $$ = $1;
+    }
+  | BlankNode	{
+      $$ = $1;
+    }
+  | Collection	{
+      $$ = $1;
+    }
+  | BlankNodePropertyList	{
+      $$ = $1;
+    }
 ;
 
 // [5]    	wrappedDefault 	   ::=    	"{" (TriplesTemplate)? "}"
@@ -449,8 +464,8 @@ BlankNodePropertyList:
 ;
 
 Collection:
-    // '(' GraphNode+ ')'
-    GT_LPAREN _QGraphNode_E_Plus GT_RPAREN	{
+    // '(' GraphNode* ')'
+    GT_LPAREN _QGraphNode_E_Star GT_RPAREN	{
 	$$ = driver.createBNode();
 	const TTerm* tail = $$;
 	ProductionVector<const TTerm*>* members = $2;
@@ -470,12 +485,12 @@ Collection:
     }
 ;
 
-// GraphNode+
-_QGraphNode_E_Plus:
-    GraphNode	{
-	$$ = new ProductionVector<const TTerm*>($1);
-    }
-  | _QGraphNode_E_Plus GraphNode	{
+// GraphNode*
+_QGraphNode_E_Star:
+    	{
+	$$ = new ProductionVector<const TTerm*>();
+    }    
+  | _QGraphNode_E_Star GraphNode	{
 	$1->push_back($2);
 	$$ = $1;
     }
