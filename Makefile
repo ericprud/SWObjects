@@ -464,9 +464,13 @@ unitTESTexes := $(TESTNAMELIST)
 # and control which subtests within a unit are run
 
 TEST_ARGS ?= ""
+# Harness-specific arguments
 # e.g. TEST_ARGS=--run_test=op_equals/* make -j 4 t_QueryMap
-# e.g. TEST_ARGS=--keep\ --output_format=XML\ --report_level=detailed\ --log_level=all\ --show_progress
+# e.g. TEST_ARGS=--output_format=XML\ --report_level=detailed\ --log_level=all\ --show_progress
 
+# test-specific arguments:
+# t_DM: --keep
+# t_Turtle: --allchars
 
 ## Rules for all tests ##
 tests/test_%.dep: tests/test_%.cpp config.h $(BISONH)
