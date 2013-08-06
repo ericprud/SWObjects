@@ -41,8 +41,6 @@
 
 [4bb]   SPARQL_PREFIX         ::= [Pp][Rr][Ee][Ff][Ii][Xx]
 [5bb]   SPARQL_BASE           ::= [Bb][Aa][Ss][Ee]
-[1y]    BASE                  ::= '@'[Bb][Aa][Ss][Ee]
-[2y]    PREFIX                ::= '@'[Pp][Rr][Ee][Ff][Ii][Xx]
 [3y]    RDF_TYPE              ::= 'a'
 [18]    IRIREF                ::= '<' ([^#x00-#x20<>\"{}|^`\\] | UCHAR)* '>'	
 [139s]  PNAME_NS              ::= PN_PREFIX? ':'
