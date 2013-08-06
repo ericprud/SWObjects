@@ -1,0 +1,15 @@
+PREFIX : <http://open-services.net/ns/core#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/'>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+# start={(:a 1 %a{ A %} | :b 2) %b{ B %}} %c{ C %}
+
+# start={
+#  (:out1 1, :out2 {^:in3 3})
+# } %C#{ $$ = 7; %}
+
+start={
+     :one {^:first  (1 "one"@en "一"@ja)}, * -, !rdf:* -
+  | (:two {^:second (2 "two"@en "二"@ja)}, :three {^:third (3 "three"@en "三"@ja)})
+} %C#{ $$ = 7; %}
