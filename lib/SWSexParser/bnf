@@ -1,4 +1,9 @@
 # Semantic Web Shape Expressions
+# todo:
+#   foo:* in value
+#   (a:b <c>) in predicate
+#   a in predicae
+
 
 [1]     SWSexDoc             ::= statement*
 [2]     statement             ::= directive | shape
@@ -12,8 +17,8 @@
 [112]   AndExpression         ::= UnaryExpression ( ',' UnaryExpression )*
 [118]   UnaryExpression       ::= '!'? ( arc | '(' OrExpression ')' CODE* )
 [0]     arc                   ::= nameClass valueSpec
-[0]     label                 ::= iri
-[0]     nameClass             ::= '^'? (iri | '*' | PNAME_NS '*')
+[0]     label                 ::= iri | BlankNode
+[0]     nameClass             ::= '^'? (iri | '*' | iri '*')
 [0]     valueSpec             ::= ('@' label | typeSpec | valueSet | object | '-') repeatCount? CODE*
 [0]     repeatCount           ::= '*' | '+' | '?' | '{' INTEGER (',' INTEGER?)? '}'
 [0]     valueSet              ::= '(' object+ ')'

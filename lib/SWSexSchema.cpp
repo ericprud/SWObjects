@@ -103,10 +103,22 @@ namespace w3c_sw {
 	    os << '}';
 	return os << codeMap;
     }
-    std::ostream& SWSexSchema::RuleMap::print (std::ostream& os) const {
+    std::ostream& SWSexSchema::RuleMap::print (std::ostream& os, const TTerm* start) const {
+	bool first = true;
+	if (start != NULL) {
+	    const_iterator it = find(start);
+	    if (it != end()) {
+		first = false;
+		os << it->first->str() << ' ';
+		it->second->print(os, true);	    
+	    }
+	}
 	for (const_iterator it = begin(); it != end(); ++it) {
-	    if (it != begin())
+	    if (it->first == start)
+		continue;
+	    if (!first)
 		os << "\n\n";
+	    first = false;
 	    os << it->first->str() << ' ';
 	    it->second->print(os, true);
 	}
@@ -115,7 +127,8 @@ namespace w3c_sw {
     std::ostream& SWSexSchema::print (std::ostream& os) const {
 	if (start != NULL)
 	    os << "start=" << start->str() << "\n";
-	return os << ruleMap;
+	ruleMap.print(os, start);
+	return os;
     }  
 
 } // namespace w3c_sw

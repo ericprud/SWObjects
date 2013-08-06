@@ -297,7 +297,6 @@ ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
 <<EOF>>			{ yyterminate();}
 
 {ERR_PNAME_LN}		{ scanError("local name", '"', yylloc); yylval->p_URI = resolvePrefix(yytext, yylloc); return token::PNAME_LN; }
-{ERR_BLANK_NODE_LABEL}	{ scanError("BLANK_NODE_LABEL", '"', yylloc); yylval->p_TTerm = driver->getBNode(yytext+2); return token::BLANK_NODE_LABEL; }
 {NON_CHAR_STRING_LITERAL1}	{ scanError("string includes non unicode characters", '"', yylloc); return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL1);}
 {NON_CHAR_STRING_LITERAL2}	{ scanError("string includes non unicode characters", '"', yylloc); return unescapeString(yylval, yylloc, yytext+1, yyleng-2, token::STRING_LITERAL2);}
 {NON_CHAR_STRING_LITERAL_LONG1}	{ scanError("string includes non unicode characters", '"', yylloc); return unescapeString(yylval, yylloc, yytext+3, yyleng-6, token::STRING_LITERAL_LONG1);}

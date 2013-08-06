@@ -152,7 +152,7 @@ public:
 %type <p_TTerm> _O_Qlabel_E_Or_QtypeSpec_E_S_QCODE_E_Star_C label  object RDFLiteral literal NumericLiteral BooleanLiteral BlankNode
  //%type <p_TTerms> _Qobject_E_Plus valueSet
 %type <p_int> _QINTEGER_E_Opt _O_QGT_COMMA_E_S_QINTEGER_E_Opt_C _Q_O_QGT_COMMA_E_S_QINTEGER_E_Opt_C_E_Opt
-%type <p_nameClass> nameClass _O_Qiri_E_Or_QGT_TIMES_E_Or_QPNAME_NS_E_S_QGT_TIMES_E_C
+%type <p_nameClass> nameClass _O_Qiri_E_Or_QGT_TIMES_E_Or_Qiri_E_S_QGT_TIMES_E_C
 %type <p_bool> _QGT_CARROT_E_Opt _QGT_NOT_E_Opt
 %type <p_rulePattern> typeSpec OrExpression _O_QGT_PIPE_E_S_QAndExpression_E_C AndExpression _O_QGT_COMMA_E_S_QUnaryExpression_E_C UnaryExpression _O_Qarc_E_Or_QGT_LPAREN_E_S_QOrExpression_E_S_QGT_RPAREN_E_S_QCODE_E_Star_C arc valueSpec
 %type <p_ruleActions> _QCODE_E_Star
@@ -375,10 +375,13 @@ label:
     iri	{
 	$$ = $1;
     }
+  | BlankNode	{
+	$$ = $1;
+    }
 ;
 
 nameClass:
-    _QGT_CARROT_E_Opt _O_Qiri_E_Or_QGT_TIMES_E_Or_QPNAME_NS_E_S_QGT_TIMES_E_C	{
+    _QGT_CARROT_E_Opt _O_Qiri_E_Or_QGT_TIMES_E_Or_Qiri_E_S_QGT_TIMES_E_C	{
 	$2->reverse = $1;
 	$$ = $2;
     }
@@ -393,14 +396,14 @@ _QGT_CARROT_E_Opt:
     }
 ;
 
-_O_Qiri_E_Or_QGT_TIMES_E_Or_QPNAME_NS_E_S_QGT_TIMES_E_C:
+_O_Qiri_E_Or_QGT_TIMES_E_Or_Qiri_E_S_QGT_TIMES_E_C:
     iri	{
 	$$ = new SWSexSchema::AtomicRule::NameTerm($1);
     }
   | GT_TIMES	{
 	$$ = new SWSexSchema::AtomicRule::NameAll();
     }
-  | PNAME_NS GT_TIMES	{
+  | iri GT_TIMES	{
 	$$ = new SWSexSchema::AtomicRule::NamePattern($1);
     }
 ;

@@ -113,7 +113,7 @@ namespace w3c_sw {
 		for (const_iterator it = begin(); it != end(); ++it)
 		    delete it->second;
 	    }
-	    std::ostream& print(std::ostream& os) const;
+	    std::ostream& print(std::ostream& os, const TTerm* start = NULL) const;
 	};
 	RuleMap ruleMap;
 	const TTerm* start;
