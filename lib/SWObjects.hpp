@@ -2519,6 +2519,8 @@ public:
      */
     triple_iterator getTripleIterator(const TTerm* s, const TTerm* p, const TTerm* o) const;
 
+    typedef std::vector<const TriplePattern*>::const_reference const_reference;
+
 protected:
 
     // make sure we don't delete the TriplePatterns
@@ -2580,6 +2582,7 @@ public:
 		bindings.binds.insert(t->getO());
 	}
     }
+    void push_back (const TriplePattern* t) { addTriplePattern(t); }
     virtual void bindVariables(const RdfDB* db, ResultSet* rs) const = 0;
     void bindVariables(ResultSet* rs, const BasicGraphPattern* toMatch, const TTerm* graphVar = TTerm::Unbound, const TTerm* graphName = TTerm::Unbound) const;
     virtual void construct(RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const;
@@ -2589,6 +2592,22 @@ public:
     std::vector<const TriplePattern*>::const_iterator begin () const { return m_TriplePatterns.begin(); }
     std::vector<const TriplePattern*>::iterator end () { return m_TriplePatterns.end(); }
     std::vector<const TriplePattern*>::const_iterator end () const { return m_TriplePatterns.end(); }
+    std::vector<const TriplePattern*>::iterator find (const TriplePattern* tp) {
+	for (std::vector<const TriplePattern*>::iterator triple = m_TriplePatterns.begin();
+	     triple != m_TriplePatterns.end(); ++triple)
+	    if (*triple == tp)
+		return triple;
+	std::vector<const TriplePattern*>::iterator end;
+	return end;
+    }
+    std::vector<const TriplePattern*>::const_iterator find (const TriplePattern* tp) const {
+	for (std::vector<const TriplePattern*>::const_iterator triple = m_TriplePatterns.begin();
+	     triple != m_TriplePatterns.end(); )
+	    if (*triple == tp)
+		return triple;
+	std::vector<const TriplePattern*>::const_iterator end;
+	return end;
+    }
     std::vector<const TriplePattern*>::iterator erase (std::vector<const TriplePattern*>::iterator triple) {
 	SP.erase((*triple)->getS(), (*triple)->getP(), *triple);
 	PO.erase((*triple)->getP(), (*triple)->getO(), *triple);
