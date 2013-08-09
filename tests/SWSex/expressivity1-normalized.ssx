@@ -1,15 +1,15 @@
-start=_:b0
-_:b0 {(
+start=_:b3
+_:b3 {(
     (
-    <http://open-services.net/ns/core#one> @_:b1{1,1},
+    <http://open-services.net/ns/core#one> @_:b0{1,1},
     * -{1,1},
     !<http://www.w3.org/1999/02/22-rdf-syntax-ns#>* -{1,1})
   | (
-    <http://open-services.net/ns/core#two> @_:b2{1,1},
-    <http://open-services.net/ns/core#three> @_:b3{1,1}))} %C#{ $$ = 7; %}
+    <http://open-services.net/ns/core#two> @_:b1{1,1},
+    <http://open-services.net/ns/core#three> @_:b2{1,1}))} %C#{ $$ = 7; %}
 
-_:b1 {^<http://open-services.net/ns/core#first> (1 "one"@en "一"@ja){1,1}}
+_:b0 {^<http://open-services.net/ns/core#first> (1 "one"@en "一"@ja){1,1}}
 
-_:b2 {^<http://open-services.net/ns/core#second> (2 "two"@en "二"@ja){1,1}}
+_:b1 {^<http://open-services.net/ns/core#second> (2 "two"@en "二"@ja){1,1}}
 
-_:b3 {^<http://open-services.net/ns/core#third> (3 "three"@en "三"@ja){1,1}}
+_:b2 {^<http://open-services.net/ns/core#third> (3 "three"@en "三"@ja){1,1}}

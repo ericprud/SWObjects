@@ -1,0 +1,17 @@
+PREFIX a: <http://example.org/a#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/'>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+start = <top>
+
+<top> {
+    a:p1 @<next> %before{ <$p name="$s"> %} %after{ </$p> %},
+    a:p3 {
+        a:p4 (a:v4a a:v4b) %after{ <$p attr="$o"> %}
+    } %before{ <$p> %} %after{ </$p> %}
+} %before{ <top> %} %after{ </top> %}
+
+<next> {
+    a:p2 (a:v2) %after{ <$p attr="$o"> %}
+}

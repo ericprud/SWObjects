@@ -1,0 +1,13 @@
+PREFIX a: <http://example.org/a#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/'>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+PREFIX a: <http://example.org/a#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/'>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+<> 
+    a:p1 [ a:p2 a:v2 ] ;
+    a:p3 [ a:p4 a:v4b ; a:badp a:bado ] .

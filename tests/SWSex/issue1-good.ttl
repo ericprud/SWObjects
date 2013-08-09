@@ -1,0 +1,29 @@
+@prefix : <http://www.w3.org/2012/12/rdf-val/SOTA-ex#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/'> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<issue7> a :Issue , :SecurityIssue ;
+    :state :unassigned ;
+    :reportedBy <user6> ;
+    :reportedOn "2012-12-31T23:57:00"^^xsd:dateTime ;
+    :reproducedBy <user2>, <user1> ;
+    :reproducedOn "2012-12-31T23:58:00"^^xsd:dateTime ;
+    :related <issue4> .
+
+<issue4> # a ??? - missing type arc
+    :state :assigned ;
+    :reproducedBy <user1> ;
+    :reportedOn "2012-12-31T23:57:00"^^xsd:dateTime .
+
+<user2> a foaf:Person ;
+    foaf:givenName "Alice" ;
+    foaf:familyName "Smith" ;
+    foaf:phone <tel:+1.555.222.2222> ;
+    foaf:mbox <mailto:alice@example.com> .
+
+<user6> a foaf:Person ;
+    foaf:givenName "Bob" ;
+    foaf:familyName "Smith";
+    foaf:phone <tel:+1.555.222.2222> ;
+    foaf:mbox <mailto:alice@example.com> .
+

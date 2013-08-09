@@ -11,7 +11,7 @@ start = <IssueShape>
 #      ex:state xsd:string
 # }
 <IssueShape> {
-    ex:state xsd:string %C{ $$ = 7; %} %C++{
+    ex:state (ex:unassigned ex:assigned) %C{ $$ = 7; %} %C++{
       $$ = new Foo();
     %} %C#{ $$ = 7; %},
     ex:reportedBy @:UserShape,

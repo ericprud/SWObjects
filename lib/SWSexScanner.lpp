@@ -177,7 +177,7 @@ GT_OPT		"?"
 GT_DTYPE		"^^"
 IT_true			[Tt][Rr][Uu][Ee]
 IT_false		[Ff][Aa][Ll][Ss][Ee]
-CODE			"%"(([#+A-Z_a-z])+)?"{"((([\x00-$&-\[\]-\x7F]|{HIGH_UCS})|("\\""%")))*"%""}"
+CODE			"%"(([#+A-Z_a-z])([#+A-Z_a-z0-9-])*)?"{"((([\x00-$&-\[\]-\x7F]|{HIGH_UCS})|("\\""%")))*"%""}"
 SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
 SPARQL_BASE		[Bb][Aa][Ss][Ee]
 RDF_TYPE		"a"
