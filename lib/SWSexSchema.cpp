@@ -30,7 +30,7 @@ namespace w3c_sw {
 	    os << '}';
 	return os;
     }
-    std::string SWSexSchema::OrRule::str () const {
+    std::string SWSexSchema::RulePattern::str () const {
 	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::AndRule::print (std::ostream& os, bool braces) const {
@@ -48,9 +48,6 @@ namespace w3c_sw {
 	    os << '}';
 	return os;
     }
-    std::string SWSexSchema::AndRule::str () const {
-	std::stringstream ss; print(ss); return ss.str();
-    }
     std::ostream& SWSexSchema::NegatedRule::print (std::ostream& os, bool braces) const {
 	if (braces)
 	    os << '{';
@@ -58,9 +55,6 @@ namespace w3c_sw {
 	if (braces)
 	    os << '}';
 	return os;
-    }
-    std::string SWSexSchema::NegatedRule::str () const {
-	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::AtomicRule::print (std::ostream& os, bool braces) const {
 	if (braces)
@@ -73,7 +67,8 @@ namespace w3c_sw {
 	    os << '}';
 	return os;
     }
-    std::string SWSexSchema::AtomicRule::str () const {
+
+    std::string SWSexSchema::AtomicRule::NameClass::str () const {
 	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::AtomicRule::NameTerm::print (std::ostream& os) const {
@@ -81,36 +76,25 @@ namespace w3c_sw {
 	    os << '^';
 	return os << term->str();
     }
-    std::string SWSexSchema::AtomicRule::NameTerm::str () const {
-	std::stringstream ss; print(ss); return ss.str();
-    }
     std::ostream& SWSexSchema::AtomicRule::NameAll::print (std::ostream& os) const {
 	if (reverse)
 	    os << '^';
 	return os << '*';
-    }
-    std::string SWSexSchema::AtomicRule::NameAll::str () const {
-	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::AtomicRule::NamePattern::print (std::ostream& os) const {
 	if (reverse)
 	    os << '^';
 	return os << base->str() << '*';
     }
-    std::string SWSexSchema::AtomicRule::NamePattern::str () const {
+
+    std::string SWSexSchema::AtomicRule::Value::str () const {
 	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::AtomicRule::ValueReference::print (std::ostream& os) const {
 	return os << '@' << label->str();
     }
-    std::string SWSexSchema::AtomicRule::ValueReference::str () const {
-	std::stringstream ss; print(ss); return ss.str();
-    }
     std::ostream& SWSexSchema::AtomicRule::ValueType::print (std::ostream& os) const {
 	return os << tterm->str();
-    }
-    std::string SWSexSchema::AtomicRule::ValueType::str () const {
-	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::AtomicRule::ValueSet::print (std::ostream& os) const {
 	os << '(';
@@ -122,14 +106,8 @@ namespace w3c_sw {
 	}
 	return os << ')';
     }
-    std::string SWSexSchema::AtomicRule::ValueSet::str () const {
-	std::stringstream ss; print(ss); return ss.str();
-    }
     std::ostream& SWSexSchema::AtomicRule::ValueAny::print (std::ostream& os) const {
 	return os << '-';
-    }
-    std::string SWSexSchema::AtomicRule::ValueAny::str () const {
-	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::RuleActions::print (std::ostream& os, bool braces) const {
 	if (braces)
@@ -138,9 +116,6 @@ namespace w3c_sw {
 	if (braces)
 	    os << '}';
 	return os << codeMap;
-    }
-    std::string SWSexSchema::RuleActions::str () const {
-	std::stringstream ss; print(ss); return ss.str();
     }
     std::ostream& SWSexSchema::RuleMap::print (std::ostream& os, const TTerm* start) const {
 	bool first = true;
@@ -205,15 +180,15 @@ namespace w3c_sw {
 	ret.push_back(NULL);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueReference::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueReference::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	// !!! also record the current matched from tp
 	RuleMap::const_iterator referencedRule = rm.find(label);
 	if (referencedRule == rm.end())
 	    throw std::runtime_error("referenced production not found"); // not found
-	SWSexSchema::Solution* s = referencedRule->second->validate(source, matched, rm, tp->getO());
+	SWSexSchema::Solution* s = referencedRule->second->validate(source, rm, tp->getO());
 	if (s->passes) {
 	    source.erase(source.find(tp));
-	    matched.addTriplePattern(tp);
+	    s->consumed.addTriplePattern(tp);
 	}
 	return s; // for now. change to some inclusive datastructure later.
     }
@@ -222,14 +197,14 @@ namespace w3c_sw {
 	ret.push_back(NULL);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueType::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueType::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(rule);
 	const RDFLiteral* asLiteral = dynamic_cast<const RDFLiteral*>(tp->getO());
 	const URI* type = asLiteral == NULL ? NULL : asLiteral->getDatatype();
 	if (type == tterm) {
 	    ret->passes = true;
 	    source.erase(source.find(tp));
-	    matched.addTriplePattern(tp);
+	    ret->consumed.addTriplePattern(tp);
 	} else
 	    ret->passes = false;
 	return ret;
@@ -237,13 +212,13 @@ namespace w3c_sw {
     SWSexSchema::AtomicRule::Value::TermSet SWSexSchema::AtomicRule::ValueSet::getOs () const {
 	return tterms;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueSet::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueSet::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(rule);
 	for (TermSet::const_iterator it = tterms.begin(); it != tterms.end(); ++it)
 	    if (tp->getO() == *it) {
 		ret->passes = true;
 		source.erase(source.find(tp));
-		matched.addTriplePattern(tp);
+		ret->consumed.addTriplePattern(tp);
 		return ret;
 	    }
 	ret->passes = false;
@@ -254,43 +229,41 @@ namespace w3c_sw {
 	ret.push_back(NULL);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueAny::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueAny::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(rule);
 	ret->passes = true;
 	source.erase(source.find(tp));
-	matched.addTriplePattern(tp);
+	ret->consumed.addTriplePattern(tp);
 	return ret;
     }
 
-    SWSexSchema::Solution* SWSexSchema::OrRule::validate (DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::OrRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+	throw NotImplemented("SWSexSchema::OrRule::validate");
 	SWSexSchema::SetSolution* ret = new SWSexSchema::SetSolution(this);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AndRule::validate (DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AndRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	SWSexSchema::SetSolution* ret = new SWSexSchema::SetSolution(this);
-	DefaultGraphPattern matchedSoFar;
 	ret->passes = true;
 	for (std::vector<const RulePattern*>::const_iterator rule = rules.begin();
 	     rule != rules.end(); ++rule) {
-	    DefaultGraphPattern subMatched;
-	    const SWSexSchema::Solution* s = (*rule)->validate(source, subMatched, rm, point);
-	    ret->m.insert(std::make_pair(*rule, s)); // subMatched
+	    const SWSexSchema::Solution* s = (*rule)->validate(source, rm, point);
+	    ret->m.insert(std::make_pair(*rule, s));
 	    if (s->passes) {
-		std::copy(subMatched.begin(), subMatched.end(), std::back_inserter(matchedSoFar));
+		std::copy(s->consumed.begin(), s->consumed.end(), std::back_inserter(ret->consumed));
 	    } else {
 		ret->passes = false;
 		// Put back the stuff we removed from the source.
-		std::copy(matchedSoFar.begin(), matchedSoFar.end(), std::back_inserter(source));
+		std::copy(ret->consumed.begin(), ret->consumed.end(), std::back_inserter(source));
 		return ret;;
 	    }
 	}
-	std::copy(matchedSoFar.begin(), matchedSoFar.end(), std::back_inserter(matched));
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::NegatedRule::validate (DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::NegatedRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	throw NotImplemented("SWSexSchema::NegatedRule::validate");
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::validate (DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(this);
 	ret->passes = true;
 	const TTerm* p = nameClass->getP();
@@ -300,7 +273,6 @@ namespace w3c_sw {
 	     v != vals.end(); ++v)
 	    templates.insert(PropertyPath::TriplesTemplate(nameClass->reverse ? *v : point, p, nameClass->reverse ? point : *v));
 
-	DefaultGraphPattern matchedSoFar;
 	size_t matchCount = 0;
 	for (PropertyPath::TriplesTemplates::const_iterator tmplate = templates.begin();
 	     tmplate != templates.end(); ++tmplate) {
@@ -313,18 +285,17 @@ namespace w3c_sw {
 	    for (std::vector<const TriplePattern*>::const_iterator it = copy.begin(); it != copy.end(); ++it) {
 		const TriplePattern* tp = *it;
 		if (nameClass->matchP(tp->getP())) {
-		    DefaultGraphPattern subMatched;
-		    const SWSexSchema::Solution* s = value->validateTriple(this, tp, source, subMatched, rm, point);
+		    const SWSexSchema::Solution* s = value->validateTriple(this, tp, source, rm, point);
 		    // ret->m.insert(std::make_pair(this, subMatched));
 		    if (s->passes && ++matchCount <= max) {
 			/* TODO: Could process constraint Code here. */
-			std::copy(subMatched.begin(), subMatched.end(), std::back_inserter(matchedSoFar));
+			std::copy(s->consumed.begin(), s->consumed.end(), std::back_inserter(ret->consumed));
 			ret->refs.push_back(SWSexSchema::AtomicSolution::Ref(tp, s));
 		    } else {
 			ret->passes = false;
-			// Put back the stuff we removed from the source.
-			std::copy(matchedSoFar.begin(), matchedSoFar.end(), std::back_inserter(source));
-			matchedSoFar.clearTriples();
+			// Put back the stuff we removed from the source?
+			//std::copy(s->consumed.begin(), s->consumed.end(), std::back_inserter(source));
+			//s->consumed.clearTriples();
 			delete s;
 			break;
 		    }
@@ -334,17 +305,18 @@ namespace w3c_sw {
 
 	if (matchCount < min) {
 	    ret->passes = false;
-	    // Put back the stuff we removed from the source.
-	    std::copy(matchedSoFar.begin(), matchedSoFar.end(), std::back_inserter(source));
-	} else {
-	    std::copy(matchedSoFar.begin(), matchedSoFar.end(), std::back_inserter(matched));
+	    // Put back the stuff we removed from the source?
+	    // std::copy(ret->consumed.begin(), ret->consumed.end(), std::back_inserter(source));
 	}
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::RuleActions::validate (DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const {
-	return  pattern->validate(source, matched, rm, point);
+    SWSexSchema::Solution* SWSexSchema::RuleActions::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+	return  pattern->validate(source, rm, point);
     }
 
+    std::string SWSexSchema::Solution::str() const {
+	std::stringstream ss; print(ss); return ss.str();
+    }
     std::ostream& SWSexSchema::AtomicSolution::print(std::ostream& os) const {
 	os << (passes ? "passed " : "failed ") << *rule << " consuming " << consumed << "\n";
 	for (RefList::const_iterator ref = refs.begin();
@@ -354,9 +326,6 @@ namespace w3c_sw {
 		os << "[[\n" << *ref->s << "\n]]\n";
 	}
 	return os;
-    }
-    std::string SWSexSchema::AtomicSolution::str() const {
-	std::stringstream ss; print(ss); return ss.str();
     }
     bool SWSexSchema::AtomicSolution::visit(Visitor& v) const {
 	bool ret = true;
@@ -380,9 +349,6 @@ namespace w3c_sw {
 	    os << *it->first << "[[\n" << *it->second << "\n]]\n";
 	return os;
     }
-    std::string SWSexSchema::SetSolution::str() const {
-	std::stringstream ss; print(ss); return ss.str();
-    }
     bool SWSexSchema::SetSolution::visit(Visitor& v) const {
 	bool ret = true;
 	for (Map::const_iterator it = m.begin();
@@ -401,10 +367,9 @@ namespace w3c_sw {
 	    throw std::runtime_error("starting production not found"); // not found
 
 	DefaultGraphPattern source(bgp);
-	DefaultGraphPattern matchedSoFar;
-	SWSexSchema::Solution* sol = rule->second->validate(source, matchedSoFar, ruleMap, point);
-	if (matchedSoFar.size() > 0)
-	    w3c_sw_LINEN << "matched triples: " << matchedSoFar << "\n";
+	SWSexSchema::Solution* sol = rule->second->validate(source, ruleMap, point);
+	if (sol->consumed.size() > 0)
+	    w3c_sw_LINEN << "matched triples: " << sol->consumed << "\n";
 	if (source.size() > 0) {
 	    w3c_sw_LINEN << "unmatched triples: " << source << "\n";
 	    delete sol;

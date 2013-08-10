@@ -22,8 +22,8 @@ namespace w3c_sw {
 	struct RulePattern {
 	    virtual ~RulePattern () {  }
 	    virtual std::ostream& print(std::ostream& os, bool braces = false) const = 0;
-	    virtual std::string str() const = 0;
-	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const = 0;
+	    virtual std::string str() const;
+	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const = 0;
 	};
 	struct SetRule : public RulePattern {
 	    std::vector<const RulePattern*> rules;
@@ -36,13 +36,11 @@ namespace w3c_sw {
 	};
 	struct OrRule : public SetRule {
 	    virtual std::ostream& print(std::ostream& os, bool braces = false) const;
-	    virtual std::string str() const;
-	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	};
 	struct AndRule : public SetRule {
 	    virtual std::ostream& print(std::ostream& os, bool braces = false) const;
-	    virtual std::string str() const;
-	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	};
 	struct NegatedRule : public RulePattern {
 	    const RulePattern* pat;
@@ -51,15 +49,14 @@ namespace w3c_sw {
 		delete pat;
 	    }
 	    virtual std::ostream& print(std::ostream& os, bool braces = false) const;
-	    virtual std::string str() const;
-	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	};
 	struct AtomicRule : public RulePattern {
 	    struct NameClass {
 		bool reverse;
 		NameClass () : reverse(false) {  }
 		virtual std::ostream& print(std::ostream& os) const = 0;
-		virtual std::string str() const = 0;
+		virtual std::string str() const;
 		virtual const TTerm* getP() const = 0;
 		virtual bool matchP(const TTerm* test) const = 0;
 	    };
@@ -67,13 +64,11 @@ namespace w3c_sw {
 		const TTerm* term;
 		NameTerm (const TTerm* term) : term(term) {  }
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual const TTerm* getP() const;
 		virtual bool matchP(const TTerm* test) const;
 	    };
 	    struct NameAll : public NameClass {
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual const TTerm* getP() const;
 		virtual bool matchP(const TTerm* test) const;
 	    };
@@ -81,7 +76,6 @@ namespace w3c_sw {
 		const TTerm* base;
 		NamePattern (const TTerm* base) : base(base) {  }
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual const TTerm* getP() const;
 		virtual bool matchP(const TTerm* test) const;
 	    };
@@ -90,40 +84,36 @@ namespace w3c_sw {
 		typedef std::vector<const TTerm*> TermSet;
 		virtual ~Value () {  }
 		virtual std::ostream& print(std::ostream& os) const = 0;
-		virtual std::string str() const = 0;
+		virtual std::string str() const;
 		virtual TermSet getOs() const = 0;
-		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const = 0;
+		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const = 0;
 	    };
 	    struct ValueReference : public Value {
 		const TTerm* label;
 		ValueReference (const TTerm* label)
 		    : label(label) {  }
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual TermSet getOs() const;
-		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	    };
 	    struct ValueType : public Value {
 		const TTerm* tterm;
 		ValueType (const TTerm* tterm)
 		    : tterm(tterm) {  }
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual TermSet getOs() const;
-		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	    };
 	    struct ValueSet : public Value {
 		TermSet tterms;
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual TermSet getOs() const;
-		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	    };
 	    struct ValueAny : public Value {
 		virtual std::ostream& print(std::ostream& os) const;
-		virtual std::string str() const;
 		virtual TermSet getOs() const;
-		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	    };
 
 	    const NameClass* nameClass;
@@ -138,8 +128,7 @@ namespace w3c_sw {
 		delete value;
 	    }
 	    virtual std::ostream& print(std::ostream& os, bool braces = false) const;
-	    virtual std::string str() const;
-	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	};
 	struct RuleActions : public RulePattern {
 	    const RulePattern* pattern;
@@ -149,8 +138,7 @@ namespace w3c_sw {
 		delete pattern;
 	    }
 	    virtual std::ostream& print(std::ostream& os, bool braces = false) const;
-	    virtual std::string str() const;
-	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, DefaultGraphPattern& matched, const RuleMap& rm, const TTerm* point) const;
+	    virtual SWSexSchema::Solution* validate(DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	};
 
 	struct RuleMap : public std::map<const TTerm*, const RulePattern*> {
@@ -163,6 +151,8 @@ namespace w3c_sw {
 	};
 
 	struct Solution {
+	    struct Error : public std::runtime_error {
+	    };
 	    struct Visitor {
 		virtual bool enter(const TriplePattern* tp) = 0;
 		virtual bool visit(const TriplePattern* tp) = 0;
@@ -179,16 +169,19 @@ namespace w3c_sw {
 	      <p1> -*    │ <s1> <p1> <o1>, <o2> │ (<s1> <p1> <o1>, <o2>, CBs)
 	      <p1> -     │ <s1> <p1> <o1>, <o2> │ ()
 	    */
+	    const SWSexSchema::RulePattern* rule;
 	    const CodeMap* code;
 	    DefaultGraphPattern consumed;
+	    std::vector<Error> errors;
 	    bool passes;
+	    Solution (const SWSexSchema::RulePattern* rule)
+		: rule(rule) {  }
 	    virtual ~Solution () {  }
 	    virtual std::ostream& print(std::ostream& os) const = 0;
-	    virtual std::string str() const = 0;
+	    virtual std::string str() const;
 	    virtual bool visit(Visitor& v) const = 0;
 	};
 	struct AtomicSolution : public Solution {
-	    const SWSexSchema::AtomicRule* rule;
 	    struct Ref {
 		const TriplePattern* tp;
 		const Solution* s;
@@ -197,8 +190,8 @@ namespace w3c_sw {
 	    };
 	    typedef std::vector<Ref> RefList;
 	    RefList refs;
-	    AtomicSolution (const SWSexSchema::AtomicRule* rule)
-		: rule(rule) {  }
+	    AtomicSolution (const SWSexSchema::RulePattern* rule)
+		: Solution(rule) {  }
 	    ~AtomicSolution () {
 		for (RefList::iterator it = refs.begin();
 		     it != refs.end(); ++it)
@@ -206,21 +199,18 @@ namespace w3c_sw {
 			delete it->s;
 	    }
 	    virtual std::ostream& print(std::ostream& os) const;
-	    virtual std::string str() const;
 	    virtual bool visit(Visitor& v) const;
 	};
 	struct SetSolution : public Solution {
-	    const SWSexSchema::SetRule* rule;
 	    typedef std::map<const RulePattern*, const Solution*> Map;
 	    Map m;
 	    SetSolution (const SWSexSchema::SetRule* rule)
-		: rule(rule) {  }
+		: Solution(rule) {  }
 	    ~SetSolution () {
 		for (Map::iterator it = m.begin(); it != m.end(); ++it)
 		    delete it->second;
 	    }
 	    virtual std::ostream& print(std::ostream& os) const;
-	    virtual std::string str() const;
 	    virtual bool visit(Visitor& v) const;
 	};
 
@@ -243,43 +233,10 @@ namespace w3c_sw {
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::RulePattern& obj) {
 	return obj.print(os);
     }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::OrRule& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AndRule& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::NegatedRule& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule& obj) {
-	return obj.print(os);
-    }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::NameClass& obj) {
 	return obj.print(os);
     }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::NameTerm& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::NameAll& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::NamePattern& obj) {
-	return obj.print(os);
-    }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::Value& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::ValueReference& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::ValueType& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::ValueSet& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicRule::ValueAny& obj) {
 	return obj.print(os);
     }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::RuleActions& obj) {
@@ -289,12 +246,6 @@ namespace w3c_sw {
 	return obj.print(os);
     }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::Solution& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicSolution& obj) {
-	return obj.print(os);
-    }
-    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::SetSolution& obj) {
 	return obj.print(os);
     }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema& obj) {
