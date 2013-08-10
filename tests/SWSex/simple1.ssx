@@ -13,5 +13,5 @@ start = <top>
 } %before{ <top> %} %after{ </top> %}
 
 <next> {
-    a:p2 (a:v2) %after{ <$p attr="$o"> %}
+    a:p2 (a:v2a a:v2b){2,2} %after{ <$p attr="$o"> %}
 }
