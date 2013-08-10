@@ -163,6 +163,11 @@ namespace w3c_sw {
 	};
 
 	struct Solution {
+	    struct Visitor {
+		virtual bool enter(const TriplePattern* tp) = 0;
+		virtual bool visit(const TriplePattern* tp) = 0;
+		virtual bool leave(const TriplePattern* tp) = 0;
+	    };
 	    /*
 	      <p1> -     │ <s1> <p1> <o1>.      │ (<s1> <p1> <o1>, CBs)
 	      <p2> -     │ <s1> <p1> <o1>.      │ (, CBs)
@@ -176,8 +181,11 @@ namespace w3c_sw {
 	    */
 	    const CodeMap* code;
 	    DefaultGraphPattern consumed;
-	    virtual ~Solution () {  }
 	    bool passes;
+	    virtual ~Solution () {  }
+	    virtual std::ostream& print(std::ostream& os) const = 0;
+	    virtual std::string str() const = 0;
+	    virtual bool visit(Visitor& v) const = 0;
 	};
 	struct AtomicSolution : public Solution {
 	    const SWSexSchema::AtomicRule* rule;
@@ -197,6 +205,9 @@ namespace w3c_sw {
 		    if (it->s != NULL)
 			delete it->s;
 	    }
+	    virtual std::ostream& print(std::ostream& os) const;
+	    virtual std::string str() const;
+	    virtual bool visit(Visitor& v) const;
 	};
 	struct SetSolution : public Solution {
 	    const SWSexSchema::SetRule* rule;
@@ -208,6 +219,9 @@ namespace w3c_sw {
 		for (Map::iterator it = m.begin(); it != m.end(); ++it)
 		    delete it->second;
 	    }
+	    virtual std::ostream& print(std::ostream& os) const;
+	    virtual std::string str() const;
+	    virtual bool visit(Visitor& v) const;
 	};
 
 	RuleMap ruleMap;
@@ -272,6 +286,15 @@ namespace w3c_sw {
 	return obj.print(os);
     }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::RuleMap& obj) {
+	return obj.print(os);
+    }
+    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::Solution& obj) {
+	return obj.print(os);
+    }
+    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::AtomicSolution& obj) {
+	return obj.print(os);
+    }
+    inline std::ostream& operator<< (std::ostream& os, const SWSexSchema::SetSolution& obj) {
 	return obj.print(os);
     }
     inline std::ostream& operator<< (std::ostream& os, const SWSexSchema& obj) {

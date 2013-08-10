@@ -345,6 +345,53 @@ namespace w3c_sw {
 	return  pattern->validate(source, matched, rm, point);
     }
 
+    std::ostream& SWSexSchema::AtomicSolution::print(std::ostream& os) const {
+	os << (passes ? "passed " : "failed ") << *rule << " consuming " << consumed << "\n";
+	for (RefList::const_iterator ref = refs.begin();
+	     ref != refs.end(); ++ref) {
+	    os << ref->tp->str();
+	    if (ref->s)
+		os << "[[\n" << *ref->s << "\n]]\n";
+	}
+	return os;
+    }
+    std::string SWSexSchema::AtomicSolution::str() const {
+	std::stringstream ss; print(ss); return ss.str();
+    }
+    bool SWSexSchema::AtomicSolution::visit(Visitor& v) const {
+	bool ret = true;
+	for (RefList::const_iterator ref = refs.begin();
+	     ref != refs.end(); ++ref) {
+	    if (ref->s) {
+		ret &= v.enter(ref->tp);
+		ret &= ref->s->visit(v);
+		ret &= v.leave(ref->tp);
+	    }
+	    else
+		ret &= v.visit(ref->tp);
+	}
+	return ret;
+    }
+
+    std::ostream& SWSexSchema::SetSolution::print(std::ostream& os) const {
+	os << (passes ? "passed " : "failed ") << *rule << " consuming " << consumed << "\n";
+	for (Map::const_iterator it = m.begin();
+	     it != m.end(); ++it)
+	    os << *it->first << "[[\n" << *it->second << "\n]]\n";
+	return os;
+    }
+    std::string SWSexSchema::SetSolution::str() const {
+	std::stringstream ss; print(ss); return ss.str();
+    }
+    bool SWSexSchema::SetSolution::visit(Visitor& v) const {
+	bool ret = true;
+	for (Map::const_iterator it = m.begin();
+	     it != m.end(); ++it) {
+	    ret &= it->second->visit(v);
+	}
+	return ret;
+    }
+
     bool SWSexSchema::validate (DefaultGraphPattern& bgp, const TTerm* point, const TTerm* as) const {
 	const TTerm* from = as ? as : start;
 	if (from == NULL)
@@ -359,10 +406,11 @@ namespace w3c_sw {
 	if (matchedSoFar.size() > 0)
 	    w3c_sw_LINEN << "matched triples: " << matchedSoFar << "\n";
 	if (source.size() > 0) {
-	    w3c_sw_LINEN << "unused triples: " << source << "\n";
+	    w3c_sw_LINEN << "unmatched triples: " << source << "\n";
 	    delete sol;
 	    return false;
 	}
+	std::cerr << *sol << "\n";
 	// sol->dispatch(handlers);
 	delete sol;
 	return true;
