@@ -12,7 +12,7 @@ cat <<EOF
 @prefix test: <http://swobjects.org/test_Turtle-WG.sh>.
 @prefix dct: <http://purl.org/dc/terms/>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-@prefix t: <https://dvcs.w3.org/hg/rdf/raw-file/default/rdf-turtle/tests-ttl/manifest.ttl#>.
+@prefix t: <http://www.w3.org/2013/TurtleTests/manifest.ttl#>.
 
 <> foaf:primaryTopic swobj:sparql ;
 	dct:issued "$now"^^xsd:dateTime ;
@@ -31,11 +31,18 @@ swobj:sparql
 
 EOF
 
-BASE="'-b ' REPLACE(STR(?ttl), 'tests/tests-ttl/', 'http://example/base/')"
+# Running locally
+BASE="'-b ' REPLACE(STR(?ttl), '../../WWW/2013/TurtleTests/', 'http://www.w3.org/2013/TurtleTests/')"
+FROM=../../WWW/2013/TurtleTests/manifest.ttl
+
+#Running across the web.
+#BASE=
+#FROM=http://www.w3.org/2013/TurtleTests/manifest.ttl
+
 WORKY="'echo \"[] earl:test t:' StrAfter(STR(?entry), 'manifest.ttl#') ' ; earl:subject swobj:sparql ; earl:assertedBy test: ; earl:result [ earl:outcome earl:passed; dct:date \'' NOW() '\'^^xsd:dateTime ] .\" '"
 FAIL="'echo fail ' ?name"
 
-./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
+./bin/sparql -d $FROM -e "
   PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
   PREFIX rdft: <http://www.w3.org/ns/rdftest#>
   SELECT './bin/sparql -q ' $BASE ' -d ' ?ttl ' --compare ' ?nt
@@ -48,7 +55,7 @@ FAIL="'echo fail ' ?name"
            mf:name ?name
   }" -L text/raw | bash
 
-./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
+./bin/sparql -d $FROM -e "
   PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
   PREFIX rdft: <http://www.w3.org/ns/rdftest#>
   SELECT './bin/sparql -q ' $BASE ' -d ' ?ttl
@@ -60,7 +67,7 @@ FAIL="'echo fail ' ?name"
            mf:name ?name
   }" -L text/raw | bash
 
-./bin/sparql -d tests/tests-ttl/manifest.ttl -e "
+./bin/sparql -d $FROM -e "
   PREFIX mf: <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#>
   PREFIX rdft: <http://www.w3.org/ns/rdftest#>
   SELECT './bin/sparql -q -d ' ?ttl
