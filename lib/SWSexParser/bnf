@@ -5,7 +5,7 @@
 #   a in predicae
 
 
-[1]     SWSexDoc             ::= statement*
+[1]     ShExDoc             ::= statement*
 [2]     statement             ::= directive | shape
 [3]     directive             ::= sparqlPrefix | sparqlBase | 'start' '=' ( label | typeSpec CODE* )
 [4b]   sparqlPrefix          ::= SPARQL_PREFIX PNAME_NS IRIREF
@@ -37,7 +37,7 @@
 
 @terminals
 
-[0] CODE ::= '%' ([a-zA-Z+#_]+)? '{' ([^%\\] | '\\' '%')* '%' '}'
+[0] CODE ::= '%' ([a-zA-Z+#_][a-zA-Z0-9+#_]*)? '{' ([^%\\] | '\\' '%')* '%' '}'
 
 [4bb]   SPARQL_PREFIX         ::= [Pp][Rr][Ee][Ff][Ii][Xx]
 [5bb]   SPARQL_BASE           ::= [Bb][Aa][Ss][Ee]
