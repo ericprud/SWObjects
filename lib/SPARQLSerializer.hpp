@@ -662,7 +662,10 @@ public:
 	else
 	    p_IRIref->express(this);
 	ret << "(";
-	p_ArgList->express(this);
+	if (p_IRIref == TTerm::FUNC_count && p_ArgList->size() == 0)
+	    ret << "*";
+	else
+	    p_ArgList->express(this);
 	if (scalarVals)
 	    for (AggregateCall::ScalarVals::const_iterator it = scalarVals->begin(); it != scalarVals->end(); ++it)
 		ret << ";" << it->first << "=" << it->second;
