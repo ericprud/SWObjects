@@ -82,7 +82,7 @@ namespace libwww {
 
 HTURI::HTURI (std::string name) : DummyHTURI()
 {
-    schemeP =  hostP =  absoluteP =  relativeP =  fragmentP = false;
+    schemeP =  hostP =  absoluteP =  relativeP =  fragmentP = slashlessP = false;
     
     size_t p;
     size_t after_scheme = 0;
@@ -145,6 +145,9 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 	        host.erase(p);			/* Terminate host */
 	        absolute = name.substr(p+1, name.size());/* Root has been found */
 		absoluteP = true;
+	    } else if (fragmentP) {
+		absoluteP = true;
+		slashlessP = true;
 	    }
 	} else {
 	    absolute = name.substr(p+1, name.size());	/* Root found but no host */
@@ -213,7 +216,7 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 	
     if (wanted & PARSE_path) {
         if(given.hasAbsolute()) {			/* All is given */
-	    if(wanted & PARSE_punctuation) result += "/";
+	    if(wanted & PARSE_punctuation && !given.isSlashless()) result += "/";
 	    result += given.getAbsolute();
 	} else if(related->hasAbsolute()) {	/* Adopt path not name */
 	    result += "/";

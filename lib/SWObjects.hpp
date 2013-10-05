@@ -4199,6 +4199,7 @@ private:
     std::string absolute; bool absoluteP;
     std::string relative; bool relativeP;
     std::string fragment; bool fragmentP;
+    bool slashlessP;
 public:
     HTURI(std::string);
     virtual bool hasScheme () { return schemeP; }
@@ -4210,6 +4211,7 @@ public:
     virtual bool hasAbsolute () { return absoluteP; }
     virtual std::string getAbsolute () { return absolute; }
     virtual void clearAbsolute () { absolute.clear(); absoluteP = false; }
+    virtual bool isSlashless () { return slashlessP; }
     virtual bool hasRelative () { return relativeP; }
     virtual std::string getRelative () { return relative; }
     virtual void clearRelative () { relative.clear(); relativeP = false; }
