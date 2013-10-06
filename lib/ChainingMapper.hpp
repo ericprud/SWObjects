@@ -793,11 +793,14 @@ namespace w3c_sw {
 	/// A policy for how variables indicate the possible intersections between rules.
 	MapSet::e_sharedVars sharedVars;
 	NodeShare nodeShare; //! The exhaustive set of intersections between the rules.
+        bool skipSimplifier;
 
 	/** ChainingMapper constructor.
 	 * @param atomFactory	an AtomFactory for allocating new TTerm s.
 	 */
-	ChainingMapper (AtomFactory* atomFactory) : SWObjectDuplicator(atomFactory) {  }
+	ChainingMapper (AtomFactory* atomFactory)
+            : SWObjectDuplicator(atomFactory), skipSimplifier(false)
+        {  }
 	~ChainingMapper () { clear(); }
 
 	/** Free each rule in #rules. */
@@ -831,7 +834,8 @@ namespace w3c_sw {
 	/** Map a SPARQL operation over the consequents of #rules to an operation over the antecedents of #rules. */
 	const Operation* map (const Operation* query) {
 	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
-	    // return op;
+            if (skipSimplifier)
+                return op;
 	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7
 	    op->express(&dup);
 	    delete op;

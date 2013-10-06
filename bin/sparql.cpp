@@ -937,6 +937,7 @@ int main(int ac, char* av[])
 	     (std::string("max number of results to send to a remote service, default ")
 	      + boost::lexical_cast<std::string>(sw::ServiceGraphPattern::defaultFederationRowLimit)).c_str()
 	     )
+            ("federation-skip-simplifier", "disabling federation query simplifier.")
             ("server-strict-HTTP", "HTTP server will expect strict conformance with HTTP specification, e.g. \\r\\n request line separators.")
             ("server-no-description", "Don't add SPARQL Service Description to the SPARQL endpoint.")
             ;
@@ -1020,6 +1021,11 @@ int main(int ac, char* av[])
 	    size_t rows = vm["federation-row-limit"].as<size_t>();
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Limiting result set federation to" << rows << " rows.\n";
 	    sw::ServiceGraphPattern::defaultFederationRowLimit = rows;
+	}
+
+	if (vm.count("federation-skip-simplifier")) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Disabling federation query simplifier.\n";
+            TheServer.engine.queryMapper.skipSimplifier = true;
 	}
 
 	if (vm.count("server-strict-HTTP")) {
