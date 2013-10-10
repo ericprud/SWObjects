@@ -534,7 +534,14 @@ namespace w3c_sw {
 	void joinIn (const ResultSet* ref, const ProductionVector<const Expression*>* expressions = NULL, e_OP operation = OP_join, const RdfDB* db = NULL) { // !!! make const ref
 	    // Before we screw with the knownVars, copy any any column ordering from ref to *this.
 	    if (ref->orderedSelect) {
-		orderedSelect = true;
+                if (!orderedSelect) {
+                    // we're joining an unordered set against and ordered set so
+                    // first promote this to an ordered set.
+                    orderedSelect = true;
+                    for (VariableListConstIterator v = knownVars.begin();
+                         v != knownVars.end(); ++v)
+                        addOrderedVar(*v);
+                }
 		for (std::vector<const TTerm*>::const_iterator v = ref->selectOrder.begin();
 		     v != ref->selectOrder.end(); ++v)
 		    if (addKnownVar(*v))
