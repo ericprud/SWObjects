@@ -684,10 +684,11 @@ namespace w3c_sw {
 	    std::string& groupIndexRef;
 	    const TTerm* storeAs;
 	    std::set<std::string> dataErrors;
+            bool evalFor0Rows;
 
 	public:
 	    FunctionState (std::string& groupIndexRef, const TTerm* storeAs, const URI* functionName)
-		: FunctionCall (functionName, NULL), groupIndexRef(groupIndexRef), storeAs(storeAs)
+		: FunctionCall (functionName, NULL), groupIndexRef(groupIndexRef), storeAs(storeAs), evalFor0Rows(false)
 	    {  }
 	    ~FunctionState () {  }
 	    static std::string mitoa (int i) {
@@ -695,6 +696,7 @@ namespace w3c_sw {
 		s << i;
 		return s.str();
 	    }
+            void emptyAggregate () { evalFor0Rows = true; }
 	    virtual const TTerm* evalAggregate(const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const = 0;
 	    virtual const TTerm* eval (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		const TTerm* ret;
@@ -734,6 +736,10 @@ namespace w3c_sw {
 		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_count) {  }
 	    ~CountState () {  }
 	    virtual const TTerm* evalAggregate (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
+                if (evalFor0Rows) {
+                    const_cast<CountState*>(this)->evalFor0Rows = false;
+                    return atomFactory->getNumericRDFLiteral(0);
+                }
 		int c = ++(const_cast<CountState*>(this))->counts[groupIndexRef];
 		return atomFactory->getNumericRDFLiteral(c);
 	    }
@@ -841,6 +847,10 @@ namespace w3c_sw {
 	    {  }
 	    ~GroupConcatState () { delete expr; }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
+                if (evalFor0Rows) {
+                    const_cast<GroupConcatState*>(this)->evalFor0Rows = false;
+                    return atomFactory->getRDFLiteral("", NULL, NULL, false);
+                }
 		const TTerm* val = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
 		if (val != NULL) {
 		    if (vals.find(groupIndexRef) == vals.end())
@@ -865,6 +875,12 @@ namespace w3c_sw {
 	    // !! fix -- SELECT (CONCAT("b:", GROUP_CONCAT(?b)) AS ?bz)
 	    last.functionCall = new NoDelWrapper(p_IRIref, self);
 	}
+
+        std::set<FunctionState*> aggregates;
+        void addAggregate (FunctionState* agg) {
+            aggregates.insert(agg);
+            last.functionCall = agg;
+        }
 	/**
 	 * Aggregate function invocations:
 	 */
@@ -873,30 +889,57 @@ namespace w3c_sw {
 
 	    if (p_IRIref == TTerm::FUNC_sample) {
 		(*it)->express(this);
-		last.functionCall = new SampleState(groupIndexRef, stringize(self), last.expression);
+		addAggregate(new SampleState(groupIndexRef, stringize(self), last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_count) {
-		last.functionCall = new CountState(groupIndexRef, stringize(self));
+		addAggregate(new CountState(groupIndexRef, stringize(self)));
 	    } else if (p_IRIref == TTerm::FUNC_sum) {
 		(*it)->express(this);
-		last.functionCall = new SumState(groupIndexRef, stringize(self), last.expression);
+		addAggregate(new SumState(groupIndexRef, stringize(self), last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_avg) {
 		(*it)->express(this);
-		last.functionCall = new AvgState(groupIndexRef, stringize(self), last.expression);
+		addAggregate(new AvgState(groupIndexRef, stringize(self), last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_min) {
 		(*it)->express(this);
-		last.functionCall = new MinState(groupIndexRef, stringize(self), last.expression);
+		addAggregate(new MinState(groupIndexRef, stringize(self), last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_max) {
 		(*it)->express(this);
-		last.functionCall = new MaxState(groupIndexRef, stringize(self), last.expression);
+		addAggregate(new MaxState(groupIndexRef, stringize(self), last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_group_concat) {
 		(*it)->express(this);
 		std::string sep = scalarVals->getOrDefault("separator", " ");
-		last.functionCall = new GroupConcatState(groupIndexRef, stringize(self), last.expression, sep);
+		addAggregate(new GroupConcatState(groupIndexRef, stringize(self), last.expression, sep));
 	    } else {
 		throw "program flow exception -- unknown aggregate function: " + p_IRIref->toString();
 	    }
 	}
     };
+
+    void ResultSet::evalExpressionsOnRow (Result* row, Pos2Expr& pos2expr, TTerm::String2BNode& perRowBnodeMap, const RdfDB* db) {
+        /* calculate projection, update idx */
+        for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
+             knownVar != knownVars.end(); ++knownVar) {
+            try {
+                TreatAsVar treatAsVar;
+                const TTerm* val = pos2expr[*knownVar]->eval(row, atomFactory, &treatAsVar, &perRowBnodeMap, db);
+                if (val == TTerm::Unbound) {
+                    BindingSetIterator old = row->find(*knownVar);
+                    if (old != row->end())
+                        row->erase(old);
+                } else
+                    row->set(*knownVar, val, false, true);
+            } catch (SafeEvaluationError& e) {
+                if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
+                    SPARQLSerializer s;
+                    pos2expr[*knownVar]->express(&s);
+                    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
+                        << "Error evaluating " << s.str() << " on " << row->toString();
+                }
+                BindingSetIterator old = row->find(*knownVar);
+                if (old != row->end())
+                    row->erase(old);
+            }
+        }
+    }
 
     void ResultSet::project (ProductionVector<const ExpressionAlias*> const * projection, ExpressionAliasList* groupBy,
 			     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) {
@@ -922,14 +965,8 @@ namespace w3c_sw {
 	std::string groupIndex;
 
 	/* Map select variables to the expressions bound to them. */
-	struct Pos2Expr : public std::map<const TTerm*,const Expression*> {
-	    ~Pos2Expr () {
-		/* Clean up new'd expressions. */
-		for (Pos2Expr::iterator it = begin(); it != end(); ++it)
-		    delete it->second;
-	    }
-	};
 	Pos2Expr pos2expr;
+        std::set<AggregateStateInjector::FunctionState*> aggregates;
 
 	/* Walk the select list to populate pos2expr. */
 	for (std::vector<const ExpressionAlias*>::const_iterator varExpr = projection->begin();
@@ -945,6 +982,7 @@ namespace w3c_sw {
 	    AggregateStateInjector inj(atomFactory, groupIndex, &delMes);
 	    (*varExpr)->expr->express(&inj);
 	    pos2expr[label] = inj.last.expression;
+            aggregates.insert(inj.aggregates.begin(), inj.aggregates.end());
 	}
 
 	/* Walk the HAVING list as well. */
@@ -957,6 +995,7 @@ namespace w3c_sw {
 		(*expr)->express(&ss);
 		const TTerm* label = atomFactory->getRDFLiteral(ss.str());
 		pos2expr[label] = inj.last.expression;
+                aggregates.insert(inj.aggregates.begin(), inj.aggregates.end());
 		knownVars.insert(label);
 		delMes.insert(label);
 	    }
@@ -1012,31 +1051,7 @@ namespace w3c_sw {
 
 	    Result* aggregateRow = *aggregateRowIt;
 
-	    /* calculate projection, update idx */
-	    for (std::set<const TTerm*>::const_iterator knownVar = knownVars.begin();
-		 knownVar != knownVars.end(); ++knownVar) {
-		try {
-		    TreatAsVar treatAsVar;
-		    const TTerm* val = pos2expr[*knownVar]->eval(aggregateRow, atomFactory, &treatAsVar, &perRowBnodeMap, db);
-		    if (val == TTerm::Unbound) {
-			BindingSetIterator old = aggregateRow->find(*knownVar);
-			if (old != aggregateRow->end())
-			    aggregateRow->erase(old);
-		    } else
-			aggregateRow->set(*knownVar, val, false, true);
-		} catch (SafeEvaluationError& e) {
-		    if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
-			SPARQLSerializer s;
-			pos2expr[*knownVar]->express(&s);
-			BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
-			    << "Error evaluating " << s.str() << " on " << aggregateRow->toString();
-		    }
-			BindingSetIterator old = aggregateRow->find(*knownVar);
-			if (old != aggregateRow->end())
-			    aggregateRow->erase(old);
-		}
-	    }
-
+            evalExpressionsOnRow(aggregateRow, pos2expr, perRowBnodeMap, db);
 	    if (orderConditions == NULL && having == NULL)
 		/* Eliminate unselect attributes. */
 		for (std::set<const TTerm*>::const_iterator delMe = delMes.begin();
@@ -1046,8 +1061,16 @@ namespace w3c_sw {
 	}
 
 	// Empty (size() == 0) aggregates (groupBy.size() > 0) need an empty row.
-	if (size() == 0 && groupBy != NULL && groupBy->size() > 0)
-	    results.insert(results.begin(), new Result(this));
+	if (size() == 0 && groupBy != NULL && groupBy->size() > 0) {
+            for (std::set<AggregateStateInjector::FunctionState*>::const_iterator it = aggregates.begin();
+                 it != aggregates.end(); ++it)
+                (*it)->emptyAggregate();
+
+	    TTerm::String2BNode perRowBnodeMap;
+            Result* aggregateRow = new Result(this);
+            evalExpressionsOnRow(aggregateRow, pos2expr, perRowBnodeMap, db);
+	    results.insert(results.begin(), aggregateRow);
+        }
 
 
 	/* Enforce HAVING constraints. */

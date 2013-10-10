@@ -685,7 +685,16 @@ namespace w3c_sw {
 			   refBNodes2myBNodes);
 	}
 
-
+    protected: // project-specific auxilliary functions
+	struct Pos2Expr : public std::map<const TTerm*,const Expression*> {
+	    ~Pos2Expr () {
+		/* Clean up new'd expressions. */
+		for (Pos2Expr::iterator it = begin(); it != end(); ++it)
+		    delete it->second;
+	    }
+	};
+        void evalExpressionsOnRow (Result* aggregateRow, Pos2Expr& pos2expr, TTerm::String2BNode& perRowBnodeMap, const RdfDB* db);
+    public:
 	void project(ProductionVector<const ExpressionAlias*> const * exprs, ExpressionAliasList* groupBy,
 		     ProductionVector<const w3c_sw::Expression*>* having, std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db);
 	void restrictResults(const Expression* expression, const RdfDB* db); // no longer called "restrict" 'cause it screws up php.
