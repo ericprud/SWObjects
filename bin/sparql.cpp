@@ -1400,7 +1400,8 @@ int main(int ac, char* av[])
 		    }
 //		    delete reference;
 		    Output.resource = NULL; // No other output reqired.
-		}
+		} else if (Quiet)
+                    ret = TheServer.engine.resultSet.size() == 0;
 	    }
 	    if (!Quiet && Output.resource != NULL) {
 		std::string outres = Output.resource->getLexicalValue();
