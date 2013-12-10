@@ -687,8 +687,8 @@ namespace w3c_sw {
             bool evalFor0Rows;
 
 	public:
-	    FunctionState (std::string& groupIndexRef, const TTerm* storeAs, const URI* functionName)
-		: FunctionCall (functionName, NULL), groupIndexRef(groupIndexRef), storeAs(storeAs), evalFor0Rows(false)
+	    FunctionState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const URI* functionName)
+		: FunctionCall (functionName, fargs), groupIndexRef(groupIndexRef), storeAs(storeAs), evalFor0Rows(false)
 	    {  }
 	    ~FunctionState () {  }
 	    static std::string mitoa (int i) {
@@ -721,8 +721,8 @@ namespace w3c_sw {
 	struct SampleState : public FunctionState { // FunctionCall for virtual eval
 	    const Expression* expr;
 	public:
-	    SampleState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_sum), expr(expr) {  }
+	    SampleState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_sum), expr(expr) {  }
 	    ~SampleState () {  }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		return expr->eval(r, atomFactory, evaluator, bnodeMap, db);
@@ -732,8 +732,8 @@ namespace w3c_sw {
 	protected:
 	    std::map<std::string, int> counts;
 	public:
-	    CountState (std::string& groupIndexRef, const TTerm* storeAs)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_count) {  }
+	    CountState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_count) {  }
 	    ~CountState () {  }
 	    virtual const TTerm* evalAggregate (const Result* /* r */, AtomFactory* atomFactory, BNodeEvaluator* /* evaluator */, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) const {
                 if (evalFor0Rows) {
@@ -749,8 +749,8 @@ namespace w3c_sw {
 	    const Expression* expr;
 	    std::map<std::string, const TTerm*> vals;
 	public:
-	    SumState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_sum), expr(expr) {  }
+	    SumState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_sum), expr(expr) {  }
 	    ~SumState () { delete expr; }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		if (vals.find(groupIndexRef) == vals.end()) {
@@ -772,8 +772,8 @@ namespace w3c_sw {
 	    std::map<std::string, int> counts;
 	    std::map<std::string, const TTerm*> sums;
 	public:
-	    AvgState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_avg), expr(expr) {  }
+	    AvgState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_avg), expr(expr) {  }
 	    ~AvgState () { delete expr; }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		if (sums.find(groupIndexRef) == sums.end()) {
@@ -803,8 +803,8 @@ namespace w3c_sw {
 	    const Expression* expr;
 	    std::map<std::string, const TTerm*> vals;
 	public:
-	    MinState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_min), expr(expr) {  }
+	    MinState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_min), expr(expr) {  }
 	    ~MinState () { delete expr; }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		const TTerm* val = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
@@ -822,8 +822,8 @@ namespace w3c_sw {
 	    const Expression* expr;
 	    std::map<std::string, const TTerm*> vals;
 	public:
-	    MaxState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_max), expr(expr) {  }
+	    MaxState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const Expression* expr)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_max), expr(expr) {  }
 	    ~MaxState () { delete expr; }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
 		const TTerm* val = expr->eval(r, atomFactory, evaluator, bnodeMap, db);
@@ -842,8 +842,8 @@ namespace w3c_sw {
 	    std::string separator;
 	    std::map<std::string, boost::shared_ptr<std::stringstream> > vals;
 	public:
-	    GroupConcatState (std::string& groupIndexRef, const TTerm* storeAs, const Expression* expr, std::string separator)
-		: FunctionState(groupIndexRef, storeAs, TTerm::FUNC_group_concat), expr(expr), separator(separator)
+	    GroupConcatState (std::string& groupIndexRef, const TTerm* storeAs, const ArgList* const fargs, const Expression* expr, std::string separator)
+		: FunctionState(groupIndexRef, storeAs, fargs, TTerm::FUNC_group_concat), expr(expr), separator(separator)
 	    {  }
 	    ~GroupConcatState () { delete expr; }
 	    virtual const TTerm* evalAggregate (const Result* r, AtomFactory* atomFactory, BNodeEvaluator* evaluator, TTerm::String2BNode* bnodeMap, const RdfDB* db) const {
@@ -871,10 +871,14 @@ namespace w3c_sw {
 	    delMes->insert(ret);
 	    return ret;
 	}
-	virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* /* p_ArgList */) {
-	    // !! fix -- SELECT (CONCAT("b:", GROUP_CONCAT(?b)) AS ?bz)
-	    last.functionCall = new NoDelWrapper(p_IRIref, self);
-	}
+	// @@ optimization disabled 'cause the args vector was NULL. better to use a NoDelProductionVector
+//	virtual void functionCall (const FunctionCall* const self, const URI* p_IRIref, const ArgList* /* p_ArgList */) {
+//	    // !! fix -- SELECT (CONCAT("b:", GROUP_CONCAT(?b)) AS ?bz)
+//	    //	    last.functionCall = new NoDelWrapper(p_IRIref, self);
+//	    SWObjectDuplicator vanillaDuplicator(atomFactory); // @@ swap to empty arglist or NoDel{ProdVector,Wrapper}
+//	    p_ArgList->express(&vanillaDuplicator);
+//	    const ArgList* const fargs = vanillaDuplicator.last.argList;
+//	}
 
         std::set<FunctionState*> aggregates;
         void addAggregate (FunctionState* agg) {
@@ -885,30 +889,34 @@ namespace w3c_sw {
 	 * Aggregate function invocations:
 	 */
 	virtual void aggregateCall (const AggregateCall* const self, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* scalarVals) {
+	    SWObjectDuplicator vanillaDuplicator(atomFactory); // @@ swap to empty arglist or NoDel{ProdVector,Wrapper}
+	    p_ArgList->express(&vanillaDuplicator);
+	    const ArgList* const fargs = vanillaDuplicator.last.argList;
 	    std::vector<const Expression*>::const_iterator it = p_ArgList->begin();
 
 	    if (p_IRIref == TTerm::FUNC_sample) {
 		(*it)->express(this);
-		addAggregate(new SampleState(groupIndexRef, stringize(self), last.expression));
+		addAggregate(new SampleState(groupIndexRef, stringize(self), fargs, last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_count) {
-		addAggregate(new CountState(groupIndexRef, stringize(self)));
+		addAggregate(new CountState(groupIndexRef, stringize(self), fargs));
 	    } else if (p_IRIref == TTerm::FUNC_sum) {
 		(*it)->express(this);
-		addAggregate(new SumState(groupIndexRef, stringize(self), last.expression));
+		addAggregate(new SumState(groupIndexRef, stringize(self), fargs, last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_avg) {
 		(*it)->express(this);
-		addAggregate(new AvgState(groupIndexRef, stringize(self), last.expression));
+		addAggregate(new AvgState(groupIndexRef, stringize(self), fargs, last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_min) {
 		(*it)->express(this);
-		addAggregate(new MinState(groupIndexRef, stringize(self), last.expression));
+		addAggregate(new MinState(groupIndexRef, stringize(self), fargs, last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_max) {
 		(*it)->express(this);
-		addAggregate(new MaxState(groupIndexRef, stringize(self), last.expression));
+		addAggregate(new MaxState(groupIndexRef, stringize(self), fargs, last.expression));
 	    } else if (p_IRIref == TTerm::FUNC_group_concat) {
 		(*it)->express(this);
 		std::string sep = scalarVals->getOrDefault("separator", " ");
-		addAggregate(new GroupConcatState(groupIndexRef, stringize(self), last.expression, sep));
+		addAggregate(new GroupConcatState(groupIndexRef, stringize(self), fargs, last.expression, sep));
 	    } else {
+		delete fargs;
 		throw "program flow exception -- unknown aggregate function: " + p_IRIref->toString();
 	    }
 	}
