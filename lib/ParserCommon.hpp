@@ -260,6 +260,9 @@ public:
     /// stream name (file or input stream) used for error messages.
     std::string streamname;
 
+    static bool defaultDescriptiveBNodeLabels;
+    bool descriptiveBNodeLabels;
+
     /** Need a pointer to the current lexer instance, used to connect the
      * parser to the scanner. It is used in the yylex macro. */
     //class MyScanner* lexer;

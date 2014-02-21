@@ -198,13 +198,13 @@ NON_CHAR_HIGH_UCS	[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][
 
 STRING_LITERAL1		 "'"([\x00-\x09\x0B-\x0C\x0E-\x26\x28-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"'"
 STRING_LITERAL2		"\""([\x00-\x09\x0B-\x0C\x0E-\x21\x23-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"\""
-STRING_LITERAL_LONG1	      "'''"(("'"|"''")?[\x00-\x26\x28-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"'''"
-STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?[\x00-\x21\x23-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR})*"\"\"\""
+STRING_LITERAL_LONG1	      "'''"(("'"|"''")?([\x00-\x26\x28-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR}))*"'''"
+STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?([\x00-\x21\x23-\x5B\x5D-\x7F]|{HIGH_UCS}|{ECHAR}|{UCHAR}))*"\"\"\""
 
 NON_CHAR_STRING_LITERAL1		 "'"([\x00-\x09\x0B-\x0C\x0E-\x26\x28-\x5B\x5D-\x7F]|{NON_CHAR_HIGH_UCS}|{ECHAR}|{UCHAR})*"'"
 NON_CHAR_STRING_LITERAL2		"\""([\x00-\x09\x0B-\x0C\x0E-\x21\x23-\x5B\x5D-\x7F]|{NON_CHAR_HIGH_UCS}|{ECHAR}|{UCHAR})*"\""
-NON_CHAR_STRING_LITERAL_LONG1	      "'''"(("'"|"''")?[\x00-\x26\x28-\x5B\x5D-\x7F]|{NON_CHAR_HIGH_UCS}|{ECHAR}|{UCHAR})*"'''"
-NON_CHAR_STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?[\x00-\x21\x23-\x5B\x5D-\x7F]|{NON_CHAR_HIGH_UCS}|{ECHAR}|{UCHAR})*"\"\"\""
+NON_CHAR_STRING_LITERAL_LONG1	      "'''"(("'"|"''")?([\x00-\x26\x28-\x5B\x5D-\x7F]|{NON_CHAR_HIGH_UCS}|{ECHAR}|{UCHAR}))*"'''"
+NON_CHAR_STRING_LITERAL_LONG2	"\"\"\""(("\""|"\"\"")?([\x00-\x21\x23-\x5B\x5D-\x7F]|{NON_CHAR_HIGH_UCS}|{ECHAR}|{UCHAR}))*"\"\"\""
 
 IRIREF			"<"([\x21\x23-\x3b\x3d\x3f-\x5b\x5d\x5fa-z\x7e-\x7F]|{HIGH_UCS}|{UCHAR})*">"
 PN_LOCAL_ESC		"\\"("_"|"~"|"."|"-"|"!"|"$"|"&"|"'"|"("|")"|"*"|"+"|","|";"|"="|"/"|"?"|"#"|"@"|"%")

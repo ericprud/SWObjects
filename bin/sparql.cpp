@@ -529,7 +529,8 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 		&& s.compare("application/sparql-results+json")
 		&& s.compare("text/csv")
 		&& s.compare("text/tab-separated-values")
-		&& s.compare("application/xml"))
+		&& s.compare("application/xml")
+		&& s.compare("text/raw"))
 		std::cerr << "proceeding with unknown media type \"" << s << "\"\n";
 		// throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	    TheServer.engine.dataMediaType = s;
@@ -907,6 +908,8 @@ int main(int ac, char* av[])
 
             ("get-graph-arguments", po::value<bool>(), 
 	     "load named IRI in GRAPH <IRI> or GRAPH ?var when ?var is bound.")
+            ("bnode-detailed-label", 
+	     "label anonymous blank nodes with e.g. file:line:column.")
 
             ("service", po::value<std::string>(), 
 	     "relay all queries to service URL.")
@@ -1007,6 +1010,11 @@ int main(int ac, char* av[])
 	    po::notify(vm);
 	}
     
+	if (vm.count("bnode-detailed-label")) {
+	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Creating detailed bnode labels.\n";
+	    sw::YaccDriver::defaultDescriptiveBNodeLabels = true;
+	}
+
 	if (vm.count("post")) {
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
 	    sw::ServiceGraphPattern::defaultHTTPmethod = sw::ServiceGraphPattern::HTTP_METHOD_POST;

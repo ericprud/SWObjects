@@ -10,6 +10,8 @@
 
 namespace w3c_sw {
 
+    bool YaccDriver::defaultDescriptiveBNodeLabels = false;
+
     const wchar_t nonIRIchars[][2] = {
 	{0x00000, 0x00020}, {0x00022, 0x00022}, {0x0003c, 0x0003c}, 
 	{0x0003e, 0x0003e}, {0x0005c, 0x0005c}, {0x0005e, 0x0005e},
@@ -28,12 +30,14 @@ namespace w3c_sw {
     YaccDriver::YaccDriver (AtomFactory* atomFactory, size_t abortErrorCount)
 	: ParserDriver(), atomFactory(atomFactory),
 	  ignorePrefixFlag(false), abortErrorCount(abortErrorCount),
-	  trace_scanning(false), trace_parsing(false) {  }
+	  trace_scanning(false), trace_parsing(false),
+	  descriptiveBNodeLabels(defaultDescriptiveBNodeLabels) {  }
 
     YaccDriver::YaccDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount)
 	: ParserDriver(baseURI), atomFactory(atomFactory),
 	  ignorePrefixFlag(false), abortErrorCount(abortErrorCount),
-	  trace_scanning(false), trace_parsing(false) {  }
+	  trace_scanning(false), trace_parsing(false),
+	  descriptiveBNodeLabels(defaultDescriptiveBNodeLabels) {  }
 
     void YaccDriver::error (const std::string& m) {
 	throw m;

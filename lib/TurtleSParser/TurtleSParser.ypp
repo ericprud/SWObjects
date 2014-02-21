@@ -91,6 +91,16 @@ public:
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
     class TurtleSScanner* lexer;
+
+    const BNode* createBNode () {
+	if (descriptiveBNodeLabels) {
+	    std::stringstream ss;
+	    ss << *(yylloc->begin.filename) <<":"<< yylloc->begin.line <<":"<< yylloc->begin.column;
+	    return atomFactory->getBNode(ss.str(), &bnodeMap);
+	} else {
+	    return atomFactory->createBNode();
+	}
+    }
 };
 
 } // namespace w3c_sw

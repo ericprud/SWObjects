@@ -87,6 +87,16 @@ public:
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
     class TurtleSScanner* lexer;
+
+    const BNode* createBNode () {
+	if (descriptiveBNodeLabels) {
+	    std::stringstream ss;
+	    ss << *(yylloc->begin.filename) <<":"<< yylloc->begin.line <<":"<< yylloc->begin.column;
+	    return atomFactory->getBNode(ss.str(), &bnodeMap);
+	} else {
+	    return atomFactory->createBNode();
+	}
+    }
 };
 
 } // namespace w3c_sw
@@ -96,7 +106,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 100 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 110 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 #include <string>
@@ -126,7 +136,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 130 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 140 "lib/TurtleSParser/TurtleSParser.hpp"
 
   /// A Bison parser.
   class TurtleSParser
@@ -138,7 +148,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 103 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 113 "lib/TurtleSParser/TurtleSParser.ypp"
 
     void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
@@ -165,7 +175,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 169 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 179 "lib/TurtleSParser/TurtleSParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -385,7 +395,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 389 "lib/TurtleSParser/TurtleSParser.hpp"
+#line 399 "lib/TurtleSParser/TurtleSParser.hpp"
 
 
 
