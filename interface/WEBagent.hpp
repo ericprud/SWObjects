@@ -80,7 +80,7 @@ namespace w3c_sw {
 		    }
 		}
 		if (matches[2].matched)
-		    ret = base64_decode(ret);
+		    ret = web_util::base64_decode(ret);
 		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
 		    << "data: URL percent-unescaped "
 		    << (matches[2].matched ? "and base64-decoded " : "")

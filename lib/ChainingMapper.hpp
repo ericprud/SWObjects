@@ -646,6 +646,8 @@ namespace w3c_sw {
 	    return adds.size() > 0;
 	}
 
+ 	const ResultSet* mappingConstants;
+
 	void addStuff (std::vector<Add>* adds, const TTerm* /* ruleGraphName */, const BasicGraphPattern* asBgp, std::vector<Rule>::const_iterator rule, const TTerm* /* tripleGraphName */, const TriplePattern* triple) {
 	    /** For each triple in the rule head... */
 	    for (std::vector<const TriplePattern*>::const_iterator constraint = asBgp->begin();
@@ -655,6 +657,9 @@ namespace w3c_sw {
 		for (VariableListConstIterator it = rule->bodyVars.begin();
 		     it != rule->bodyVars.end(); ++it)
 		    testRS.addKnownVar(*it);
+
+		if (mappingConstants)
+		    testRS.joinIn(mappingConstants);
 
 		/** If the pattern matches the triple,
 		    we will add it to Bindings#alternatives. */
@@ -702,6 +707,7 @@ namespace w3c_sw {
     class QueryWalker : public SWObjectDuplicator {
     protected:
 	Bindings bindings;
+    protected:
 	MapSet::e_sharedVars sharedVars;
 	Bindings::Alternatives::VarUniquifier varUniquifier;
 
@@ -731,6 +737,7 @@ namespace w3c_sw {
 	    // override SWObjectDuplicator, suppressing last.tableOperation = new GraphGraphPattern(name, last.tableOperation)
 	    p_GroupGraphPattern->express(this);
 	}
+	void setMappingConstants(const ResultSet* mappingConstants) { bindings.mappingConstants = mappingConstants; }
 	const Operation* mapQuery (const Operation* query) {
 	    query->express(this);
 	    // std::cerr << bindings;
@@ -832,8 +839,10 @@ namespace w3c_sw {
 	}
 
 	/** Map a SPARQL operation over the consequents of #rules to an operation over the antecedents of #rules. */
-	const Operation* map (const Operation* query) {
-	    const Operation* op = QueryWalker(rules, atomFactory, sharedVars, nodeShare).mapQuery(query);
+	const Operation* map (const Operation* query, const ResultSet* mappingConstants = NULL) {
+	    QueryWalker walker(rules, atomFactory, sharedVars, nodeShare);
+	    walker.setMappingConstants(mappingConstants);
+	    const Operation* op = walker.mapQuery(query);
             if (skipSimplifier)
                 return op;
 	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7

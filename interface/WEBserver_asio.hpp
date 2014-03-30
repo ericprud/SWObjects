@@ -304,7 +304,7 @@ namespace w3c_sw {
 			return false;
 		    }
 		    else {
-			req.headers.push_back(header());
+			req.headers.push_back(web_util::header());
 			req.headers.back().name.push_back(input);
 			state_ = header_name;
 			return boost::indeterminate;
@@ -571,7 +571,7 @@ namespace w3c_sw {
 			    sout << "    <h2>Client Headers</h2>\n"
 				"    <ul>";
 			    // Why not dump the HTTP headers? Sure...
-			    for (webserver::request::headerset::const_iterator it = request_->headers.begin();
+			    for (web_util::headerset::const_iterator it = request_->headers.begin();
 				 it != request_->headers.end(); ++it)
 				sout << "      <li>" << WebHandler::escapeHTML(it->name) 
 				     << ": " << WebHandler::escapeHTML(it->value) 

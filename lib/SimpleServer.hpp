@@ -24,6 +24,7 @@ namespace w3c_sw {
 	static std::string Javascript_ToggleDisplay_init;
 	static std::string Javascript_TableSorter_init;
 	static std::string Javascript_ToggleDisplay_defn;
+	static std::string AuthChallenge;
 
     public:
 	SimpleInterface (engine_type& engine, controller_type* controller,
@@ -155,7 +156,7 @@ namespace w3c_sw {
 		    std::string language;
 		    std::string newQuery(req.getBody());
 		    //queryLoadList.loadAll();
-		    engine.executeQuery(engine.sadiOp, rs, language, newQuery);
+		    engine.executeQuery(engine.sadiOp, rs, language, newQuery, NULL);
 		    // engine.db.setTarget(NULL);
 		    XMLSerializer xml("  ");
 		    rep.status = webserver::reply::ok;
@@ -357,6 +358,7 @@ namespace w3c_sw {
 		path.erase(0, 1); // get rid of leading '/' to keep stuff relative.
 		std::string absURL = libwww::GetAbsoluteURIstring("/"+path, serviceURI);
 			    IStreamContext istr(query, IStreamContext::STRING, req.getContentType().c_str());
+		std::pair<std::string, std::string> userPass = req.getUserPassword();
 		std::string oldBase = engine.sparqlParser.getBase();
 		engine.sparqlParser.setBase(absURL);
 			    Operation* op = engine.sparqlParser.parse(istr);
@@ -378,7 +380,19 @@ namespace w3c_sw {
 				queryLoadList.loadAll();
 				if (path != servicePath)
 				    engine.db.setTarget(engine.atomFactory.getURI(absURL));
-				engine.executeQuery(op, rs, language, newQuery);
+
+				// This one-row ResultSet holds system-defined variables.
+				ResultSet mappingConstants(&engine.atomFactory);
+				Result* firstRow = *mappingConstants.begin();
+				mappingConstants.set(firstRow, engine.atomFactory.getVariable("VERSION"), // @@ haven't used outside of FILTER
+					     engine.atomFactory.getRDFLiteral("SWObjects 1.0"), false);
+				if (userPass.first != "") {
+				    mappingConstants.set(firstRow, engine.atomFactory.getVariable("USER"),
+						 engine.atomFactory.getRDFLiteral(userPass.first), false);
+				    mappingConstants.set(firstRow, engine.atomFactory.getVariable("PASSWORD"),
+						 engine.atomFactory.getRDFLiteral(userPass.second), false);
+				}
+				engine.executeQuery(op, rs, language, newQuery, &mappingConstants);
 				if (humanReader &&
 				    (dynamic_cast<GraphChange*>(op) != NULL || 
 				     dynamic_cast<OperationSet*>(op) != NULL)) { // @@@ OperationSet *currently* only used for updates.
@@ -486,12 +500,30 @@ namespace w3c_sw {
 					    mediaAttrs["name"] = "media";
 					    xml.empty("input", mediaAttrs);
 
-					    XMLSerializer::Attributes submitAttrs;
-					    submitAttrs["type"] = "submit";
-					    submitAttrs["value"] = "re-query";
-					    submitAttrs["onclick"] = "copy('edit', 'query')";
-					    submitAttrs["style"] = "margin: 2em;";
-					    xml.empty("input", submitAttrs);
+					    // Create a hidden input field with user's current username.
+					    XMLSerializer::Attributes userAttrs;
+					    userAttrs["type"] = "hidden";
+					    userAttrs["name"] = "user";
+					    userAttrs["value"] = req.getUserPassword().first;
+					    xml.empty("input", userAttrs);
+
+					    // Create a div with an editable query and a prompt to change the username.
+					    XMLSerializer::Attributes controlsAttrs;
+					    controlsAttrs["style"] = "margin: 2em;";
+					    xml.open("div", controlsAttrs); {
+						XMLSerializer::Attributes submitAttrs;
+						submitAttrs["type"] = "submit";
+						submitAttrs["value"] = "re-query";
+						submitAttrs["onclick"] = "copy('edit', 'query')";
+						xml.empty("input", submitAttrs);
+
+						xml.empty("br");
+
+						XMLSerializer::Attributes authAttrs;
+						authAttrs["type"] = "checkbox";
+						authAttrs["name"] = AuthChallenge;
+						xml.leaf("input", std::string("change auth"), authAttrs);
+					    } xml.close(); // div
 					} xml.close(); // p
 				    } xml.close(); // form
 				} xml.close(); // div
@@ -577,6 +609,20 @@ namespace w3c_sw {
 			req.getContentType().compare(0, 34, "application/sparql-update") == 0) {
 			query = req.getBody();
 		    } else {
+			// If a client demands a new AuthChallenge, send them a 403 until they change username.
+			parm = req.parms.find(AuthChallenge);
+			if (parm != req.parms.end()) {
+			    std::pair<std::string, std::string> userpass = req.getUserPassword();
+			    parm = req.parms.find("user");
+			    if (parm != req.parms.end() &&
+				(userpass.first == parm->second || userpass.first != userpass.second)) {
+				HTTPMessageException throwme(webserver::reply::unauthorized, 
+							     "text/html", "queen for a day");
+				throwme.addHeader("WWW-Authenticate", "Basic realm=Q%26D%20Server");
+				throw throwme;
+			    }
+			}
+
 			parm = req.parms.find("query");
 			if (parm != req.parms.end()) {
 			    query = parm->second;
@@ -658,9 +704,11 @@ namespace w3c_sw {
 		rep.setContentType("text/html");
 		rep.setContent(e.what());
 		return webserver::reply::internal_server_error;
-	    } catch (SimpleMessageException& e) {
-		rep.status = webserver::reply::bad_request;
-		rep.setContentType("text/html");
+	    } catch (HTTPMessageException& e) {
+		rep.status = e.status;
+		for (std::vector<web_util::header>::const_iterator it = e.headers.begin();
+		     it != e.headers.end(); ++it)
+		    rep.addHeader(*it);
 		rep.setContent(e.what());
 		return webserver::reply::internal_server_error;
 	    } catch (std::exception& e) {
@@ -840,6 +888,8 @@ namespace w3c_sw {
 "	document.getElementById(to).value = q;\n"
 "    }\n"
 	    ;
+    template <class engine_type, class data_loader, class controller_type>
+        std::string SimpleInterface<engine_type, data_loader, controller_type>::AuthChallenge = "authChallenge";
 
 class NamespaceAccumulator : public NamespaceMap {
 public:
@@ -1158,7 +1208,7 @@ struct SimpleEngine {
 	  noExec(false)
     {  }
 
-    bool executeQuery (const Operation* query, ResultSet& rs, std::string& language, std::string& finalQuery) {
+    bool executeQuery (const Operation* query, ResultSet& rs, std::string& language, std::string& finalQuery, const ResultSet* mappingConstants) {
 	language = "SPARQL";
 	const Operation* delMe = rs.getConstrainedOperation(query);
 	if (delMe != NULL)
@@ -1166,7 +1216,7 @@ struct SimpleEngine {
 
 	if (queryMapper.getRuleCount() > 0) {
 	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
-	    const Operation* transformed(queryMapper.map(query));
+	    const Operation* transformed(queryMapper.map(query, mappingConstants));
 	    if (delMe != NULL)
 		delete delMe;
 	    query = delMe = transformed;

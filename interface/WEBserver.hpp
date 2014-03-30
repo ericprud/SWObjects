@@ -50,26 +50,11 @@
 
 #include "SWObjects.hpp"
 #include "ParserCommon.hpp"
+#include "WEButil.hpp"
 
 namespace w3c_sw {
 
     namespace webserver {
-
-	struct header
-	{
-	    std::string name;
-	    std::string value;
-	    header () {  }
-	    header (std::string name, std::string value) : name(name), value(value) {  }
-	    std::string str () const {
-		return name + ": " + value;
-	    }
-	};
-
-	std::ostream& operator<< (std::ostream& os, const header& h) {
-	    return os << h.str();
-	}
-
 
 	/// A request received from a client.
 	struct request
@@ -80,8 +65,17 @@ namespace w3c_sw {
 	    std::string getUri () { return uri; }
 	    int http_version_major;
 	    int http_version_minor;
-	    typedef std::vector<header> headerset;
-	    headerset headers;
+	    web_util::headerset headers;
+	    std::pair<std::string, std::string> getUserPassword () {
+		std::pair<bool, std::string> enc = headers.findOne("Authorization");
+		if (enc.first) {
+		    std::string concat = web_util::base64_decode(enc.second.substr(6));
+		    size_t i = concat.find_first_of(":");
+		    if (i != std::string::npos)
+			return std::make_pair(concat.substr(0,i), concat.substr(i+1));
+		}
+		return std::make_pair("", ""); // presumed illegal value
+	    }
 	    std::string body;
 	    std::string getBody () { return body; }
 	    virtual std::string getPath() const = 0;
@@ -127,7 +121,7 @@ namespace w3c_sw {
 	    std::string str () const {
 		std::stringstream ss;
 		ss << method << " " << uri << " HTTP/" << http_version_major << "." << http_version_minor << "\n";
-		for (std::vector<header>::const_iterator h = headers.begin();
+		for (std::vector<web_util::header>::const_iterator h = headers.begin();
 		     h != headers.end(); ++h)
 		    ss << *h << "\n";
 		ss << "\n" << body << "\n";
@@ -167,13 +161,16 @@ namespace w3c_sw {
 	    void setStatus (status_type s) { status = s; }
 
 	    /// The headers to be included in the reply.
-	    std::vector<header> headers;
+	    std::vector<web_util::header> headers;
 
 	    void setContentType (std::string s) {
 		addHeader("Content-Type", s);
 	    }
+	    void addHeader (web_util::header h) {
+		headers.push_back(h);
+	    }
 	    void addHeader (std::string name, std::string value) {
-		headers.push_back(header(name, value));
+		headers.push_back(web_util::header(name, value));
 	    }
 
 	    /// The content to be sent in the reply.
@@ -386,7 +383,7 @@ namespace w3c_sw {
 	    buffers.push_back(MUTABLE_BUFFER(status_strings::toString(status)));
 	    buffers.push_back(MUTABLE_BUFFER(status_strings::CRLF));
 	    for (std::size_t i = 0; i < headers.size(); ++i) {
-		header& h = headers[i];
+		web_util::header& h = headers[i];
 		buffers.push_back(MUTABLE_BUFFER(h.name));
 		buffers.push_back(MUTABLE_BUFFER(name_value_separator));
 		buffers.push_back(MUTABLE_BUFFER(h.value));
@@ -542,7 +539,7 @@ namespace w3c_sw {
 	inline std::string reply::str () const {
 	    std::stringstream ss;
 	    ss << "HTTP/1.0 " << status_strings::toString(status) << "\n";
-	    for (std::vector<header>::const_iterator h = headers.begin();
+	    for (std::vector<web_util::header>::const_iterator h = headers.begin();
 		 h != headers.end(); ++h)
 		ss << *h << "\n";
 	    ss << "\n" << content << "\n";
@@ -675,20 +672,42 @@ namespace w3c_sw {
 	    sout << "  </body>\n</html>\n";
 	}
 
-	struct SimpleMessageException : public StringException {
-	    SimpleMessageException (std::string msg) : StringException(make(msg)) {  }
-	    std::string make (std::string msg) {
-		std::ostringstream sout;
+	struct HTTPMessageException : public StringException {
+	    webserver::reply::status_type status;
+	    std::vector<web_util::header> headers;
+	    HTTPMessageException (webserver::reply::status_type status,
+				  std::string contentType, std::string msg)
+		: StringException(msg), status(status)
+	    {
+		addHeader("Content-Type", contentType);
+	    }
+	    ~HTTPMessageException() throw() {  }
 
+	    static std::string make (std::string msg) {
+		std::ostringstream sout;
 		head(sout, "Q&amp;D SPARQL Server Error");
 		sout << 
 		    "    <pre>" << msg << "</pre>\n";
 		foot(sout);
 		return sout.str();
+	    }	    
+
+	    void addHeader (std::string name, std::string value) {
+		headers.push_back(web_util::header(name, value));
 	    }
-	    
-	    SimpleMessageException (ParserException& ex) : StringException(make(ex)) {  }
-	    std::string make (ParserException& ex) {
+
+	};
+
+	struct SimpleMessageException : public HTTPMessageException {
+	    SimpleMessageException (std::string msg)
+		: HTTPMessageException(webserver::reply::bad_request, "text/html", HTTPMessageException::make(msg))
+	    {  }
+
+	    SimpleMessageException (ParserException& ex)
+		: HTTPMessageException(webserver::reply::bad_request, "text/html", make(ex))
+	    {  }
+
+	    static std::string make (ParserException& ex) {
 		std::ostringstream ss;
 		head(ss, "Q&amp;D SPARQL Server Parsing Error");
 		ss << "<h2>Parsing Error</h2>\n";
