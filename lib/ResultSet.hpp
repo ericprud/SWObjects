@@ -546,6 +546,11 @@ namespace w3c_sw {
 		     v != ref->selectOrder.end(); ++v)
 		    if (addKnownVar(*v))
 			addOrderedVar(*v);
+	    } else {
+		// just copy the known vars
+		for (VariableListConstIterator v = ref->knownVars.begin();
+		     v != ref->knownVars.end(); ++v)
+		    addKnownVar(*v);
 	    }
 
 	    for (ResultSetIterator myRow = results.begin();
