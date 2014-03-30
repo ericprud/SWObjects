@@ -221,7 +221,8 @@ namespace w3c_sw {
 			throw std::string() + "authentication required for \"" + url + "\" in realm \"" + realm + "\".";
 		    redo = true;
 		}
-		case 200: {
+		case 200:
+		case 209: {
 		    // Write whatever content we already have to output.
 		    if (response.size() > 0)
 			body << &response;
