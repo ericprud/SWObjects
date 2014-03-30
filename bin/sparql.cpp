@@ -1368,7 +1368,7 @@ int main(int ac, char* av[])
 		sw::MediaType oldMediaType = TheServer.engine.dataMediaType;
 		TheServer.engine.baseURI       = QueryBaseUri;
 		TheServer.engine.dataMediaType = QueryMediaType;
-		if (!TheServer.engine.executeQuery(query, TheServer.engine.resultSet, language, finalQuery))
+		if (!TheServer.engine.executeQuery(query, TheServer.engine.resultSet, language, finalQuery, NULL))
 		    Output.resource = NULL;
 		delete query;
 		TheServer.engine.baseURI = oldBaseUri;
