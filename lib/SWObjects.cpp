@@ -3173,8 +3173,21 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	return ret;
     }
 
-    void StarVarSet::project (ResultSet* /* rs */, ExpressionAliasList* /* groupBy */, ProductionVector<const w3c_sw::Expression*>* /* having */,
-			      std::vector<s_OrderConditionPair>* /* orderConditions */, const RdfDB* /* db */) const {
+    void StarVarSet::project (ResultSet* rs, ExpressionAliasList* groupBy, ProductionVector<const w3c_sw::Expression*>* having,
+			      std::vector<s_OrderConditionPair>* orderConditions, const RdfDB* db) const {
+	if (groupBy || having || orderConditions) {
+	    // Ideally we wouldn't bother creating this list to sort column but
+	    // <having> extends this list so detaching them would be challenging.
+	    struct NoDelExpressionAlias : public ExpressionAlias {
+		NoDelExpressionAlias (const Expression* expr) : ExpressionAlias(expr) {  }
+		~NoDelExpressionAlias () { expr = NULL; } // we don't want to duplicate expressions for no good reason.
+	    };
+	    ProductionVector<const ExpressionAlias*> expressions; // auto-deletes its payload
+	    const VariableList* vars = rs->getKnownVars();
+	    for (VariableListConstIterator it = vars->begin(); it != vars->end(); ++it)
+		expressions.push_back(new NoDelExpressionAlias(new TTermExpression(*it)));
+	    rs->project(&expressions, groupBy, having, orderConditions, db);
+	}
     }
     std::set<const TTerm*> StarVarSet::getProjectedVars (const BindingState& heldVars) const {
 	std::set<const TTerm*> ret;
