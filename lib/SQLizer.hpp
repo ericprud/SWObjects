@@ -196,7 +196,7 @@ namespace w3c_sw {
 		return aliasName;
 	    }
 	    void addConstraint (sql::Expression* constraint) { query->constraints.push_back(constraint); }
-	    void addOrderClause (sql::Expression* constraint) { query->orderBy.push_back(constraint); }
+	    void addOrderClause (sql::OrderedExpression constraint) { query->orderBy.push_back(constraint); }
 	    void setDistinct (bool state = true) { query->distinct = state; }
 	    void setLimit (int limit) { query->limit = limit; }
 	    void setOffset (int offset) { query->offset = offset; }
@@ -475,10 +475,12 @@ namespace w3c_sw {
 		break;
 
 	    case MODE_selectVar:
-		w3c_sw_NOW("URI as selectVar");
+		w3c_sw_NOW("Variable as selectVar");
 		curQuery->selectVariable(lexicalValue);
 		break;
 
+	    case MODE_outside:
+		w3c_sw_NOW("Variable as modifier"); // ORDER BY DESC(?beg)
 	    case MODE_constraint:
 		w3c_sw_NOW("Variable as constraint");
 		curConstraint = curQuery->getVariableConstraint(lexicalValue);
@@ -916,7 +918,7 @@ namespace w3c_sw {
 		    /*bool desc = p_OrderConditions->at(i).ascOrDesc == ORDER_Desc;*/
 		    // !!!
 		    it->expression->express(this);
-		    curQuery->addOrderClause(curConstraint);
+		    curQuery->addOrderClause(sql::OrderedExpression(curConstraint, it->ascOrDesc == ORDER_Desc));
 		}
 	}
 	virtual void valuesClause (const ValuesClause* const, const ResultSet* p_ResultSet) {

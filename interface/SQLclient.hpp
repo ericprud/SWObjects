@@ -7,6 +7,7 @@
  #define INCLUDED_interface_SQLclient_hpp
 
 #include <boost/shared_ptr.hpp>
+#include <SQL.hpp>
 
 #define PREFIX_XSI "http://www.w3.org/2001/XMLSchema#"
 #define PREFIX_SWO "http://swobjects.sourceforge.net/ns#"
@@ -57,7 +58,7 @@ namespace w3c_sw {
 					   "/(.+)$");		// 6: database
 	    boost::cmatch matches;
 	    if (boost::regex_match(s.c_str(), matches, odbcPattern)) {
-		if (matches[1] != "mysql" && matches[1] != "postgres" && matches[1] != "oracle")
+		if (matches[1] != "mysql" && matches[1] != "postgres" && matches[1] != "oracle" && matches[1] != "mssql")
 		    throw std::string("only mysql, postgres or oracle SQL service is currently supported -- saw ") + matches[1];
 		driver = matches[1];
 		if (matches[2].matched)
@@ -327,6 +328,8 @@ namespace w3c_sw {
 		for(size_t i = 0; i < cols.size(); i++)
 		    if (row[i].is_initialized())
 			set(result, vars[i], row.getTTerm(i, cols, atomFactory), false);
+		    else
+			addKnownVar(vars[i]);
 		insert(end(), result);
 	    }
 	}
@@ -349,11 +352,13 @@ namespace w3c_sw {
   #include "../interface/SQLclient_Oracle.hpp"
 #endif /* SQL_CLIENT_ORACLE */
 
+#ifdef SQL_CLIENT_MSSQL
+  #include "../interface/SQLclient_MSSQL.hpp"
+#endif /* SQL_CLIENT_MSSQL */
+
 #ifdef SQL_CLIENT_ODBC
   #include "../interface/SQLclient_ODBC.hpp"
 #endif /* SQL_CLIENT_ODBC */
-
-#include "SQL.hpp"
 
 namespace w3c_sw {
     struct SQLClientWrapper : public SQLclient {
@@ -374,6 +379,9 @@ namespace w3c_sw {
 	static SQLclient* makeClient (std::string driver, bool useODBC) {
 #ifdef SQL_CLIENT_ODBC
 	    if (useODBC) return new SQLclient_ODBC(driver);
+#endif
+#ifdef SQL_CLIENT_MSSQL
+	    if (driver == "mssql") return new SQLclient_MSSQL();
 #endif
 #ifdef SQL_CLIENT_MYSQL
 	    if (driver == "mysql") return new SQLclient_MySQL();

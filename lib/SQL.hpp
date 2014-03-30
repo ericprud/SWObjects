@@ -20,10 +20,16 @@
  #define INCLUDE_SQL_HPP
 
 #include <string>
+#include <iomanip>
 #include <sstream>
 #include <vector>
+#include <list>
+#include <map>
+#include <set>
+#include <stdexcept>
 #include "SWObjects.hpp"
 #include <boost/shared_ptr.hpp>
+#include <stdarg.h>
 
 namespace w3c_sw {
 
@@ -266,13 +272,29 @@ namespace w3c_sw {
 	    }
 	};
 
-	inline Serializer* Serializer::best(std::string driver) {
+	struct MSSQLSerializer : public SQLSerializer {
+	    virtual std::string as () { return ""; }
+	    virtual std::string offset (int o) {
+		std::stringstream ss;
+		ss << " OFFSET " << o << " ROW";
+		return ss.str();
+	    }
+	    virtual std::string limit (int l) {
+		std::stringstream ss;
+		ss << " FETCH NEXT " << l << " ROWS ONLY";
+		return ss.str();
+	    }
+	};
+
+	inline Serializer* Serializer::best (std::string driver) {
 	    if (driver == "mysql")
 		return new w3c_sw::sql::MySQLSerializer();
 	    else if (driver == "postgres")
 		return new w3c_sw::sql::PostgresSerializer();
 	    else if (driver == "oracle")
 		return new w3c_sw::sql::OracleSerializer();
+	    else if (driver == "mssql")
+		return new w3c_sw::sql::MSSQLSerializer();
 	    else
 		return new w3c_sw::sql::SQLSerializer();
 	}
@@ -513,6 +535,7 @@ namespace w3c_sw {
 	class CastConstraint;
 
 	struct EquivSet;
+
 	class Expression {
 	protected:
 	public:
@@ -591,6 +614,29 @@ namespace w3c_sw {
 	    virtual bool finalMapsTo (const HomologConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const RegexConstraint&, AliasMapping::List& map) const { return map.fail(); }
 	    virtual bool finalMapsTo (const CastConstraint&, AliasMapping::List& map) const { return map.fail(); }
+	};
+	
+	/** OrderedExpression - Expressions with an ascending or descending sense.
+	 */
+	struct OrderedExpression {
+	    Expression* expression;
+	    bool descending;
+	    OrderedExpression (Expression* expression, bool descending)
+		: expression(expression), descending(descending)
+	    {  }
+	    bool operator== (const OrderedExpression& r) const {
+		return descending != r.descending && *expression == *r.expression;
+	    }
+	    virtual bool mapsTo (const OrderedExpression& r, AliasMapping::List& map) const {
+		// !! shouldn't do an unordered test of orderedBy
+		return expression->mapsTo(*r.expression, map);
+	    }
+	    std::string toString (std::string pad = "", e_PREC parentPrec = PREC_High, std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		std::string ret = expression->toString(pad, parentPrec, driver, s);
+		if (descending)
+		    ret += " DESC";
+		return ret;
+	    }
 	};
 
 	/** ConstraintList - ordered list of Expressions.
@@ -1640,6 +1686,8 @@ namespace w3c_sw {
 	    virtual ~AliasedSelect () {
 		delete exp;
 	    }
+	    const Expression* getExpression () const { return exp; }
+	    const AttrAlias& getAlias () const { return alias; }
 	    virtual bool mapsTo (const AliasedSelect& r, AliasMapping::List& map) const {
 		if (exp->mapsTo(*r.exp, map)
 		    && (alias == r.alias))
@@ -1682,11 +1730,23 @@ namespace w3c_sw {
 	    JoinList joins;
 
 	    ConstraintList  constraints;
-	    struct OrderBy : public ConstraintList {
+
+	    struct OrderBy : public std::vector<OrderedExpression> {
+		~OrderBy () {
+		    for (std::vector<OrderedExpression>::iterator iOrderBy = begin();
+			 iOrderBy != end(); ++iOrderBy)
+			delete iOrderBy->expression;
+		}
+		std::string toString (std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const {
+		    std::stringstream ss;
+		    print(ss, pad, driver, s);
+		    return ss.str();
+		}
 		std::ostream& print(std::ostream& os, std::string pad = "", std::string driver = "", Serializer& s = SQLSerializer::It) const;
 	    };
 	    OrderBy orderBy;
 	    struct Selects : public std::vector<AliasedSelect*> {
+		typedef std::vector<AliasedSelect*>::const_iterator const_iterator;
 		std::ostream& print(std::ostream& os, std::string pad = "",
 				    std::string driver = "", Serializer& s = SQLSerializer::It) const;
 		std::ostream& print(const std::vector<DataType>& fieldTypes, std::ostream& os,
@@ -1727,9 +1787,7 @@ namespace w3c_sw {
 		     iConstraints != constraints.end(); ++iConstraints)
 		    delete *iConstraints;
 
-		for (ConstraintList::iterator iOrderBy = orderBy.begin();
-		     iOrderBy != orderBy.end(); ++iOrderBy)
-		    delete *iOrderBy;
+		// ~orderBy takes cleans up ->expression
 	    }
 
 	    bool finalMapsTo(const SQLQuery& r, AliasMapping::List& map) const;
@@ -1761,6 +1819,10 @@ namespace w3c_sw {
 	    virtual std::string _toString (const std::vector<DataType>& fieldTypes, bool typed, std::string pad = "",
 					  std::string driver = "", Serializer& s = SQLSerializer::It) const {
 		std::stringstream ss;
+		if (driver.find("mssql") == 0 && (offset != -1 || limit != -1)) {
+		    ss << pad << ";WITH __RowCounter AS (\n";
+		    pad += "    ";
+		}
 		ss << pad << "SELECT ";
 		if (distinct) ss << "DISTINCT ";
 
@@ -1769,6 +1831,22 @@ namespace w3c_sw {
 		else
 		    selects.print(ss, pad, driver, s);
 
+		bool disableOrder = false;
+		if (driver.find("mssql") == 0 && (offset != -1 || limit != -1)) {
+		    ss << ", ROW_NUMBER() OVER (";
+		    if (orderBy.size() > 0) {
+			orderBy.print(ss, pad, driver, s);
+			disableOrder = true;
+		    } else {
+			ss << "ORDER BY ";
+			for (Selects::const_iterator it = selects.begin(); it != selects.end(); ++it) {
+			    if (it != selects.begin())
+				ss << ", ";
+			    ss << (*it)->getExpression()->toString();
+			}
+		    }
+		    ss << ")-1 AS __RowNumber";
+		}
 		/* JOINs */
 		ConstraintList where;
 		joins.print(ss, &where, pad, driver, s);
@@ -1777,11 +1855,34 @@ namespace w3c_sw {
 		std::copy(constraints.begin(), constraints.end(), std::back_inserter(where));
 		where.print(ss, pad, driver, s);
 
-		orderBy.print(ss, pad, driver, s);
+		if (!disableOrder)
+		    orderBy.print(ss, pad, driver, s);
 
-		if (driver.find("oracle") == 0) {
+		if (driver.find("mssql") == 0 && (offset != -1 || limit != -1)) {
+		    pad.resize(pad.size()-4);
+		    ss << ")\n" << pad << "SELECT ";
+		    for (Selects::const_iterator it = selects.begin(); it != selects.end(); ++it) {
+			if (it != selects.begin())
+			    ss << ", ";
+			ss << (*it)->getAlias();
+		    }
+		    ss << " FROM __RowCounter WHERE ";
+		    if (offset != -1)
+			ss << "__RowNumber >= " << offset;
+		    if (offset != -1 && limit != -1)
+			ss << " AND ";
+		    if (limit != -1) {
+			ss << " __RowNumber < ";
+			if (offset != -1)
+			    ss << offset << " + ";
+			ss << limit;
+		    }
+		} else if (driver.find("oracle") == 0) {
 		    if (offset != -1) ss << std::endl << pad << "rownum > " << offset;
 		    if (limit != -1) ss << std::endl << pad << " rownum <= " << limit;
+		} else if (driver.find("mssql2012") == 0) {
+		    if (offset != -1) ss << std::endl << pad << " OFFSET " << offset << " ROW";
+		    if (limit != -1) ss << std::endl << pad << " FETCH NEXT " << limit << " ROWS ONLY";
 		} else {
 		    if (offset != -1) ss << std::endl << pad << " " << s.offset(offset);
 		    if (limit != -1) ss << std::endl << pad << " " << s.limit(limit);
@@ -1849,7 +1950,7 @@ namespace w3c_sw {
 		for (const_iterator it = begin(); it != end(); ++it) {
 		    if (it != begin())
 			os << ", ";
-		    os << (*it)->toString(pad, PREC_High, driver, s);
+		    os << it->toString(pad, PREC_High, driver, s);
 		}
 	    }
 	    return os;
@@ -1897,10 +1998,16 @@ namespace w3c_sw {
 		    << f << "constraints:\n" << constraints << "\n does not map to \n" << r.constraints << "\n";
 		return false;
 	    }
-	    if (!map.orderedMap(orderBy.begin(), orderBy.end(), r.orderBy.begin())) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
-		    << f << "orderBy:\n" << orderBy << "\n does not map to \n" << r.orderBy << "\n";
-		return false;
+	    {
+		std::vector<sql::OrderedExpression>::const_iterator lit = orderBy.begin();
+		std::vector<sql::OrderedExpression>::const_iterator end = orderBy.end();
+		std::vector<sql::OrderedExpression>::const_iterator rit = r.orderBy.begin();
+		for (; lit != end; ++lit, ++rit)
+		    if (!((*lit).mapsTo(*rit, map))) {
+			BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+			    << f << "orderBy:\n" << orderBy << "\n does not map to \n" << r.orderBy << "\n";
+			return false;
+		    }
 	    }
 	    return true;
 	}
@@ -1957,10 +2064,8 @@ namespace w3c_sw {
 	    }
 	    // if (!ptrequal(orderBy.begin(), orderBy.end(), r.orderBy.begin())) {
 	    {
-		dereferencer<const Expression> vld(orderBy);
-		dereferencer<const Expression> vrd(r.orderBy);
 		OnezFine of;
-		if (!permute::equals(vld, vrd, of)) {
+		if (!permute::equals(orderBy, r.orderBy, of)) {
 		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
 			<< f << "orderBy:\n" << orderBy << "\n != \n" << r.orderBy << "\n";
 		    return false;

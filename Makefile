@@ -146,6 +146,12 @@ ifeq ($(findstring ORACLE, $(SQL_CLIENTS)), ORACLE)
   SQL_CLIENT_LIB+= -locci -lclntsh -laio -lnnz11
 endif
 
+ifeq ($(findstring MSSQL, $(SQL_CLIENTS)), MSSQL)
+  CONFIG_DEFS+= \\\#define SQL_CLIENT_MSSQL "\n"
+  SOME_SQL_CLIENT = 1
+  SQL_CLIENT_LIB+= -lsybdb
+endif
+
 ifeq ($(findstring ODBC, $(SQL_CLIENTS)), ODBC)
   CONFIG_DEFS+= \\\#define SQL_CLIENT_ODBC "\n"
   SOME_SQL_CLIENT = 1
