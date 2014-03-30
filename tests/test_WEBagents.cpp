@@ -19,6 +19,7 @@
 #include "SWObjects.hpp"
 
 #define NEEDDEF_W3C_SW_WEBSERVER
+#include "../interface/WEButil.hpp"
 #include "../interface/WEBserver.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
@@ -57,7 +58,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 			req.method << " " << 
 			req.request_path << " HTTP" << 
 			req.http_version_major << "/" << req.http_version_minor << "\n";
-		    for (std::vector<w3c_sw::webserver::header>::const_iterator it = req.headers.begin(); 
+		    for (std::vector<w3c_sw::web_util::header>::const_iterator it = req.headers.begin(); 
 			 it != req.headers.end(); ++it)
 			s << it->name << ": " << it->value << "\n";
 		    s << "\n";
