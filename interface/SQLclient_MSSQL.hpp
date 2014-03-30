@@ -9,6 +9,7 @@
  #define INCLUDED_interface_SQLclient_MSSQL_hpp
 
 #include "../interface/freetdsSample.cpp"
+#include <boost/lexical_cast.hpp>
 #include <sybfront.h>	/* sybfront.h always comes first */
 #include <sybdb.h>	/* sybdb.h is the only other file you need */
 
