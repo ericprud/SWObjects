@@ -4345,8 +4345,14 @@ public:
 	    case STATE_pass: {
 		istr.read(s, n);
 		std::streamsize red = istr.gcount();
-		if (streamRewinder.state == STATE_copy)
-		    streamRewinder.buffer.append(s, red);
+		if (streamRewinder.state == STATE_copy) {
+		    if (streamRewinder.buffer.size() > (2<<15)) {
+			streamRewinder.buffer.clear();
+			streamRewinder.state == STATE_pass;
+		    } else {
+			streamRewinder.buffer.append(s, red);
+		    }
+		}
 		// w3c_sw_LINE << "read: " << toString() << "\n";
 		return red > 0 ? red : -1;
 	    }
