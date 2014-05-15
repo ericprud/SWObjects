@@ -56,12 +56,12 @@ namespace w3c_sw {
 	public:
 	    Attributes_msxml3 (ISAXAttributes __RPC_FAR *pAttributes) : 
 		attrs(pAttributes), initialized(false) {  }
-	    virtual size_t getLength () const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex.size(); }
-	    virtual std::string getURI (size_t i) const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex[i].namespaceURI; }
-	    virtual std::string getLocalName (size_t i) const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex[i].localName; }
-	    virtual std::string getQName (size_t i) const { if (!initialized) const_cast<Attributes_libxml*>(this)->init(); return byIndex[i].qname; }
+	    virtual size_t getLength () const { if (!initialized) const_cast<Attributes_msxml3*>(this)->init(); return byIndex.size(); }
+	    virtual std::string getURI (size_t i) const { if (!initialized) const_cast<Attributes_msxml3*>(this)->init(); return byIndex[i].namespaceURI; }
+	    virtual std::string getLocalName (size_t i) const { if (!initialized) const_cast<Attributes_msxml3*>(this)->init(); return byIndex[i].localName; }
+	    virtual std::string getQName (size_t i) const { if (!initialized) const_cast<Attributes_msxml3*>(this)->init(); return byIndex[i].qname; }
 	    virtual bool value (std::string uri, std::string localName, std::string* ptr) const {
-		if (!initialized) const_cast<Attributes_libxml*>(this)->init();
+		if (!initialized) const_cast<Attributes_msxml3*>(this)->init();
 		const OuterNSmap::const_iterator oit = byNS_localName.find(uri);
 		if (oit == byNS_localName.end())
 		    return false;
