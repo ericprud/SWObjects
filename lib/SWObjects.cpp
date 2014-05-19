@@ -10,8 +10,10 @@
 #undef SWObjects_STAND_ALONE
 #include "ResultSet.hpp"
 #include <string.h>
+#include <iomanip>
 #include <vector>
 #include <set>
+#include <math.h> // exp, log, round, roundf
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "../interface/WEBagent.hpp"

@@ -88,9 +88,9 @@ NLS_LANG=_.UTF8
 # It's generally better to use INCLUDES and LIBS, though you'll still need LD_LIBRARY_PATH
 #CPATH=
 #LIBRARY_PATH=
-INCLUDES=-I/home/eric/checkouts/libbooost.inst/include/ -I/usr/local/instantclient_11_2/sdk/include/
-LIBS=-L/home/eric/checkouts/libbooost.inst/lib/ -L/usr/local/instantclient_11_2/
-LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/
+INCLUDES=-I/home/eric/checkouts/libboost-1.55.inst/include/ -I/usr/local/instantclient_11_2/sdk/include/
+LIBS=-L/home/eric/checkouts/libboost-1.55.inst/lib/ -L/usr/local/instantclient_11_2/
+LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libboost-1.55.inst/lib/
 
 
 # boost-log on linux requires clock_gettime so need a -lrt after -lboost-log

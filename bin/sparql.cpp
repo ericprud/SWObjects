@@ -822,7 +822,7 @@ int main(int ac, char* av[])
 	{   /* Logs default to level 0 (withing calling setLogLevels(logs, 0)). */
 	    LogSink = sw::Logger::prepare();
 	    sw::Logger::addStream(LogSink, boost::shared_ptr<std::ostream>
-				  (&std::clog, boost::log::empty_deleter())); // !!! still goes to stdout for some reason.
+				  (&std::clog, boost::empty_deleter())); // !!! still goes to stdout for some reason.
 	}
 
 	Output = MyLoadEntry(NULL, TheServer.engine.atomFactory.getURI("-"), NULL, sw::MediaType());

@@ -3,7 +3,7 @@
  * Enable logging to e.g. std::clog with:
  *   boost::shared_ptr<Logger::Sink_t> logSink= Logger::prepare();
  *   Logger::addStream(logSink, boost::shared_ptr<std::ostream>
- *		       (&std::clog, boost::log::empty_deleter()));
+ *		       (&std::clog, boost::empty_deleter()));
  * and set specific levels manually:
  *   Logger::getLabelLevel("Default")= Logger::severity_level(Logger::engineer);
  * or with the built-in parser:
@@ -19,38 +19,29 @@
 #ifndef LOGGING_HH
 # define LOGGING_HH
 
-#include "config.h"
 #include "prfxbuf.hpp"
 
 #include <set>
 
-// #include <stdexcept>
-// #include <string>
-// #include <iostream>
 #include <fstream>
-// #include <functional>
 
 #include "boost/bind.hpp"
-// #include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "boost/format.hpp"
 #include "boost/log/attributes.hpp"
-// #include "boost/log/attributes/current_thread_id.hpp"
-// #include "boost/log/attributes/named_scope.hpp"
-// #include "boost/log/attributes/timer.hpp"
 #include "boost/log/common.hpp"
-#include "boost/log/filters.hpp"
-#include "boost/log/formatters.hpp"
-// #include "boost/log/formatters/if.hpp"
+#include "boost/log/expressions.hpp"
 #include "boost/log/sinks.hpp"
-// #include "boost/log/utility/empty_deleter.hpp"
 #include "boost/log/utility/record_ordering.hpp"
-// #include "boost/log/attributes/scoped_attribute.hpp"
+#include "boost/log/utility/value_ref.hpp"
+#include "boost/log/utility/formatting_ostream.hpp"
+#include "boost/phoenix/bind.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/random/linear_congruential.hpp"
 #include "boost/random/uniform_int.hpp"
 #include "boost/random/variate_generator.hpp"
-// #include "boost/ref.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/barrier.hpp"
-// #include "boost/thread/thread.hpp"
+#include "boost/utility/empty_deleter.hpp"
 
 
 namespace w3c_sw {
@@ -87,14 +78,15 @@ namespace w3c_sw {
 	    return strm;
 	}
 
-	extern const char* ATTR_Timeline;
-	extern const char* ATTR_Scope;
-	extern const char* ATTR_ThreadID;
-	extern const char* ATTR_LineId;
-	extern const char* ATTR_Timestamp;
-	extern const char* ATTR_Channel;
-
 	typedef boost::log::sources::severity_channel_logger_mt<severity_level> SWObjectsLogger;
+
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_channel, "Channel", std::string)
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_severity, "Severity", severity_level)
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_timestamp, "Timestamp", boost::log::attributes::utc_clock::value_type)
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_timeline, "Timeline", boost::posix_time::time_duration)
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_scope, "Scope", boost::log::attributes::named_scope::value_type)
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_thread_id, "ThreadID", boost::log::attributes::current_thread_id::value_type)
+	BOOST_LOG_ATTRIBUTE_KEYWORD(a_line_id, "LineID", unsigned int)
 
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(DefaultLog, SWObjectsLogger);
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(RewriteLog, SWObjectsLogger, (boost::log::keywords::channel = "Rewrite"));
@@ -113,7 +105,7 @@ namespace w3c_sw {
 	extern severity_level SQLLog_level;
 	extern severity_level ServiceLog_level;
 	extern severity_level ProcessLog_level;
-	
+
 	typedef std::map<std::string, severity_level*> LabelToLevel_t;
 	extern LabelToLevel_t LabelToLevel;
 	extern std::vector<const char*> Labels;
@@ -141,7 +133,7 @@ namespace w3c_sw {
 
 	namespace logging = boost::log;
 
-	inline void myFormatter (std::ostream& strm, logging::record const& rec)
+	inline void myFormatter(logging::formatting_ostream& strm, logging::record_view const& rec)
 	{
 	    /**
 	     * Overload prfxbuf to not indent the first line.
@@ -154,18 +146,18 @@ namespace w3c_sw {
 		{
 		    i_newline = false; // don't indent first line
 		}
-	    };  
+	    };
 	    class oprfxnstream: public std::ostream
 	    {
 		prfxnbuf* b;
 	    public:
 		oprfxnstream (std::streambuf *sb, std::streamsize width, const char space):
 		    std::ostream(new prfxnbuf(sb, width, space)), b((prfxnbuf*)rdbuf())
-		{  } 
+		{  }
 		~oprfxnstream () {
 		    delete rdbuf();
 		}
-	    }; 
+	    };
 
 	    // oprfxnstream prfxstr(strm.rdbuf(), depth, ' ');
 	    // hack to chop the last \n off the log stream
@@ -174,29 +166,29 @@ namespace w3c_sw {
 
 	    using boost::format;
 
-	    if (logging::extract<boost::posix_time::ptime>(Logger::ATTR_Timestamp, rec).is_initialized())
-		prfxstr << logging::extract<boost::posix_time::ptime>(Logger::ATTR_Timestamp, rec).get() << ": ";
+	    if (logging::value_ref< tag::a_timestamp::value_type, tag::a_timestamp > timestamp = rec[a_timestamp])
+		prfxstr << timestamp.get() << ": ";
 
-	    if (logging::extract< unsigned int >(Logger::ATTR_LineId, rec).is_initialized())
-		prfxstr << format("%08x") % logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
-		// prfxstr << std::hex << std::setw(8) << std::right << logging::extract< unsigned int >(Logger::ATTR_LineId, rec).get() << ": ";
+	    if (logging::value_ref< tag::a_line_id::value_type, tag::a_line_id > line_id = rec[a_line_id])
+		prfxstr << format("%08x") % line_id.get() << ": ";
+            // prfxstr << std::hex << std::setw(8) << std::right << line_id.get() << ": ";
 
-	    if (logging::extract<std::string>(Logger::ATTR_Channel, rec).is_initialized())
-		prfxstr << format("%-11s") % logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
-		// prfxstr << std::left << std::setw(11) << logging::extract<std::string>(Logger::ATTR_Channel, rec).get() << " ";
+	    if (logging::value_ref< tag::a_channel::value_type, tag::a_channel > channel = rec[a_channel])
+		prfxstr << format("%-11s") % channel.get() << " ";
+            // prfxstr << std::left << std::setw(11) << channel.get() << " ";
 
-	    prfxstr << "[-" << logging::extract<severity_level>("Severity", rec).get() << "+] ";
+	    prfxstr << "[-" << rec[a_severity] << "+] ";
 
-	    if (logging::extract<std::string>(Logger::ATTR_Scope, rec).is_initialized())
-		prfxstr << "[" << logging::extract<std::string>(Logger::ATTR_Scope, rec).get() << "] ";
+	    if (logging::value_ref< tag::a_scope::value_type, tag::a_scope > scope = rec[a_scope])
+		prfxstr << "[" << scope.get() << "] ";
 
-	    if (logging::extract<boost::thread::id>(Logger::ATTR_ThreadID, rec).is_initialized())
-		prfxstr << "[" << logging::extract<boost::thread::id>(Logger::ATTR_ThreadID, rec).get() << "] - ";
+	    if (logging::value_ref< tag::a_thread_id::value_type, tag::a_thread_id > thread_id = rec[a_thread_id])
+		prfxstr << "[" << thread_id.get() << "] - ";
 
-	    prfxstr << rec.message();
+	    prfxstr << rec[boost::log::expressions::smessage];
 
-	    if (logging::extract<boost::posix_time::time_duration>(Logger::ATTR_Timeline, rec).is_initialized())
-		prfxstr << " [taking: " << logging::extract< boost::posix_time::time_duration >(Logger::ATTR_Timeline, rec).get() << "]";
+	    if (logging::value_ref< tag::a_timeline::value_type, tag::a_timeline > timeline = rec[a_timeline])
+		prfxstr << " [taking: " << timeline.get() << "]";
 
 	    std::string s = ss.str();
 	    if (s.substr(s.size() - 1) == "\n")
@@ -206,15 +198,38 @@ namespace w3c_sw {
 
 	typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > Sink_t;
 
-	inline bool GTDefault (severity_level l) { return l <= DefaultLog_level; }
-	inline bool GTRewrite (severity_level l) { return l <= RewriteLog_level; }
-	inline bool GTIO (severity_level l) { return l <= IOLog_level; }
-	inline bool GTParsing (severity_level l) { return l <= ParsingLog_level; }
-	inline bool GTGraphMatch (severity_level l) { return l <= GraphMatchLog_level; }
-	inline bool GTSQL (severity_level l) { return l <= SQLLog_level; }
-	inline bool GTService (severity_level l) { return l <= ServiceLog_level; }
-	inline bool GTProcess (severity_level l) { return l <= ProcessLog_level; }
+	/*
+	inline bool GTDefault (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= DefaultLog_level; }
+	inline bool GTRewrite (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= RewriteLog_level; }
+	inline bool GTIO (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= IOLog_level; }
+	inline bool GTParsing (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= ParsingLog_level; }
+	inline bool GTGraphMatch (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= GraphMatchLog_level; }
+	inline bool GTSQL (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= SQLLog_level; }
+	inline bool GTService (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= ServiceLog_level; }
+	inline bool GTProcess (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= ProcessLog_level; }
+	*/
 	inline bool Logging (severity_level l, severity_level r) { return r <= l; }
+
+	inline bool LabelBasedFilter
+	(
+	 logging::value_ref< tag::a_channel::value_type, tag::a_channel > const& channel,
+	 logging::value_ref< tag::a_severity::value_type, tag::a_severity > const& severity
+	 )
+	{
+	    const severity_level* threshold = NULL;
+
+	    if (channel)
+		{
+		    LabelToLevel_t::const_iterator it = LabelToLevel.find(channel.get());
+		    if (it != LabelToLevel.end())
+			threshold = it->second;
+		}
+
+	    if (!threshold)
+		threshold = &DefaultLog_level;
+
+	    return severity <= *threshold;
+	}
 
 	inline boost::shared_ptr< Sink_t > prepare () {
 	    depth = 24;
@@ -224,34 +239,33 @@ namespace w3c_sw {
 	    boost::shared_ptr< Sink_t > sink(new Sink_t());
 	    core->add_sink(sink);
 
-	    // core->set_filter(boost::log::filters::attr<severity_level>("Severity") >= *LabelToLevel[boost::log::filters::attr<std::string>("Channel")]);
-	    core->set_filter
-		(
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == ""          && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTDefault   )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Rewrite"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTRewrite   )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "I/O"	 && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTIO        )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Parsing"	 && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTIO        )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "GraphMatch"&& boost::log::filters::attr<severity_level>("Severity").satisfies(&GTGraphMatch)) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "SQL"       && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTSQL       )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Service"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTService   )) ||
-		 (boost::log::filters::attr<std::string>("Channel", std::nothrow) == "Process"   && boost::log::filters::attr<severity_level>("Severity").satisfies(&GTProcess   ))
-		 );
+	    // This works:
+	    /*
+	      core->set_filter
+	      (
+	      (a_channel == ""           && boost::phoenix::bind(&GTDefault,    a_severity.or_throw())) ||
+	      (a_channel == "Rewrite"    && boost::phoenix::bind(&GTRewrite,    a_severity.or_throw())) ||
+	      (a_channel == "I/O"        && boost::phoenix::bind(&GTIO,         a_severity.or_throw())) ||
+	      (a_channel == "Parsing"    && boost::phoenix::bind(&GTParsing,    a_severity.or_throw())) ||
+	      (a_channel == "GraphMatch" && boost::phoenix::bind(&GTGraphMatch, a_severity.or_throw())) ||
+	      (a_channel == "SQL"        && boost::phoenix::bind(&GTSQL,        a_severity.or_throw())) ||
+	      (a_channel == "Service"    && boost::phoenix::bind(&GTService,    a_severity.or_throw())) ||
+	      (a_channel == "Process"    && boost::phoenix::bind(&GTProcess,    a_severity.or_throw()))
+	      );
+	    */
+	    // But this looks simpler:
+	    core->set_filter(boost::phoenix::bind(&LabelBasedFilter, a_channel.or_none(), a_severity.or_throw()));
+	    // Also, take a look at this: http://www.boost.org/doc/libs/1_55_0/libs/log/doc/html/log/detailed/expressions.html#log.detailed.expressions.predicates.channel_severity_filter
 
 	    { // Begin: lock backend
 		Sink_t::locked_backend_ptr backend = sink->locked_backend();
-		// backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, logging::empty_deleter()));
+		// backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, boost::empty_deleter()));
 		core->add_sink(sink);
 
-#if (BOOST_VERSION > 104600) // could use (BOOST_LOG_COMPATIBILITY == "1.46") if cpp compared strings
-		sink->set_formatter(&myFormatter);
-#else
-		backend->set_formatter(&myFormatter);
-#endif
-
+		sink->set_formatter(boost::phoenix::bind(&myFormatter, boost::log::expressions::stream, boost::log::expressions::record));
 	    } // End: Locked backend
 
 	    return sink;
-
 	}
 
 	inline void addStream (boost::shared_ptr< Sink_t > sink, boost::shared_ptr< std::ostream > sptr) {
@@ -344,7 +358,7 @@ namespace w3c_sw {
 			    : parm.substr(start, next - start);
 			if (next != std::string::npos)
 			    ++next;
-			int l;		
+			int l;
 			try {
 			    l = boost::lexical_cast<int>(is);
 			} catch (boost::bad_lexical_cast& e) {
@@ -364,18 +378,18 @@ namespace w3c_sw {
 
 	    // Add a global scope attribute
 	    if (false)
-		core->add_global_attribute(w3c_sw::Logger::ATTR_Scope,
+		core->add_global_attribute(a_scope.get_name(),
 					   boost::log::attributes::named_scope());
 	    if (false)
-		core->add_global_attribute(w3c_sw::Logger::ATTR_ThreadID,
+		core->add_global_attribute(a_thread_id.get_name(),
 					   boost::log::attributes::current_thread_id());
 
 	    // Add some attributes too
 	    if (false)
-		core->add_global_attribute(w3c_sw::Logger::ATTR_Timestamp,
+		core->add_global_attribute(a_timestamp.get_name(),
 					   boost::log::attributes::utc_clock());
 	    if (false)
-		core->add_global_attribute(w3c_sw::Logger::ATTR_LineId,
+		core->add_global_attribute(a_line_id.get_name(),
 					   boost::log::attributes::counter< unsigned int >());
 	}
 
@@ -394,7 +408,7 @@ namespace w3c_sw {
 	    boost::shared_ptr< Logger::Sink_t > LogSink;
 	    LogSink = Logger::prepare();
 	    Logger::addStream(LogSink, boost::shared_ptr< std::ostream >
-			      (os, boost::log::empty_deleter()));
+			      (os, boost::empty_deleter()));
 
 	    for (int c = 0; c < argc - 1; ++c)
 		if (!strcmp(argv[c], flag)) {
@@ -426,12 +440,6 @@ BOOST_GLOBAL_FIXTURE( PrepareBoostTestLogger );
 
 #ifdef SWObjects_STAND_ALONE
     namespace Logger {
-	const char* ATTR_Timeline = "Timeline";
-	const char* ATTR_Scope = "Scope";
-	const char* ATTR_ThreadID = "ThreadID";
-	const char* ATTR_LineId = "LineId";
-	const char* ATTR_Timestamp = "Timestamp";
-	const char* ATTR_Channel = "Channel";
 	int depth;
 
 	severity_level DefaultLog_level;
@@ -442,7 +450,7 @@ BOOST_GLOBAL_FIXTURE( PrepareBoostTestLogger );
 	severity_level SQLLog_level;
 	severity_level ServiceLog_level;
 	severity_level ProcessLog_level;
-    
+
 	LabelToLevel_t LabelToLevel;
 	std::vector<const char*> Labels;
 	namespace {
