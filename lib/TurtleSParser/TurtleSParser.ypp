@@ -141,7 +141,7 @@ public:
 /* START TokenBlock */
 /* Terminals */
 
-%token BASE PREFIX SPARQL_BASE RDF_TYPE SPARQL_PREFIX GT_LPAREN GT_RPAREN GT_DOT
+%token GT_AT_base GT_AT_prefix IT_BASE RDF_TYPE IT_PREFIX GT_LPAREN GT_RPAREN GT_DOT
        GT_COMMA GT_SEMI GT_LBRACKET GT_RBRACKET GT_DTYPE
 %token <p_TTerm> IT_true IT_false INTEGER DECIMAL DOUBLE BLANK_NODE_LABEL ANON
 // deepest typing for these tokens:
@@ -204,12 +204,12 @@ statement:
 directive:
     prefixID	
   | base	
-  | sparqlPrefix	
-  | sparqlBase	
+  | PrefixDecl	
+  | BaseDecl	
 ;
 
 prefixID:
-    PREFIX {
+    GT_AT_prefix {
 	driver.ignorePrefix(true);
       } PNAME_NS {
 	  driver.ignorePrefix(false);
@@ -220,13 +220,19 @@ prefixID:
 ;
 
 base:
-    BASE IRIREF GT_DOT	{
+    GT_AT_base IRIREF GT_DOT	{
 	driver.setBase($2->getLexicalValue());
     }
 ;
 
-sparqlPrefix:
-    SPARQL_PREFIX {
+BaseDecl:
+    IT_BASE IRIREF	{
+	driver.setBase($2->getLexicalValue());
+    }
+;
+
+PrefixDecl:
+    IT_PREFIX {
 	driver.ignorePrefix(true);
       } PNAME_NS {
 	  driver.ignorePrefix(false);
@@ -234,12 +240,6 @@ sparqlPrefix:
 	  std::string prefix($3->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
       }
-;
-
-sparqlBase:
-    SPARQL_BASE IRIREF	{
-	driver.setBase($2->getLexicalValue());
-    }
 ;
 
 triples:
@@ -498,10 +498,10 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
     _SUBS(s, "GT_DTYPE", "'^^'");
     _SUBS(s, "IT_true", "boolean true");
     _SUBS(s, "IT_false", "boolean false");
-    _SUBS(s, "SPARQL_PREFIX", "PREFIX");
-    _SUBS(s, "SPARQL_BASE", "BASE");
-    _SUBS(s, "BASE", "@base");
-    _SUBS(s, "PREFIX", "@prefix");
+    _SUBS(s, "IT_PREFIX", "PREFIX");
+    _SUBS(s, "IT_BASE", "BASE");
+    _SUBS(s, "GT_AT_base", "@base");
+    _SUBS(s, "GT_AT_prefix", "@prefix");
     _SUBS(s, "RDF_TYPE", "keyword 'a'");
     _SUBS(s, "IRIREF", "IRI");
     _SUBS(s, "PNAME_NS", "namespace prefix");

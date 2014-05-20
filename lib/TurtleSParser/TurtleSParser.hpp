@@ -188,11 +188,11 @@ namespace w3c_sw {
       /* Tokens.  */
    enum yytokentype {
      __EOF__ = 0,
-     BASE = 258,
-     PREFIX = 259,
-     SPARQL_BASE = 260,
+     GT_AT_base = 258,
+     GT_AT_prefix = 259,
+     IT_BASE = 260,
      RDF_TYPE = 261,
-     SPARQL_PREFIX = 262,
+     IT_PREFIX = 262,
      GT_LPAREN = 263,
      GT_RPAREN = 264,
      GT_DOT = 265,
