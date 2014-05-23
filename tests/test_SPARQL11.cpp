@@ -533,8 +533,8 @@ struct FederationTest {
     try {								       \
 	FederationTest i(services, (sizeof(services)/sizeof(services[0])),     \
 			 defaultGraph_in, request, results);		       \
-	w3c_sw_LINEN << "536\n";	BOOST_CHECK_EQUAL(i.got, i.expected);	\
-	w3c_sw_LINEN << "537\n";	G_EARL.report(test, i.got == i.expected);			       \
+	BOOST_CHECK_EQUAL(i.got, i.expected);				       \
+	G_EARL.report(test, i.got == i.expected);			       \
     } catch (NotImplemented& e) {					       \
     	std::cerr << e.what() << "\n";					       \
     	BOOST_ERROR ( std::string("require implementation of ") + e.brief );   \
