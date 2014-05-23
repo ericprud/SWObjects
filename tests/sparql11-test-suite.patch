@@ -1,0 +1,167 @@
+Index: aggregates/agg-numeric.ttl
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/aggregates/agg-numeric.ttl,v
+retrieving revision 1.1
+diff -u -r1.1 agg-numeric.ttl
+--- aggregates/agg-numeric.ttl	14 Sep 2010 00:48:58 -0000	1.1
++++ aggregates/agg-numeric.ttl	23 May 2014 16:19:20 -0000
+@@ -5,4 +5,4 @@
+ :decimals :dec 1.0, 2.2, 3.5 .
+ :doubles :double 1.0E2, 2.0E3, 3.0E4 .
+ :mixed1 :int 1 ; :dec 2.2 .
+-:mixed2 :double 2E-1 ; :dec 2.2 .
++:mixed2 :double 2.0E-1 ; :dec 2.2 .
+Index: aggregates/manifest.ttl
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/aggregates/manifest.ttl,v
+retrieving revision 1.25
+diff -u -r1.25 manifest.ttl
+--- aggregates/manifest.ttl	20 Nov 2012 15:08:24 -0000	1.25
++++ aggregates/manifest.ttl	23 May 2014 16:19:20 -0000
+@@ -349,7 +349,7 @@
+ 
+ :agg-empty-group2 rdf:type mf:QueryEvaluationTest ;
+ 	mf:name "agg empty group" ;
+-    mf:name "Aggregate over empty group resulting in a row with unbound variables" ;
++    # mf:name "Aggregate over empty group resulting in a row with unbound variables" ;
+ 	mf:feature sparql:aggregate ;
+ 	rdfs:seeAlso <http://answers.semanticweb.com/questions/17410/semantics-of-sparql-aggregates> ;
+     dawgt:approval dawgt:Approved ;
+Index: csv-tsv-res/csvtsv03.tsv
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/csv-tsv-res/csvtsv03.tsv,v
+retrieving revision 1.2
+diff -u -r1.2 csvtsv03.tsv
+--- csv-tsv-res/csvtsv03.tsv	16 Aug 2011 15:12:24 -0000	1.2
++++ csv-tsv-res/csvtsv03.tsv	23 May 2014 16:19:20 -0000
+@@ -4,5 +4,5 @@
+ <http://example.org/s3>	<http://example.org/p3>	"-3"^^<http://www.w3.org/2001/XMLSchema#negativeInteger>
+ <http://example.org/s4>	<http://example.org/p4>	"4,4"^^<http://www.w3.org/2001/XMLSchema#string>
+ <http://example.org/s5>	<http://example.org/p5>	"5,5"^^<http://example.org/myCustomDatatype>
+-<http://example.org/s6>	<http://example.org/p6>	1.0e6
++<http://example.org/s6>	<http://example.org/p6>	1.0E6
+ <http://example.org/s7>	<http://example.org/p7>	"a7"^^<http://www.w3.org/2001/XMLSchema#hexBinary>
+Index: functions/ceil01.srx
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/functions/ceil01.srx,v
+retrieving revision 1.1
+diff -u -r1.1 ceil01.srx
+--- functions/ceil01.srx	28 Nov 2010 02:20:51 -0000	1.1
++++ functions/ceil01.srx	23 May 2014 16:19:20 -0000
+@@ -14,7 +14,7 @@
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n5</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2.5</literal></binding>
+-			<binding name="ceil"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">3</literal></binding>
++			<binding name="ceil"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">3.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n4</uri></binding>
+@@ -24,12 +24,12 @@
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n3</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1.1</literal></binding>
+-			<binding name="ceil"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2</literal></binding>
++			<binding name="ceil"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n2</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-1.6</literal></binding>
+-			<binding name="ceil"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-1</literal></binding>
++			<binding name="ceil"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-1.0</literal></binding>
+ 		</result>
+ </results>
+ </sparql>
+Index: functions/floor01.srx
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/functions/floor01.srx,v
+retrieving revision 1.1
+diff -u -r1.1 floor01.srx
+--- functions/floor01.srx	28 Nov 2010 02:20:52 -0000	1.1
++++ functions/floor01.srx	23 May 2014 16:19:20 -0000
+@@ -14,7 +14,7 @@
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n5</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2.5</literal></binding>
+-			<binding name="floor"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2</literal></binding>
++			<binding name="floor"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n4</uri></binding>
+@@ -24,12 +24,12 @@
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n3</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1.1</literal></binding>
+-			<binding name="floor"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1</literal></binding>
++			<binding name="floor"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n2</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-1.6</literal></binding>
+-			<binding name="floor"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-2</literal></binding>
++			<binding name="floor"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-2.0</literal></binding>
+ 		</result>
+ </results>
+ </sparql>
+Index: functions/round01.srx
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/functions/round01.srx,v
+retrieving revision 1.1
+diff -u -r1.1 round01.srx
+--- functions/round01.srx	28 Nov 2010 02:20:52 -0000	1.1
++++ functions/round01.srx	23 May 2014 16:19:21 -0000
+@@ -14,7 +14,7 @@
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n5</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2.5</literal></binding>
+-			<binding name="round"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">3</literal></binding>
++			<binding name="round"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">3.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n4</uri></binding>
+@@ -24,12 +24,12 @@
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n3</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1.1</literal></binding>
+-			<binding name="round"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1</literal></binding>
++			<binding name="round"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/n2</uri></binding>
+ 			<binding name="num"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-1.6</literal></binding>
+-			<binding name="round"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-2</literal></binding>
++			<binding name="round"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">-2.0</literal></binding>
+ 		</result>
+ </results>
+ </sparql>
+Index: functions/seconds-01.srx
+===================================================================
+RCS file: /w3ccvs/WWW/2009/sparql/docs/tests/data-sparql11/functions/seconds-01.srx,v
+retrieving revision 1.3
+diff -u -r1.3 seconds-01.srx
+--- functions/seconds-01.srx	24 Feb 2011 16:21:31 -0000	1.3
++++ functions/seconds-01.srx	23 May 2014 16:19:21 -0000
+@@ -7,19 +7,19 @@
+ <results>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/d1</uri></binding>
+-			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1</literal></binding>
++			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">1.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/d2</uri></binding>
+-			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2</literal></binding>
++			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">2.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/d3</uri></binding>
+-			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">0</literal></binding>
++			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">0.0</literal></binding>
+ 		</result>
+ 		<result>
+ 			<binding name="s"><uri>http://example.org/d4</uri></binding>
+-			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">3</literal></binding>
++			<binding name="x"><literal datatype="http://www.w3.org/2001/XMLSchema#decimal">3.0</literal></binding>
+ 		</result>
+ </results>
+ </sparql>
