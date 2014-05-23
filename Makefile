@@ -433,6 +433,19 @@ t_%: tests/test_%
 
 
 ## Rules specific to certain tests ##
+tests/TurtleTests:
+	(cd tests && curl http://www.w3.org/2013/TurtleTests/TESTS.tar.gz | tar xzf -)
+
+t_Turtle: tests/TurtleTests
+
+tests/sparql11-test-suite:
+	(cd tests && curl http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite-20121023.tar.gz | tar xzf -)
+	# normalize expected results and apply fix described in
+	#   http://www.w3.org/mid/50897A80.5020701@epimorphics.com
+	(cd tests/sparql11-test-suite && patch -p 0 < ../sparql11-test-suite.patch)
+
+t_SPARQL11: tests/sparql11-test-suite
+
 t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)
 

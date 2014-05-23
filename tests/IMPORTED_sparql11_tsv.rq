@@ -8,13 +8,13 @@ PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
 
 # Construct test case code like:
 # BOOST_AUTO_TEST_CASE( pp06 ) {
-#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/property-path/manifest#pp06";
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite/property-path/manifest#pp06";
 #     // name: (pp06) Path with two graphs
-#     // manifest: data-sparql11/property-path/manifest.ttl
+#     // manifest: sparql11-test-suite/property-path/manifest.ttl
 #     const char* defaultGraph_in = NULL;
-#     LabeledGraph namedGraphs_in[] = {LG("data-sparql11/property-path/pp061.ttl", "data-sparql11/property-path/pp061.ttl"), LG("data-sparql11/property-path/pp062.ttl", "data-sparql11/property-path/pp062.ttl")};
-#     const char* request = "data-sparql11/property-path/pp06.rq";
-#     const char* result = "data-sparql11/property-path/pp06.srx";
+#     LabeledGraph namedGraphs_in[] = {LG("sparql11-test-suite/property-path/pp061.ttl", "sparql11-test-suite/property-path/pp061.ttl"), LG("sparql11-test-suite/property-path/pp062.ttl", "sparql11-test-suite/property-path/pp062.ttl")};
+#     const char* request = "sparql11-test-suite/property-path/pp06.rq";
+#     const char* result = "sparql11-test-suite/property-path/pp06.srx";
 #     QUERY_TEST();
 # } /* BOOST_AUTO_TEST_CASE( pp06 ) */
 
