@@ -10,6 +10,7 @@
 
 #define BOOST_TEST_MODULE logging
 #include <boost/test/unit_test.hpp>
+#include <boost/log/attributes/scoped_attribute.hpp>
 
 #ifdef _MSC_VER
   #include <windows.h>
@@ -31,14 +32,6 @@ namespace w3c_sw {
     thread_fun(boost::barrier& bar, const useconds_t rand_sleep) {
 	// Wait until all threads are created
 	bar.wait();
-
-	BOOST_LOG_SCOPED_LOGGER_ATTR(Logger::RewriteLog::get(),
-				     Logger::ATTR_Timeline,
-				     boost::log::attributes::timer);
-
-// 	BOOST_LOG_SCOPED_THREAD_ATTR_CTOR(Logger::ATTR_Scope,
-// 					  boost::log::attributes::constant< std::string >,
-// 					  ("Scope is thread_fun"));
 
 	int log_state = 0;
 
@@ -73,27 +66,9 @@ namespace w3c_sw {
 	try {
 
 	    boost::shared_ptr< Logger::Sink_t > sink = Logger::prepare();
-	    Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
+	    Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::empty_deleter()));
 	    Logger::addStream(sink, boost::shared_ptr< std::ostream >(new std::ofstream("toy-alt.log")));
 	    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
-
-	    // Add a global scope attribute
-	    if (false)
-		core->add_global_attribute(Logger::ATTR_Scope,
-					   boost::log::attributes::named_scope());
-	    if (false)
-		core->add_global_attribute(Logger::ATTR_ThreadID,
-					   boost::log::attributes::current_thread_id());
-
-
-	    // Add some attributes too
-	    if (false)
-		core->add_global_attribute(Logger::ATTR_Timestamp,
-					   boost::log::attributes::utc_clock());
-	    if (false)
-		core->add_global_attribute(Logger::ATTR_LineId,
-					   boost::log::attributes::counter< unsigned int >());
-
 
 	    // Only initialize the random number generator once
 	    typedef boost::minstd_rand base_generator_type;

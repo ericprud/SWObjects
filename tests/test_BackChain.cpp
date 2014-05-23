@@ -8,9 +8,9 @@
 #include <map>
 #include <vector>
 #include "SWObjects.hpp"
-#include "MapSetParser/MapSetParser.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "MapSetParser.hpp"
+#include "TurtleParser.hpp"
+#include "SPARQLParser.hpp"
 #include "BackwardChainingRdfDB.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
@@ -33,15 +33,15 @@ const std::string Piqflow = "http://www.semanticbits.com/piq-workflow/";
  */
 void logAllAt3 () {
     boost::shared_ptr< sw::Logger::Sink_t > sink = sw::Logger::prepare();
-    sw::Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
+    sw::Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::empty_deleter()));
     for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
 	 it != sw::Logger::Labels.end(); ++it)
 	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(3);
 }
 
 BOOST_AUTO_TEST_CASE( backwardChainOne ) {
-    sw::TurtleSDriver tparser("", &F);
-    sw::SPARQLfedDriver sparser("", &F);
+    sw::TurtleDriver tparser("", &F);
+    sw::SPARQLDriver sparser("", &F);
 
     // The rules:
     sw::MapSet* ms = mapSetParser.parse("\

@@ -9,9 +9,9 @@
 #include <vector>
 #include <fstream>
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "MapSetParser/MapSetParser.hpp"
-#include "SQLParser/SQLParser.hpp"
+#include "SPARQLParser.hpp"
+#include "MapSetParser.hpp"
+#include "SQLParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "ChainingMapper.hpp"
@@ -25,7 +25,7 @@
 using namespace w3c_sw;
 
 AtomFactory f;
-SPARQLfedDriver sparqlParser("", &f);
+SPARQLDriver sparqlParser("", &f);
 MapSetDriver mapSetParser("", &f);
 ChainingMapper queryMapper(&f);
 
@@ -471,7 +471,7 @@ struct RuleMapTest {
 	namespace tst = boost::unit_test::framework;
 	for (int i = 1; i < tst::master_test_suite().argc; ++i)
 	    if (std::string(tst::master_test_suite().argv[i]) == "-D")
-		Logger::addStream(Logger::prepare(), boost::shared_ptr< std::ostream >(&std::clog, boost::log::empty_deleter()));
+		Logger::addStream(Logger::prepare(), boost::shared_ptr< std::ostream >(&std::clog, boost::empty_deleter()));
 
 	sparqlParser.unnestTree = true;
 	/* Parse query. */
@@ -940,6 +940,6 @@ BOOST_AUTO_TEST_CASE( xform ) {
 	SQLDriver sqlParser(context);
 	sql::SQLQuery* s = sqlParser.parse(generated);
 	w3c_sw_LINEN << *s << std::endl;
-	// SPARQLfedDriver sparqlParser("", &f);
+	// SPARQLDriver sparqlParser("", &f);
 }
 #endif /* PARSE_ASDF */
