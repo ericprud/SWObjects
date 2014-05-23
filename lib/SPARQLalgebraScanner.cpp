@@ -3302,7 +3302,7 @@ static yyconst flex_int16_t yy_rule_linenum[160] =
 /** Flex scanner for SPARQL algebra */
 #line 6 "lib/SPARQLalgebraScanner.lpp"
 
-#include "SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#include "SPARQLalgebraParser.hpp"
 #include "SPARQLalgebraScanner.hpp"
 
 /* import the parser's token type into a local typedef */

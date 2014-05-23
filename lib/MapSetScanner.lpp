@@ -3,7 +3,7 @@
 
 %{ /*** C/C++ Declarations ***/
 
-#include "MapSetParser/MapSetParser.hpp"
+#include "MapSetParser.hpp"
 #include "MapSetScanner.hpp"
 
 /* import the parser's token type into a local typedef */

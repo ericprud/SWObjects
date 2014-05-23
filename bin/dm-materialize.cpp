@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include "SQL.hpp"
-#include "SQLParser/SQLParser.hpp"
+#include "SQLParser.hpp"
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
 /* We don't define NEEDDEF_W3C_SW_SQLCLIENT because we link to multiple

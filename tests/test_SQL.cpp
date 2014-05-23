@@ -11,7 +11,7 @@
 #include <iostream>
 #include "SWObjects.hpp"
 #include "SQL.hpp"
-#include "SQLParser/SQLParser.hpp"
+#include "SQLParser.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).
@@ -519,7 +519,7 @@ BOOST_AUTO_TEST_CASE( bsbm_ddl ) {
 
 // #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SPARQLParser.hpp"
 #include "QueryMapper.hpp" // @@ include defn for KeyMap for SQLizer
 #include "SQLizer.hpp"
 
@@ -531,7 +531,7 @@ KeyMap keyMap;
 const char* drv = "mysql";
 
 BOOST_AUTO_TEST_CASE( sqlizer_1 ) {
-    SPARQLfedDriver sparqlParser("", &F);
+    SPARQLDriver sparqlParser("", &F);
     const Operation* query = sparqlParser.parse("\
 PREFIX people: <http://example.com/swat4ls_demo/people#>\n\
 PREFIX addresses: <http://example.com/swat4ls_demo/addresses#>\n\
@@ -572,7 +572,7 @@ BOOST_AUTO_TEST_CASE( sqlize_HR ) {
     IStreamContext ddl1Str("r2rml/ddl.sql", IStreamContext::FILE);
     ddl1Driver.parse(ddl1Str);
 
-    SPARQLfedDriver sparqlParser("", &F);
+    SPARQLDriver sparqlParser("", &F);
     const Operation* query = sparqlParser.parse("\
 SELECT ?job ?dname ?loc ?type ?obj\n\
  WHERE {\n\

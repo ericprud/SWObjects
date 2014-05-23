@@ -13,9 +13,9 @@
 #define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp" // #includes interface/WEBagent && interface/SAXparser
 
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
-#include "MapSetParser/MapSetParser.hpp"
+#include "SPARQLParser.hpp"
+#include "TurtleParser.hpp"
+#include "MapSetParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 
@@ -296,7 +296,7 @@ void validate (boost::any& /* v */, const std::vector<std::string>& values, logg
 struct validationLevel { };
 void validate (boost::any& /* v */, const std::vector<std::string>& values, validationLevel*, int)
 {
-    sw::SPARQLfedDriver& sp = TheServer.engine.sparqlParser;
+    sw::SPARQLDriver& sp = TheServer.engine.sparqlParser;
     std::string s = po::validators::get_single_string(values);
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
     bool m = false;
@@ -323,7 +323,7 @@ void validate (boost::any& /* v */, const std::vector<std::string>& values, vali
     } else {
 	sp.validate = sp.VALIDATE_none;
 	sw::AtomFactory::validate = sw::AtomFactory::VALIDATE_none;
-	typedef sw::SPARQLfedDriver::e_Validation SP;
+	typedef sw::SPARQLDriver::e_Validation SP;
 	if (s.find("selectgrouped"   )!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_selectGrouped)   ; }
 	if (s.find("uniqueprojection")!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_uniqueProjection); }
 	if (s.find("namedprojection" )!=std::string::npos) { m=true; sp.validate = static_cast<SP>(sp.validate|sp.VALIDATE_namedProjection) ; }
@@ -815,7 +815,7 @@ sw::Operation* parseQuery (const sw::TTerm* query) {
 
 int main(int ac, char* av[])
 {
-    TheServer.engine.sparqlParser.validate = sw::SPARQLfedDriver::VALIDATE_none; // be forgiving about validation errors.
+    TheServer.engine.sparqlParser.validate = sw::SPARQLDriver::VALIDATE_none; // be forgiving about validation errors.
     sw::AtomFactory::validate = sw::AtomFactory::VALIDATE_none;
     int ret = 0; /* no errors */
     try {

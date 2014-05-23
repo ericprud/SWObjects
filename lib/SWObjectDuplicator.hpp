@@ -135,7 +135,7 @@ namespace w3c_sw {
 	    last.pathBase = new PropertyPath::Negated(last.pathBase);
 	}
 	virtual void propertyPath (const PropertyPath* const, const PropertyPath::PathBase* nested) {
-	    void* v = new PropertyPath(nested); // !! crime against nature, emulated in SPARQLfedParser
+	    void* v = new PropertyPath(nested); // !! crime against nature, emulated in SPARQLParser
 	    last.tterms.tterm = last.tterms.uri = (const URI*)v;
 	}
 

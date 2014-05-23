@@ -6,7 +6,7 @@
 # define PARSER_COMMON_HH
 
 #include "SWObjects.hpp"
-#include "location.hpp"
+#include "location.hh"
 #include "utf8.h"
 
 void stop(size_t line);

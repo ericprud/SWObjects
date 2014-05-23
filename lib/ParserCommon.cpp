@@ -3,7 +3,7 @@
  */
 
 #include "SWObjects.hpp"
-#include "location.hpp"
+#include "location.hh"
 #include "ParserCommon.hpp"
 #include <fstream>
 #include <iostream> // for cerr

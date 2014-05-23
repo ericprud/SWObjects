@@ -28,9 +28,9 @@ R -X
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "ParserCommon.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
-#include "MapSetParser/MapSetParser.hpp"
+#include "SPARQLParser.hpp"
+#include "TurtleParser.hpp"
+#include "MapSetParser.hpp"
 #include "ChainingMapper.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
@@ -484,7 +484,7 @@ public:
 	    w3c_sw::AtomFactory f;
             w3c_sw::RdfDB db;
 
-            w3c_sw::TurtleSDriver tp(req_uri, &f);
+            w3c_sw::TurtleDriver tp(req_uri, &f);
             tp.setGraph(db.ensureGraph(NULL));
             w3c_sw::IStreamContext istr(r->filename, w3c_sw::IStreamContext::FILE);
             tp.parse(istr);
@@ -492,7 +492,7 @@ public:
             w3c_sw::ResultSet rs(&f);
             rs.setRdfDB(&db);
 
-            w3c_sw::SPARQLfedDriver sp(req_uri, &f);
+            w3c_sw::SPARQLDriver sp(req_uri, &f);
             w3c_sw::IStreamContext qstr(query, w3c_sw::IStreamContext::STRING);
             sp.parse(qstr);
             sp.root->execute(&db, &rs);

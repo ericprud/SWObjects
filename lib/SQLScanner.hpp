@@ -22,7 +22,7 @@
 #undef yyFlexLexer
 #endif
 
-#include "SQLParser/SQLParser.hpp"
+#include "SQLParser.hpp"
 
 namespace w3c_sw {
 

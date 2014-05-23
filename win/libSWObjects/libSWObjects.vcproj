@@ -207,7 +207,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.ypp"
+				RelativePath="..\..\lib\SPARQLParser.ypp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -409,7 +409,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.cpp"
+				RelativePath="..\..\lib\SPARQLParser.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -429,7 +429,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\lib\SPARQLfedScanner.cpp"
+				RelativePath="..\..\lib\SPARQLScanner.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -651,11 +651,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\SPARQLfedParser\SPARQLfedParser.hpp"
+				RelativePath="..\..\lib\SPARQLParser.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\SPARQLfedScanner.hpp"
+				RelativePath="..\..\lib\SPARQLScanner.hpp"
 				>
 			</File>
 			<File

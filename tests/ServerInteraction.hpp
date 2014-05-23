@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/wait.h>   /* header for waitpid() and various macros */
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SPARQLParser.hpp"
 
 #ifndef INCLUDED_tests_ServerInteraction
 #define INCLUDED_tests_ServerInteraction
@@ -238,7 +238,7 @@ namespace w3c_sw {
 	    IStreamContext istr(query, IStreamContext::STRING);
 	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
 		<< "query: " << query << std::endl;
-	    SPARQLfedDriver sparqlParser("", atomFactory);
+	    SPARQLDriver sparqlParser("", atomFactory);
 	    try {
 		Operation* op = sparqlParser.parse(istr);
 		sparqlParser.clear(""); // clear out namespaces and base URI.

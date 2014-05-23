@@ -4,8 +4,8 @@
 
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
-#include "TrigSParser/TrigSParser.hpp"
+#include "TurtleParser.hpp"
+#include "TrigParser.hpp"
 #include "RdfXmlParser.hpp"
 #include <boost/iostreams/stream.hpp>
 
@@ -111,7 +111,7 @@ namespace w3c_sw {
 	    } else if (istr.mediaType.match("text/plain") ||
 		       istr.mediaType.match("text/turtle") || 
 		       istr.mediaType.match("text/ntriples")) {
-		TurtleSDriver parser(nameStr, atomFactory);
+		TurtleDriver parser(nameStr, atomFactory);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
@@ -119,7 +119,7 @@ namespace w3c_sw {
 		parser.parse(istr, target);
 		return false;
 	    } else {
-		TrigSDriver parser(nameStr, atomFactory);
+		TrigDriver parser(nameStr, atomFactory);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)

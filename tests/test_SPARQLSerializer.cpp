@@ -13,7 +13,7 @@
 #include <iostream>
 #include <iterator>
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SPARQLParser.hpp"
 #include "SPARQLSerializer.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
@@ -27,7 +27,7 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMat
 using namespace w3c_sw;
 
 AtomFactory F;
-SPARQLfedDriver sparqlParser("", &F);
+SPARQLDriver sparqlParser("", &F);
 
 struct OpWrap {
     OpWrap () {  }

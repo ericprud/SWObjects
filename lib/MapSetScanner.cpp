@@ -4582,7 +4582,7 @@ static yyconst flex_int16_t yy_rule_linenum[160] =
 /** \file MapSetScanner.ll Define the Flex lexical scanner */
 #line 5 "lib/MapSetScanner.lpp"
 
-#include "MapSetParser/MapSetParser.hpp"
+#include "MapSetParser.hpp"
 #include "MapSetScanner.hpp"
 
 /* import the parser's token type into a local typedef */

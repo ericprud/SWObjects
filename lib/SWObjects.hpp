@@ -3126,7 +3126,7 @@ public:
     void bindVariables(const RdfDB* db, ResultSet* rs) const;
 };
 class WhereClause : public Base {
-    friend class SPARQLfedParser;
+    friend class SPARQLParser;
     friend class MapSetParser;
     friend class Select;
 private:
@@ -3363,7 +3363,7 @@ public:
     }
 };
 class Insert : public GraphChange {
-    friend class SPARQLfedParser;
+    friend class SPARQLParser;
 private:
     const TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;
@@ -3378,7 +3378,7 @@ public:
     virtual e_OPTYPE getOperationType () const { return OPTYPE_insert; }
 };
 class Delete : public GraphChange {
-    friend class SPARQLfedParser;
+    friend class SPARQLParser;
 private:
     const TableOperation* m_GraphTemplate;
     WhereClause* m_WhereClause;

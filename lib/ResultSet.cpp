@@ -6,8 +6,8 @@
 #include "ResultSet.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "XMLQueryExpressor.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "JSONresultsParser/JSONresultsParser.hpp"
+#include "SPARQLParser.hpp"
+#include "JSONresultsParser.hpp"
 #include "BRTparser.hpp"
 #include "../interface/SAXparser.hpp"
 #include "SPARQLSerializer.hpp"
@@ -98,7 +98,7 @@ namespace w3c_sw {
 	  results(), ordered(false), db(NULL), selectOrder(), 
 	  orderedSelect(false), resultType(RESULT_Tabular) {
 
-	SPARQLfedDriver sparqlParser(baseURI, atomFactory);
+	SPARQLDriver sparqlParser(baseURI, atomFactory);
 	IStreamContext boolq("PREFIX rs: <http://www.w3.org/2001/sw/DataAccess/tests/result-set#>\n"
 			     "SELECT ?bool { ?t rs:boolean ?bool . }\n", IStreamContext::STRING);
 	Operation* op = sparqlParser.parse(boolq);

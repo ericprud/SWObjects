@@ -38,7 +38,7 @@ class TestSWObjects(unittest.TestCase):
                           "<s> <p2> <o3> .", bnodeMap)
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
-        tparser = SWObjects.TurtleSDriver("", F)
+        tparser = SWObjects.TurtleDriver("", F)
         # Instruct the parser to insert data into the default graph.
         # Shortcut: None = SWObjects.cvar.DefaultGraph
         tparser.setGraph(parsedDB.ensureGraph(None))
@@ -51,7 +51,7 @@ class TestSWObjects(unittest.TestCase):
 
         different = SWObjects.RdfDB()
         # Shortcut: parse strings without the IStreamContext.
-        # Shortcut: let TurtleSDriver parse directly to default graph in a DB.
+        # Shortcut: let TurtleDriver parse directly to default graph in a DB.
         tparser.parse("<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .", different)
         # print "different: ", different.toString()
         self.assertNotEqual(parsedDB, different)
@@ -68,7 +68,7 @@ class TestSWObjects(unittest.TestCase):
         F.parseNTPatterns(manG, "<s> <p2> <o2> .", bnodeMap)
         # print "manualDB: ", manualDB.toString()
         parsedDB = SWObjects.RdfDB()
-        tparser = SWObjects.TrigSDriver("", F)
+        tparser = SWObjects.TrigDriver("", F)
         tparser.parse("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }", parsedDB)
         # print "parsedDB: ", parsedDB.toString()
         self.assertEqual(manualDB, parsedDB)
@@ -83,12 +83,12 @@ class TestSWObjects(unittest.TestCase):
         # Test a query.
         F = SWObjects.AtomFactory()
         DB = SWObjects.RdfDB()
-        tparser = SWObjects.TurtleSDriver("", F)
+        tparser = SWObjects.TurtleDriver("", F)
         tparser.parse("<s> <p1> <o1> ; <p2> <o2> .", DB)
         # print "DB: ", DB.toString()
         rs = SWObjects.ResultSet(F)
-        # Parse simple query strings with a SPARQLfedDriver.
-        SWObjects.SPARQLfedDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs)
+        # Parse simple query strings with a SPARQLDriver.
+        SWObjects.SPARQLDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs)
         bnodereps = SWObjects.BNode2string()
         bnodeMap = SWObjects.String2BNode()
         reference = SWObjects.ResultSet(F, SWObjects.IStreamContext("""
@@ -117,7 +117,7 @@ class TestSWObjects(unittest.TestCase):
         agent = SWObjects.WEBagent_boostASIO()
         xmlParser = SWObjects.SAXparser_expat()
         DB = SWObjects.RdfDB(agent, xmlParser)
-        sparser = SWObjects.SPARQLfedDriver("", F)
+        sparser = SWObjects.SPARQLDriver("", F)
         # Parsing can be done from a FILE or a STRING (shown below).
         # The StreamContextIstream.STRING argument is eqivalent to parse("...").
         query = sparser.parse(SWObjects.IStreamContext("""
@@ -145,7 +145,7 @@ SELECT ?craft ?homepage
 
     def test_federation (self):
         F = SWObjects.AtomFactory()
-        sparqlParser = SWObjects.SPARQLfedDriver("", F)
+        sparqlParser = SWObjects.SPARQLDriver("", F)
         mapSetParser = SWObjects.MapSetDriver("", F)
         queryMapper = SWObjects.ChainingMapper(F) 
         sparqlParser.unnestTree = True
@@ -204,7 +204,7 @@ LABEL 'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.
         F = SWObjects.AtomFactory()
 
         updatedDB = SWObjects.RdfDB()
-        sparser = SWObjects.SPARQLfedDriver("", F)
+        sparser = SWObjects.SPARQLDriver("", F)
         query = sparser.parse("INSERT DATA { <s> <p1> <o1> ; <p2> <o2> }")
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
@@ -214,7 +214,7 @@ LABEL 'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.
         query.execute(updatedDB, rs)
 
         referenceDB = SWObjects.RdfDB()
-        tparser = SWObjects.TurtleSDriver("", F)
+        tparser = SWObjects.TurtleDriver("", F)
         tparser.setGraph(referenceDB.ensureGraph(None))
         tparser.parse(SWObjects.IStreamContext(
                 "<s> <p1> <o1> ; <p2> <o2> .",
@@ -229,7 +229,7 @@ LABEL 'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.
         manDefault = sourceDB.ensureGraph(None)
         bnodeMap = SWObjects.String2BNode()
         F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap)
-        sparser = SWObjects.SPARQLfedDriver("", F)
+        sparser = SWObjects.SPARQLDriver("", F)
         query = sparser.parse("CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }")
         # s = SWObjects.SPARQLSerializer()
         # query.express(s)
@@ -254,7 +254,7 @@ LABEL 'foaf:homepage' CONSTRUCT { ?rs foaf:homepage ?ro } { SERVICE <http://api.
     def test_parser_exception (self):
         # Test SPARQL parser exception .
         F = SWObjects.AtomFactory()
-        sparser = SWObjects.SPARQLfedDriver("", F)
+        sparser = SWObjects.SPARQLDriver("", F)
         istr = SWObjects.IStreamContext(
                 "SELECT * WHERE ~~~",
                 SWObjects.StreamContextIstream.STRING)

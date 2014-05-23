@@ -15,7 +15,7 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
+#include "TurtleParser.hpp"
 #include "RdfXmlParser.hpp"
 
 #if HTTP_CLIENT != SWOb_DISABLED
@@ -40,7 +40,7 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Process:
 namespace sw = w3c_sw;
 
 sw::AtomFactory F;
-sw::TurtleSDriver turtleParser("", &F);
+sw::TurtleDriver turtleParser("", &F);
 sw::RdfXmlParser GRdfXmlParser("", &F, &P);
 
 struct MeasuredGraph : public sw::DefaultGraphPattern {

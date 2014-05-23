@@ -755,7 +755,7 @@ static yyconst flex_int16_t yy_rule_linenum[42] =
 /** Flex scanner for SPARQL + SPARUL */
 #line 6 "lib/JSONresultsScanner.lpp"
 
-#include "JSONresultsParser/JSONresultsParser.hpp"
+#include "JSONresultsParser.hpp"
 #include "JSONresultsScanner.hpp"
 
 /* import the parser's token type into a local typedef */

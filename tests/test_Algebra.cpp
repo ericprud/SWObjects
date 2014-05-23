@@ -14,9 +14,9 @@
 #include <iterator>
 #include <boost/lexical_cast.hpp>
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
+#include "SPARQLParser.hpp"
 #include "SPARQLSerializer.hpp"
-#include "SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#include "SPARQLalgebraParser.hpp"
 #include "SPARQLAlgebraSerializer.hpp"
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
@@ -28,7 +28,7 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMat
 using namespace w3c_sw;
 
 AtomFactory F;
-SPARQLfedDriver sparqlParser("", &F);
+SPARQLDriver sparqlParser("", &F);
 SPARQLalgebraDriver algebraParser("", &F);
 
 std::string algebrize (std::string sparql, SPARQLAlgebraSerializer::e_ALGEBRA algebra) {

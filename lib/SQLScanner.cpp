@@ -996,7 +996,7 @@ static yyconst flex_int16_t yy_rule_linenum[106] =
 
 
 #include "SQL.hpp"
-#include "SQLParser/SQLParser.hpp"
+#include "SQLParser.hpp"
 #include "SQLScanner.hpp"
 
 /* import the parser's token type into a local typedef */
