@@ -70,10 +70,10 @@ GT_RPAREN		")"
 GT_DTYPE		"^^"
 IT_true			[Tt][Rr][Uu][Ee]
 IT_false		[Ff][Aa][Ll][Ss][Ee]
-SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
-SPARQL_BASE		[Bb][Aa][Ss][Ee]
-BASE			"@base"
-PREFIX			"@prefix"
+IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
+IT_BASE			[Bb][Aa][Ss][Ee]
+GT_AT_base	       	"@base"
+GT_AT_prefix		"@prefix"
 RDF_TYPE		"a"
 LANGTAG			"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
 INTEGER			([+-])?([0-9])+
@@ -251,10 +251,10 @@ ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
 {GT_DTYPE}		{return token::GT_DTYPE;}
 {IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
 {IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
-{SPARQL_PREFIX}		{return token::SPARQL_PREFIX;}
-{SPARQL_BASE}		{return token::SPARQL_BASE;}
-{BASE}			{return token::BASE;}
-{PREFIX}		{return token::PREFIX;}
+{IT_PREFIX}		{return token::IT_PREFIX;}
+{IT_BASE}		{return token::IT_BASE;}
+{GT_AT_base}		{return token::GT_AT_base;}
+{GT_AT_prefix}		{return token::GT_AT_prefix;}
 {RDF_TYPE}		{return token::RDF_TYPE;}
 {IRIREF}		{yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-2, yylloc); return token::IRIREF;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext, yylloc); return token::PNAME_NS;}

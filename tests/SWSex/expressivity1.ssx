@@ -10,6 +10,6 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 # } %C#{ $$ = 7; %}
 
 start={
-     :one {^:first  (1 "one"@en "一"@ja)}, * -, !rdf:* -
+     :one {^:first  (1 "one"@en "一"@ja)}, <x> <y>
   | (:two {^:second (2 "two"@en "二"@ja)}, :three {^:third (3 "three"@en "三"@ja)})
 } %C#{ $$ = 7; %}

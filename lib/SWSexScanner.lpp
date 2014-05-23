@@ -161,25 +161,31 @@ NON_CHAR_HIGH_UCS	[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC][
 
 IT_start		"start"
 GT_EQUAL		"="
+IT_BASE			[Bb][Aa][Ss][Ee]
+IT_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
 GT_LCURLEY		"{"
 GT_RCURLEY		"}"
-GT_PIPE		"|"
+GT_PIPE			"|"
 GT_COMMA		","
-GT_NOT		"!"
+GT_DOLLAR		"$"
+GT_OPT			"?"
 GT_LPAREN		"("
 GT_RPAREN		")"
 GT_CARROT		"^"
-GT_TIMES		"*"
-GT_AT		"@"
+GT_DOT			"."
+GT_AT			"@"
+IT_SPARQL_SRX		"SPARQL_SRX"
+GT_KINDA		"~"
+GT_SEMI			";"
+GT_LBRACKET		"\["
+GT_RBRACKET		"\]"
 GT_MINUS		"-"
-GT_PLUS		"+"
-GT_OPT		"?"
+GT_TIMES		"*"
+GT_PLUS			"+"
 GT_DTYPE		"^^"
-IT_true			[Tt][Rr][Uu][Ee]
-IT_false		[Ff][Aa][Ll][Ss][Ee]
-CODE			"%"(([#+A-Z_a-z])([#+A-Z_a-z0-9-])*)?"{"((([\x00-$&-\[\]-\x7F]|{HIGH_UCS})|("\\""%")))*"%""}"
-SPARQL_PREFIX		[Pp][Rr][Ee][Ff][Ii][Xx]
-SPARQL_BASE		[Bb][Aa][Ss][Ee]
+IT_true			"true"
+IT_false		"false"
+CODE			"%"(([#+A-Z_a-z]([#+0-9A-Z_a-z])*))?"{"((([\x00-$&-\[\]-\x7F]|([\xC2-\xDF][\x80-\xBF])|(\xE0([\xA0-\xBF][\x80-\xBF]))|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|([\xE1-\xEC][\x80-\xBF][\x80-\xBF])|(\xED([\x80-\x9F][\x80-\xBF]))|([\xEE-\xEF][\x80-\xBF][\x80-\xBF])|(\xF0([\x90-\xBF][\x80-\xBF][\x80-\xBF]))|([\xF1-\xF3][\x80-\xBF][\x80-\xBF][\x80-\xBF])|(\xF4([\x80-\x8E][\x80-\xBF][\x80-\xBF])|(\x8F([\x80-\xBE][\x80-\xBF])|(\xBF[\x80-\xBD])))])|("\\""%")))*"%""}"
 RDF_TYPE		"a"
 LANGTAG			"@"([A-Za-z])+(("-"([0-9A-Za-z])+))*
 INTEGER			([+-])?([0-9])+
@@ -255,7 +261,6 @@ ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
 {GT_RCURLEY}		{return token::GT_RCURLEY;}
 {GT_PIPE}		{return token::GT_PIPE;}
 {GT_COMMA}		{return token::GT_COMMA;}
-{GT_NOT}		{return token::GT_NOT;}
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_CARROT}		{return token::GT_CARROT;}
@@ -277,8 +282,8 @@ ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
     yylval->p_CODE.text = new std::string(p+1, yyleng - labelLength - 4);
     return token::CODE;
 }
-{SPARQL_PREFIX}		{return token::SPARQL_PREFIX;}
-{SPARQL_BASE}		{return token::SPARQL_BASE;}
+{IT_PREFIX}		{return token::IT_PREFIX;}
+{IT_BASE}		{return token::IT_BASE;}
 {RDF_TYPE}		{return token::RDF_TYPE;}
 {IRIREF}		{yylval->p_URI = unescapeAndResolveBase(yytext+1, yyleng-2, yylloc); return token::IRIREF;}
 {PNAME_NS}		{yylval->p_URI = driver->ignorePrefix() ? driver->getURI(yytext) : resolvePrefix(yytext, yylloc); return token::PNAME_NS;}

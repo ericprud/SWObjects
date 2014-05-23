@@ -501,36 +501,36 @@ namespace w3c_sw {
 /* Line 690 of lalr1.cc  */
 #line 229 "lib/TurtleSParser/TurtleSParser.ypp"
     {
-	driver.ignorePrefix(true);
-      }
+	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
+    }
     break;
 
   case 18:
 
 /* Line 690 of lalr1.cc  */
-#line 231 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 235 "lib/TurtleSParser/TurtleSParser.ypp"
     {
-	  driver.ignorePrefix(false);
+	driver.ignorePrefix(true);
       }
     break;
 
   case 19:
 
 /* Line 690 of lalr1.cc  */
-#line 233 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 237 "lib/TurtleSParser/TurtleSParser.ypp"
     {
-	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+	  driver.ignorePrefix(false);
       }
     break;
 
   case 20:
 
 /* Line 690 of lalr1.cc  */
-#line 240 "lib/TurtleSParser/TurtleSParser.ypp"
+#line 239 "lib/TurtleSParser/TurtleSParser.ypp"
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
-    }
+	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+      }
     break;
 
   case 21:
@@ -1059,14 +1059,14 @@ namespace w3c_sw {
   const unsigned char
   TurtleSParser::yydefact_[] =
   {
-         3,     0,     0,     1,     0,     0,    12,     0,    17,    58,
+         3,     0,     0,     1,     0,     0,    12,     0,    18,    58,
       56,    81,    82,    80,    79,    77,     4,     5,     8,     9,
-      10,    11,     0,    21,    23,    46,    44,    78,    45,     7,
-       0,     0,    20,     0,    60,     0,     6,     0,     0,    16,
-      13,    18,    61,    28,    43,     0,     0,    42,    47,    22,
+      11,    10,     0,    21,    23,    46,    44,    78,    45,     7,
+       0,     0,    17,     0,    60,     0,     6,     0,     0,    16,
+      13,    19,    61,    28,    43,     0,     0,    42,    47,    22,
       24,    26,     0,     0,    59,     0,    57,    29,    71,    72,
       63,    64,    65,    73,    74,    75,    76,    34,    40,    52,
-      51,    50,    54,    53,    55,    69,    48,    49,    14,    19,
+      51,    50,    54,    53,    55,    69,    48,    49,    14,    20,
       62,     0,    38,     0,    67,    70,    66,     0,    37,    31,
       35,     0,    41,    68,    15,     0,    32,    33,     0,    39,
       36,    30
@@ -1088,7 +1088,7 @@ namespace w3c_sw {
   TurtleSParser::yydefgoto_[] =
   {
         -1,     1,     2,    16,    17,    18,    31,    52,    87,    19,
-      20,    33,    53,    21,    22,    37,    38,    50,    45,    96,
+      20,    21,    33,    53,    22,    37,    38,    50,    45,    96,
       97,    90,    81,    67,    92,    82,    46,    23,    47,    68,
       69,    70,    35,    71,    34,    42,    55,    72,    73,    85,
       86,    74,    75,    48,    27,    77
@@ -1140,10 +1140,10 @@ namespace w3c_sw {
   {
          0,    32,    33,     0,     1,     3,     4,     5,     7,     8,
       13,    21,    22,    27,    28,    29,    34,    35,    36,    40,
-      41,    44,    45,    58,    62,    64,    74,    75,    76,    10,
-      29,    37,    29,    42,    65,    63,    10,    46,    47,    10,
+      41,    42,    45,    58,    62,    64,    74,    75,    76,    10,
+      29,    37,    29,    43,    65,    63,    10,    46,    47,    10,
       27,    27,    66,     1,     6,    49,    57,    59,    74,    49,
-      48,    49,    38,    43,     9,    67,    14,     1,    16,    17,
+      48,    49,    38,    44,     9,    67,    14,     1,    16,    17,
       18,    19,    20,    23,    24,    25,    26,    54,    60,    61,
       62,    64,    68,    69,    72,    73,    74,    76,    29,    29,
       60,    53,    56,    15,    30,    70,    71,    39,     1,    12,
@@ -1169,8 +1169,8 @@ namespace w3c_sw {
   TurtleSParser::yyr1_[] =
   {
          0,    31,    32,    33,    33,    34,    34,    34,    35,    35,
-      35,    35,    37,    38,    39,    36,    40,    42,    43,    41,
-      44,    46,    45,    47,    45,    48,    48,    49,    49,    49,
+      35,    35,    37,    38,    39,    36,    40,    41,    43,    44,
+      42,    46,    45,    47,    45,    48,    48,    49,    49,    49,
       50,    51,    51,    52,    53,    53,    53,    53,    54,    55,
       56,    56,    57,    57,    58,    58,    58,    59,    60,    60,
       60,    60,    60,    61,    61,    61,    63,    62,    65,    64,
@@ -1184,8 +1184,8 @@ namespace w3c_sw {
   TurtleSParser::yyr2_[] =
   {
          0,     2,     1,     0,     2,     1,     2,     2,     1,     1,
-       1,     1,     0,     0,     0,     7,     3,     0,     0,     5,
-       2,     0,     3,     0,     3,     0,     1,     3,     1,     2,
+       1,     1,     0,     0,     0,     7,     3,     2,     0,     0,
+       5,     0,     3,     0,     3,     0,     1,     3,     1,     2,
        2,     0,     1,     2,     0,     2,     4,     2,     2,     2,
        0,     2,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     0,     4,     0,     4,
@@ -1200,15 +1200,15 @@ namespace w3c_sw {
   const char*
   const TurtleSParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "BASE", "PREFIX",
-  "SPARQL_BASE", "RDF_TYPE", "SPARQL_PREFIX", "GT_LPAREN", "GT_RPAREN",
-  "GT_DOT", "GT_COMMA", "GT_SEMI", "GT_LBRACKET", "GT_RBRACKET",
-  "GT_DTYPE", "IT_true", "IT_false", "INTEGER", "DECIMAL", "DOUBLE",
+    "\"end of file\"", "error", "$undefined", "GT_AT_base", "GT_AT_prefix",
+  "IT_BASE", "RDF_TYPE", "IT_PREFIX", "GT_LPAREN", "GT_RPAREN", "GT_DOT",
+  "GT_COMMA", "GT_SEMI", "GT_LBRACKET", "GT_RBRACKET", "GT_DTYPE",
+  "IT_true", "IT_false", "INTEGER", "DECIMAL", "DOUBLE",
   "BLANK_NODE_LABEL", "ANON", "STRING_LITERAL1", "STRING_LITERAL2",
   "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2", "PNAME_NS", "PNAME_LN",
   "IRIREF", "LANGTAG", "$accept", "turtleDoc", "_Qstatement_E_Star",
   "statement", "directive", "prefixID", "$@1", "$@2", "$@3", "base",
-  "sparqlPrefix", "$@4", "$@5", "sparqlBase", "triples", "$@6", "$@7",
+  "BaseDecl", "PrefixDecl", "$@4", "$@5", "triples", "$@6", "$@7",
   "_QpredicateObjectList_E_Opt", "predicateObjectList",
   "_O_Qverb_E_S_QobjectList_E_C", "_Q_O_Qverb_E_S_QobjectList_E_C_E_Opt",
   "_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C",
@@ -1230,9 +1230,9 @@ namespace w3c_sw {
   {
         32,     0,    -1,    33,    -1,    -1,    33,    34,    -1,    35,
       -1,    45,    10,    -1,     1,    10,    -1,    36,    -1,    40,
-      -1,    41,    -1,    44,    -1,    -1,    -1,    -1,     4,    37,
+      -1,    42,    -1,    41,    -1,    -1,    -1,    -1,     4,    37,
       27,    38,    29,    39,    10,    -1,     3,    29,    10,    -1,
-      -1,    -1,     7,    42,    27,    43,    29,    -1,     5,    29,
+       5,    29,    -1,    -1,    -1,     7,    43,    27,    44,    29,
       -1,    -1,    58,    46,    49,    -1,    -1,    62,    47,    48,
       -1,    -1,    49,    -1,    57,    54,    53,    -1,     1,    -1,
       57,     1,    -1,    57,    54,    -1,    -1,    50,    -1,    12,
@@ -1256,8 +1256,8 @@ namespace w3c_sw {
   TurtleSParser::yyprhs_[] =
   {
          0,     0,     3,     5,     6,     9,    11,    14,    17,    19,
-      21,    23,    25,    26,    27,    28,    36,    40,    41,    42,
-      48,    51,    52,    56,    57,    61,    62,    64,    68,    70,
+      21,    23,    25,    26,    27,    28,    36,    40,    43,    44,
+      45,    51,    52,    56,    57,    61,    62,    64,    68,    70,
       73,    76,    77,    79,    82,    83,    86,    91,    94,    97,
      100,   101,   104,   106,   108,   110,   112,   114,   116,   118,
      120,   122,   124,   126,   128,   130,   132,   133,   138,   139,
@@ -1271,8 +1271,8 @@ namespace w3c_sw {
   TurtleSParser::yyrline_[] =
   {
          0,   190,   190,   193,   195,   199,   200,   201,   205,   206,
-     207,   208,   212,   214,   216,   212,   223,   229,   231,   229,
-     240,   246,   246,   249,   249,   255,   257,   262,   263,   264,
+     207,   208,   212,   214,   216,   212,   223,   229,   235,   237,
+     235,   246,   246,   249,   249,   255,   257,   262,   263,   264,
      270,   274,   276,   281,   285,   287,   288,   289,   294,   299,
      303,   305,   309,   313,   320,   323,   324,   328,   334,   337,
      340,   343,   346,   352,   353,   354,   358,   358,   380,   380,
@@ -1390,10 +1390,10 @@ void w3c_sw::TurtleSParser::error(const TurtleSParser::location_type& l,
     _SUBS(s, "GT_DTYPE", "'^^'");
     _SUBS(s, "IT_true", "boolean true");
     _SUBS(s, "IT_false", "boolean false");
-    _SUBS(s, "SPARQL_PREFIX", "PREFIX");
-    _SUBS(s, "SPARQL_BASE", "BASE");
-    _SUBS(s, "BASE", "@base");
-    _SUBS(s, "PREFIX", "@prefix");
+    _SUBS(s, "IT_PREFIX", "PREFIX");
+    _SUBS(s, "IT_BASE", "BASE");
+    _SUBS(s, "GT_AT_base", "@base");
+    _SUBS(s, "GT_AT_prefix", "@prefix");
     _SUBS(s, "RDF_TYPE", "keyword 'a'");
     _SUBS(s, "IRIREF", "IRI");
     _SUBS(s, "PNAME_NS", "namespace prefix");
