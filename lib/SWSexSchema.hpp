@@ -13,6 +13,11 @@ namespace w3c_sw {
 	struct Solution;
 	struct RuleMap;
 
+	struct URIstem {
+	    const URI* uri;
+	    bool opt;
+	};
+
 	typedef std::string Code;
 	struct CodeMap : public std::map<std::string, Code> {
 	    std::ostream& print(std::ostream& os) const;
@@ -68,6 +73,9 @@ namespace w3c_sw {
 		virtual bool matchP(const TTerm* test) const;
 	    };
 	    struct NameAll : public NameClass {
+		std::vector<URIstem>* exclusions;
+		NameAll (std::vector<URIstem>* exclusions) : exclusions(exclusions) {  }
+		~NameAll () { delete exclusions; }
 		virtual std::ostream& print(std::ostream& os) const;
 		virtual const TTerm* getP() const;
 		virtual bool matchP(const TTerm* test) const;
@@ -110,7 +118,17 @@ namespace w3c_sw {
 		virtual TermSet getOs() const;
 		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;
 	    };
+	    struct ValuePattern : public Value {
+		const TTerm* base;
+		ValuePattern (const TTerm* base) : base(base) {  }
+		virtual std::ostream& print(std::ostream& os) const;
+		virtual const TTerm* getP() const;
+		virtual bool matchP(const TTerm* test) const;
+	    };
 	    struct ValueAny : public Value {
+		std::vector<URIstem>* exclusions;
+		ValueAny (std::vector<URIstem>* exclusions) : exclusions(exclusions) {  }
+		~ValueAny () { delete exclusions; }
 		virtual std::ostream& print(std::ostream& os) const;
 		virtual TermSet getOs() const;
 		virtual SWSexSchema::Solution* validateTriple(const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const;

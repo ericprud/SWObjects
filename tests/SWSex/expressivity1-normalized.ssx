@@ -2,8 +2,7 @@ start=_:b3
 _:b3 {(
     (
     <http://open-services.net/ns/core#one> @_:b0{1,1},
-    * -{1,1},
-    !<http://www.w3.org/1999/02/22-rdf-syntax-ns#>* -{1,1})
+    <x> <y>{1,1})
   | (
     <http://open-services.net/ns/core#two> @_:b1{1,1},
     <http://open-services.net/ns/core#three> @_:b2{1,1}))} %C#{ $$ = 7; %}
