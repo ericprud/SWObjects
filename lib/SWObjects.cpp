@@ -2233,9 +2233,9 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     static std::string canonical (float f) { // decimal notation
 	std::stringstream canonical;
 	canonical << f;
-	// obselete: XSD 1.0 canonical notation for decimal required a '.'
-	// if (canonical.str().find_first_of(".") == std::string::npos)
-	//     canonical << ".0";
+	// XSD 1.0 canonical notation for decimal requires a '.'
+	if (canonical.str().find_first_of(".") == std::string::npos)
+	    canonical << ".0";
 	return canonical.str();
     }
 
