@@ -126,12 +126,10 @@ public:
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
-    ProductionVector<const TTerm*>* p_TTerms;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
-
 }
 
 %{
@@ -152,7 +150,7 @@ public:
 %token <p_URI> PNAME_NS PNAME_LN IRIREF
 %token <p_LANGTAG> LANGTAG
 
-%type <p_TTerm> subject object collection RDFLiteral literal NumericLiteral BooleanLiteral BlankNode blankNodePropertyList verb predicate
+%type <p_TTerm> subject object _object1 collection RDFLiteral literal NumericLiteral BooleanLiteral BlankNode blankNodePropertyList verb predicate
 %type <p_URI> iri PrefixedName
 // deepest typing for these productions:
 // %type <p_TTerm> subject object collection
@@ -331,21 +329,19 @@ predicate:
 ;
 
 object:
+    _object1	{
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+    }
+;
+
+_object1:
     iri	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
+	$$ = $1;
     }
-  | BlankNode	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | collection	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | blankNodePropertyList	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | literal	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
+  | BlankNode	
+  | collection	
+  | blankNodePropertyList	
+  | literal	
 ;
 
 literal:

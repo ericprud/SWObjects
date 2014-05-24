@@ -154,7 +154,6 @@ namespace w3c_sw {
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
-    ProductionVector<const TTerm*>* p_TTerms;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
@@ -162,9 +161,8 @@ namespace w3c_sw {
 
 
 
-
 /* Line 35 of lalr1.cc  */
-#line 168 "tmp/TrigParser/TrigParser.hpp"
+#line 166 "tmp/TrigParser/TrigParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -300,7 +298,7 @@ namespace w3c_sw {
     typedef unsigned char token_number_type;
     /* Tables.  */
     /// For a state, the index in \a yytable_ of its portion.
-    static const short int yypact_[];
+    static const signed char yypact_[];
     static const signed char yypact_ninf_;
 
     /// For a state, default reduction number.
@@ -309,7 +307,7 @@ namespace w3c_sw {
     static const unsigned char yydefact_[];
 
     static const signed char yypgoto_[];
-    static const short int yydefgoto_[];
+    static const signed char yydefgoto_[];
 
     /// What to do in a state.
     /// \a yytable_[yypact_[s]]: what to do in state \a s.
@@ -319,7 +317,7 @@ namespace w3c_sw {
     static const unsigned char yytable_[];
     static const signed char yytable_ninf_;
 
-    static const short int yycheck_[];
+    static const signed char yycheck_[];
 
     /// For a state, its accessing symbol.
     static const unsigned char yystos_[];
@@ -343,7 +341,7 @@ namespace w3c_sw {
     /// A `-1'-separated list of the rules' RHS.
     static const rhs_number_type yyrhs_[];
     /// For each rule, the index of the first RHS symbol in \a yyrhs_.
-    static const unsigned short int yyprhs_[];
+    static const unsigned char yyprhs_[];
     /// For each rule, its source line number.
     static const unsigned short int yyrline_[];
     /// For each scanner token number, its symbol number.
@@ -394,7 +392,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 398 "tmp/TrigParser/TrigParser.hpp"
+#line 396 "tmp/TrigParser/TrigParser.hpp"
 
 
 

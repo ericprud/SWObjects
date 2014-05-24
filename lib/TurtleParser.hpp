@@ -165,7 +165,6 @@ namespace w3c_sw {
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
-    ProductionVector<const TTerm*>* p_TTerms;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
     const RDFLiteral* p_RDFLiteral;
@@ -173,9 +172,8 @@ namespace w3c_sw {
 
 
 
-
 /* Line 35 of lalr1.cc  */
-#line 179 "tmp/TurtleParser/TurtleParser.hpp"
+#line 177 "tmp/TurtleParser/TurtleParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -395,7 +393,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 399 "tmp/TurtleParser/TurtleParser.hpp"
+#line 397 "tmp/TurtleParser/TurtleParser.hpp"
 
 
 
