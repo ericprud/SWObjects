@@ -180,7 +180,7 @@ ifdef $(CRYPTLIBDEFINED)
 endif
 
 
-.PHONY: all dep lib test NOGEN
+.PHONY: all dep lib test TOUCH_PARSER_GENERATED
 all:   lib test
 
 
@@ -273,31 +273,12 @@ lib/%.o : lib/%.cpp lib/%.dep config.h docs/version.h
 
 
 
-# The following doesn't fire, so I have to create the specialied rules below:
-# lib/%/%.dep: lib/%/%.cpp config.h
-# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-
-# lib/SPARQLParser/SPARQLParser.dep: lib/SPARQLParser/SPARQLParser.cpp config.h
-# 	($(ECHO) -n $@ lib/SPARQLParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-# lib/MapSetParser/MapSetParser.dep: lib/MapSetParser/MapSetParser.cpp config.h
-# 	($(ECHO) -n $@ lib/MapSetParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-# lib/TurtleParser/TurtleParser.dep: lib/TurtleParser/TurtleParser.cpp config.h
-# 	($(ECHO) -n $@ lib/TurtleParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-# lib/TrigSParser/TrigSParser.dep: lib/TrigSParser/TrigSParser.cpp config.h
-# 	($(ECHO) -n $@ lib/TrigSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-# lib/SQLParser/SQLParser.dep: lib/SQLParser/SQLParser.cpp config.h
-# 	($(ECHO) -n $@ lib/SQLParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-# lib/JSONresultsParser/JSONresultsParser.dep: lib/JSONresultsParser/JSONresultsParser.cpp config.h
-# 	($(ECHO) -n $@ lib/JSONresultsParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-# lib/ShExCSParser/ShExCSParser.dep: lib/ShExCSParser/ShExCSParser.cpp config.h
-# 	($(ECHO) -n $@ lib/ShExCSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
-GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
+PARSER_GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
 
 # don't run flex and bison
-NOGEN:
-	touch $(GENERATED)
+TOUCH_PARSER_GENERATED:
+	touch $(PARSER_GENERATED)
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
 	@mkdir -p tmp/$(*F)
@@ -445,6 +426,11 @@ tests/sparql11-test-suite:
 	(cd tests/sparql11-test-suite && patch -p 0 < ../sparql11-test-suite.patch)
 
 t_SPARQL11: tests/sparql11-test-suite
+
+tests/TrigTests:
+	(cd tests && curl http://www.w3.org/2014/05/RDF-1.1-TrigTests.tar.gz | tar xzf -)
+
+t_Trig: tests/TrigTests
 
 t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)
