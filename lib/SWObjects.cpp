@@ -25,6 +25,43 @@
 #include "md5.h"
 #endif /* CRYPT_LIB */
 
+#ifdef _MSC_VER
+#define snprintf c99_snprintf
+float roundf(float x)
+{
+	return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f);
+}
+double round(double number)
+{
+    return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
+}
+
+inline int c99_vsnprintf(char* str, size_t size, const char* format, va_list ap)
+{
+    int count = -1;
+
+    if (size != 0)
+        count = _vsnprintf_s(str, size, _TRUNCATE, format, ap);
+    if (count == -1)
+        count = _vscprintf(format, ap);
+
+    return count;
+}
+
+inline int c99_snprintf(char* str, size_t size, const char* format, ...)
+{
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(str, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+
+#endif
+
 extern "C"
 {
 #ifdef WIN32
@@ -48,6 +85,7 @@ extern "C"
   #define SET_Variable_CONSTIT_NE(L, R) L != R
   #define SET_POS_CONSTIT_NE(L, R) L != R
 #endif /* !_MSC_VER */
+
 
 namespace w3c_sw {
 
@@ -1314,12 +1352,19 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
+
 	    const TTerm* FUNC_numeric_round (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		struct UnaryRounder : public AtomFactory::UnaryFunctor {
 		    UnaryRounder () : AtomFactory::UnaryFunctor(NULL, NULL, NULL, NULL) {  } // @@ get rid of these
 		    virtual int eval (int v) { return v; }
 		    virtual float eval (float v) { return ::roundf(v); }
-		    virtual double eval (double v) { return ::round(v); }
+		    virtual double eval (double v) { 
+#ifdef _MSC_VER
+				return ::round(v); 
+#else
+				return ::round(v); 
+#endif
+			}
 		};
 		UnaryRounder f;
 		return atomFactory->applyCommonNumeric(args[0], &f);
@@ -2320,7 +2365,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	int ex = ::log10(d);
 	if (d < 1)
 	    --ex;
-	double logOf10 = ::log(10);
+	double logOf10 = ::log(10.0);
 	canonical << d/::exp(ex*logOf10);
 	if (canonical.str().find('.') == std::string::npos)
 	    canonical << ".0";
@@ -4695,7 +4740,11 @@ namespace w3c_sw {
 	    struct tm t;
 
 	    ::time(&rawtime);
-	    ::localtime_r(&rawtime, &t);
+		#ifdef _MSC_VER
+		  ::localtime(&rawtime);
+		#else
+		  ::localtime_r(&rawtime, &t);
+		#endif
 	    char space[20];
 	    ::snprintf(space, 20, "%04d-%02d-%02dT%02d:%02d:%02dZ", 
 		       1900+t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);

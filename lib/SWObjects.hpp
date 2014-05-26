@@ -1868,7 +1868,7 @@ public:
 	unsigned min, max;
     public:
 	const static unsigned Unlimited = ~0U;
-	Repeated (const PathBase* nested, unsigned min, unsigned max) : Unary(nested), min(min), max(max) {  }
+	Repeated (const PathBase* nested, unsigned min_, unsigned max_) : Unary(nested) { min = min_; max = max_; }
 	virtual TriplesTemplates from(const TTerm* s, const TTerm* o) const;
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
@@ -2425,7 +2425,7 @@ public:
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
 public:
-
+	
     struct TTerm2Triple_type : public std::multimap<const TTerm*, const TriplePattern*> {
 	/**
 	 * returns: whether the index is now empty.
@@ -2441,6 +2441,7 @@ public:
 	}
     };
     typedef std::pair<const TTerm*, const TriplePattern*> TTerm2Triple_pair;
+	
     typedef std::pair<TTerm2Triple_type::const_iterator, TTerm2Triple_type::const_iterator> TTerm2Triple_range;
 
     struct TTerm2TTerm2Triple_type : public std::map<const TTerm*, TTerm2Triple_type> {
@@ -2520,7 +2521,9 @@ public:
     triple_iterator getTripleIterator(const TTerm* s, const TTerm* p, const TTerm* o) const;
 
     typedef std::vector<const TriplePattern*>::const_reference const_reference;
-
+	
+	/// FIXME what should value_type be?????
+	typedef const TriplePattern* value_type;
 protected:
 
     // make sure we don't delete the TriplePatterns
@@ -3547,9 +3550,9 @@ namespace AtomicFunction {
     struct Invocation {
 	size_t min, max;
 	FPtr* func;
-	Invocation (size_t min, size_t max, FPtr* func)
-	    : min(min), max(max), func(func)
-	{  }
+	Invocation (size_t min_, size_t max_, FPtr* func)
+	    : func(func)
+	{ min = min_; max = max_; }
     };
 
     struct Map : public std::map<const TTerm*, Invocation> {
@@ -3557,9 +3560,9 @@ namespace AtomicFunction {
 	    const TTerm* name;
 	    size_t min, max;
 	    FPtr* func;
-	    Initializer (const TTerm* name, size_t min, size_t max, FPtr* func)
-		: name(name), min(min), max(max), func(func)
-	    {  }
+	    Initializer (const TTerm* name, size_t min_, size_t max_, FPtr* func)
+		: name(name), func(func)
+	    { min = min_; max = max_; }
 	};
 
 	Map () {

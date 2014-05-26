@@ -200,7 +200,7 @@ namespace w3c_sw {
 			    Result::Fixup& f = *p;
 			    lexval = f(lexval, colSet[i].type);
 			}
-			ret.push_back(OptString(lexval, ""));
+			ret.push_back(OptString(lexval.c_str(), std::string("")));
 		    } else {
 			ret.push_back(OptString());
 		    }

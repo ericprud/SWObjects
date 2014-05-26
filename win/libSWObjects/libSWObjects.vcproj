@@ -599,7 +599,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\JSONresultsParser\JSONresultsParser.hpp"
+				RelativePath="..\..\lib\JSONresultsParser.hpp"
 				>
 			</File>
 			<File
@@ -611,7 +611,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\MapSetParser\MapSetParser.hpp"
+				RelativePath="..\..\lib\MapSetParser.hpp"
 				>
 			</File>
 			<File
@@ -667,7 +667,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\SQLParser\SQLParser.hpp"
+				RelativePath="..\..\lib\SQLParser.hpp"
 				>
 			</File>
 			<File
@@ -687,7 +687,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\TrigSParser\TrigSParser.hpp"
+				RelativePath="..\..\lib\TrigSParser.hpp"
 				>
 			</File>
 			<File
@@ -695,7 +695,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\TurtleSParser\TurtleSParser.hpp"
+				RelativePath="..\..\lib\TurtleSParser.hpp"
 				>
 			</File>
 			<File

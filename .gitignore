@@ -4,3 +4,15 @@
 /.emacs.desktop.lock
 /EGP
 /config.h
+*.tlog
+*.filters
+*.user
+*.vcxproj
+*.log
+*.unsuccessfulbuild
+*.pdb
+*.exe
+*.ilk
+*.opensdf
+*.old
+*.ipch
