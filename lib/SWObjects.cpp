@@ -3433,6 +3433,34 @@ compared against
 	    return false;
 	return true; // !! only good for ... it != end()
     }
+    /* BGP index dumper
+    std::string dump (const TTerm* t) {
+	std::ostringstream os;
+	os << t->toString() << "(" << t << ")";
+	return os.str();
+    }
+    std::string dump (const BasicGraphPattern::TTerm2Triple_type& r) {
+	std::ostringstream os;
+	for (std::multimap<const TTerm*, const TriplePattern*>::const_iterator t2T = r.begin();
+	     t2T != r.end(); ++t2T)
+	    os << "----" << dump(t2T->first) << ": " << t2T->second->toString() << "\n";
+	return os.str();
+    }
+    std::string dump (const BasicGraphPattern::TTerm2Triple_range& r) {
+	std::ostringstream os;
+	for (BasicGraphPattern::TTerm2Triple_type::const_iterator t2t2T = r.first;
+	     t2t2T != r.second; ++t2t2T)
+	    os << t2t2T->first->toString() << ":\n" << t2t2T->second->toString() << "\n";
+	return os.str();
+    }
+    std::string dump (const BasicGraphPattern::TTerm2TTerm2Triple_type& r) {
+	std::ostringstream os;
+	for (std::map<const TTerm*, BasicGraphPattern::TTerm2Triple_type>::const_iterator t2t2T = r.begin();
+	     t2t2T != r.end(); ++t2t2T)
+	    os << dump(t2t2T->first) << ":\n" << dump(t2t2T->second);
+	return os.str();
+    }
+    */
     BasicGraphPattern::triple_iterator BasicGraphPattern::getTripleIterator (const TTerm* s, const TTerm* p, const TTerm* o) const {
 	if (s)
 	    if (p) {

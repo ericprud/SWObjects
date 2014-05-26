@@ -427,10 +427,11 @@ tests/sparql11-test-suite:
 
 t_SPARQL11: tests/sparql11-test-suite
 
-tests/TrigTests:
-	(cd tests && curl http://www.w3.org/2014/05/RDF-1.1-TrigTests.tar.gz | tar xzf -)
+tests/TriGTests:
+	mkdir -p $@
+	(cd $@ && curl http://www.w3.org/2013/TrigTests/TESTS.tar.gz | tar xzf -) # don't be fooled by Trig vs. TriG
 
-t_Trig: tests/TrigTests
+t_Trig: tests/TriGTests
 
 t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)

@@ -175,44 +175,38 @@ namespace w3c_sw {
       /* Tokens.  */
    enum yytokentype {
      __EOF__ = 0,
-     BASE = 258,
-     PREFIX = 259,
-     SPARQL_BASE = 260,
-     RDF_TYPE = 261,
-     SPARQL_PREFIX = 262,
-     GT_LPAREN = 263,
-     GT_RPAREN = 264,
-     GT_DOT = 265,
-     GT_COMMA = 266,
-     GT_SEMI = 267,
-     GT_LBRACKET = 268,
-     GT_RBRACKET = 269,
+     IT_GRAPH = 258,
+     GT_DOT = 259,
+     GT_LCURLEY = 260,
+     GT_RCURLEY = 261,
+     IT_BASE = 262,
+     IT_PREFIX = 263,
+     GT_SEMI = 264,
+     GT_COMMA = 265,
+     GT_LBRACKET = 266,
+     GT_RBRACKET = 267,
+     GT_LPAREN = 268,
+     GT_RPAREN = 269,
      GT_DTYPE = 270,
-     IT_GRAPH = 271,
-     GT_RCURLEY = 272,
-     GT_LCURLEY = 273,
+     RDF_TYPE = 271,
+     AT_BASE = 272,
+     AT_PREFIX = 273,
      IT_true = 274,
      IT_false = 275,
      INTEGER = 276,
      DECIMAL = 277,
      DOUBLE = 278,
-     INTEGER_POSITIVE = 279,
-     DECIMAL_POSITIVE = 280,
-     DOUBLE_POSITIVE = 281,
-     INTEGER_NEGATIVE = 282,
-     DECIMAL_NEGATIVE = 283,
-     DOUBLE_NEGATIVE = 284,
-     STRING_LITERAL1 = 285,
-     STRING_LITERAL2 = 286,
-     STRING_LITERAL_LONG1 = 287,
-     STRING_LITERAL_LONG2 = 288,
-     IRIREF = 289,
-     PNAME_NS = 290,
-     PNAME_LN = 291,
-     BLANK_NODE_LABEL = 292,
-     ANON = 293,
-     LANGTAG = 294,
-     NIL = 295
+     STRING_LITERAL1 = 279,
+     STRING_LITERAL2 = 280,
+     STRING_LITERAL_LONG1 = 281,
+     STRING_LITERAL_LONG2 = 282,
+     IRIREF = 283,
+     PNAME_NS = 284,
+     PNAME_LN = 285,
+     BLANK_NODE_LABEL = 286,
+     ANON = 287,
+     LANGTAG = 288,
+     NIL = 289
    };
 
     };
@@ -314,7 +308,7 @@ namespace w3c_sw {
     /// - if positive, shift that token.
     /// - if negative, reduce the rule which number is the opposite.
     /// - if zero, do what YYDEFACT says.
-    static const unsigned char yytable_[];
+    static const short int yytable_[];
     static const signed char yytable_ninf_;
 
     static const signed char yycheck_[];
@@ -392,7 +386,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 396 "tmp/TrigParser/TrigParser.hpp"
+#line 390 "tmp/TrigParser/TrigParser.hpp"
 
 
 

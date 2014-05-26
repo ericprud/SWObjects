@@ -433,11 +433,12 @@ struct ReferenceDB : public RdfDB {
 	    MeasuredRS::read(namedGraphs[i].source, baseURI, ensureGraph(F.getURI(namedGraphs[i].name)));
     }
 
-    ReferenceDB (const char* trig, const char* queryPath)
+    ReferenceDB (const char* trig, const char* queryPath, bool noTruncate = false)
 	: RdfDB() {
 
 	std::string baseURI(queryPath);
-	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	if (!noTruncate)
+	    baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
 
 	/* Parse data. */
 	if (trig != NULL)

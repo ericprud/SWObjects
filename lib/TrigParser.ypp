@@ -127,11 +127,12 @@ public:
 /* START TokenBlock */
 /* Terminals */
 
-%token BASE PREFIX SPARQL_BASE RDF_TYPE SPARQL_PREFIX GT_LPAREN GT_RPAREN GT_DOT
-       GT_COMMA GT_SEMI GT_LBRACKET GT_RBRACKET GT_DTYPE IT_GRAPH GT_RCURLEY GT_LCURLEY
- //%token IT_BASE IT_PREFIX IT_GRAPH GT_LCURLEY GT_RCURLEY GT_LPAREN GT_RPAREN GT_DOT GT_COMMA GT_SEMI IT_a GT_LBRACKET GT_RBRACKET GT_PLUS GT_MINUS GT_DTYPE
+%token IT_GRAPH GT_DOT GT_LCURLEY GT_RCURLEY IT_BASE IT_PREFIX GT_SEMI
+       GT_COMMA GT_LBRACKET GT_RBRACKET GT_LPAREN GT_RPAREN GT_DTYPE
+       RDF_TYPE AT_BASE AT_PREFIX
+
 %token <p_BooleanRDFLiteral> IT_true IT_false
-%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE INTEGER_POSITIVE DECIMAL_POSITIVE DOUBLE_POSITIVE INTEGER_NEGATIVE DECIMAL_NEGATIVE DOUBLE_NEGATIVE
+%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE
 %token <p_string> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
 %token <p_URI> IRIREF PNAME_NS PNAME_LN
 %token <p_BNode> BLANK_NODE_LABEL ANON
@@ -196,7 +197,10 @@ _Q_O_Qdirective_E_Or_Qblock_E_C_E_Star:
 block:
     triplesOrGraph	
   | wrappedGraph	
-  | triples2	
+  | {
+	driver.curBGP = driver.db->ensureGraph(NULL);
+	driver.neededBGP = NULL;
+    } triples2	
   | IT_GRAPH labelOrSubject wrappedGraph	
 ;
 
@@ -238,7 +242,9 @@ wrappedGraph:
     GT_LCURLEY {
 	driver.curBGP = driver.db->ensureGraph(driver.curSubject);
 	driver.neededBGP = NULL;
-      } _QtriplesBlock_E_Opt GT_RCURLEY	
+      } _QtriplesBlock_E_Opt {
+	  driver.curSubject = NULL;
+      } GT_RCURLEY	
 ;
 
 _QtriplesBlock_E_Opt:
@@ -281,7 +287,7 @@ directive:
 
 // [7]    	prefixID 	   ::=    	PREFIX PNAME_NS IRIREF "."
 prefixID:
-    PREFIX {
+    AT_PREFIX {
 	driver.ignorePrefix(true);
       } PNAME_NS {
 	  driver.ignorePrefix(false);
@@ -293,21 +299,21 @@ prefixID:
 
 // [8]    	base 		   ::=    	BASE IRIREF "."
 base:
-    BASE IRIREF GT_DOT	{
+    AT_BASE IRIREF GT_DOT	{
 	driver.setBase($2->getLexicalValue());
     }
 ;
 
 // [9]    	sparqlBase 	   ::=    	SPARQL_BASE IRIREF
 sparqlBase:
-    SPARQL_BASE IRIREF	{
+    IT_BASE IRIREF	{
 	driver.setBase($2->getLexicalValue());
     }
 ;
 
 // [10]    	sparqlPrefix 	   ::=    	SPARQL_PREFIX PNAME_NS IRIREF
 sparqlPrefix:
-    SPARQL_PREFIX {
+    IT_PREFIX {
 	driver.ignorePrefix(true);
       } PNAME_NS {
 	  driver.ignorePrefix(false);
@@ -604,6 +610,7 @@ void TrigDriver::parse (IStreamContext& in, RdfDB* db, BasicGraphPattern* bgp)
 {
     // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
+    curSubject = curPredicate = NULL;
 
     if (db != NULL)
 	setDB(db);

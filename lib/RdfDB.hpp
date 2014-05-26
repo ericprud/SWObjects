@@ -178,34 +178,11 @@ namespace w3c_sw {
 
 	    return *this;
 	}
+	bool onto(const RdfDB& ref) const;
 	bool operator== (const RdfDB& ref) const {
-	    std::set<const TTerm*> thisGraphs;
-	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it)
-		// if (it->second->size() > 0)
-		    thisGraphs.insert(it->first);
-
-	    std::set<const TTerm*> refGraphs;
-	    for (graphmap_type::const_iterator it = ref.graphs.begin(); it != ref.graphs.end(); ++it)
-		// if (it->second->size() > 0)
-		    refGraphs.insert(it->first);
-
-	    if (thisGraphs != refGraphs)
-		return false;
-
-	    for (graphmap_type::const_iterator it = graphs.begin(); it != graphs.end(); ++it) {
-		// compare BasicGraphPatterns *it->second and *ref.graphs.find(it->first)->second;
-		const TTerm* label = it->first;
-		BasicGraphPattern* l = it->second;
-		graphmap_type::const_iterator rit = ref.graphs.find(label);
-		if (rit == ref.graphs.end())
-		    return false;
-		BasicGraphPattern* r = rit->second;
-		if (! (*l == *r) )
-		    return false;
-	    }
-
-	    return true;
+	    return onto(ref) && ref.onto(*this);
 	}
+	virtual void bindVariables(ResultSet* rs, const RdfDB* ref) const;
 	void clearTriples();
 	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istrP,
 			      std::string nameStr, std::string baseURI,
