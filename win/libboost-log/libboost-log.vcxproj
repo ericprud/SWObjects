@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{56EF9C8B-007E-4CEE-AE32-6233A8980009}</ProjectGuid>
+    <RootNamespace>libboost-log</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\FlexBison.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\boost-log;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;BOOST_ALL_NO_LIB;BOOST_DATE_TIME_DYN_LINK;BOOST_FILESYSTEM_DYN_LINK;BOOST_LOG_BUILDING_THE_LIB;BOOST_LOG_DLL;BOOST_SYSTEM_DYN_LINK;BOOST_THREAD_USE_DLL;DATE_TIME_INLINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\boost-log;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;BOOST_ALL_NO_LIB;BOOST_DATE_TIME_DYN_LINK;BOOST_FILESYSTEM_DYN_LINK;BOOST_LOG_BUILDING_THE_LIB;BOOST_LOG_DLL;BOOST_SYSTEM_DYN_LINK;BOOST_THREAD_USE_DLL;DATE_TIME_INLINE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\boost-log\libs\log\src\attribute_name.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\attribute_set.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\attribute_values_view.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\code_conversion.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\core.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\debug_output_backend.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\event_log_backend.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\exceptions.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\global_logger_storage.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\light_rw_mutex.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\named_scope.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\once_block.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\process_id.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\record_ostream.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\severity_level.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\sink_frontends.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\syslog_backend.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\text_file_backend.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\text_ostream_backend.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\thread_specific.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\threadsafe_queue.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\timer.cpp" />
+    <ClCompile Include="..\..\boost-log\libs\log\src\trivial.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\config.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="simple_event_log.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\FlexBison.targets" />
+  </ImportGroup>
+</Project>
