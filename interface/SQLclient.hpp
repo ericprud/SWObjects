@@ -211,7 +211,7 @@ namespace w3c_sw {
 				int ex = log10(val);
 				if (val < 1)
 				    --ex;
-				canonical << val/exp(ex*log(10)/log10(10));
+				canonical << val/exp(ex*log(10.0)/log10(10.0));
 				if (canonical.str().find('.') == std::string::npos)
 				    canonical << ".0";
 				canonical << "E" << ex;

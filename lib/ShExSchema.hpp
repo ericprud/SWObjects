@@ -139,8 +139,8 @@ namespace w3c_sw {
 	    const static unsigned Unlimited = ~0U;
 
 	    unsigned min; unsigned max;
-	    AtomicRule (const NameClass* nameClass, const Value* value, unsigned min, unsigned max)
-		: nameClass(nameClass), value(value), min(min), max(max) {  }
+	    AtomicRule (const NameClass* nameClass, const Value* value, unsigned min_, unsigned max_)
+		: nameClass(nameClass), value(value) { min = min_; max = max_; }
 	    virtual ~AtomicRule () {
 		delete nameClass;
 		delete value;

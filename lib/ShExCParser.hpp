@@ -1,8 +1,10 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
 /* Skeleton interface for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
+      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+   Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,7 +40,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 46 "lib/ShExCParser.ypp"
+#line 46 "..\\..\\lib\\ShExCParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -102,12 +104,32 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 106 "tmp/ShExCParser/ShExCParser.hpp"
+#line 108 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\ShExCParser.hpp"
 
 
 #include <string>
 #include <iostream>
 #include "stack.hh"
+
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+namespace w3c_sw {
+
+/* Line 35 of lalr1.cc  */
+#line 122 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\ShExCParser.hpp"
+  class position;
+  class location;
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
+} // w3c_sw
+
+/* Line 35 of lalr1.cc  */
+#line 132 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\ShExCParser.hpp"
+
 #include "location.hh"
 
 /* Enabling traces.  */
@@ -128,11 +150,33 @@ public:
 # define YYTOKEN_TABLE 0
 #endif
 
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)		\
+do {							\
+  if (N)						\
+    {							\
+      (Current).begin = (Rhs)[1].begin;			\
+      (Current).end   = (Rhs)[N].end;			\
+    }							\
+  else							\
+    {							\
+      (Current).begin = (Current).end = (Rhs)[0].end;	\
+    }							\
+} while (false)
+#endif
+
+
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
 
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 136 "tmp/ShExCParser/ShExCParser.hpp"
+#line 180 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\ShExCParser.hpp"
 
   /// A Bison parser.
   class SWSexParser
@@ -144,7 +188,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 109 "lib/ShExCParser.ypp"
+#line 109 "..\\..\\lib\\ShExCParser.ypp"
 
     struct {std::string* label; std::string* text;} p_CODE;
     int p_int;
@@ -176,7 +220,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 180 "tmp/ShExCParser/ShExCParser.hpp"
+#line 224 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\ShExCParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -303,14 +347,6 @@ namespace w3c_sw {
     /// The location stack.
     location_stack_type yylocation_stack_;
 
-    /// Whether the given \c yypact_ value indicates a defaulted state.
-    /// \param yyvalue   the value to check
-    static bool yy_pact_value_is_default_ (int yyvalue);
-
-    /// Whether the given \c yytable_ value indicates a syntax error.
-    /// \param yyvalue   the value to check
-    static bool yy_table_value_is_error_ (int yyvalue);
-
     /// Internal symbol numbers.
     typedef unsigned char token_number_type;
     /* Tables.  */
@@ -318,7 +354,7 @@ namespace w3c_sw {
     static const short int yypact_[];
     static const short int yypact_ninf_;
 
-    /// For a state, default reduction number.
+    /// For a state, default rule to reduce.
     /// Unless\a  yytable_ specifies something else to do.
     /// Zero means the default is an error.
     static const unsigned char yydefact_[];
@@ -349,8 +385,10 @@ namespace w3c_sw {
     static const char* const yytname_[];
 #endif
 
+#if YYERROR_VERBOSE
     /// Convert the symbol name \a n to a form suitable for a diagnostic.
-    static std::string yytnamerr_ (const char *n);
+    virtual std::string yytnamerr_ (const char *n);
+#endif
 
 #if YYDEBUG
     /// A type to store symbol numbers and -1.
@@ -406,10 +444,13 @@ namespace w3c_sw {
     class SWSexDriver& driver;
   };
 
+/* Line 35 of lalr1.cc  */
+#line 1 "[Bison:b4_percent_define_default]"
+
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 413 "tmp/ShExCParser/ShExCParser.hpp"
+#line 454 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\ShExCParser.hpp"
 
 
 
