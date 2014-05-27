@@ -7,7 +7,6 @@
 *.tlog
 *.filters
 *.user
-*.vcxproj
 *.log
 *.unsuccessfulbuild
 *.pdb
@@ -16,3 +15,10 @@
 *.opensdf
 *.old
 *.ipch
+*.obj
+*.idb
+*.lastbuildstate
+*.lastbuildstate
+*.cache
+*.tlh
+*.manifest
