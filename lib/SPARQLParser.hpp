@@ -1,10 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton interface for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -40,7 +38,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 52 "..\\..\\lib\\SPARQLParser.ypp"
+#line 52 "lib/SPARQLParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -287,32 +285,12 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 291 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.hpp"
+#line 289 "tmp/SPARQLParser/SPARQLParser.hpp"
 
 
 #include <string>
 #include <iostream>
 #include "stack.hh"
-
-
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
-namespace w3c_sw {
-
-/* Line 35 of lalr1.cc  */
-#line 305 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.hpp"
-  class position;
-  class location;
-
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
-} // w3c_sw
-
-/* Line 35 of lalr1.cc  */
-#line 315 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.hpp"
-
 #include "location.hh"
 
 /* Enabling traces.  */
@@ -333,33 +311,11 @@ namespace w3c_sw {
 # define YYTOKEN_TABLE 0
 #endif
 
-/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
-   If N is 0, then set CURRENT to the empty location which ends
-   the previous symbol: RHS[0] (always defined).  */
-
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)		\
-do {							\
-  if (N)						\
-    {							\
-      (Current).begin = (Rhs)[1].begin;			\
-      (Current).end   = (Rhs)[N].end;			\
-    }							\
-  else							\
-    {							\
-      (Current).begin = (Current).end = (Rhs)[0].end;	\
-    }							\
-} while (false)
-#endif
-
-
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
 
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 363 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.hpp"
+#line 319 "tmp/SPARQLParser/SPARQLParser.hpp"
 
   /// A Bison parser.
   class SPARQLParser
@@ -371,7 +327,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 298 "..\\..\\lib\\SPARQLParser.ypp"
+#line 298 "lib/SPARQLParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {int limit; int offset;} p_LimitOffsetPair;
@@ -446,7 +402,7 @@ namespace w3c_sw {
 
 
 /* Line 35 of lalr1.cc  */
-#line 450 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.hpp"
+#line 406 "tmp/SPARQLParser/SPARQLParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -716,6 +672,14 @@ namespace w3c_sw {
     /// The location stack.
     location_stack_type yylocation_stack_;
 
+    /// Whether the given \c yypact_ value indicates a defaulted state.
+    /// \param yyvalue   the value to check
+    static bool yy_pact_value_is_default_ (int yyvalue);
+
+    /// Whether the given \c yytable_ value indicates a syntax error.
+    /// \param yyvalue   the value to check
+    static bool yy_table_value_is_error_ (int yyvalue);
+
     /// Internal symbol numbers.
     typedef unsigned char token_number_type;
     /* Tables.  */
@@ -723,7 +687,7 @@ namespace w3c_sw {
     static const short int yypact_[];
     static const short int yypact_ninf_;
 
-    /// For a state, default rule to reduce.
+    /// For a state, default reduction number.
     /// Unless\a  yytable_ specifies something else to do.
     /// Zero means the default is an error.
     static const unsigned short int yydefact_[];
@@ -754,10 +718,8 @@ namespace w3c_sw {
     static const char* const yytname_[];
 #endif
 
-#if YYERROR_VERBOSE
     /// Convert the symbol name \a n to a form suitable for a diagnostic.
-    virtual std::string yytnamerr_ (const char *n);
-#endif
+    static std::string yytnamerr_ (const char *n);
 
 #if YYDEBUG
     /// A type to store symbol numbers and -1.
@@ -813,13 +775,10 @@ namespace w3c_sw {
     class SPARQLDriver& driver;
   };
 
-/* Line 35 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 823 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.hpp"
+#line 782 "tmp/SPARQLParser/SPARQLParser.hpp"
 
 
 

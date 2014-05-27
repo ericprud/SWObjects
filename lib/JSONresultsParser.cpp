@@ -1,10 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,21 +36,21 @@
 /* First part of user declarations.  */
 
 
-/* Line 311 of lalr1.cc  */
-#line 43 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\JSONresultsParser.cpp"
+/* Line 293 of lalr1.cc  */
+#line 41 "lib/JSONresultsParser.cpp"
 
 
 #include "JSONresultsParser.hpp"
 
 /* User implementation prologue.  */
 
-/* Line 317 of lalr1.cc  */
-#line 182 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 299 of lalr1.cc  */
+#line 182 "lib/JSONresultsParser.ypp"
 
 #include "JSONresultsScanner.hpp"
 
-/* Line 317 of lalr1.cc  */
-#line 216 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 299 of lalr1.cc  */
+#line 216 "lib/JSONresultsParser.ypp"
 
 #include "JSONresultsScanner.hpp"
 
@@ -63,11 +61,11 @@
 #define yylex driver.lexer->lexWrapper
 
 
-/* Line 317 of lalr1.cc  */
-#line 68 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\JSONresultsParser.cpp"
+/* Line 299 of lalr1.cc  */
+#line 66 "lib/JSONresultsParser.cpp"
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -76,6 +74,26 @@
 # ifndef YY_
 #  define YY_(msgid) msgid
 # endif
+#endif
+
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+ do                                                                    \
+   if (N)                                                              \
+     {                                                                 \
+       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
+       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
+     }                                                                 \
+   else                                                                \
+     {                                                                 \
+       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
+     }                                                                 \
+ while (false)
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
@@ -127,14 +145,10 @@ do {					\
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
-/* Line 380 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 namespace w3c_sw {
 
-/* Line 380 of lalr1.cc  */
-#line 137 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\JSONresultsParser.cpp"
-#if YYERROR_VERBOSE
+/* Line 382 of lalr1.cc  */
+#line 152 "lib/JSONresultsParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -173,7 +187,6 @@ namespace w3c_sw {
     return yystr;
   }
 
-#endif
 
   /// Build a parser object.
   JSONresultsParser::JSONresultsParser (class JSONresultsDriver& driver_yyarg)
@@ -274,6 +287,18 @@ namespace w3c_sw {
   }
 #endif
 
+  inline bool
+  JSONresultsParser::yy_pact_value_is_default_ (int yyvalue)
+  {
+    return yyvalue == yypact_ninf_;
+  }
+
+  inline bool
+  JSONresultsParser::yy_table_value_is_error_ (int yyvalue)
+  {
+    return yyvalue == yytable_ninf_;
+  }
+
   int
   JSONresultsParser::parse ()
   {
@@ -295,7 +320,7 @@ namespace w3c_sw {
     /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
-    location_type yyerror_range[2];
+    location_type yyerror_range[3];
 
     /// $$.
     semantic_type yyval;
@@ -309,16 +334,16 @@ namespace w3c_sw {
 
     /* User initialization code.  */
     
-/* Line 553 of lalr1.cc  */
-#line 43 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 565 of lalr1.cc  */
+#line 43 "lib/JSONresultsParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
     driver.yylloc = &yylloc;
 }
 
-/* Line 553 of lalr1.cc  */
-#line 322 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\JSONresultsParser.cpp"
+/* Line 565 of lalr1.cc  */
+#line 347 "lib/JSONresultsParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -346,7 +371,7 @@ namespace w3c_sw {
 
     /* Try to take a decision without lookahead.  */
     yyn = yypact_[yystate];
-    if (yyn == yypact_ninf_)
+    if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
     /* Read a lookahead token.  */
@@ -379,8 +404,8 @@ namespace w3c_sw {
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yyn == 0 || yyn == yytable_ninf_)
-	goto yyerrlab;
+	if (yy_table_value_is_error_ (yyn))
+	  goto yyerrlab;
 	yyn = -yyn;
 	goto yyreduce;
       }
@@ -436,8 +461,8 @@ namespace w3c_sw {
       {
 	  case 2:
 
-/* Line 678 of lalr1.cc  */
-#line 230 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 230 "lib/JSONresultsParser.ypp"
     {
 	if (driver.root == NULL)
 	    driver.startBindingSet();
@@ -448,8 +473,8 @@ namespace w3c_sw {
 
   case 3:
 
-/* Line 678 of lalr1.cc  */
-#line 235 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 235 "lib/JSONresultsParser.ypp"
     {
 	  driver.root = driver.endBindingSet();
 	  driver.curResultSet = NULL;
@@ -458,8 +483,8 @@ namespace w3c_sw {
 
   case 12:
 
-/* Line 678 of lalr1.cc  */
-#line 265 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 265 "lib/JSONresultsParser.ypp"
     {
 	// throw away link $4
 	delete (yysemantic_stack_[(5) - (4)].p_str);
@@ -468,8 +493,8 @@ namespace w3c_sw {
 
   case 13:
 
-/* Line 678 of lalr1.cc  */
-#line 272 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 272 "lib/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(4) - (4)].p_str)));
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -478,8 +503,8 @@ namespace w3c_sw {
 
   case 15:
 
-/* Line 678 of lalr1.cc  */
-#line 279 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 279 "lib/JSONresultsParser.ypp"
     {
 	driver.addBindingVar(driver.getVariable(*(yysemantic_stack_[(2) - (2)].p_str)));
 	delete (yysemantic_stack_[(2) - (2)].p_str);
@@ -488,8 +513,8 @@ namespace w3c_sw {
 
   case 19:
 
-/* Line 678 of lalr1.cc  */
-#line 292 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 292 "lib/JSONresultsParser.ypp"
     {
       driver.curResultSet->resultType = ResultSet::RESULT_Boolean;
       if ((yysemantic_stack_[(3) - (3)].p_bool) == true)
@@ -499,8 +524,8 @@ namespace w3c_sw {
 
   case 20:
 
-/* Line 678 of lalr1.cc  */
-#line 300 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 300 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_bool) = true;
 	//	delete $1;
@@ -509,8 +534,8 @@ namespace w3c_sw {
 
   case 21:
 
-/* Line 678 of lalr1.cc  */
-#line 304 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 304 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_bool) = false;
 	//	delete $1;
@@ -519,8 +544,8 @@ namespace w3c_sw {
 
   case 26:
 
-/* Line 678 of lalr1.cc  */
-#line 324 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 324 "lib/JSONresultsParser.ypp"
     {
 	driver.startBindingRow(false);
       }
@@ -528,8 +553,8 @@ namespace w3c_sw {
 
   case 27:
 
-/* Line 678 of lalr1.cc  */
-#line 326 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 326 "lib/JSONresultsParser.ypp"
     {
 	  driver.endBindingRow();
       }
@@ -537,8 +562,8 @@ namespace w3c_sw {
 
   case 31:
 
-/* Line 678 of lalr1.cc  */
-#line 341 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 341 "lib/JSONresultsParser.ypp"
     {
 	driver.addBinding(driver.getVariable(*(yysemantic_stack_[(5) - (1)].p_str)), (yysemantic_stack_[(5) - (4)].p_TTerm));
 	delete (yysemantic_stack_[(5) - (1)].p_str);
@@ -547,8 +572,8 @@ namespace w3c_sw {
 
   case 32:
 
-/* Line 678 of lalr1.cc  */
-#line 348 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 348 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -556,8 +581,8 @@ namespace w3c_sw {
 
   case 33:
 
-/* Line 678 of lalr1.cc  */
-#line 351 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 351 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_BNode);
     }
@@ -565,8 +590,8 @@ namespace w3c_sw {
 
   case 34:
 
-/* Line 678 of lalr1.cc  */
-#line 354 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 354 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
     }
@@ -574,8 +599,8 @@ namespace w3c_sw {
 
   case 35:
 
-/* Line 678 of lalr1.cc  */
-#line 357 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 357 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_literal);
     }
@@ -583,8 +608,8 @@ namespace w3c_sw {
 
   case 36:
 
-/* Line 678 of lalr1.cc  */
-#line 360 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 360 "lib/JSONresultsParser.ypp"
     {
 	driver.curValue = (yysemantic_stack_[(1) - (1)].p_str);
       }
@@ -592,8 +617,8 @@ namespace w3c_sw {
 
   case 37:
 
-/* Line 678 of lalr1.cc  */
-#line 362 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 362 "lib/JSONresultsParser.ypp"
     {
 	  driver.curValue = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_TTerm);
@@ -602,8 +627,8 @@ namespace w3c_sw {
 
   case 38:
 
-/* Line 678 of lalr1.cc  */
-#line 366 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 366 "lib/JSONresultsParser.ypp"
     {
 	driver.curDatatype = (yysemantic_stack_[(1) - (1)].p_URI);
       }
@@ -611,8 +636,8 @@ namespace w3c_sw {
 
   case 39:
 
-/* Line 678 of lalr1.cc  */
-#line 368 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 368 "lib/JSONresultsParser.ypp"
     {
 	  driver.curDatatype = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
@@ -621,8 +646,8 @@ namespace w3c_sw {
 
   case 40:
 
-/* Line 678 of lalr1.cc  */
-#line 372 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 372 "lib/JSONresultsParser.ypp"
     {
 	driver.curLang = (yysemantic_stack_[(1) - (1)].p_str);
       }
@@ -630,8 +655,8 @@ namespace w3c_sw {
 
   case 41:
 
-/* Line 678 of lalr1.cc  */
-#line 374 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 374 "lib/JSONresultsParser.ypp"
     {
 	  driver.curLang = NULL;
 	  (yyval.p_TTerm) = (yysemantic_stack_[(4) - (4)].p_literal);
@@ -640,8 +665,8 @@ namespace w3c_sw {
 
   case 42:
 
-/* Line 678 of lalr1.cc  */
-#line 381 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 381 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -650,8 +675,8 @@ namespace w3c_sw {
 
   case 43:
 
-/* Line 678 of lalr1.cc  */
-#line 388 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 388 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_BNode) = driver.getBNode(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -660,8 +685,8 @@ namespace w3c_sw {
 
   case 44:
 
-/* Line 678 of lalr1.cc  */
-#line 395 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 395 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
@@ -669,8 +694,8 @@ namespace w3c_sw {
 
   case 45:
 
-/* Line 678 of lalr1.cc  */
-#line 401 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 401 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(2) - (2)].p_str);
     }
@@ -678,8 +703,8 @@ namespace w3c_sw {
 
   case 46:
 
-/* Line 678 of lalr1.cc  */
-#line 407 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 407 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = NULL;
     }
@@ -687,8 +712,8 @@ namespace w3c_sw {
 
   case 48:
 
-/* Line 678 of lalr1.cc  */
-#line 414 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 414 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), NULL, (yysemantic_stack_[(3) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(3) - (1)].p_str)) : NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -698,8 +723,8 @@ namespace w3c_sw {
 
   case 49:
 
-/* Line 678 of lalr1.cc  */
-#line 419 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 419 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_str), NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
 	delete (yysemantic_stack_[(2) - (1)].p_str);
@@ -709,8 +734,8 @@ namespace w3c_sw {
 
   case 50:
 
-/* Line 678 of lalr1.cc  */
-#line 427 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 427 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = (yysemantic_stack_[(3) - (3)].p_literal);
     }
@@ -718,8 +743,8 @@ namespace w3c_sw {
 
   case 51:
 
-/* Line 678 of lalr1.cc  */
-#line 433 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 433 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (3)].p_str), (yysemantic_stack_[(3) - (1)].p_URI), NULL);
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -728,8 +753,8 @@ namespace w3c_sw {
 
   case 52:
 
-/* Line 678 of lalr1.cc  */
-#line 437 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 437 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(3) - (1)].p_str), (yysemantic_stack_[(3) - (3)].p_URI), NULL);
 	delete (yysemantic_stack_[(3) - (1)].p_str);
@@ -738,8 +763,8 @@ namespace w3c_sw {
 
   case 53:
 
-/* Line 678 of lalr1.cc  */
-#line 444 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 444 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
     }
@@ -747,8 +772,8 @@ namespace w3c_sw {
 
   case 54:
 
-/* Line 678 of lalr1.cc  */
-#line 447 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 447 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(4) - (1)].p_URI), NULL);
       delete driver.curValue;
@@ -758,8 +783,8 @@ namespace w3c_sw {
 
   case 55:
 
-/* Line 678 of lalr1.cc  */
-#line 452 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 452 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(4) - (1)].p_str) ? new LANGTAG(*(yysemantic_stack_[(4) - (1)].p_str)) : NULL);
       delete driver.curValue;
@@ -770,8 +795,8 @@ namespace w3c_sw {
 
   case 56:
 
-/* Line 678 of lalr1.cc  */
-#line 461 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 461 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getURI(*driver.curValue);
 	delete driver.curValue;
@@ -780,8 +805,8 @@ namespace w3c_sw {
 
   case 57:
 
-/* Line 678 of lalr1.cc  */
-#line 465 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 465 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getBNode(*driver.curValue);
 	delete driver.curValue;
@@ -790,8 +815,8 @@ namespace w3c_sw {
 
   case 58:
 
-/* Line 678 of lalr1.cc  */
-#line 469 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 469 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yysemantic_stack_[(2) - (2)].p_str) ? new LANGTAG(*(yysemantic_stack_[(2) - (2)].p_str)) : NULL);
 	delete driver.curValue;
@@ -801,8 +826,8 @@ namespace w3c_sw {
 
   case 59:
 
-/* Line 678 of lalr1.cc  */
-#line 474 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 474 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yysemantic_stack_[(3) - (3)].p_URI), NULL);
 	delete driver.curValue;
@@ -811,8 +836,8 @@ namespace w3c_sw {
 
   case 60:
 
-/* Line 678 of lalr1.cc  */
-#line 481 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 481 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), driver.curDatatype, NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -821,8 +846,8 @@ namespace w3c_sw {
 
   case 61:
 
-/* Line 678 of lalr1.cc  */
-#line 485 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 485 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), driver.curDatatype, NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
@@ -831,8 +856,8 @@ namespace w3c_sw {
 
   case 62:
 
-/* Line 678 of lalr1.cc  */
-#line 492 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 492 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (4)].p_str);
@@ -842,8 +867,8 @@ namespace w3c_sw {
 
   case 63:
 
-/* Line 678 of lalr1.cc  */
-#line 497 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 497 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_literal) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (1)].p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yysemantic_stack_[(4) - (1)].p_str);
@@ -853,8 +878,8 @@ namespace w3c_sw {
 
   case 64:
 
-/* Line 678 of lalr1.cc  */
-#line 505 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 505 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
@@ -862,8 +887,8 @@ namespace w3c_sw {
 
   case 65:
 
-/* Line 678 of lalr1.cc  */
-#line 511 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 511 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_URI) = driver.getURI(*(yysemantic_stack_[(3) - (3)].p_str));
 	delete (yysemantic_stack_[(3) - (3)].p_str);
@@ -872,8 +897,8 @@ namespace w3c_sw {
 
   case 66:
 
-/* Line 678 of lalr1.cc  */
-#line 518 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 518 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = (yysemantic_stack_[(3) - (3)].p_str);
     }
@@ -881,8 +906,8 @@ namespace w3c_sw {
 
   case 100:
 
-/* Line 678 of lalr1.cc  */
-#line 608 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 608 "lib/JSONresultsParser.ypp"
     {
 	(yyval.p_str) = new std::string("head");
     }
@@ -890,8 +915,8 @@ namespace w3c_sw {
 
   case 101:
 
-/* Line 678 of lalr1.cc  */
-#line 611 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 611 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("vars");
     }
@@ -899,8 +924,8 @@ namespace w3c_sw {
 
   case 102:
 
-/* Line 678 of lalr1.cc  */
-#line 614 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 614 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("results");
     }
@@ -908,8 +933,8 @@ namespace w3c_sw {
 
   case 103:
 
-/* Line 678 of lalr1.cc  */
-#line 617 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 617 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("boolean");
     }
@@ -917,8 +942,8 @@ namespace w3c_sw {
 
   case 104:
 
-/* Line 678 of lalr1.cc  */
-#line 620 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 620 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("true");
     }
@@ -926,8 +951,8 @@ namespace w3c_sw {
 
   case 105:
 
-/* Line 678 of lalr1.cc  */
-#line 623 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 623 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("false");
     }
@@ -935,8 +960,8 @@ namespace w3c_sw {
 
   case 106:
 
-/* Line 678 of lalr1.cc  */
-#line 626 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 626 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("bindings");
     }
@@ -944,8 +969,8 @@ namespace w3c_sw {
 
   case 107:
 
-/* Line 678 of lalr1.cc  */
-#line 629 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 629 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("type");
     }
@@ -953,8 +978,8 @@ namespace w3c_sw {
 
   case 108:
 
-/* Line 678 of lalr1.cc  */
-#line 632 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 632 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("uri");
     }
@@ -962,8 +987,8 @@ namespace w3c_sw {
 
   case 109:
 
-/* Line 678 of lalr1.cc  */
-#line 635 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 635 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("bnode");
     }
@@ -971,8 +996,8 @@ namespace w3c_sw {
 
   case 110:
 
-/* Line 678 of lalr1.cc  */
-#line 638 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 638 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("literal");
     }
@@ -980,8 +1005,8 @@ namespace w3c_sw {
 
   case 111:
 
-/* Line 678 of lalr1.cc  */
-#line 641 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 641 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("typedLiteral");
     }
@@ -989,8 +1014,8 @@ namespace w3c_sw {
 
   case 112:
 
-/* Line 678 of lalr1.cc  */
-#line 644 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 644 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("datatype");
     }
@@ -998,8 +1023,8 @@ namespace w3c_sw {
 
   case 113:
 
-/* Line 678 of lalr1.cc  */
-#line 647 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 647 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("lang");
     }
@@ -1007,8 +1032,8 @@ namespace w3c_sw {
 
   case 114:
 
-/* Line 678 of lalr1.cc  */
-#line 650 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 650 "lib/JSONresultsParser.ypp"
     {
       (yyval.p_str) = new std::string("value");
     }
@@ -1016,11 +1041,22 @@ namespace w3c_sw {
 
 
 
-/* Line 678 of lalr1.cc  */
-#line 1021 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\JSONresultsParser.cpp"
+/* Line 690 of lalr1.cc  */
+#line 1046 "lib/JSONresultsParser.cpp"
 	default:
           break;
       }
+    /* User semantic actions sometimes alter yychar, and that requires
+       that yytoken be updated with the new translation.  We take the
+       approach of translating immediately before every use of yytoken.
+       One alternative is translating here after every semantic action,
+       but that translation would be missed if the semantic action
+       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
+       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
+       destructor might then be invoked immediately.  In the case of
+       YYERROR, subsequent parser actions might lead to an incorrect
+       destructor call or verbose syntax error message before the
+       lookahead is translated.  */
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
 
     yypop_ (yylen);
@@ -1044,14 +1080,20 @@ namespace w3c_sw {
   | yyerrlab -- here on detecting error |
   `------------------------------------*/
   yyerrlab:
+    /* Make sure we have latest lookahead translation.  See comments at
+       user semantic actions for why this is necessary.  */
+    yytoken = yytranslate_ (yychar);
+
     /* If not already recovering from an error, report this error.  */
     if (!yyerrstatus_)
       {
 	++yynerrs_;
+	if (yychar == yyempty_)
+	  yytoken = yyempty_;
 	error (yylloc, yysyntax_error_ (yystate, yytoken));
       }
 
-    yyerror_range[0] = yylloc;
+    yyerror_range[1] = yylloc;
     if (yyerrstatus_ == 3)
       {
 	/* If just tried and failed to reuse lookahead token after an
@@ -1086,7 +1128,7 @@ namespace w3c_sw {
     if (false)
       goto yyerrorlab;
 
-    yyerror_range[0] = yylocation_stack_[yylen - 1];
+    yyerror_range[1] = yylocation_stack_[yylen - 1];
     /* Do not reclaim the symbols of the rule which action triggered
        this YYERROR.  */
     yypop_ (yylen);
@@ -1103,7 +1145,7 @@ namespace w3c_sw {
     for (;;)
       {
 	yyn = yypact_[yystate];
-	if (yyn != yypact_ninf_)
+	if (!yy_pact_value_is_default_ (yyn))
 	{
 	  yyn += yyterror_;
 	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
@@ -1118,7 +1160,7 @@ namespace w3c_sw {
 	if (yystate_stack_.height () == 1)
 	YYABORT;
 
-	yyerror_range[0] = yylocation_stack_[0];
+	yyerror_range[1] = yylocation_stack_[0];
 	yydestruct_ ("Error: popping",
 		     yystos_[yystate],
 		     &yysemantic_stack_[0], &yylocation_stack_[0]);
@@ -1127,10 +1169,10 @@ namespace w3c_sw {
 	YY_STACK_PRINT ();
       }
 
-    yyerror_range[1] = yylloc;
+    yyerror_range[2] = yylloc;
     // Using YYLLOC is tempting, but would change the location of
     // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, (yyerror_range - 1), 2);
+    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yyloc);
 
@@ -1153,7 +1195,13 @@ namespace w3c_sw {
 
   yyreturn:
     if (yychar != yyempty_)
-      yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval, &yylloc);
+      {
+        /* Make sure we have latest lookahead translation.  See comments
+           at user semantic actions for why this is necessary.  */
+        yytoken = yytranslate_ (yychar);
+        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
+                     &yylloc);
+      }
 
     /* Do not reclaim the symbols of the rule which action triggered
        this YYABORT or YYACCEPT.  */
@@ -1172,51 +1220,97 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  JSONresultsParser::yysyntax_error_ (int yystate, int tok)
+  JSONresultsParser::yysyntax_error_ (int yystate, int yytoken)
   {
-    std::string res;
-    YYUSE (yystate);
-#if YYERROR_VERBOSE
-    int yyn = yypact_[yystate];
-    if (yypact_ninf_ < yyn && yyn <= yylast_)
+    std::string yyres;
+    // Number of reported tokens (one for the "unexpected", one per
+    // "expected").
+    size_t yycount = 0;
+    // Its maximum.
+    enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
+    // Arguments of yyformat.
+    char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
+
+    /* There are many possibilities here to consider:
+       - If this state is a consistent state with a default action, then
+         the only way this function was invoked is if the default action
+         is an error action.  In that case, don't check for expected
+         tokens because there are none.
+       - The only way there can be no lookahead present (in yytoken) is
+         if this state is a consistent state with a default action.
+         Thus, detecting the absence of a lookahead is sufficient to
+         determine that there is no unexpected or expected token to
+         report.  In that case, just report a simple "syntax error".
+       - Don't assume there isn't a lookahead just because this state is
+         a consistent state with a default action.  There might have
+         been a previous inconsistent state, consistent state with a
+         non-default action, or user semantic action that manipulated
+         yychar.
+       - Of course, the expected token list depends on states to have
+         correct lookahead information, and it depends on the parser not
+         to perform extra reductions after fetching a lookahead from the
+         scanner and before detecting a syntax error.  Thus, state
+         merging (from LALR or IELR) and default reductions corrupt the
+         expected token list.  However, the list is correct for
+         canonical LR with one exception: it will still contain any
+         token that will not be accepted due to an error action in a
+         later state.
+    */
+    if (yytoken != yyempty_)
       {
-	/* Start YYX at -YYN if negative to avoid negative indexes in
-	   YYCHECK.  */
-	int yyxbegin = yyn < 0 ? -yyn : 0;
-
-	/* Stay within bounds of both yycheck and yytname.  */
-	int yychecklim = yylast_ - yyn + 1;
-	int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
-	int count = 0;
-	for (int x = yyxbegin; x < yyxend; ++x)
-	  if (yycheck_[x + yyn] == x && x != yyterror_)
-	    ++count;
-
-	// FIXME: This method of building the message is not compatible
-	// with internationalization.  It should work like yacc.c does it.
-	// That is, first build a string that looks like this:
-	// "syntax error, unexpected %s or %s or %s"
-	// Then, invoke YY_ on this string.
-	// Finally, use the string as a format to output
-	// yytname_[tok], etc.
-	// Until this gets fixed, this message appears in English only.
-	res = "syntax error, unexpected ";
-	res += yytnamerr_ (yytname_[tok]);
-	if (count < 5)
-	  {
-	    count = 0;
-	    for (int x = yyxbegin; x < yyxend; ++x)
-	      if (yycheck_[x + yyn] == x && x != yyterror_)
-		{
-		  res += (!count++) ? ", expecting " : " or ";
-		  res += yytnamerr_ (yytname_[x]);
-		}
-	  }
+        yyarg[yycount++] = yytname_[yytoken];
+        int yyn = yypact_[yystate];
+        if (!yy_pact_value_is_default_ (yyn))
+          {
+            /* Start YYX at -YYN if negative to avoid negative indexes in
+               YYCHECK.  In other words, skip the first -YYN actions for
+               this state because they are default actions.  */
+            int yyxbegin = yyn < 0 ? -yyn : 0;
+            /* Stay within bounds of both yycheck and yytname.  */
+            int yychecklim = yylast_ - yyn + 1;
+            int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
+            for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+              if (yycheck_[yyx + yyn] == yyx && yyx != yyterror_
+                  && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
+                {
+                  if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
+                    {
+                      yycount = 1;
+                      break;
+                    }
+                  else
+                    yyarg[yycount++] = yytname_[yyx];
+                }
+          }
       }
-    else
-#endif
-      res = YY_("syntax error");
-    return res;
+
+    char const* yyformat = 0;
+    switch (yycount)
+      {
+#define YYCASE_(N, S)                         \
+        case N:                               \
+          yyformat = S;                       \
+        break
+        YYCASE_(0, YY_("syntax error"));
+        YYCASE_(1, YY_("syntax error, unexpected %s"));
+        YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+        YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+        YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+        YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+#undef YYCASE_
+      }
+
+    // Argument number.
+    size_t yyi = 0;
+    for (char const* yyp = yyformat; *yyp; ++yyp)
+      if (yyp[0] == '%' && yyp[1] == 's' && yyi < yycount)
+        {
+          yyres += yytnamerr_ (yyarg[yyi++]);
+          ++yyp;
+        }
+      else
+        yyres += *yyp;
+    return yyres;
   }
 
 
@@ -1249,9 +1343,9 @@ namespace w3c_sw {
     -133,  -133,  -133,  -133
   };
 
-  /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
-     doesn't specify something else to do.  Zero means the default is an
-     error.  */
+  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
+     YYTABLE doesn't specify something else to do.  Zero means the
+     default is an error.  */
   const unsigned char
   JSONresultsParser::yydefact_[] =
   {
@@ -1304,7 +1398,7 @@ namespace w3c_sw {
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If zero, do what YYDEFACT says.  */
+     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
   const signed char JSONresultsParser::yytable_ninf_ = -1;
   const unsigned char
   JSONresultsParser::yytable_[] =
@@ -1652,17 +1746,14 @@ namespace w3c_sw {
   const JSONresultsParser::token_number_type JSONresultsParser::yyundef_token_ = 2;
 
 
-/* Line 1054 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 } // w3c_sw
 
-/* Line 1054 of lalr1.cc  */
-#line 1662 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\JSONresultsParser.cpp"
+/* Line 1136 of lalr1.cc  */
+#line 1753 "lib/JSONresultsParser.cpp"
 
 
-/* Line 1056 of lalr1.cc  */
-#line 657 "..\\..\\lib\\JSONresultsParser.ypp"
+/* Line 1138 of lalr1.cc  */
+#line 657 "lib/JSONresultsParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::JSONresultsParser::error(const JSONresultsParser::location_type& l,

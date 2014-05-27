@@ -1,10 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,21 +36,21 @@
 /* First part of user declarations.  */
 
 
-/* Line 311 of lalr1.cc  */
-#line 43 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.cpp"
+/* Line 293 of lalr1.cc  */
+#line 41 "lib/SPARQLParser.cpp"
 
 
 #include "SPARQLParser.hpp"
 
 /* User implementation prologue.  */
 
-/* Line 317 of lalr1.cc  */
-#line 370 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 299 of lalr1.cc  */
+#line 370 "lib/SPARQLParser.ypp"
 
 #include "SPARQLScanner.hpp"
 
-/* Line 317 of lalr1.cc  */
-#line 537 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 299 of lalr1.cc  */
+#line 537 "lib/SPARQLParser.ypp"
 
 #include "SPARQLScanner.hpp"
 
@@ -74,11 +72,11 @@ std::string comma_str (const T c) {
 }
 
 
-/* Line 317 of lalr1.cc  */
-#line 79 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.cpp"
+/* Line 299 of lalr1.cc  */
+#line 77 "lib/SPARQLParser.cpp"
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -87,6 +85,26 @@ std::string comma_str (const T c) {
 # ifndef YY_
 #  define YY_(msgid) msgid
 # endif
+#endif
+
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+ do                                                                    \
+   if (N)                                                              \
+     {                                                                 \
+       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
+       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
+     }                                                                 \
+   else                                                                \
+     {                                                                 \
+       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
+     }                                                                 \
+ while (false)
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
@@ -138,14 +156,10 @@ do {					\
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
-/* Line 380 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 namespace w3c_sw {
 
-/* Line 380 of lalr1.cc  */
-#line 148 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.cpp"
-#if YYERROR_VERBOSE
+/* Line 382 of lalr1.cc  */
+#line 163 "lib/SPARQLParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -184,7 +198,6 @@ namespace w3c_sw {
     return yystr;
   }
 
-#endif
 
   /// Build a parser object.
   SPARQLParser::SPARQLParser (class SPARQLDriver& driver_yyarg)
@@ -285,6 +298,18 @@ namespace w3c_sw {
   }
 #endif
 
+  inline bool
+  SPARQLParser::yy_pact_value_is_default_ (int yyvalue)
+  {
+    return yyvalue == yypact_ninf_;
+  }
+
+  inline bool
+  SPARQLParser::yy_table_value_is_error_ (int yyvalue)
+  {
+    return yyvalue == yytable_ninf_;
+  }
+
   int
   SPARQLParser::parse ()
   {
@@ -306,7 +331,7 @@ namespace w3c_sw {
     /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
-    location_type yyerror_range[2];
+    location_type yyerror_range[3];
 
     /// $$.
     semantic_type yyval;
@@ -320,16 +345,16 @@ namespace w3c_sw {
 
     /* User initialization code.  */
     
-/* Line 553 of lalr1.cc  */
-#line 37 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 565 of lalr1.cc  */
+#line 37 "lib/SPARQLParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
     driver.yylloc = &yylloc;
 }
 
-/* Line 553 of lalr1.cc  */
-#line 333 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.cpp"
+/* Line 565 of lalr1.cc  */
+#line 358 "lib/SPARQLParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -357,7 +382,7 @@ namespace w3c_sw {
 
     /* Try to take a decision without lookahead.  */
     yyn = yypact_[yystate];
-    if (yyn == yypact_ninf_)
+    if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
     /* Read a lookahead token.  */
@@ -390,8 +415,8 @@ namespace w3c_sw {
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yyn == 0 || yyn == yytable_ninf_)
-	goto yyerrlab;
+	if (yy_table_value_is_error_ (yyn))
+	  goto yyerrlab;
 	yyn = -yyn;
 	goto yyreduce;
       }
@@ -447,8 +472,8 @@ namespace w3c_sw {
       {
 	  case 2:
 
-/* Line 678 of lalr1.cc  */
-#line 562 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 562 "lib/SPARQLParser.ypp"
     {
 	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
     }
@@ -456,8 +481,8 @@ namespace w3c_sw {
 
   case 3:
 
-/* Line 678 of lalr1.cc  */
-#line 565 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 565 "lib/SPARQLParser.ypp"
     {
 	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
     }
@@ -465,8 +490,8 @@ namespace w3c_sw {
 
   case 5:
 
-/* Line 678 of lalr1.cc  */
-#line 576 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 576 "lib/SPARQLParser.ypp"
     {
 	assert(driver.lastWhereClause != NULL);
 	if ((yysemantic_stack_[(3) - (3)].p_ValuesClause) != NULL) // got a bindings clause
@@ -478,8 +503,8 @@ namespace w3c_sw {
 
   case 18:
 
-/* Line 678 of lalr1.cc  */
-#line 620 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 620 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = driver.curOp;
 	driver.startBindingSet();
@@ -488,8 +513,8 @@ namespace w3c_sw {
 
   case 19:
 
-/* Line 678 of lalr1.cc  */
-#line 623 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 623 "lib/SPARQLParser.ypp"
     {
 	  if ((yysemantic_stack_[(3) - (1)].p_RSName) != NULL) {
 	      std::string s = (yysemantic_stack_[(3) - (1)].p_RSName)->name;
@@ -505,8 +530,8 @@ namespace w3c_sw {
 
   case 20:
 
-/* Line 678 of lalr1.cc  */
-#line 637 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 637 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RSName) = (yysemantic_stack_[(2) - (1)].p_RSName);
     }
@@ -514,8 +539,8 @@ namespace w3c_sw {
 
   case 21:
 
-/* Line 678 of lalr1.cc  */
-#line 643 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 643 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RSName) = NULL;
     }
@@ -523,8 +548,8 @@ namespace w3c_sw {
 
   case 23:
 
-/* Line 678 of lalr1.cc  */
-#line 650 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 650 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = new ValuesClause(driver.endBindingSet());
     }
@@ -532,8 +557,8 @@ namespace w3c_sw {
 
   case 24:
 
-/* Line 678 of lalr1.cc  */
-#line 653 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 653 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = new ValuesClause(driver.endBindingSet());
     }
@@ -541,8 +566,8 @@ namespace w3c_sw {
 
   case 25:
 
-/* Line 678 of lalr1.cc  */
-#line 656 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 656 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = new ValuesClause(driver.endBindingSet());
     }
@@ -550,8 +575,8 @@ namespace w3c_sw {
 
   case 26:
 
-/* Line 678 of lalr1.cc  */
-#line 659 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 659 "lib/SPARQLParser.ypp"
     {
 	throw std::runtime_error("need to partition out results set part of SimpleEngine::loadDataOrResults");
     }
@@ -559,8 +584,8 @@ namespace w3c_sw {
 
   case 27:
 
-/* Line 678 of lalr1.cc  */
-#line 662 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 662 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.ensureGraphPattern();
@@ -571,8 +596,8 @@ namespace w3c_sw {
 
   case 39:
 
-/* Line 678 of lalr1.cc  */
-#line 700 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 700 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingRow();
       }
@@ -580,8 +605,8 @@ namespace w3c_sw {
 
   case 40:
 
-/* Line 678 of lalr1.cc  */
-#line 702 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 702 "lib/SPARQLParser.ypp"
     {
 	  driver.endBindingRow();
       }
@@ -589,8 +614,8 @@ namespace w3c_sw {
 
   case 41:
 
-/* Line 678 of lalr1.cc  */
-#line 708 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 708 "lib/SPARQLParser.ypp"
     {
 	driver.addBindingVarOrValue((yysemantic_stack_[(2) - (1)].p_TTerm));
     }
@@ -598,8 +623,8 @@ namespace w3c_sw {
 
   case 54:
 
-/* Line 678 of lalr1.cc  */
-#line 747 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 747 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingRow();
       }
@@ -607,8 +632,8 @@ namespace w3c_sw {
 
   case 55:
 
-/* Line 678 of lalr1.cc  */
-#line 749 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 749 "lib/SPARQLParser.ypp"
     {
 	  driver.endBindingRow();
       }
@@ -616,8 +641,8 @@ namespace w3c_sw {
 
   case 56:
 
-/* Line 678 of lalr1.cc  */
-#line 755 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 755 "lib/SPARQLParser.ypp"
     {
 	driver.addBindingVarOrValue((yysemantic_stack_[(2) - (1)].p_TTerm));
     }
@@ -625,8 +650,8 @@ namespace w3c_sw {
 
   case 61:
 
-/* Line 678 of lalr1.cc  */
-#line 774 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 774 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingRow(false);
       }
@@ -634,8 +659,8 @@ namespace w3c_sw {
 
   case 62:
 
-/* Line 678 of lalr1.cc  */
-#line 776 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 776 "lib/SPARQLParser.ypp"
     {
 	  driver.endBindingRow();
       }
@@ -643,8 +668,8 @@ namespace w3c_sw {
 
   case 68:
 
-/* Line 678 of lalr1.cc  */
-#line 796 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 796 "lib/SPARQLParser.ypp"
     {
 	driver.addBinding((yysemantic_stack_[(3) - (1)].p_TTerm), (yysemantic_stack_[(3) - (3)].p_TTerm)); 
     }
@@ -652,8 +677,8 @@ namespace w3c_sw {
 
   case 69:
 
-/* Line 678 of lalr1.cc  */
-#line 799 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 799 "lib/SPARQLParser.ypp"
     {
 	driver.addBinding((yysemantic_stack_[(3) - (1)].p_TTerm), (yysemantic_stack_[(3) - (3)].p_TTerm)); 
     }
@@ -661,8 +686,8 @@ namespace w3c_sw {
 
   case 70:
 
-/* Line 678 of lalr1.cc  */
-#line 802 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 802 "lib/SPARQLParser.ypp"
     {
 	driver.addBinding((yysemantic_stack_[(3) - (1)].p_TTerm), (yysemantic_stack_[(3) - (3)].p_TTerm)); 
     }
@@ -670,8 +695,8 @@ namespace w3c_sw {
 
   case 71:
 
-/* Line 678 of lalr1.cc  */
-#line 808 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 808 "lib/SPARQLParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     }
@@ -679,8 +704,8 @@ namespace w3c_sw {
 
   case 72:
 
-/* Line 678 of lalr1.cc  */
-#line 814 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 814 "lib/SPARQLParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
@@ -688,8 +713,8 @@ namespace w3c_sw {
 
   case 73:
 
-/* Line 678 of lalr1.cc  */
-#line 816 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 816 "lib/SPARQLParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
@@ -697,8 +722,8 @@ namespace w3c_sw {
 
   case 74:
 
-/* Line 678 of lalr1.cc  */
-#line 818 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 818 "lib/SPARQLParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -707,8 +732,8 @@ namespace w3c_sw {
 
   case 75:
 
-/* Line 678 of lalr1.cc  */
-#line 826 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 826 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
@@ -717,8 +742,8 @@ namespace w3c_sw {
 
   case 76:
 
-/* Line 678 of lalr1.cc  */
-#line 829 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 829 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_selectGrouped) {
 	    const ExpressionAliasList* e = (yysemantic_stack_[(5) - (5)].p_SolutionModifier)->getGroupedBy();
@@ -760,8 +785,8 @@ namespace w3c_sw {
 
   case 77:
 
-/* Line 678 of lalr1.cc  */
-#line 870 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 870 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
     }
@@ -769,8 +794,8 @@ namespace w3c_sw {
 
   case 78:
 
-/* Line 678 of lalr1.cc  */
-#line 873 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 873 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
 	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
@@ -779,8 +804,8 @@ namespace w3c_sw {
 
   case 79:
 
-/* Line 678 of lalr1.cc  */
-#line 881 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 881 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
@@ -789,8 +814,8 @@ namespace w3c_sw {
 
   case 80:
 
-/* Line 678 of lalr1.cc  */
-#line 884 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 884 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter(NULL);
 	  (yyval.p_TableOperation) = driver.curOp;
@@ -800,8 +825,8 @@ namespace w3c_sw {
 
   case 81:
 
-/* Line 678 of lalr1.cc  */
-#line 888 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 888 "lib/SPARQLParser.ypp"
     {
 	  if (!driver.curGraphName || (yysemantic_stack_[(3) - (2)].p_Project).varSet->includes(driver.curGraphName)) {
 	      (yyval.p_GraphName) = NULL;
@@ -814,8 +839,8 @@ namespace w3c_sw {
 
   case 82:
 
-/* Line 678 of lalr1.cc  */
-#line 895 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 895 "lib/SPARQLParser.ypp"
     {
 	  if ((yysemantic_stack_[(7) - (4)].p_GraphName) != NULL)
 	      driver.curGraphName = (yysemantic_stack_[(7) - (4)].p_GraphName);
@@ -828,8 +853,8 @@ namespace w3c_sw {
 
   case 83:
 
-/* Line 678 of lalr1.cc  */
-#line 907 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 907 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Project).distinctness = (yysemantic_stack_[(3) - (2)].p_distinctness);
 	(yyval.p_Project).varSet = (yysemantic_stack_[(3) - (3)].p_VarSet);
@@ -838,8 +863,8 @@ namespace w3c_sw {
 
   case 84:
 
-/* Line 678 of lalr1.cc  */
-#line 919 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 919 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_distinct;
     }
@@ -847,8 +872,8 @@ namespace w3c_sw {
 
   case 85:
 
-/* Line 678 of lalr1.cc  */
-#line 922 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 922 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_reduced;
     }
@@ -856,8 +881,8 @@ namespace w3c_sw {
 
   case 86:
 
-/* Line 678 of lalr1.cc  */
-#line 929 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 929 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_all;
     }
@@ -865,8 +890,8 @@ namespace w3c_sw {
 
   case 88:
 
-/* Line 678 of lalr1.cc  */
-#line 937 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 937 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Variable) = (yysemantic_stack_[(2) - (2)].p_Variable);
     }
@@ -874,8 +899,8 @@ namespace w3c_sw {
 
   case 89:
 
-/* Line 678 of lalr1.cc  */
-#line 944 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 944 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Variable) = NULL;
     }
@@ -883,8 +908,8 @@ namespace w3c_sw {
 
   case 91:
 
-/* Line 678 of lalr1.cc  */
-#line 952 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 952 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection && (yysemantic_stack_[(4) - (3)].p_Variable) == NULL)
 	    error(yylloc, (yysemantic_stack_[(4) - (2)].p_Expression)->str() + " must be selected AS some variable");
@@ -894,8 +919,8 @@ namespace w3c_sw {
 
   case 92:
 
-/* Line 678 of lalr1.cc  */
-#line 966 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 966 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
 	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_Expression)->str() + " must be selected AS some variable");
@@ -905,8 +930,8 @@ namespace w3c_sw {
 
   case 93:
 
-/* Line 678 of lalr1.cc  */
-#line 971 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 971 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
 	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_RDFLiteral)->str() + " must be selected AS some variable");
@@ -916,8 +941,8 @@ namespace w3c_sw {
 
   case 94:
 
-/* Line 678 of lalr1.cc  */
-#line 976 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 976 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
 	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)->str() + " must be selected AS some variable");
@@ -927,8 +952,8 @@ namespace w3c_sw {
 
   case 95:
 
-/* Line 678 of lalr1.cc  */
-#line 981 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 981 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
 	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)->str() + " must be selected AS some variable");
@@ -938,8 +963,8 @@ namespace w3c_sw {
 
   case 96:
 
-/* Line 678 of lalr1.cc  */
-#line 986 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 986 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
     }
@@ -947,8 +972,8 @@ namespace w3c_sw {
 
   case 97:
 
-/* Line 678 of lalr1.cc  */
-#line 989 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 989 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
 	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_Expression)->str() + " must be selected AS some variable");
@@ -958,8 +983,8 @@ namespace w3c_sw {
 
   case 98:
 
-/* Line 678 of lalr1.cc  */
-#line 994 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 994 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
 	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_Expression)->str() + " must be selected AS some variable");
@@ -969,8 +994,8 @@ namespace w3c_sw {
 
   case 100:
 
-/* Line 678 of lalr1.cc  */
-#line 1005 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1005 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
     }
@@ -978,8 +1003,8 @@ namespace w3c_sw {
 
   case 101:
 
-/* Line 678 of lalr1.cc  */
-#line 1008 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1008 "lib/SPARQLParser.ypp"
     {
     (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
     (yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
@@ -988,8 +1013,8 @@ namespace w3c_sw {
 
   case 102:
 
-/* Line 678 of lalr1.cc  */
-#line 1016 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1016 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_uniqueProjection) {
 	    std::set<const TTerm*> labels;
@@ -1007,8 +1032,8 @@ namespace w3c_sw {
 
   case 103:
 
-/* Line 678 of lalr1.cc  */
-#line 1029 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1029 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_VarSet) = new StarVarSet();
     }
@@ -1016,8 +1041,8 @@ namespace w3c_sw {
 
   case 104:
 
-/* Line 678 of lalr1.cc  */
-#line 1035 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1035 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = (yysemantic_stack_[(2) - (2)].p_Operation);
     }
@@ -1025,8 +1050,8 @@ namespace w3c_sw {
 
   case 105:
 
-/* Line 678 of lalr1.cc  */
-#line 1041 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1041 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_constructNoQuads &&
 	    dynamic_cast<const DefaultGraphPattern*>((yysemantic_stack_[(4) - (1)].p_TableOperation)) == NULL) {
@@ -1040,8 +1065,8 @@ namespace w3c_sw {
 
   case 106:
 
-/* Line 678 of lalr1.cc  */
-#line 1050 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1050 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_constructNoQuads &&
 	    dynamic_cast<const DefaultGraphPattern*>((yysemantic_stack_[(4) - (3)].p_TableOperation)) == NULL) {
@@ -1056,8 +1081,8 @@ namespace w3c_sw {
 
   case 107:
 
-/* Line 678 of lalr1.cc  */
-#line 1064 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1064 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	driver.lastWhereClause = (yysemantic_stack_[(5) - (4)].p_WhereClause) ? (yysemantic_stack_[(5) - (4)].p_WhereClause) : new WhereClause(new DefaultGraphPattern());
@@ -1067,8 +1092,8 @@ namespace w3c_sw {
 
   case 108:
 
-/* Line 678 of lalr1.cc  */
-#line 1073 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1073 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm))));
     }
@@ -1076,8 +1101,8 @@ namespace w3c_sw {
 
   case 109:
 
-/* Line 678 of lalr1.cc  */
-#line 1076 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1076 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(2) - (2)].p_TTerm))));
 	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
@@ -1086,8 +1111,8 @@ namespace w3c_sw {
 
   case 110:
 
-/* Line 678 of lalr1.cc  */
-#line 1084 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1084 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_VarSet) = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList);
     }
@@ -1095,8 +1120,8 @@ namespace w3c_sw {
 
   case 111:
 
-/* Line 678 of lalr1.cc  */
-#line 1087 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1087 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_VarSet) = new StarVarSet();
     }
@@ -1104,8 +1129,8 @@ namespace w3c_sw {
 
   case 112:
 
-/* Line 678 of lalr1.cc  */
-#line 1094 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1094 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_WhereClause) = NULL;
     }
@@ -1113,8 +1138,8 @@ namespace w3c_sw {
 
   case 114:
 
-/* Line 678 of lalr1.cc  */
-#line 1102 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1102 "lib/SPARQLParser.ypp"
     {
 	driver.lastWhereClause = (yysemantic_stack_[(4) - (3)].p_WhereClause);
 	(yyval.p_Operation) = new Ask((yysemantic_stack_[(4) - (2)].p_DatasetClauses), (yysemantic_stack_[(4) - (3)].p_WhereClause), (yysemantic_stack_[(4) - (4)].p_SolutionModifier));
@@ -1123,8 +1148,8 @@ namespace w3c_sw {
 
   case 115:
 
-/* Line 678 of lalr1.cc  */
-#line 1110 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1110 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_DatasetClause) = (yysemantic_stack_[(2) - (2)].p_DatasetClause);
     }
@@ -1132,8 +1157,8 @@ namespace w3c_sw {
 
   case 118:
 
-/* Line 678 of lalr1.cc  */
-#line 1122 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1122 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_TTerm), driver.atomFactory);
     }
@@ -1141,8 +1166,8 @@ namespace w3c_sw {
 
   case 119:
 
-/* Line 678 of lalr1.cc  */
-#line 1128 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1128 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_TTerm), driver.atomFactory);
     }
@@ -1150,8 +1175,8 @@ namespace w3c_sw {
 
   case 120:
 
-/* Line 678 of lalr1.cc  */
-#line 1134 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1134 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1159,8 +1184,8 @@ namespace w3c_sw {
 
   case 121:
 
-/* Line 678 of lalr1.cc  */
-#line 1141 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1141 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_WhereClause) = new WhereClause(driver.ensureGraphPattern());
@@ -1170,8 +1195,8 @@ namespace w3c_sw {
 
   case 124:
 
-/* Line 678 of lalr1.cc  */
-#line 1155 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1155 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_SolutionModifier) = new SolutionModifier((yysemantic_stack_[(4) - (1)].p_ExpressionAliaseList), (yysemantic_stack_[(4) - (2)].p_Expressions), (yysemantic_stack_[(4) - (3)].p_OrderConditions), (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).limit, (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).offset); // !!!
     }
@@ -1179,8 +1204,8 @@ namespace w3c_sw {
 
   case 125:
 
-/* Line 678 of lalr1.cc  */
-#line 1162 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1162 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = driver.countStar ? new ExpressionAliasList() : NULL;
     }
@@ -1188,8 +1213,8 @@ namespace w3c_sw {
 
   case 127:
 
-/* Line 678 of lalr1.cc  */
-#line 1170 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1170 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = NULL;
     }
@@ -1197,8 +1222,8 @@ namespace w3c_sw {
 
   case 129:
 
-/* Line 678 of lalr1.cc  */
-#line 1178 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1178 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_OrderConditions) = NULL;
     }
@@ -1206,8 +1231,8 @@ namespace w3c_sw {
 
   case 131:
 
-/* Line 678 of lalr1.cc  */
-#line 1186 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1186 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
 	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
@@ -1216,8 +1241,8 @@ namespace w3c_sw {
 
   case 133:
 
-/* Line 678 of lalr1.cc  */
-#line 1194 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1194 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(3) - (3)].p_ExpressionAliaseList);
     }
@@ -1225,8 +1250,8 @@ namespace w3c_sw {
 
   case 134:
 
-/* Line 678 of lalr1.cc  */
-#line 1201 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1201 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
     }
@@ -1234,8 +1259,8 @@ namespace w3c_sw {
 
   case 135:
 
-/* Line 678 of lalr1.cc  */
-#line 1204 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1204 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
 	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
@@ -1244,8 +1269,8 @@ namespace w3c_sw {
 
   case 136:
 
-/* Line 678 of lalr1.cc  */
-#line 1211 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1211 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
     }
@@ -1253,8 +1278,8 @@ namespace w3c_sw {
 
   case 137:
 
-/* Line 678 of lalr1.cc  */
-#line 1214 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1214 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
     }
@@ -1262,8 +1287,8 @@ namespace w3c_sw {
 
   case 138:
 
-/* Line 678 of lalr1.cc  */
-#line 1217 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1217 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
     }
@@ -1271,8 +1296,8 @@ namespace w3c_sw {
 
   case 139:
 
-/* Line 678 of lalr1.cc  */
-#line 1226 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1226 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
     }
@@ -1280,8 +1305,8 @@ namespace w3c_sw {
 
   case 140:
 
-/* Line 678 of lalr1.cc  */
-#line 1232 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1232 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (2)].p_Expressions);
 }
@@ -1289,8 +1314,8 @@ namespace w3c_sw {
 
   case 141:
 
-/* Line 678 of lalr1.cc  */
-#line 1238 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1238 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
     }
@@ -1298,8 +1323,8 @@ namespace w3c_sw {
 
   case 142:
 
-/* Line 678 of lalr1.cc  */
-#line 1241 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1241 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -1308,8 +1333,8 @@ namespace w3c_sw {
 
   case 144:
 
-/* Line 678 of lalr1.cc  */
-#line 1253 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1253 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_OrderConditions) = (yysemantic_stack_[(3) - (3)].p_OrderConditions);
     }
@@ -1317,8 +1342,8 @@ namespace w3c_sw {
 
   case 145:
 
-/* Line 678 of lalr1.cc  */
-#line 1260 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1260 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
 	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
@@ -1327,8 +1352,8 @@ namespace w3c_sw {
 
   case 146:
 
-/* Line 678 of lalr1.cc  */
-#line 1264 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1264 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_OrderConditions)->push_back((yysemantic_stack_[(2) - (2)].p_OrderConditionPair));
 	(yyval.p_OrderConditions) = (yysemantic_stack_[(2) - (1)].p_OrderConditions);
@@ -1337,8 +1362,8 @@ namespace w3c_sw {
 
   case 148:
 
-/* Line 678 of lalr1.cc  */
-#line 1274 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1274 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
 	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(1) - (1)].p_Expression);
@@ -1347,8 +1372,8 @@ namespace w3c_sw {
 
   case 149:
 
-/* Line 678 of lalr1.cc  */
-#line 1282 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1282 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_e_ASCorDESC) = ORDER_Asc;
     }
@@ -1356,8 +1381,8 @@ namespace w3c_sw {
 
   case 150:
 
-/* Line 678 of lalr1.cc  */
-#line 1285 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1285 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_e_ASCorDESC) = ORDER_Desc;
     }
@@ -1365,8 +1390,8 @@ namespace w3c_sw {
 
   case 151:
 
-/* Line 678 of lalr1.cc  */
-#line 1293 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1293 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_OrderConditionPair).ascOrDesc = (yysemantic_stack_[(2) - (1)].p_e_ASCorDESC);
 	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(2) - (2)].p_Expression);
@@ -1375,8 +1400,8 @@ namespace w3c_sw {
 
   case 153:
 
-/* Line 678 of lalr1.cc  */
-#line 1302 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1302 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
@@ -1384,8 +1409,8 @@ namespace w3c_sw {
 
   case 154:
 
-/* Line 678 of lalr1.cc  */
-#line 1309 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1309 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).limit;
 	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).offset;
@@ -1394,8 +1419,8 @@ namespace w3c_sw {
 
   case 155:
 
-/* Line 678 of lalr1.cc  */
-#line 1313 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1313 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).limit;
 	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).offset;
@@ -1404,8 +1429,8 @@ namespace w3c_sw {
 
   case 156:
 
-/* Line 678 of lalr1.cc  */
-#line 1321 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1321 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
     }
@@ -1413,8 +1438,8 @@ namespace w3c_sw {
 
   case 158:
 
-/* Line 678 of lalr1.cc  */
-#line 1329 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1329 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
     }
@@ -1422,8 +1447,8 @@ namespace w3c_sw {
 
   case 160:
 
-/* Line 678 of lalr1.cc  */
-#line 1336 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1336 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
     }
@@ -1431,8 +1456,8 @@ namespace w3c_sw {
 
   case 161:
 
-/* Line 678 of lalr1.cc  */
-#line 1342 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1342 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
     }
@@ -1440,8 +1465,8 @@ namespace w3c_sw {
 
   case 163:
 
-/* Line 678 of lalr1.cc  */
-#line 1352 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1352 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
     }
@@ -1449,8 +1474,8 @@ namespace w3c_sw {
 
   case 164:
 
-/* Line 678 of lalr1.cc  */
-#line 1358 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1358 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ValuesClause) = NULL;
     }
@@ -1458,8 +1483,8 @@ namespace w3c_sw {
 
   case 166:
 
-/* Line 678 of lalr1.cc  */
-#line 1365 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1365 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_Operation) = driver.root;
       }
@@ -1467,8 +1492,8 @@ namespace w3c_sw {
 
   case 170:
 
-/* Line 678 of lalr1.cc  */
-#line 1380 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1380 "lib/SPARQLParser.ypp"
     {
 	OperationSet* ret = driver.root ? dynamic_cast<OperationSet*>(driver.root) : new OperationSet();
 	ret->push_back((yysemantic_stack_[(1) - (1)].p_Operation));
@@ -1480,8 +1505,8 @@ namespace w3c_sw {
 
   case 185:
 
-/* Line 678 of lalr1.cc  */
-#line 1409 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1409 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Load((yysemantic_stack_[(4) - (2)].p_Silence), (yysemantic_stack_[(4) - (3)].p_URI), (yysemantic_stack_[(4) - (4)].p_URI));
     }
@@ -1489,8 +1514,8 @@ namespace w3c_sw {
 
   case 186:
 
-/* Line 678 of lalr1.cc  */
-#line 1415 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1415 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Silence) = SILENT_No;
     }
@@ -1498,8 +1523,8 @@ namespace w3c_sw {
 
   case 187:
 
-/* Line 678 of lalr1.cc  */
-#line 1418 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1418 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Silence) = SILENT_Yes;
 }
@@ -1507,8 +1532,8 @@ namespace w3c_sw {
 
   case 188:
 
-/* Line 678 of lalr1.cc  */
-#line 1425 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1425 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -1516,8 +1541,8 @@ namespace w3c_sw {
 
   case 189:
 
-/* Line 678 of lalr1.cc  */
-#line 1432 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1432 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = NULL;
     }
@@ -1525,8 +1550,8 @@ namespace w3c_sw {
 
   case 191:
 
-/* Line 678 of lalr1.cc  */
-#line 1439 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1439 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Clear((yysemantic_stack_[(3) - (2)].p_Silence), (yysemantic_stack_[(3) - (3)].p_URI));
     }
@@ -1534,8 +1559,8 @@ namespace w3c_sw {
 
   case 192:
 
-/* Line 678 of lalr1.cc  */
-#line 1445 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1445 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Drop((yysemantic_stack_[(3) - (2)].p_Silence), (yysemantic_stack_[(3) - (3)].p_URI));
 }
@@ -1543,8 +1568,8 @@ namespace w3c_sw {
 
   case 193:
 
-/* Line 678 of lalr1.cc  */
-#line 1451 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1451 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Create((yysemantic_stack_[(3) - (2)].p_Silence), (yysemantic_stack_[(3) - (3)].p_URI));
     }
@@ -1552,8 +1577,8 @@ namespace w3c_sw {
 
   case 194:
 
-/* Line 678 of lalr1.cc  */
-#line 1457 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1457 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Add((yysemantic_stack_[(5) - (2)].p_Silence), (yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (5)].p_URI));
 }
@@ -1561,8 +1586,8 @@ namespace w3c_sw {
 
   case 195:
 
-/* Line 678 of lalr1.cc  */
-#line 1463 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1463 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Move((yysemantic_stack_[(5) - (2)].p_Silence), (yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (5)].p_URI));
 }
@@ -1570,8 +1595,8 @@ namespace w3c_sw {
 
   case 196:
 
-/* Line 678 of lalr1.cc  */
-#line 1469 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1469 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Operation) = new Copy((yysemantic_stack_[(5) - (2)].p_Silence), (yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (5)].p_URI));
 }
@@ -1579,8 +1604,8 @@ namespace w3c_sw {
 
   case 197:
 
-/* Line 678 of lalr1.cc  */
-#line 1475 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1475 "lib/SPARQLParser.ypp"
     {
 	driver.inINSERTDATA = true;
       }
@@ -1588,8 +1613,8 @@ namespace w3c_sw {
 
   case 198:
 
-/* Line 678 of lalr1.cc  */
-#line 1477 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1477 "lib/SPARQLParser.ypp"
     {
 	  driver.inINSERTDATA = false;
 	  (yyval.p_Operation) = new Insert((yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
@@ -1600,8 +1625,8 @@ namespace w3c_sw {
 
   case 199:
 
-/* Line 678 of lalr1.cc  */
-#line 1486 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1486 "lib/SPARQLParser.ypp"
     {
 	driver.inDELETEDATA = true;
       }
@@ -1609,8 +1634,8 @@ namespace w3c_sw {
 
   case 200:
 
-/* Line 678 of lalr1.cc  */
-#line 1488 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1488 "lib/SPARQLParser.ypp"
     {
 	  driver.inDELETEDATA = false;
 	  (yyval.p_Operation) = new Delete(true, (yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
@@ -1621,8 +1646,8 @@ namespace w3c_sw {
 
   case 201:
 
-/* Line 678 of lalr1.cc  */
-#line 1497 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1497 "lib/SPARQLParser.ypp"
     {
 	driver.inDELETEWHERE = true;
       }
@@ -1630,8 +1655,8 @@ namespace w3c_sw {
 
   case 202:
 
-/* Line 678 of lalr1.cc  */
-#line 1499 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1499 "lib/SPARQLParser.ypp"
     {
 	  driver.inDELETEWHERE = false;
 	  (yyval.p_Operation) = new Delete(true, (yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
@@ -1640,8 +1665,8 @@ namespace w3c_sw {
 
   case 203:
 
-/* Line 678 of lalr1.cc  */
-#line 1508 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1508 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_Operation) = new Modify((yysemantic_stack_[(6) - (2)].p_DeleteInsert).del, (yysemantic_stack_[(6) - (2)].p_DeleteInsert).ins, new WhereClause(driver.ensureGraphPattern()), (yysemantic_stack_[(6) - (4)].p_TableOperation), (yysemantic_stack_[(6) - (1)].p_URI), (yysemantic_stack_[(6) - (3)].p_UsingPairs));
@@ -1651,8 +1676,8 @@ namespace w3c_sw {
 
   case 204:
 
-/* Line 678 of lalr1.cc  */
-#line 1516 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1516 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -1660,8 +1685,8 @@ namespace w3c_sw {
 
   case 205:
 
-/* Line 678 of lalr1.cc  */
-#line 1522 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1522 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = NULL;
     }
@@ -1669,8 +1694,8 @@ namespace w3c_sw {
 
   case 207:
 
-/* Line 678 of lalr1.cc  */
-#line 1529 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1529 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Insert) = NULL;
     }
@@ -1678,8 +1703,8 @@ namespace w3c_sw {
 
   case 209:
 
-/* Line 678 of lalr1.cc  */
-#line 1536 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1536 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_DeleteInsert).del = (yysemantic_stack_[(2) - (1)].p_Delete);
 	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(2) - (2)].p_Insert);
@@ -1688,8 +1713,8 @@ namespace w3c_sw {
 
   case 210:
 
-/* Line 678 of lalr1.cc  */
-#line 1540 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1540 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_DeleteInsert).del = NULL;
 	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(1) - (1)].p_Insert);
@@ -1698,8 +1723,8 @@ namespace w3c_sw {
 
   case 211:
 
-/* Line 678 of lalr1.cc  */
-#line 1547 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1547 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_UsingPairs) = NULL;
     }
@@ -1707,8 +1732,8 @@ namespace w3c_sw {
 
   case 212:
 
-/* Line 678 of lalr1.cc  */
-#line 1550 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1550 "lib/SPARQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (1)].p_UsingPairs) == NULL)
 	    (yysemantic_stack_[(2) - (1)].p_UsingPairs) = new std::vector<s_UsingPair>();
@@ -1719,8 +1744,8 @@ namespace w3c_sw {
 
   case 213:
 
-/* Line 678 of lalr1.cc  */
-#line 1559 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1559 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = (yysemantic_stack_[(2) - (2)].p_TableOperation);
     }
@@ -1728,8 +1753,8 @@ namespace w3c_sw {
 
   case 214:
 
-/* Line 678 of lalr1.cc  */
-#line 1565 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1565 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = NULL;
     }
@@ -1737,8 +1762,8 @@ namespace w3c_sw {
 
   case 216:
 
-/* Line 678 of lalr1.cc  */
-#line 1572 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1572 "lib/SPARQLParser.ypp"
     {
 	driver.inDELETECLAUSE = true;
       }
@@ -1746,8 +1771,8 @@ namespace w3c_sw {
 
   case 217:
 
-/* Line 678 of lalr1.cc  */
-#line 1574 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1574 "lib/SPARQLParser.ypp"
     {
 	  driver.inDELETECLAUSE = false;
 	  (yyval.p_Delete) = new Delete(false, (yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
@@ -1756,8 +1781,8 @@ namespace w3c_sw {
 
   case 218:
 
-/* Line 678 of lalr1.cc  */
-#line 1581 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1581 "lib/SPARQLParser.ypp"
     {
 	driver.inINSERTQUAD = true;
       }
@@ -1765,8 +1790,8 @@ namespace w3c_sw {
 
   case 219:
 
-/* Line 678 of lalr1.cc  */
-#line 1583 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1583 "lib/SPARQLParser.ypp"
     {
 	  driver.inINSERTQUAD = false;
 	  (yyval.p_Insert) = new Insert((yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
@@ -1775,8 +1800,8 @@ namespace w3c_sw {
 
   case 220:
 
-/* Line 678 of lalr1.cc  */
-#line 1590 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1590 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_UsingPair) = (yysemantic_stack_[(2) - (2)].p_UsingPair);
     }
@@ -1784,8 +1809,8 @@ namespace w3c_sw {
 
   case 221:
 
-/* Line 678 of lalr1.cc  */
-#line 1596 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1596 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_UsingPair).named = false;
 	(yyval.p_UsingPair).name = (yysemantic_stack_[(1) - (1)].p_URI);
@@ -1794,8 +1819,8 @@ namespace w3c_sw {
 
   case 222:
 
-/* Line 678 of lalr1.cc  */
-#line 1600 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1600 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_UsingPair).named = true;
 	(yyval.p_UsingPair).name = (yysemantic_stack_[(2) - (2)].p_URI);
@@ -1804,8 +1829,8 @@ namespace w3c_sw {
 
   case 223:
 
-/* Line 678 of lalr1.cc  */
-#line 1607 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1607 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = NULL;
     }
@@ -1813,8 +1838,8 @@ namespace w3c_sw {
 
   case 224:
 
-/* Line 678 of lalr1.cc  */
-#line 1610 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1610 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -1822,8 +1847,8 @@ namespace w3c_sw {
 
   case 227:
 
-/* Line 678 of lalr1.cc  */
-#line 1621 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1621 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -1831,8 +1856,8 @@ namespace w3c_sw {
 
   case 228:
 
-/* Line 678 of lalr1.cc  */
-#line 1627 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1627 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -1840,8 +1865,8 @@ namespace w3c_sw {
 
   case 229:
 
-/* Line 678 of lalr1.cc  */
-#line 1630 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1630 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/DEFAULT");
     }
@@ -1849,8 +1874,8 @@ namespace w3c_sw {
 
   case 230:
 
-/* Line 678 of lalr1.cc  */
-#line 1633 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1633 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/NAMED");
     }
@@ -1858,8 +1883,8 @@ namespace w3c_sw {
 
   case 231:
 
-/* Line 678 of lalr1.cc  */
-#line 1636 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1636 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/ALL");
     }
@@ -1867,8 +1892,8 @@ namespace w3c_sw {
 
   case 232:
 
-/* Line 678 of lalr1.cc  */
-#line 1643 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1643 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = (yysemantic_stack_[(3) - (2)].p_TableOperation);
 	driver.curOp = NULL;
@@ -1877,8 +1902,8 @@ namespace w3c_sw {
 
   case 233:
 
-/* Line 678 of lalr1.cc  */
-#line 1650 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1650 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TableOperation) = (yysemantic_stack_[(3) - (2)].p_TableOperation);
     }
@@ -1886,8 +1911,8 @@ namespace w3c_sw {
 
   case 234:
 
-/* Line 678 of lalr1.cc  */
-#line 1656 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1656 "lib/SPARQLParser.ypp"
     {
 	driver.curBGP = NULL;
       }
@@ -1895,8 +1920,8 @@ namespace w3c_sw {
 
   case 235:
 
-/* Line 678 of lalr1.cc  */
-#line 1658 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1658 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_TableOperation) = driver.ensureGraphPattern();
 	  driver.curOp = NULL;
@@ -1905,8 +1930,8 @@ namespace w3c_sw {
 
   case 244:
 
-/* Line 678 of lalr1.cc  */
-#line 1687 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1687 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -1917,8 +1942,8 @@ namespace w3c_sw {
 
   case 245:
 
-/* Line 678 of lalr1.cc  */
-#line 1692 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1692 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_TTerm) = driver.curGraphName;
 	  driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_TTerm);
@@ -1927,8 +1952,8 @@ namespace w3c_sw {
 
   case 246:
 
-/* Line 678 of lalr1.cc  */
-#line 1695 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1695 "lib/SPARQLParser.ypp"
     {
 	driver.curBGP = NULL;
 	driver.curOp = NULL;
@@ -1937,8 +1962,8 @@ namespace w3c_sw {
 
   case 247:
 
-/* Line 678 of lalr1.cc  */
-#line 1698 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1698 "lib/SPARQLParser.ypp"
     {
 	  driver.curBGP = NULL;
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(8) - (1)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(8) - (3)].p_TTerm), driver.ensureGraphPattern()));
@@ -1948,8 +1973,8 @@ namespace w3c_sw {
 
   case 253:
 
-/* Line 678 of lalr1.cc  */
-#line 1720 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1720 "lib/SPARQLParser.ypp"
     {
 	BindingsMap::const_iterator rs = driver.bindingsMap.find((yysemantic_stack_[(1) - (1)].p_RSName)->name);
 	if (rs == driver.bindingsMap.end() || rs->second == NULL) {
@@ -1966,8 +1991,8 @@ namespace w3c_sw {
 
   case 257:
 
-/* Line 678 of lalr1.cc  */
-#line 1743 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1743 "lib/SPARQLParser.ypp"
     {
 	driver.curBGP = NULL;
       }
@@ -1975,8 +2000,8 @@ namespace w3c_sw {
 
   case 258:
 
-/* Line 678 of lalr1.cc  */
-#line 1745 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1745 "lib/SPARQLParser.ypp"
     {
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
 	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
@@ -1986,8 +2011,8 @@ namespace w3c_sw {
 
   case 279:
 
-/* Line 678 of lalr1.cc  */
-#line 1819 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1819 "lib/SPARQLParser.ypp"
     {
 	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yysemantic_stack_[(1) - (1)].p_ValuesClause)) : (yysemantic_stack_[(1) - (1)].p_ValuesClause);
     }
@@ -1995,8 +2020,8 @@ namespace w3c_sw {
 
   case 281:
 
-/* Line 678 of lalr1.cc  */
-#line 1826 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1826 "lib/SPARQLParser.ypp"
     {
 	driver.curOp = new Print(driver.ensureGraphPattern());
     }
@@ -2004,8 +2029,8 @@ namespace w3c_sw {
 
   case 282:
 
-/* Line 678 of lalr1.cc  */
-#line 1832 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1832 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -2015,8 +2040,8 @@ namespace w3c_sw {
 
   case 283:
 
-/* Line 678 of lalr1.cc  */
-#line 1836 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1836 "lib/SPARQLParser.ypp"
     {
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.ensureGraphPattern());
 	  if (driver.curFilter) {
@@ -2030,8 +2055,8 @@ namespace w3c_sw {
 
   case 284:
 
-/* Line 678 of lalr1.cc  */
-#line 1848 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1848 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -2041,8 +2066,8 @@ namespace w3c_sw {
 
   case 285:
 
-/* Line 678 of lalr1.cc  */
-#line 1852 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1852 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_FilterExpressions) = driver.saveFilter();
       }
@@ -2050,8 +2075,8 @@ namespace w3c_sw {
 
   case 286:
 
-/* Line 678 of lalr1.cc  */
-#line 1854 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1854 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_TTerm) = driver.curGraphName;
 	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_TTerm);
@@ -2060,8 +2085,8 @@ namespace w3c_sw {
 
   case 287:
 
-/* Line 678 of lalr1.cc  */
-#line 1857 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1857 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_FilterExpressions));
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), driver.ensureGraphPattern()));
@@ -2071,8 +2096,8 @@ namespace w3c_sw {
 
   case 288:
 
-/* Line 678 of lalr1.cc  */
-#line 1865 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1865 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -2082,8 +2107,8 @@ namespace w3c_sw {
 
   case 289:
 
-/* Line 678 of lalr1.cc  */
-#line 1869 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1869 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_FilterExpressions) = driver.saveFilter();
       }
@@ -2091,8 +2116,8 @@ namespace w3c_sw {
 
   case 290:
 
-/* Line 678 of lalr1.cc  */
-#line 1871 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1871 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_FilterExpressions));
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(6) - (5)].p_TTerm), driver.ensureGraphPattern(), (yysemantic_stack_[(6) - (4)].p_Silence), driver.atomFactory, false));
@@ -2101,8 +2126,8 @@ namespace w3c_sw {
 
   case 291:
 
-/* Line 678 of lalr1.cc  */
-#line 1878 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1878 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -2112,8 +2137,8 @@ namespace w3c_sw {
 
   case 292:
 
-/* Line 678 of lalr1.cc  */
-#line 1882 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1882 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_FilterExpressions) = driver.saveFilter();
       }
@@ -2121,8 +2146,8 @@ namespace w3c_sw {
 
   case 293:
 
-/* Line 678 of lalr1.cc  */
-#line 1884 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1884 "lib/SPARQLParser.ypp"
     {
 	  /*
 	    serviceID,
@@ -2139,8 +2164,8 @@ namespace w3c_sw {
 
   case 294:
 
-/* Line 678 of lalr1.cc  */
-#line 1899 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1899 "lib/SPARQLParser.ypp"
     {
 	const TableOperation* op = driver.ensureGraphPattern();
 	if (driver.validate & SPARQLDriver::VALIDATE_noReassign &&
@@ -2158,8 +2183,8 @@ namespace w3c_sw {
 
   case 295:
 
-/* Line 678 of lalr1.cc  */
-#line 1915 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1915 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
     }
@@ -2167,8 +2192,8 @@ namespace w3c_sw {
 
   case 298:
 
-/* Line 678 of lalr1.cc  */
-#line 1926 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1926 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingSet();
       }
@@ -2176,8 +2201,8 @@ namespace w3c_sw {
 
   case 299:
 
-/* Line 678 of lalr1.cc  */
-#line 1928 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1928 "lib/SPARQLParser.ypp"
     {
 	  driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
       }
@@ -2185,8 +2210,8 @@ namespace w3c_sw {
 
   case 300:
 
-/* Line 678 of lalr1.cc  */
-#line 1930 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1930 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
@@ -2194,8 +2219,8 @@ namespace w3c_sw {
 
   case 303:
 
-/* Line 678 of lalr1.cc  */
-#line 1941 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1941 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingRow();
 	driver.addBindingValue((yysemantic_stack_[(1) - (1)].p_TTerm));
@@ -2205,8 +2230,8 @@ namespace w3c_sw {
 
   case 304:
 
-/* Line 678 of lalr1.cc  */
-#line 1949 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1949 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingSet();
     }
@@ -2214,8 +2239,8 @@ namespace w3c_sw {
 
   case 305:
 
-/* Line 678 of lalr1.cc  */
-#line 1951 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1951 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
@@ -2223,8 +2248,8 @@ namespace w3c_sw {
 
   case 307:
 
-/* Line 678 of lalr1.cc  */
-#line 1958 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1958 "lib/SPARQLParser.ypp"
     {
 	driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
     }
@@ -2232,8 +2257,8 @@ namespace w3c_sw {
 
   case 311:
 
-/* Line 678 of lalr1.cc  */
-#line 1970 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1970 "lib/SPARQLParser.ypp"
     {
 	driver.addBindingValue((yysemantic_stack_[(2) - (2)].p_TTerm));
     }
@@ -2241,8 +2266,8 @@ namespace w3c_sw {
 
   case 312:
 
-/* Line 678 of lalr1.cc  */
-#line 1976 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1976 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingRow();
       }
@@ -2250,8 +2275,8 @@ namespace w3c_sw {
 
   case 313:
 
-/* Line 678 of lalr1.cc  */
-#line 1978 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1978 "lib/SPARQLParser.ypp"
     {
 	  driver.endBindingRow();
       }
@@ -2259,8 +2284,8 @@ namespace w3c_sw {
 
   case 314:
 
-/* Line 678 of lalr1.cc  */
-#line 1981 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1981 "lib/SPARQLParser.ypp"
     {
 	driver.startBindingRow();
 	driver.endBindingRow();
@@ -2269,8 +2294,8 @@ namespace w3c_sw {
 
   case 317:
 
-/* Line 678 of lalr1.cc  */
-#line 1993 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1993 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -2278,8 +2303,8 @@ namespace w3c_sw {
 
   case 318:
 
-/* Line 678 of lalr1.cc  */
-#line 1996 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1996 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
@@ -2287,8 +2312,8 @@ namespace w3c_sw {
 
   case 319:
 
-/* Line 678 of lalr1.cc  */
-#line 1999 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 1999 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -2296,8 +2321,8 @@ namespace w3c_sw {
 
   case 320:
 
-/* Line 678 of lalr1.cc  */
-#line 2002 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2002 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -2305,8 +2330,8 @@ namespace w3c_sw {
 
   case 321:
 
-/* Line 678 of lalr1.cc  */
-#line 2005 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2005 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = TTerm::Unbound;
     }
@@ -2314,8 +2339,8 @@ namespace w3c_sw {
 
   case 322:
 
-/* Line 678 of lalr1.cc  */
-#line 2008 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2008 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = TTerm::Unbound;
     }
@@ -2323,8 +2348,8 @@ namespace w3c_sw {
 
   case 323:
 
-/* Line 678 of lalr1.cc  */
-#line 2011 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2011 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
@@ -2332,8 +2357,8 @@ namespace w3c_sw {
 
   case 324:
 
-/* Line 678 of lalr1.cc  */
-#line 2017 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2017 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -2343,8 +2368,8 @@ namespace w3c_sw {
 
   case 325:
 
-/* Line 678 of lalr1.cc  */
-#line 2021 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2021 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_FilterExpressions) = driver.saveFilter();
       }
@@ -2352,8 +2377,8 @@ namespace w3c_sw {
 
   case 326:
 
-/* Line 678 of lalr1.cc  */
-#line 2023 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2023 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter((yysemantic_stack_[(4) - (3)].p_FilterExpressions));
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (2)].p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
@@ -2362,8 +2387,8 @@ namespace w3c_sw {
 
   case 327:
 
-/* Line 678 of lalr1.cc  */
-#line 2031 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2031 "lib/SPARQLParser.ypp"
     {
 	driver.restoreFilter(NULL);
 	(yyval.p_TableOperation) = driver.curOp;
@@ -2373,8 +2398,8 @@ namespace w3c_sw {
 
   case 328:
 
-/* Line 678 of lalr1.cc  */
-#line 2035 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2035 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_FilterExpressions) = driver.saveFilter();
       }
@@ -2382,8 +2407,8 @@ namespace w3c_sw {
 
   case 329:
 
-/* Line 678 of lalr1.cc  */
-#line 2037 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2037 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter((yysemantic_stack_[(4) - (2)].p_FilterExpressions));
 	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (1)].p_TableOperation), driver.curOp);
@@ -2392,8 +2417,8 @@ namespace w3c_sw {
 
   case 330:
 
-/* Line 678 of lalr1.cc  */
-#line 2045 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2045 "lib/SPARQLParser.ypp"
     {
 	driver.ensureGraphPattern();
 	driver.restoreFilter(NULL);
@@ -2404,8 +2429,8 @@ namespace w3c_sw {
 
   case 331:
 
-/* Line 678 of lalr1.cc  */
-#line 2050 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2050 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter(NULL);
 	  driver.curOp = driver.makeDisjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), driver.ensureGraphPattern());
@@ -2414,8 +2439,8 @@ namespace w3c_sw {
 
   case 334:
 
-/* Line 678 of lalr1.cc  */
-#line 2063 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2063 "lib/SPARQLParser.ypp"
     {
 	if (driver.curFilter == NULL) {
 	    driver.ensureGraphPattern();
@@ -2427,8 +2452,8 @@ namespace w3c_sw {
 
   case 338:
 
-/* Line 678 of lalr1.cc  */
-#line 2079 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2079 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
     }
@@ -2436,8 +2461,8 @@ namespace w3c_sw {
 
   case 339:
 
-/* Line 678 of lalr1.cc  */
-#line 2087 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2087 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ArgList) = NULL;
     }
@@ -2445,8 +2470,8 @@ namespace w3c_sw {
 
   case 340:
 
-/* Line 678 of lalr1.cc  */
-#line 2091 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2091 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(3) - (3)].p_Expression));
@@ -2455,8 +2480,8 @@ namespace w3c_sw {
 
   case 341:
 
-/* Line 678 of lalr1.cc  */
-#line 2094 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2094 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
 	  driver.curExprList = (yysemantic_stack_[(6) - (4)].p_Expressions);
@@ -2465,8 +2490,8 @@ namespace w3c_sw {
 
   case 342:
 
-/* Line 678 of lalr1.cc  */
-#line 2101 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2101 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_all;
     }
@@ -2474,8 +2499,8 @@ namespace w3c_sw {
 
   case 343:
 
-/* Line 678 of lalr1.cc  */
-#line 2104 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2104 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_distinctness) = DIST_distinct;
     }
@@ -2483,8 +2508,8 @@ namespace w3c_sw {
 
   case 344:
 
-/* Line 678 of lalr1.cc  */
-#line 2111 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2111 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -2492,8 +2517,8 @@ namespace w3c_sw {
 
   case 346:
 
-/* Line 678 of lalr1.cc  */
-#line 2119 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2119 "lib/SPARQLParser.ypp"
     {
 	driver.curExprList->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -2501,8 +2526,8 @@ namespace w3c_sw {
 
   case 347:
 
-/* Line 678 of lalr1.cc  */
-#line 2134 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2134 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -2510,8 +2535,8 @@ namespace w3c_sw {
 
   case 348:
 
-/* Line 678 of lalr1.cc  */
-#line 2137 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2137 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = driver.curExprList;
 	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -2520,8 +2545,8 @@ namespace w3c_sw {
 
   case 349:
 
-/* Line 678 of lalr1.cc  */
-#line 2140 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2140 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_Expressions) = driver.curExprList;
 	  driver.curExprList = (yysemantic_stack_[(5) - (3)].p_Expressions);
@@ -2530,8 +2555,8 @@ namespace w3c_sw {
 
   case 350:
 
-/* Line 678 of lalr1.cc  */
-#line 2147 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2147 "lib/SPARQLParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -2539,8 +2564,8 @@ namespace w3c_sw {
 
   case 352:
 
-/* Line 678 of lalr1.cc  */
-#line 2150 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2150 "lib/SPARQLParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
@@ -2548,8 +2573,8 @@ namespace w3c_sw {
 
   case 364:
 
-/* Line 678 of lalr1.cc  */
-#line 2192 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2192 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
@@ -2558,8 +2583,8 @@ namespace w3c_sw {
 
   case 365:
 
-/* Line 678 of lalr1.cc  */
-#line 2196 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2196 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = TTerm::RDF_type;
 	driver.curPredicate = (yyval.p_TTerm);
@@ -2568,8 +2593,8 @@ namespace w3c_sw {
 
   case 370:
 
-/* Line 678 of lalr1.cc  */
-#line 2219 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2219 "lib/SPARQLParser.ypp"
     {
 	driver.ensureBasicGraphPattern();
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)), true);
@@ -2578,8 +2603,8 @@ namespace w3c_sw {
 
   case 371:
 
-/* Line 678 of lalr1.cc  */
-#line 2227 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2227 "lib/SPARQLParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
       }
@@ -2587,8 +2612,8 @@ namespace w3c_sw {
 
   case 373:
 
-/* Line 678 of lalr1.cc  */
-#line 2230 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2230 "lib/SPARQLParser.ypp"
     {
 	  driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
         }
@@ -2596,8 +2621,8 @@ namespace w3c_sw {
 
   case 378:
 
-/* Line 678 of lalr1.cc  */
-#line 2245 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2245 "lib/SPARQLParser.ypp"
     {
 	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
       }
@@ -2605,8 +2630,8 @@ namespace w3c_sw {
 
   case 382:
 
-/* Line 678 of lalr1.cc  */
-#line 2256 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2256 "lib/SPARQLParser.ypp"
     {
 	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
       }
@@ -2614,8 +2639,8 @@ namespace w3c_sw {
 
   case 389:
 
-/* Line 678 of lalr1.cc  */
-#line 2276 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2276 "lib/SPARQLParser.ypp"
     {
 	const URI* t = (yysemantic_stack_[(1) - (1)].p_PropertyPath)->release();
 	// if (!t)
@@ -2626,8 +2651,8 @@ namespace w3c_sw {
 
   case 390:
 
-/* Line 678 of lalr1.cc  */
-#line 2285 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2285 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
@@ -2635,8 +2660,8 @@ namespace w3c_sw {
 
   case 395:
 
-/* Line 678 of lalr1.cc  */
-#line 2304 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2304 "lib/SPARQLParser.ypp"
     {
 	driver.ensureBasicGraphPattern();
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)), true);
@@ -2645,8 +2670,8 @@ namespace w3c_sw {
 
   case 397:
 
-/* Line 678 of lalr1.cc  */
-#line 2315 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2315 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = driver.lastPropertyPathAlternative;
 	driver.lastPropertyPathAlternative = (yysemantic_stack_[(1) - (1)].p_PropertyPath);
@@ -2655,8 +2680,8 @@ namespace w3c_sw {
 
   case 398:
 
-/* Line 678 of lalr1.cc  */
-#line 2318 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2318 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (3)].p_PropertyPath) ? (yysemantic_stack_[(3) - (3)].p_PropertyPath) : (yysemantic_stack_[(3) - (1)].p_PropertyPath);
 	  driver.lastPropertyPathAlternative = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
@@ -2665,8 +2690,8 @@ namespace w3c_sw {
 
   case 399:
 
-/* Line 678 of lalr1.cc  */
-#line 2325 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2325 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_PropertyPath);
     }
@@ -2674,8 +2699,8 @@ namespace w3c_sw {
 
   case 400:
 
-/* Line 678 of lalr1.cc  */
-#line 2331 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2331 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = NULL;
     }
@@ -2683,8 +2708,8 @@ namespace w3c_sw {
 
   case 401:
 
-/* Line 678 of lalr1.cc  */
-#line 2334 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2334 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Alternative((yysemantic_stack_[(2) - (1)].p_PropertyPath) ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : driver.lastPropertyPathAlternative, (yysemantic_stack_[(2) - (2)].p_PropertyPath));
     }
@@ -2692,8 +2717,8 @@ namespace w3c_sw {
 
   case 402:
 
-/* Line 678 of lalr1.cc  */
-#line 2340 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2340 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = driver.lastPropertyPathSequence;
 	driver.lastPropertyPathSequence = (yysemantic_stack_[(1) - (1)].p_PropertyPath);
@@ -2702,8 +2727,8 @@ namespace w3c_sw {
 
   case 403:
 
-/* Line 678 of lalr1.cc  */
-#line 2343 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2343 "lib/SPARQLParser.ypp"
     {	
 	  (yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (3)].p_PropertyPath) ? (yysemantic_stack_[(3) - (3)].p_PropertyPath) : (yysemantic_stack_[(3) - (1)].p_PropertyPath);
 	  driver.lastPropertyPathSequence = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
@@ -2712,8 +2737,8 @@ namespace w3c_sw {
 
   case 404:
 
-/* Line 678 of lalr1.cc  */
-#line 2350 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2350 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_PropertyPath);
     }
@@ -2721,8 +2746,8 @@ namespace w3c_sw {
 
   case 405:
 
-/* Line 678 of lalr1.cc  */
-#line 2356 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2356 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = NULL;
     }
@@ -2730,8 +2755,8 @@ namespace w3c_sw {
 
   case 406:
 
-/* Line 678 of lalr1.cc  */
-#line 2359 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2359 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Sequence((yysemantic_stack_[(2) - (1)].p_PropertyPath) ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : driver.lastPropertyPathSequence, (yysemantic_stack_[(2) - (2)].p_PropertyPath));
     }
@@ -2739,8 +2764,8 @@ namespace w3c_sw {
 
   case 407:
 
-/* Line 678 of lalr1.cc  */
-#line 2365 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2365 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_RepeatRange).min == 1 && (yysemantic_stack_[(2) - (2)].p_RepeatRange).max == 1 ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : new PropertyPath::Repeated((yysemantic_stack_[(2) - (1)].p_PropertyPath), (yysemantic_stack_[(2) - (2)].p_RepeatRange).min, (yysemantic_stack_[(2) - (2)].p_RepeatRange).max);
     }
@@ -2748,8 +2773,8 @@ namespace w3c_sw {
 
   case 408:
 
-/* Line 678 of lalr1.cc  */
-#line 2371 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2371 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RepeatRange).min = 1; (yyval.p_RepeatRange).max = 1;
     }
@@ -2757,8 +2782,8 @@ namespace w3c_sw {
 
   case 411:
 
-/* Line 678 of lalr1.cc  */
-#line 2379 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2379 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Inverse((yysemantic_stack_[(2) - (2)].p_PropertyPath));
     }
@@ -2766,8 +2791,8 @@ namespace w3c_sw {
 
   case 412:
 
-/* Line 678 of lalr1.cc  */
-#line 2385 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2385 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RepeatRange).min = 0; (yyval.p_RepeatRange).max = 1;
     }
@@ -2775,8 +2800,8 @@ namespace w3c_sw {
 
   case 413:
 
-/* Line 678 of lalr1.cc  */
-#line 2388 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2388 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RepeatRange).min = 0; (yyval.p_RepeatRange).max = PropertyPath::Repeated::Unlimited;
     }
@@ -2784,8 +2809,8 @@ namespace w3c_sw {
 
   case 414:
 
-/* Line 678 of lalr1.cc  */
-#line 2391 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2391 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RepeatRange).min = 1; (yyval.p_RepeatRange).max = PropertyPath::Repeated::Unlimited;
     }
@@ -2793,8 +2818,8 @@ namespace w3c_sw {
 
   case 415:
 
-/* Line 678 of lalr1.cc  */
-#line 2397 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2397 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Predicate((yysemantic_stack_[(1) - (1)].p_URI));
     }
@@ -2802,8 +2827,8 @@ namespace w3c_sw {
 
   case 416:
 
-/* Line 678 of lalr1.cc  */
-#line 2400 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2400 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
     }
@@ -2811,8 +2836,8 @@ namespace w3c_sw {
 
   case 417:
 
-/* Line 678 of lalr1.cc  */
-#line 2403 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2403 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Negated((yysemantic_stack_[(2) - (2)].p_PropertyPath));
     }
@@ -2820,8 +2845,8 @@ namespace w3c_sw {
 
   case 418:
 
-/* Line 678 of lalr1.cc  */
-#line 2406 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2406 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
     }
@@ -2829,8 +2854,8 @@ namespace w3c_sw {
 
   case 420:
 
-/* Line 678 of lalr1.cc  */
-#line 2416 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2416 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
     }
@@ -2838,8 +2863,8 @@ namespace w3c_sw {
 
   case 421:
 
-/* Line 678 of lalr1.cc  */
-#line 2425 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2425 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_PropertyPath);
     }
@@ -2847,8 +2872,8 @@ namespace w3c_sw {
 
   case 422:
 
-/* Line 678 of lalr1.cc  */
-#line 2431 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2431 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = NULL;
     }
@@ -2856,8 +2881,8 @@ namespace w3c_sw {
 
   case 423:
 
-/* Line 678 of lalr1.cc  */
-#line 2434 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2434 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Alternative((yysemantic_stack_[(2) - (1)].p_PropertyPath) ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : driver.lastPropertyPathSetAlternative, (yysemantic_stack_[(2) - (2)].p_PropertyPath));
     }
@@ -2865,8 +2890,8 @@ namespace w3c_sw {
 
   case 424:
 
-/* Line 678 of lalr1.cc  */
-#line 2440 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2440 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = driver.lastPropertyPathSetAlternative;
 	driver.lastPropertyPathSetAlternative = (yysemantic_stack_[(1) - (1)].p_PropertyPath);
@@ -2875,8 +2900,8 @@ namespace w3c_sw {
 
   case 425:
 
-/* Line 678 of lalr1.cc  */
-#line 2443 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2443 "lib/SPARQLParser.ypp"
     {
 	  driver.lastPropertyPathSetAlternative = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
 	  (yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (3)].p_PropertyPath);
@@ -2885,8 +2910,8 @@ namespace w3c_sw {
 
   case 426:
 
-/* Line 678 of lalr1.cc  */
-#line 2450 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2450 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = NULL;
     }
@@ -2894,8 +2919,8 @@ namespace w3c_sw {
 
   case 428:
 
-/* Line 678 of lalr1.cc  */
-#line 2457 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2457 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Predicate((yysemantic_stack_[(1) - (1)].p_URI));
     }
@@ -2903,8 +2928,8 @@ namespace w3c_sw {
 
   case 429:
 
-/* Line 678 of lalr1.cc  */
-#line 2460 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2460 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
     }
@@ -2912,8 +2937,8 @@ namespace w3c_sw {
 
   case 430:
 
-/* Line 678 of lalr1.cc  */
-#line 2463 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2463 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Inverse((yysemantic_stack_[(2) - (2)].p_PropertyPath));
     }
@@ -2921,8 +2946,8 @@ namespace w3c_sw {
 
   case 431:
 
-/* Line 678 of lalr1.cc  */
-#line 2469 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2469 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Predicate((yysemantic_stack_[(1) - (1)].p_URI));
     }
@@ -2930,8 +2955,8 @@ namespace w3c_sw {
 
   case 432:
 
-/* Line 678 of lalr1.cc  */
-#line 2472 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2472 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
     }
@@ -2939,8 +2964,8 @@ namespace w3c_sw {
 
   case 435:
 
-/* Line 678 of lalr1.cc  */
-#line 2485 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2485 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -2950,8 +2975,8 @@ namespace w3c_sw {
 
   case 436:
 
-/* Line 678 of lalr1.cc  */
-#line 2489 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2489 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -2961,8 +2986,8 @@ namespace w3c_sw {
 
   case 437:
 
-/* Line 678 of lalr1.cc  */
-#line 2498 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2498 "lib/SPARQLParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
 	    (yyval.p_TTerm) = driver.createBNode();
@@ -2991,8 +3016,8 @@ namespace w3c_sw {
 
   case 438:
 
-/* Line 678 of lalr1.cc  */
-#line 2526 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2526 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_members;
     }
@@ -3000,8 +3025,8 @@ namespace w3c_sw {
 
   case 439:
 
-/* Line 678 of lalr1.cc  */
-#line 2529 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2529 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_starts;
     }
@@ -3009,8 +3034,8 @@ namespace w3c_sw {
 
   case 440:
 
-/* Line 678 of lalr1.cc  */
-#line 2532 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2532 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_ends;
     }
@@ -3018,8 +3043,8 @@ namespace w3c_sw {
 
   case 441:
 
-/* Line 678 of lalr1.cc  */
-#line 2535 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2535 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_any;
     }
@@ -3027,8 +3052,8 @@ namespace w3c_sw {
 
   case 442:
 
-/* Line 678 of lalr1.cc  */
-#line 2538 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2538 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_unordered;
     }
@@ -3036,8 +3061,8 @@ namespace w3c_sw {
 
   case 443:
 
-/* Line 678 of lalr1.cc  */
-#line 2545 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2545 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_listModifier) = LIST_exact;
     }
@@ -3045,8 +3070,8 @@ namespace w3c_sw {
 
   case 445:
 
-/* Line 678 of lalr1.cc  */
-#line 2553 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2553 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
 	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
@@ -3055,8 +3080,8 @@ namespace w3c_sw {
 
   case 446:
 
-/* Line 678 of lalr1.cc  */
-#line 2557 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2557 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
 	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
@@ -3065,8 +3090,8 @@ namespace w3c_sw {
 
   case 449:
 
-/* Line 678 of lalr1.cc  */
-#line 2569 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2569 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -3076,8 +3101,8 @@ namespace w3c_sw {
 
   case 450:
 
-/* Line 678 of lalr1.cc  */
-#line 2573 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2573 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_TTerm) = driver.curSubject;
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
@@ -3087,8 +3112,8 @@ namespace w3c_sw {
 
   case 451:
 
-/* Line 678 of lalr1.cc  */
-#line 2581 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2581 "lib/SPARQLParser.ypp"
     {
 	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
 	    (yyval.p_TTerm) = driver.createBNode();
@@ -3117,8 +3142,8 @@ namespace w3c_sw {
 
   case 452:
 
-/* Line 678 of lalr1.cc  */
-#line 2608 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2608 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
 	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
@@ -3127,8 +3152,8 @@ namespace w3c_sw {
 
   case 453:
 
-/* Line 678 of lalr1.cc  */
-#line 2612 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2612 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
 	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
@@ -3137,8 +3162,8 @@ namespace w3c_sw {
 
   case 458:
 
-/* Line 678 of lalr1.cc  */
-#line 2629 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2629 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
@@ -3146,8 +3171,8 @@ namespace w3c_sw {
 
   case 460:
 
-/* Line 678 of lalr1.cc  */
-#line 2636 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2636 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
     }
@@ -3155,8 +3180,8 @@ namespace w3c_sw {
 
   case 461:
 
-/* Line 678 of lalr1.cc  */
-#line 2639 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2639 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -3164,8 +3189,8 @@ namespace w3c_sw {
 
   case 464:
 
-/* Line 678 of lalr1.cc  */
-#line 2650 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2650 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
@@ -3173,8 +3198,8 @@ namespace w3c_sw {
 
   case 465:
 
-/* Line 678 of lalr1.cc  */
-#line 2653 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2653 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
     }
@@ -3182,8 +3207,8 @@ namespace w3c_sw {
 
   case 466:
 
-/* Line 678 of lalr1.cc  */
-#line 2656 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2656 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
     }
@@ -3191,8 +3216,8 @@ namespace w3c_sw {
 
   case 467:
 
-/* Line 678 of lalr1.cc  */
-#line 2659 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2659 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
     }
@@ -3200,8 +3225,8 @@ namespace w3c_sw {
 
   case 469:
 
-/* Line 678 of lalr1.cc  */
-#line 2663 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2663 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_TTerm) = TTerm::RDF_nil; // !!! new GraphTerm_rule5($1);
     }
@@ -3209,8 +3234,8 @@ namespace w3c_sw {
 
   case 471:
 
-/* Line 678 of lalr1.cc  */
-#line 2674 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2674 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanDisjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -3220,8 +3245,8 @@ namespace w3c_sw {
 
   case 472:
 
-/* Line 678 of lalr1.cc  */
-#line 2683 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2683 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -3229,8 +3254,8 @@ namespace w3c_sw {
 
   case 473:
 
-/* Line 678 of lalr1.cc  */
-#line 2690 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2690 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -3238,8 +3263,8 @@ namespace w3c_sw {
 
   case 474:
 
-/* Line 678 of lalr1.cc  */
-#line 2693 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2693 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -3248,8 +3273,8 @@ namespace w3c_sw {
 
   case 475:
 
-/* Line 678 of lalr1.cc  */
-#line 2701 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2701 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanConjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -3259,8 +3284,8 @@ namespace w3c_sw {
 
   case 476:
 
-/* Line 678 of lalr1.cc  */
-#line 2710 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2710 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -3268,8 +3293,8 @@ namespace w3c_sw {
 
   case 477:
 
-/* Line 678 of lalr1.cc  */
-#line 2717 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2717 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -3277,8 +3302,8 @@ namespace w3c_sw {
 
   case 478:
 
-/* Line 678 of lalr1.cc  */
-#line 2720 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2720 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -3287,8 +3312,8 @@ namespace w3c_sw {
 
   case 480:
 
-/* Line 678 of lalr1.cc  */
-#line 2732 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2732 "lib/SPARQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp) {
 	    (yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
@@ -3302,8 +3327,8 @@ namespace w3c_sw {
 
   case 481:
 
-/* Line 678 of lalr1.cc  */
-#line 2745 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2745 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = NULL;
@@ -3312,8 +3337,8 @@ namespace w3c_sw {
 
   case 483:
 
-/* Line 678 of lalr1.cc  */
-#line 2753 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2753 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -3322,8 +3347,8 @@ namespace w3c_sw {
 
   case 484:
 
-/* Line 678 of lalr1.cc  */
-#line 2757 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2757 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -3332,8 +3357,8 @@ namespace w3c_sw {
 
   case 485:
 
-/* Line 678 of lalr1.cc  */
-#line 2761 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2761 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -3342,8 +3367,8 @@ namespace w3c_sw {
 
   case 486:
 
-/* Line 678 of lalr1.cc  */
-#line 2765 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2765 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -3352,8 +3377,8 @@ namespace w3c_sw {
 
   case 487:
 
-/* Line 678 of lalr1.cc  */
-#line 2769 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2769 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -3362,8 +3387,8 @@ namespace w3c_sw {
 
   case 488:
 
-/* Line 678 of lalr1.cc  */
-#line 2773 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2773 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
@@ -3372,8 +3397,8 @@ namespace w3c_sw {
 
   case 489:
 
-/* Line 678 of lalr1.cc  */
-#line 2777 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2777 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = false;
 	(yyval.p_ComparatorSense).comp = new NaryIn((yysemantic_stack_[(2) - (2)].p_Expressions));
@@ -3382,8 +3407,8 @@ namespace w3c_sw {
 
   case 490:
 
-/* Line 678 of lalr1.cc  */
-#line 2781 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2781 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ComparatorSense).neg = true;
 	(yyval.p_ComparatorSense).comp = new NaryIn((yysemantic_stack_[(3) - (3)].p_Expressions));
@@ -3392,8 +3417,8 @@ namespace w3c_sw {
 
   case 492:
 
-/* Line 678 of lalr1.cc  */
-#line 2793 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2793 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticSum((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -3403,8 +3428,8 @@ namespace w3c_sw {
 
   case 493:
 
-/* Line 678 of lalr1.cc  */
-#line 2802 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2802 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
@@ -3412,8 +3437,8 @@ namespace w3c_sw {
 
   case 494:
 
-/* Line 678 of lalr1.cc  */
-#line 2805 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2805 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
@@ -3421,8 +3446,8 @@ namespace w3c_sw {
 
   case 495:
 
-/* Line 678 of lalr1.cc  */
-#line 2812 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2812 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -3430,8 +3455,8 @@ namespace w3c_sw {
 
   case 496:
 
-/* Line 678 of lalr1.cc  */
-#line 2815 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2815 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -3439,8 +3464,8 @@ namespace w3c_sw {
 
   case 497:
 
-/* Line 678 of lalr1.cc  */
-#line 2822 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2822 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -3448,8 +3473,8 @@ namespace w3c_sw {
 
   case 499:
 
-/* Line 678 of lalr1.cc  */
-#line 2830 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2830 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -3457,8 +3482,8 @@ namespace w3c_sw {
 
   case 500:
 
-/* Line 678 of lalr1.cc  */
-#line 2833 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2833 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -3466,8 +3491,8 @@ namespace w3c_sw {
 
   case 501:
 
-/* Line 678 of lalr1.cc  */
-#line 2837 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2837 "lib/SPARQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_Expression) == NULL)
 	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
@@ -3482,8 +3507,8 @@ namespace w3c_sw {
 
   case 502:
 
-/* Line 678 of lalr1.cc  */
-#line 2851 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2851 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -3491,8 +3516,8 @@ namespace w3c_sw {
 
   case 503:
 
-/* Line 678 of lalr1.cc  */
-#line 2854 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2854 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -3501,8 +3526,8 @@ namespace w3c_sw {
 
   case 504:
 
-/* Line 678 of lalr1.cc  */
-#line 2862 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2862 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticProduct((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
 	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
@@ -3512,8 +3537,8 @@ namespace w3c_sw {
 
   case 505:
 
-/* Line 678 of lalr1.cc  */
-#line 2871 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2871 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
     }
@@ -3521,8 +3546,8 @@ namespace w3c_sw {
 
   case 506:
 
-/* Line 678 of lalr1.cc  */
-#line 2874 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2874 "lib/SPARQLParser.ypp"
     {
 	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
 	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
@@ -3531,8 +3556,8 @@ namespace w3c_sw {
 
   case 507:
 
-/* Line 678 of lalr1.cc  */
-#line 2881 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2881 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -3540,8 +3565,8 @@ namespace w3c_sw {
 
   case 508:
 
-/* Line 678 of lalr1.cc  */
-#line 2884 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2884 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
     }
@@ -3549,8 +3574,8 @@ namespace w3c_sw {
 
   case 509:
 
-/* Line 678 of lalr1.cc  */
-#line 2887 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2887 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
     }
@@ -3558,8 +3583,8 @@ namespace w3c_sw {
 
   case 514:
 
-/* Line 678 of lalr1.cc  */
-#line 2897 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2897 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
     }
@@ -3567,8 +3592,8 @@ namespace w3c_sw {
 
   case 515:
 
-/* Line 678 of lalr1.cc  */
-#line 2900 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2900 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
     }
@@ -3576,8 +3601,8 @@ namespace w3c_sw {
 
   case 516:
 
-/* Line 678 of lalr1.cc  */
-#line 2903 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2903 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
     }
@@ -3585,8 +3610,8 @@ namespace w3c_sw {
 
   case 517:
 
-/* Line 678 of lalr1.cc  */
-#line 2906 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2906 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
     }
@@ -3594,8 +3619,8 @@ namespace w3c_sw {
 
   case 519:
 
-/* Line 678 of lalr1.cc  */
-#line 2913 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2913 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
     }
@@ -3603,8 +3628,8 @@ namespace w3c_sw {
 
   case 520:
 
-/* Line 678 of lalr1.cc  */
-#line 2925 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2925 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3612,8 +3637,8 @@ namespace w3c_sw {
 
   case 521:
 
-/* Line 678 of lalr1.cc  */
-#line 2928 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2928 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3621,8 +3646,8 @@ namespace w3c_sw {
 
   case 522:
 
-/* Line 678 of lalr1.cc  */
-#line 2931 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2931 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3630,8 +3655,8 @@ namespace w3c_sw {
 
   case 523:
 
-/* Line 678 of lalr1.cc  */
-#line 2934 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2934 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3639,8 +3664,8 @@ namespace w3c_sw {
 
   case 524:
 
-/* Line 678 of lalr1.cc  */
-#line 2937 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2937 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
     }
@@ -3648,8 +3673,8 @@ namespace w3c_sw {
 
   case 525:
 
-/* Line 678 of lalr1.cc  */
-#line 2940 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2940 "lib/SPARQLParser.ypp"
     {
       (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
     }
@@ -3657,8 +3682,8 @@ namespace w3c_sw {
 
   case 526:
 
-/* Line 678 of lalr1.cc  */
-#line 2943 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2943 "lib/SPARQLParser.ypp"
     {
       (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
     }
@@ -3666,8 +3691,8 @@ namespace w3c_sw {
 
   case 527:
 
-/* Line 678 of lalr1.cc  */
-#line 2947 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2947 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(2) - (2)].p_Expression), NULL, NULL));
     }
@@ -3675,8 +3700,8 @@ namespace w3c_sw {
 
   case 528:
 
-/* Line 678 of lalr1.cc  */
-#line 2950 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2950 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
@@ -3684,8 +3709,8 @@ namespace w3c_sw {
 
   case 529:
 
-/* Line 678 of lalr1.cc  */
-#line 2953 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2953 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3693,8 +3718,8 @@ namespace w3c_sw {
 
   case 530:
 
-/* Line 678 of lalr1.cc  */
-#line 2956 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2956 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3702,8 +3727,8 @@ namespace w3c_sw {
 
   case 531:
 
-/* Line 678 of lalr1.cc  */
-#line 2959 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2959 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3711,8 +3736,8 @@ namespace w3c_sw {
 
   case 532:
 
-/* Line 678 of lalr1.cc  */
-#line 2962 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2962 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3720,8 +3745,8 @@ namespace w3c_sw {
 
   case 533:
 
-/* Line 678 of lalr1.cc  */
-#line 2965 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2965 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
     }
@@ -3729,8 +3754,8 @@ namespace w3c_sw {
 
   case 535:
 
-/* Line 678 of lalr1.cc  */
-#line 2969 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2969 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3738,8 +3763,8 @@ namespace w3c_sw {
 
   case 537:
 
-/* Line 678 of lalr1.cc  */
-#line 2973 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2973 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3747,8 +3772,8 @@ namespace w3c_sw {
 
   case 538:
 
-/* Line 678 of lalr1.cc  */
-#line 2976 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2976 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3756,8 +3781,8 @@ namespace w3c_sw {
 
   case 539:
 
-/* Line 678 of lalr1.cc  */
-#line 2979 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2979 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3765,8 +3790,8 @@ namespace w3c_sw {
 
   case 540:
 
-/* Line 678 of lalr1.cc  */
-#line 2982 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2982 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3774,8 +3799,8 @@ namespace w3c_sw {
 
   case 541:
 
-/* Line 678 of lalr1.cc  */
-#line 2985 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2985 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3783,8 +3808,8 @@ namespace w3c_sw {
 
   case 542:
 
-/* Line 678 of lalr1.cc  */
-#line 2988 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2988 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3792,8 +3817,8 @@ namespace w3c_sw {
 
   case 543:
 
-/* Line 678 of lalr1.cc  */
-#line 2991 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2991 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3801,8 +3826,8 @@ namespace w3c_sw {
 
   case 544:
 
-/* Line 678 of lalr1.cc  */
-#line 2994 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2994 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3810,8 +3835,8 @@ namespace w3c_sw {
 
   case 545:
 
-/* Line 678 of lalr1.cc  */
-#line 2997 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 2997 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3819,8 +3844,8 @@ namespace w3c_sw {
 
   case 546:
 
-/* Line 678 of lalr1.cc  */
-#line 3000 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3000 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3828,8 +3853,8 @@ namespace w3c_sw {
 
   case 547:
 
-/* Line 678 of lalr1.cc  */
-#line 3003 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3003 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3837,8 +3862,8 @@ namespace w3c_sw {
 
   case 548:
 
-/* Line 678 of lalr1.cc  */
-#line 3006 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3006 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3846,8 +3871,8 @@ namespace w3c_sw {
 
   case 549:
 
-/* Line 678 of lalr1.cc  */
-#line 3009 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3009 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3855,8 +3880,8 @@ namespace w3c_sw {
 
   case 550:
 
-/* Line 678 of lalr1.cc  */
-#line 3012 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3012 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3864,8 +3889,8 @@ namespace w3c_sw {
 
   case 551:
 
-/* Line 678 of lalr1.cc  */
-#line 3015 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3015 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3873,8 +3898,8 @@ namespace w3c_sw {
 
   case 552:
 
-/* Line 678 of lalr1.cc  */
-#line 3018 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3018 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_tz, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3882,8 +3907,8 @@ namespace w3c_sw {
 
   case 553:
 
-/* Line 678 of lalr1.cc  */
-#line 3021 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3021 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
@@ -3891,8 +3916,8 @@ namespace w3c_sw {
 
   case 554:
 
-/* Line 678 of lalr1.cc  */
-#line 3024 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3024 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
     }
@@ -3900,8 +3925,8 @@ namespace w3c_sw {
 
   case 555:
 
-/* Line 678 of lalr1.cc  */
-#line 3027 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3027 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
     }
@@ -3909,8 +3934,8 @@ namespace w3c_sw {
 
   case 556:
 
-/* Line 678 of lalr1.cc  */
-#line 3030 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3030 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3918,8 +3943,8 @@ namespace w3c_sw {
 
   case 557:
 
-/* Line 678 of lalr1.cc  */
-#line 3033 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3033 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3927,8 +3952,8 @@ namespace w3c_sw {
 
   case 558:
 
-/* Line 678 of lalr1.cc  */
-#line 3036 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3036 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3936,8 +3961,8 @@ namespace w3c_sw {
 
   case 559:
 
-/* Line 678 of lalr1.cc  */
-#line 3039 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3039 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3945,8 +3970,8 @@ namespace w3c_sw {
 
   case 560:
 
-/* Line 678 of lalr1.cc  */
-#line 3042 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3042 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -3954,8 +3979,8 @@ namespace w3c_sw {
 
   case 561:
 
-/* Line 678 of lalr1.cc  */
-#line 3045 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3045 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
     }
@@ -3963,8 +3988,8 @@ namespace w3c_sw {
 
   case 562:
 
-/* Line 678 of lalr1.cc  */
-#line 3048 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3048 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
     }
@@ -3972,8 +3997,8 @@ namespace w3c_sw {
 
   case 563:
 
-/* Line 678 of lalr1.cc  */
-#line 3051 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3051 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3981,8 +4006,8 @@ namespace w3c_sw {
 
   case 564:
 
-/* Line 678 of lalr1.cc  */
-#line 3054 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3054 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3990,8 +4015,8 @@ namespace w3c_sw {
 
   case 565:
 
-/* Line 678 of lalr1.cc  */
-#line 3057 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3057 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
     }
@@ -3999,8 +4024,8 @@ namespace w3c_sw {
 
   case 566:
 
-/* Line 678 of lalr1.cc  */
-#line 3060 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3060 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -4008,8 +4033,8 @@ namespace w3c_sw {
 
   case 567:
 
-/* Line 678 of lalr1.cc  */
-#line 3063 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3063 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -4017,8 +4042,8 @@ namespace w3c_sw {
 
   case 568:
 
-/* Line 678 of lalr1.cc  */
-#line 3066 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3066 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -4026,8 +4051,8 @@ namespace w3c_sw {
 
   case 569:
 
-/* Line 678 of lalr1.cc  */
-#line 3069 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3069 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -4035,8 +4060,8 @@ namespace w3c_sw {
 
   case 570:
 
-/* Line 678 of lalr1.cc  */
-#line 3072 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3072 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
     }
@@ -4044,8 +4069,8 @@ namespace w3c_sw {
 
   case 574:
 
-/* Line 678 of lalr1.cc  */
-#line 3083 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3083 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
     }
@@ -4053,8 +4078,8 @@ namespace w3c_sw {
 
   case 575:
 
-/* Line 678 of lalr1.cc  */
-#line 3092 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3092 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -4062,8 +4087,8 @@ namespace w3c_sw {
 
   case 576:
 
-/* Line 678 of lalr1.cc  */
-#line 3099 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3099 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     }
@@ -4071,8 +4096,8 @@ namespace w3c_sw {
 
   case 577:
 
-/* Line 678 of lalr1.cc  */
-#line 3106 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3106 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -4080,8 +4105,8 @@ namespace w3c_sw {
 
   case 579:
 
-/* Line 678 of lalr1.cc  */
-#line 3113 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3113 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
     }
@@ -4089,8 +4114,8 @@ namespace w3c_sw {
 
   case 580:
 
-/* Line 678 of lalr1.cc  */
-#line 3119 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3119 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_replace, (yysemantic_stack_[(9) - (3)].p_Expression), (yysemantic_stack_[(9) - (5)].p_Expression), (yysemantic_stack_[(9) - (7)].p_Expression))); // !! , $8
     }
@@ -4098,8 +4123,8 @@ namespace w3c_sw {
 
   case 581:
 
-/* Line 678 of lalr1.cc  */
-#line 3125 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3125 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
@@ -4108,8 +4133,8 @@ namespace w3c_sw {
 
   case 582:
 
-/* Line 678 of lalr1.cc  */
-#line 3128 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3128 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter(NULL);
 	  (yyval.p_TableOperation) = driver.curOp;
@@ -4119,8 +4144,8 @@ namespace w3c_sw {
 
   case 583:
 
-/* Line 678 of lalr1.cc  */
-#line 3132 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3132 "lib/SPARQLParser.ypp"
     {
 	  (yyval.p_Expression) = new ExistsExpression(driver.ensureGraphPattern());
 	  driver.curOp = (yysemantic_stack_[(4) - (3)].p_TableOperation);
@@ -4130,8 +4155,8 @@ namespace w3c_sw {
 
   case 584:
 
-/* Line 678 of lalr1.cc  */
-#line 3140 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3140 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
@@ -4140,8 +4165,8 @@ namespace w3c_sw {
 
   case 585:
 
-/* Line 678 of lalr1.cc  */
-#line 3143 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3143 "lib/SPARQLParser.ypp"
     {
 	  driver.restoreFilter(NULL);
 	  (yyval.p_TableOperation) = driver.curOp;
@@ -4151,8 +4176,8 @@ namespace w3c_sw {
 
   case 586:
 
-/* Line 678 of lalr1.cc  */
-#line 3147 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3147 "lib/SPARQLParser.ypp"
     {
 	  // $$ = new ExistsExpression(false, driver.ensureGraphPattern());
 	  (yyval.p_Expression) = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
@@ -4163,8 +4188,8 @@ namespace w3c_sw {
 
   case 587:
 
-/* Line 678 of lalr1.cc  */
-#line 3156 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3156 "lib/SPARQLParser.ypp"
     {
 	driver.countStar = true;
 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression), AggregateCall::ScalarVals()));
@@ -4173,8 +4198,8 @@ namespace w3c_sw {
 
   case 588:
 
-/* Line 678 of lalr1.cc  */
-#line 3164 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3164 "lib/SPARQLParser.ypp"
     {
 	driver.countStar = true;
 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(5) - (1)].p_URI), (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression), AggregateCall::ScalarVals()));
@@ -4183,8 +4208,8 @@ namespace w3c_sw {
 
   case 589:
 
-/* Line 678 of lalr1.cc  */
-#line 3173 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3173 "lib/SPARQLParser.ypp"
     {
 	  AggregateCall::ScalarVals svals;
 	  if ((yysemantic_stack_[(6) - (5)].p_RDFLiteral) != NULL)
@@ -4195,8 +4220,8 @@ namespace w3c_sw {
 
   case 590:
 
-/* Line 678 of lalr1.cc  */
-#line 3189 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3189 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_Expression) = NULL;
     }
@@ -4204,8 +4229,8 @@ namespace w3c_sw {
 
   case 592:
 
-/* Line 678 of lalr1.cc  */
-#line 3196 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3196 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_sum;
     }
@@ -4213,8 +4238,8 @@ namespace w3c_sw {
 
   case 593:
 
-/* Line 678 of lalr1.cc  */
-#line 3199 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3199 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_min;
     }
@@ -4222,8 +4247,8 @@ namespace w3c_sw {
 
   case 594:
 
-/* Line 678 of lalr1.cc  */
-#line 3202 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3202 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_max;
     }
@@ -4231,8 +4256,8 @@ namespace w3c_sw {
 
   case 595:
 
-/* Line 678 of lalr1.cc  */
-#line 3205 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3205 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_avg;
     }
@@ -4240,8 +4265,8 @@ namespace w3c_sw {
 
   case 596:
 
-/* Line 678 of lalr1.cc  */
-#line 3208 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3208 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = TTerm::FUNC_sample;
     }
@@ -4249,8 +4274,8 @@ namespace w3c_sw {
 
   case 597:
 
-/* Line 678 of lalr1.cc  */
-#line 3214 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3214 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_string), NULL, NULL);
     }
@@ -4258,8 +4283,8 @@ namespace w3c_sw {
 
   case 598:
 
-/* Line 678 of lalr1.cc  */
-#line 3220 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3220 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RDFLiteral) = NULL;
     }
@@ -4267,8 +4292,8 @@ namespace w3c_sw {
 
   case 600:
 
-/* Line 678 of lalr1.cc  */
-#line 3227 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3227 "lib/SPARQLParser.ypp"
     {
 	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
 	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
@@ -4279,8 +4304,8 @@ namespace w3c_sw {
 
   case 601:
 
-/* Line 678 of lalr1.cc  */
-#line 3237 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3237 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_ArgList) = NULL;
     }
@@ -4288,8 +4313,8 @@ namespace w3c_sw {
 
   case 603:
 
-/* Line 678 of lalr1.cc  */
-#line 3245 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3245 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
@@ -4298,8 +4323,8 @@ namespace w3c_sw {
 
   case 604:
 
-/* Line 678 of lalr1.cc  */
-#line 3253 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3253 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
     }
@@ -4307,8 +4332,8 @@ namespace w3c_sw {
 
   case 605:
 
-/* Line 678 of lalr1.cc  */
-#line 3260 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3260 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -4317,8 +4342,8 @@ namespace w3c_sw {
 
   case 606:
 
-/* Line 678 of lalr1.cc  */
-#line 3264 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3264 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -4327,8 +4352,8 @@ namespace w3c_sw {
 
   case 607:
 
-/* Line 678 of lalr1.cc  */
-#line 3272 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3272 "lib/SPARQLParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -4337,8 +4362,8 @@ namespace w3c_sw {
 
   case 631:
 
-/* Line 678 of lalr1.cc  */
-#line 3326 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 690 of lalr1.cc  */
+#line 3326 "lib/SPARQLParser.ypp"
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_bnodeScope) {
 	    driver.ensureBasicGraphPattern();
@@ -4377,11 +4402,22 @@ namespace w3c_sw {
 
 
 
-/* Line 678 of lalr1.cc  */
-#line 4382 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.cpp"
+/* Line 690 of lalr1.cc  */
+#line 4407 "lib/SPARQLParser.cpp"
 	default:
           break;
       }
+    /* User semantic actions sometimes alter yychar, and that requires
+       that yytoken be updated with the new translation.  We take the
+       approach of translating immediately before every use of yytoken.
+       One alternative is translating here after every semantic action,
+       but that translation would be missed if the semantic action
+       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
+       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
+       destructor might then be invoked immediately.  In the case of
+       YYERROR, subsequent parser actions might lead to an incorrect
+       destructor call or verbose syntax error message before the
+       lookahead is translated.  */
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
 
     yypop_ (yylen);
@@ -4405,14 +4441,20 @@ namespace w3c_sw {
   | yyerrlab -- here on detecting error |
   `------------------------------------*/
   yyerrlab:
+    /* Make sure we have latest lookahead translation.  See comments at
+       user semantic actions for why this is necessary.  */
+    yytoken = yytranslate_ (yychar);
+
     /* If not already recovering from an error, report this error.  */
     if (!yyerrstatus_)
       {
 	++yynerrs_;
+	if (yychar == yyempty_)
+	  yytoken = yyempty_;
 	error (yylloc, yysyntax_error_ (yystate, yytoken));
       }
 
-    yyerror_range[0] = yylloc;
+    yyerror_range[1] = yylloc;
     if (yyerrstatus_ == 3)
       {
 	/* If just tried and failed to reuse lookahead token after an
@@ -4447,7 +4489,7 @@ namespace w3c_sw {
     if (false)
       goto yyerrorlab;
 
-    yyerror_range[0] = yylocation_stack_[yylen - 1];
+    yyerror_range[1] = yylocation_stack_[yylen - 1];
     /* Do not reclaim the symbols of the rule which action triggered
        this YYERROR.  */
     yypop_ (yylen);
@@ -4464,7 +4506,7 @@ namespace w3c_sw {
     for (;;)
       {
 	yyn = yypact_[yystate];
-	if (yyn != yypact_ninf_)
+	if (!yy_pact_value_is_default_ (yyn))
 	{
 	  yyn += yyterror_;
 	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
@@ -4479,7 +4521,7 @@ namespace w3c_sw {
 	if (yystate_stack_.height () == 1)
 	YYABORT;
 
-	yyerror_range[0] = yylocation_stack_[0];
+	yyerror_range[1] = yylocation_stack_[0];
 	yydestruct_ ("Error: popping",
 		     yystos_[yystate],
 		     &yysemantic_stack_[0], &yylocation_stack_[0]);
@@ -4488,10 +4530,10 @@ namespace w3c_sw {
 	YY_STACK_PRINT ();
       }
 
-    yyerror_range[1] = yylloc;
+    yyerror_range[2] = yylloc;
     // Using YYLLOC is tempting, but would change the location of
     // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, (yyerror_range - 1), 2);
+    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
     yysemantic_stack_.push (yylval);
     yylocation_stack_.push (yyloc);
 
@@ -4514,7 +4556,13 @@ namespace w3c_sw {
 
   yyreturn:
     if (yychar != yyempty_)
-      yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval, &yylloc);
+      {
+        /* Make sure we have latest lookahead translation.  See comments
+           at user semantic actions for why this is necessary.  */
+        yytoken = yytranslate_ (yychar);
+        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
+                     &yylloc);
+      }
 
     /* Do not reclaim the symbols of the rule which action triggered
        this YYABORT or YYACCEPT.  */
@@ -4533,51 +4581,97 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  SPARQLParser::yysyntax_error_ (int yystate, int tok)
+  SPARQLParser::yysyntax_error_ (int yystate, int yytoken)
   {
-    std::string res;
-    YYUSE (yystate);
-#if YYERROR_VERBOSE
-    int yyn = yypact_[yystate];
-    if (yypact_ninf_ < yyn && yyn <= yylast_)
+    std::string yyres;
+    // Number of reported tokens (one for the "unexpected", one per
+    // "expected").
+    size_t yycount = 0;
+    // Its maximum.
+    enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
+    // Arguments of yyformat.
+    char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
+
+    /* There are many possibilities here to consider:
+       - If this state is a consistent state with a default action, then
+         the only way this function was invoked is if the default action
+         is an error action.  In that case, don't check for expected
+         tokens because there are none.
+       - The only way there can be no lookahead present (in yytoken) is
+         if this state is a consistent state with a default action.
+         Thus, detecting the absence of a lookahead is sufficient to
+         determine that there is no unexpected or expected token to
+         report.  In that case, just report a simple "syntax error".
+       - Don't assume there isn't a lookahead just because this state is
+         a consistent state with a default action.  There might have
+         been a previous inconsistent state, consistent state with a
+         non-default action, or user semantic action that manipulated
+         yychar.
+       - Of course, the expected token list depends on states to have
+         correct lookahead information, and it depends on the parser not
+         to perform extra reductions after fetching a lookahead from the
+         scanner and before detecting a syntax error.  Thus, state
+         merging (from LALR or IELR) and default reductions corrupt the
+         expected token list.  However, the list is correct for
+         canonical LR with one exception: it will still contain any
+         token that will not be accepted due to an error action in a
+         later state.
+    */
+    if (yytoken != yyempty_)
       {
-	/* Start YYX at -YYN if negative to avoid negative indexes in
-	   YYCHECK.  */
-	int yyxbegin = yyn < 0 ? -yyn : 0;
-
-	/* Stay within bounds of both yycheck and yytname.  */
-	int yychecklim = yylast_ - yyn + 1;
-	int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
-	int count = 0;
-	for (int x = yyxbegin; x < yyxend; ++x)
-	  if (yycheck_[x + yyn] == x && x != yyterror_)
-	    ++count;
-
-	// FIXME: This method of building the message is not compatible
-	// with internationalization.  It should work like yacc.c does it.
-	// That is, first build a string that looks like this:
-	// "syntax error, unexpected %s or %s or %s"
-	// Then, invoke YY_ on this string.
-	// Finally, use the string as a format to output
-	// yytname_[tok], etc.
-	// Until this gets fixed, this message appears in English only.
-	res = "syntax error, unexpected ";
-	res += yytnamerr_ (yytname_[tok]);
-	if (count < 5)
-	  {
-	    count = 0;
-	    for (int x = yyxbegin; x < yyxend; ++x)
-	      if (yycheck_[x + yyn] == x && x != yyterror_)
-		{
-		  res += (!count++) ? ", expecting " : " or ";
-		  res += yytnamerr_ (yytname_[x]);
-		}
-	  }
+        yyarg[yycount++] = yytname_[yytoken];
+        int yyn = yypact_[yystate];
+        if (!yy_pact_value_is_default_ (yyn))
+          {
+            /* Start YYX at -YYN if negative to avoid negative indexes in
+               YYCHECK.  In other words, skip the first -YYN actions for
+               this state because they are default actions.  */
+            int yyxbegin = yyn < 0 ? -yyn : 0;
+            /* Stay within bounds of both yycheck and yytname.  */
+            int yychecklim = yylast_ - yyn + 1;
+            int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
+            for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+              if (yycheck_[yyx + yyn] == yyx && yyx != yyterror_
+                  && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
+                {
+                  if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
+                    {
+                      yycount = 1;
+                      break;
+                    }
+                  else
+                    yyarg[yycount++] = yytname_[yyx];
+                }
+          }
       }
-    else
-#endif
-      res = YY_("syntax error");
-    return res;
+
+    char const* yyformat = 0;
+    switch (yycount)
+      {
+#define YYCASE_(N, S)                         \
+        case N:                               \
+          yyformat = S;                       \
+        break
+        YYCASE_(0, YY_("syntax error"));
+        YYCASE_(1, YY_("syntax error, unexpected %s"));
+        YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
+        YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+        YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+        YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+#undef YYCASE_
+      }
+
+    // Argument number.
+    size_t yyi = 0;
+    for (char const* yyp = yyformat; *yyp; ++yyp)
+      if (yyp[0] == '%' && yyp[1] == 's' && yyi < yycount)
+        {
+          yyres += yytnamerr_ (yyarg[yyi++]);
+          ++yyp;
+        }
+      else
+        yyres += *yyp;
+    return yyres;
   }
 
 
@@ -4691,9 +4785,9 @@ namespace w3c_sw {
       60,  -853,    11,  -853,  2121,   609,  -853,  -853,  -853
   };
 
-  /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
-     doesn't specify something else to do.  Zero means the default is an
-     error.  */
+  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
+     YYTABLE doesn't specify something else to do.  Zero means the
+     default is an error.  */
   const unsigned short int
   SPARQLParser::yydefact_[] =
   {
@@ -4885,7 +4979,7 @@ namespace w3c_sw {
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If zero, do what YYDEFACT says.  */
+     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
   const short int SPARQLParser::yytable_ninf_ = -444;
   const short int
   SPARQLParser::yytable_[] =
@@ -6375,17 +6469,14 @@ namespace w3c_sw {
   const SPARQLParser::token_number_type SPARQLParser::yyundef_token_ = 2;
 
 
-/* Line 1054 of lalr1.cc  */
-#line 1 "[Bison:b4_percent_define_default]"
-
 } // w3c_sw
 
-/* Line 1054 of lalr1.cc  */
-#line 6385 "C:\\Users\\Jelle\\Documents\\GitHub\\SWObjects\\lib\\SPARQLParser.cpp"
+/* Line 1136 of lalr1.cc  */
+#line 6476 "lib/SPARQLParser.cpp"
 
 
-/* Line 1056 of lalr1.cc  */
-#line 3366 "..\\..\\lib\\SPARQLParser.ypp"
+/* Line 1138 of lalr1.cc  */
+#line 3366 "lib/SPARQLParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::SPARQLParser::error(const SPARQLParser::location_type& l,

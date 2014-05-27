@@ -1436,10 +1436,6 @@ void TurtleDriver::parse (std::string turtleStr, RdfDB* db) {
 
 } // namespace w3c_sw
 
-// FIXME: dirty workaround to make sure linking errors do not occur
-int TurtleFlexLexer::w3c_swlex() {
-	return 0;
-}
 /* END Driver */
 
 
