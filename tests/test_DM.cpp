@@ -203,10 +203,10 @@ void expectGraph () {
 	if (!(h.expect == h.test)) {
 	    {
 		std::stringstream ss;
-		ss << "[[" << h.expect << " != " << h.test << "]]\n";
+		ss << "[[" << h.expect << " ?= " << h.test << "]]\n";
 		doing = ss.str();
 	    }
-	    errorStr << "[[" << h.expect << " != " << h.test << "]]";
+	    errorStr << "expect != test [[" << h.expect << " != " << h.test << "]]";
 	}
 	doing = "tearing down";
     } catch (w3c_sw::ParserException& p) {
