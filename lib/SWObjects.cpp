@@ -653,7 +653,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 #define EXTENCONST(lname) { URI("https://github.com/ericprud/SWObjects/wiki/Sparql-extensions#" #lname), NULL}
 
     /** URI constants, shared between all AtomFactories: */
-    const AtomFactory::URIstr AtomFactory::_URIConstants[] = {
+    const _URIstr_initializer AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
 	XPATHCONST   (normalize_space),
 	EXTENCONST   (lastTail),

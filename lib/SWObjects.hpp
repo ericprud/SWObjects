@@ -963,6 +963,7 @@ typedef std::vector<const TTerm*>::const_iterator VariableVectorConstIterator;
 
 class URI : public TTerm {
     friend class AtomFactory;
+    friend class _URIstr_initializer;
 private:
     URI (std::string str) : TTerm(str) {  }
     ~URI () { }
@@ -978,6 +979,11 @@ public:
     }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     //bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
+};
+
+struct _URIstr_initializer {
+    URI uri;
+    const char* op;
 };
 
 class Bindable : public TTerm {
@@ -1177,8 +1183,8 @@ public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Integer; }
     int getValue () const { return m_value; }
     virtual int getInt () const { return m_value; }
-    virtual float getFloat () const { return m_value; }
-    virtual double getDouble () const { return m_value; }
+    virtual float getFloat () const { return (float)m_value; }
+    virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString (MediaType mediaType = MediaType()) const {
 	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_integer)
@@ -1200,9 +1206,9 @@ protected:
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Float; }
     float getValue () const { return m_value; }
-    virtual int getInt () const { return m_value; }
+    virtual int getInt () const { return (int)m_value; }
     virtual float getFloat () const { return m_value; }
-    virtual double getDouble () const { return m_value; }
+    virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString (MediaType mediaType = MediaType()) const {
 	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_float)
@@ -1234,8 +1240,8 @@ protected:
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Double; }
     double getValue () const { return m_value; }
-    virtual int getInt () const { return m_value; }
-    virtual float getFloat () const { return m_value; }
+    virtual int getInt () const { return (int)m_value; }
+    virtual float getFloat () const { return (float)m_value; }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
     // <DOUBLE> ::= ([0-9])+ "." ([0-9])+ EXPONENT
@@ -1993,6 +1999,7 @@ public:
 
 class DefaultGraphPattern;
 class Expression;
+
 class AtomFactory {
     friend class TTerm;
 
@@ -2000,15 +2007,10 @@ protected:
     typedef std::set<const BNode*> BNodeSet;
     typedef std::map<std::string, const Variable*> VariableMap;
 
-    struct URIstr {
-	URI uri;
-	const char* op;
-    };
-
     struct URIMap : public std::map<std::string, const URI*> {
 	URIMap () {  }
-	URIMap (const URIstr* b, const URIstr* e) {
-	    for (const URIstr* p = b; p != e; ++p)
+	URIMap (const _URIstr_initializer* b, const _URIstr_initializer* e) {
+	    for (const _URIstr_initializer* p = b; p != e; ++p)
 		insert(std::pair<std::string, const URI*>(p->uri.getLexicalValue(), &p->uri));
 	}
     };
@@ -2027,8 +2029,8 @@ protected:
     typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
 
     struct pURI_str : public std::map<const URI*, const char*> {
-	pURI_str (const URIstr* b, const URIstr* e) {
-	    for (const URIstr* p = b; p != e; ++p)
+	pURI_str (const _URIstr_initializer* b, const _URIstr_initializer* e) {
+	    for (const _URIstr_initializer* p = b; p != e; ++p)
 		insert(std::pair<const URI*, const char*>(&p->uri, p->op));
 	}
     };
@@ -2059,7 +2061,7 @@ protected:
 	AtomFactory not require the initialization of the constant
 	hashes. EGP 20100922
      */
-    static const URIstr _URIConstants[];
+    static const _URIstr_initializer _URIConstants[];
     static const BooleanRDFLiteral _BooleanConstants[];
     static const NULLtterm _NULLtterm;
 
