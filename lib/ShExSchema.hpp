@@ -60,6 +60,7 @@ namespace w3c_sw {
 	    struct NameClass {
 		bool reverse;
 		NameClass () : reverse(false) {  }
+		virtual ~NameClass () {  }
 		virtual std::ostream& print(std::ostream& os) const = 0;
 		virtual std::string str() const;
 		virtual const TTerm* getP() const = 0;

@@ -82,7 +82,7 @@ namespace w3c_sw {
 	    struct CharTrailingChars : public Fixup {
 		int precision;
 		CharTrailingChars (int precision) : precision(precision) {  }
-		virtual std::string operator() (std::string lexval, Field::Type& sqlType) {
+		virtual std::string operator() (std::string lexval, Field::Type& /* sqlType */) {
 		    return lexval + std::string(precision - lexval.size(), ' ');
 		}
 	    };

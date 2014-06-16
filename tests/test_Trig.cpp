@@ -107,7 +107,7 @@ void parseNQuads (RdfDB* db, std::istream& is, std::string filename) {
 }
 
 typedef enum {Expect, Parse, Fail} Action;
-void parseAndCompare (std::string name, std::string trig, std::string nqad,
+void parseAndCompare (std::string /* name */, std::string trig, std::string nqad,
 		      std::string manifestLoc, Action action) {
     test_case const& cur = boost::unit_test::framework::current_test_case();
     // std::cerr << cur.p_name << "\n";
