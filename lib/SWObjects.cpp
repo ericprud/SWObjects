@@ -1477,7 +1477,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		std::string::iterator c = from.begin();
 		try {
 		    utf8::advance(c, start, from.end());
-		} catch (utf8::not_enough_room& e) {
+		} catch (utf8::not_enough_room&) {
 		    c = from.end();
 		}
 		from.erase(from.begin(), c);
@@ -1487,7 +1487,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		if (len > 0) {
 		    try {
 			utf8::advance(c, len, from.end());
-		    } catch (utf8::not_enough_room& e) {
+		    } catch (utf8::not_enough_room&) {
 			c = from.end();
 		    }
 		    from.erase(c, from.end());
@@ -2362,7 +2362,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     static std::string canonical (double d) {
 	std::stringstream canonical;
-	int ex = ::log10(d);
+	int ex = (int)::log10(d);
 	if (d < 1)
 	    --ex;
 	double logOf10 = ::log(10.0);
@@ -4741,7 +4741,7 @@ namespace w3c_sw {
 
 	    ::time(&rawtime);
 		#ifdef _MSC_VER
-		  ::localtime(&rawtime);
+		  ::localtime_s(&t, &rawtime);
 		#else
 		  ::localtime_r(&rawtime, &t);
 		#endif

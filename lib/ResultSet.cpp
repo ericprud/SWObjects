@@ -935,7 +935,7 @@ namespace w3c_sw {
                         row->erase(old);
                 } else
                     row->set(*knownVar, val, false, true);
-            } catch (SafeEvaluationError& e) {
+            } catch (SafeEvaluationError&) {
                 if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
                     SPARQLSerializer s;
                     pos2expr[*knownVar]->express(&s);

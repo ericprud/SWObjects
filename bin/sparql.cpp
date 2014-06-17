@@ -288,7 +288,7 @@ void validate (boost::any& /* v */, const std::vector<std::string>& values, logg
 	if (!fstream->is_open())
 	    throw sw::StringException(s + " is not open");
 	sw::Logger::addStream(LogSink, boost::shared_ptr< std::ostream >(fstream));
-    } catch (std::exception& e) {
+    } catch (std::exception&) {
 	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::error) << "Unable to open logging file \"" << s << "\".";
     }
 }
