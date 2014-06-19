@@ -135,8 +135,8 @@ PASSED_TOKENS		[\t ]+|"#"({LOW_NON_WHITE}|{HIGH_UCS})*
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
-{IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
-{IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
+{IT_true}		{yylval->p_TTerm = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
+{IT_false}		{yylval->p_TTerm = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
 {RDF_TYPE}		{return token::RDF_TYPE;}
 {AT_BASE}		{return token::AT_BASE;}
 {AT_PREFIX}		{return token::AT_PREFIX;}

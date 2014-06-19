@@ -38,15 +38,15 @@
 /* "%code requires" blocks.  */
 
 /* Line 35 of lalr1.cc  */
-#line 45 "lib/TrigParser.ypp"
+#line 46 "lib/TrigParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
  * this parser.
  */
 #endif /* !PARSER_HEADER_H */
-#ifndef TRIGS_PARSER_HPP
-#define TRIGS_PARSER_HPP
+#ifndef TRIG_PARSER_HPP
+#define TRIG_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
@@ -64,6 +64,7 @@ namespace w3c_sw {
  * structure into which the parsed data is saved. */
 
 class TrigDriver : public YaccDataDriver {
+    location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
     friend class TrigParser;
 protected:
     const TTerm* curSubject;
@@ -87,6 +88,16 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     class TrigScanner* lexer;
     BasicGraphPattern* root;
+
+    const BNode* createBNode () {
+	if (descriptiveBNodeLabels) {
+	    std::stringstream ss;
+	    ss << *(yylloc->begin.filename) <<":"<< yylloc->begin.line <<":"<< yylloc->begin.column;
+	    return atomFactory->getBNode(ss.str(), &bnodeMap);
+	} else {
+	    return atomFactory->createBNode();
+	}
+    }
 };
 
 } // namespace w3c_sw
@@ -96,7 +107,7 @@ public:
 
 
 /* Line 35 of lalr1.cc  */
-#line 100 "tmp/TrigParser/TrigParser.hpp"
+#line 111 "tmp/TrigParser/TrigParser.hpp"
 
 
 #include <string>
@@ -126,7 +137,7 @@ public:
 namespace w3c_sw {
 
 /* Line 35 of lalr1.cc  */
-#line 130 "tmp/TrigParser/TrigParser.hpp"
+#line 141 "tmp/TrigParser/TrigParser.hpp"
 
   /// A Bison parser.
   class TrigParser
@@ -138,7 +149,7 @@ namespace w3c_sw {
     {
 
 /* Line 35 of lalr1.cc  */
-#line 102 "lib/TrigParser.ypp"
+#line 114 "lib/TrigParser.ypp"
 
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
@@ -148,21 +159,17 @@ namespace w3c_sw {
 
     std::string* p_string;
 
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    const BooleanRDFLiteral* p_BooleanRDFLiteral;
-
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
-    const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 166 "tmp/TrigParser/TrigParser.hpp"
+#line 173 "tmp/TrigParser/TrigParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -175,22 +182,22 @@ namespace w3c_sw {
       /* Tokens.  */
    enum yytokentype {
      __EOF__ = 0,
-     IT_GRAPH = 258,
-     GT_DOT = 259,
-     GT_LCURLEY = 260,
-     GT_RCURLEY = 261,
-     IT_BASE = 262,
-     IT_PREFIX = 263,
-     GT_SEMI = 264,
-     GT_COMMA = 265,
-     GT_LBRACKET = 266,
-     GT_RBRACKET = 267,
-     GT_LPAREN = 268,
-     GT_RPAREN = 269,
+     AT_BASE = 258,
+     AT_PREFIX = 259,
+     IT_BASE = 260,
+     RDF_TYPE = 261,
+     IT_PREFIX = 262,
+     GT_LPAREN = 263,
+     GT_RPAREN = 264,
+     GT_DOT = 265,
+     GT_COMMA = 266,
+     GT_SEMI = 267,
+     GT_LBRACKET = 268,
+     GT_RBRACKET = 269,
      GT_DTYPE = 270,
-     RDF_TYPE = 271,
-     AT_BASE = 272,
-     AT_PREFIX = 273,
+     IT_GRAPH = 271,
+     GT_LCURLEY = 272,
+     GT_RCURLEY = 273,
      IT_true = 274,
      IT_false = 275,
      INTEGER = 276,
@@ -200,13 +207,12 @@ namespace w3c_sw {
      STRING_LITERAL2 = 280,
      STRING_LITERAL_LONG1 = 281,
      STRING_LITERAL_LONG2 = 282,
-     IRIREF = 283,
-     PNAME_NS = 284,
-     PNAME_LN = 285,
+     PNAME_NS = 283,
+     PNAME_LN = 284,
+     IRIREF = 285,
      BLANK_NODE_LABEL = 286,
      ANON = 287,
-     LANGTAG = 288,
-     NIL = 289
+     LANGTAG = 288
    };
 
     };
@@ -386,7 +392,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 390 "tmp/TrigParser/TrigParser.hpp"
+#line 396 "tmp/TrigParser/TrigParser.hpp"
 
 
 

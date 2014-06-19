@@ -249,8 +249,8 @@ ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
 {GT_LPAREN}		{return token::GT_LPAREN;}
 {GT_RPAREN}		{return token::GT_RPAREN;}
 {GT_DTYPE}		{return token::GT_DTYPE;}
-{IT_true}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
-{IT_false}		{yylval->p_BooleanRDFLiteral = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
+{IT_true}		{yylval->p_TTerm = driver->getBooleanRDFLiteral("true", true); return token::IT_true;}
+{IT_false}		{yylval->p_TTerm = driver->getBooleanRDFLiteral("false", false); return token::IT_false;}
 {IT_PREFIX}		{return token::IT_PREFIX;}
 {IT_BASE}		{return token::IT_BASE;}
 {GT_AT_base}		{return token::GT_AT_base;}

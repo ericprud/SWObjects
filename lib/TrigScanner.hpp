@@ -80,19 +80,19 @@ protected:
 	    int i;
 	    is >> i;
 	    normalized << i;
-	    yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, i);
+	    yylval->p_TTerm = driver->getNumericRDFLiteral(yytext, i);
 	    return tok;
 	case w3c_sw::TrigParser::token::DECIMAL:
 	    float f;
 	    is >> f;
 	    normalized << f;
-	    yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, f);
+	    yylval->p_TTerm = driver->getNumericRDFLiteral(yytext, f);
 	    return tok;
 	case w3c_sw::TrigParser::token::DOUBLE:
 	    double d;
 	    is >> d;
 	    normalized << d;
-	    yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
+	    yylval->p_TTerm = driver->getNumericRDFLiteral(yytext, d);
 	    return tok;
 	default: throw(new std::exception());
 	}

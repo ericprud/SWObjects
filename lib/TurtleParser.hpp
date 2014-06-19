@@ -45,8 +45,8 @@
  * this parser.
  */
 #endif /* !PARSER_HEADER_H */
-#ifndef TURTLES_PARSER_HPP
-#define TURTLES_PARSER_HPP
+#ifndef TURTLE_PARSER_HPP
+#define TURTLE_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
@@ -150,7 +150,6 @@ namespace w3c_sw {
 /* Line 35 of lalr1.cc  */
 #line 113 "lib/TurtleParser.ypp"
 
-    void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
@@ -159,21 +158,17 @@ namespace w3c_sw {
 
     std::string* p_string;
 
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    const BooleanRDFLiteral* p_BooleanRDFLiteral;
-
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
-    const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
 
 
 
 /* Line 35 of lalr1.cc  */
-#line 177 "tmp/TurtleParser/TurtleParser.hpp"
+#line 172 "tmp/TurtleParser/TurtleParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -393,7 +388,7 @@ namespace w3c_sw {
 } // w3c_sw
 
 /* Line 35 of lalr1.cc  */
-#line 397 "tmp/TurtleParser/TurtleParser.hpp"
+#line 392 "tmp/TurtleParser/TurtleParser.hpp"
 
 
 

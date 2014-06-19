@@ -49,8 +49,8 @@
  * this parser.
  */
 #endif /* !PARSER_HEADER_H */
-#ifndef TURTLES_PARSER_HPP
-#define TURTLES_PARSER_HPP
+#ifndef TURTLE_PARSER_HPP
+#define TURTLE_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
@@ -111,7 +111,6 @@ public:
  /*** BEGIN Turtle language tokens. ***/
 
 %union {
-    void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
@@ -120,15 +119,11 @@ public:
 
     std::string* p_string;
 
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    const BooleanRDFLiteral* p_BooleanRDFLiteral;
-
     /* Productions */
     BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
     const URI* p_URI;
     ProductionVector<URI*>* p_URIs;
-    const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
 }
 
@@ -162,7 +157,7 @@ public:
 %type <p_string> String
 %type <p_TTerm> _Qobject_E_Star
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C
-                       _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
+                         _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
 
 /* END TokenBlock */
 
