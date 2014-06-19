@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#include <stdint.h>
+#endif
+
 #line 2 "lib/TrigScanner.cpp"
 
 #line 4 "lib/TrigScanner.cpp"
@@ -3352,7 +3356,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
 	if ( yyin->bad() )
 		return -1;
 	else
-		return yyin->gcount();
+		return (int)yyin->gcount();
 #endif
 }
 
@@ -3832,7 +3836,9 @@ int yyFlexLexer::yy_get_next_buffer()
 
 /* %if-c++-only */
 
+#ifndef _MSC_VER
 extern "C" int isatty (int ) throw();
+#endif
 
 /* %endif */
 
