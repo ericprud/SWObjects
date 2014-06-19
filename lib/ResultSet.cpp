@@ -190,7 +190,7 @@ namespace w3c_sw {
 	    << "adding name for column " << s << ": " << ret->toString() << "\n";
 	return ret;
     }
-    void ResultSet::parseDelimSeparated (IStreamContext& sptr, bool ordered,
+    void ResultSet::parseDelimSeparated (IStreamContext& sptr, bool /* ordered */,
 					 TTerm::String2BNode* bnodeMap, 
 					 std::string delimStr, bool atHeaderRow) {
 
@@ -339,7 +339,7 @@ namespace w3c_sw {
 
     }
 
-    void ResultSet::parseTable (IStreamContext& sptr, bool ordered, TTerm::String2BNode* bnodeMap) {
+    void ResultSet::parseTable (IStreamContext& sptr, bool /* ordered */, TTerm::String2BNode* bnodeMap) {
 	// Note, early returns for CSV and TSV formats:
 	if (sptr.mediaType.match("text/tab-separated-values")) {
 	    parseDelimSeparated(sptr, true, bnodeMap, "\\t", true);
@@ -935,7 +935,7 @@ namespace w3c_sw {
                         row->erase(old);
                 } else
                     row->set(*knownVar, val, false, true);
-            } catch (SafeEvaluationError& e) {
+            } catch (SafeEvaluationError&) {
                 if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
                     SPARQLSerializer s;
                     pos2expr[*knownVar]->express(&s);
@@ -1524,7 +1524,7 @@ namespace w3c_sw {
     }
 
     std::string ResultSet::toDelimSeparatedValues (MediaType mediaType, char separator,
-						   bool headerAsLexicals, NamespaceMap* namespaces) const {
+						   bool headerAsLexicals, NamespaceMap* /* namespaces */) const {
 	std::stringstream ret;
 	const VariableVector vars = getOrderedVars();
 	for (VariableVector::const_iterator var = vars.begin();
@@ -1547,7 +1547,7 @@ namespace w3c_sw {
 	}
 	return ret.str();
     }
-    std::string ResultSet::toJSON (NamespaceMap* namespaces) const {
+    std::string ResultSet::toJSON (NamespaceMap* /* namespaces */) const {
 	std::stringstream ss;
 	const VariableVector vars = getOrderedVars();
 	JSONSerializer jdoc(ss, JSONSerializer::Container_Map, "    "); {

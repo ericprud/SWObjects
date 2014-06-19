@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -27,7 +27,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="..\FlexBison.props" />
+    <!-- Import Project="..\FlexBison.props" / -->
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -42,10 +42,8 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\Jelle\Documents\projecten\maastro\boost\boost_1_55_0;C:\Users\Jelle\Documents\GitHub\SWObjects\utf8_v2.3.2_source;C:\Program Files (x86)\MySQL\MySQL Server 5.5\include;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\local\boost_1_55_0\lib32-msvc-10.0;C:\Users\Jelle\Documents\projecten\maastro\mysql-5.6.17-win32\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\Jelle\Documents\GitHub\SWObjects\utf8_v2.3.2_source;C:\Users\Jelle\Documents\projecten\maastro\boost\boost_1_55_0;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\Jelle\Documents\GitHub\SWObjects\win;C:\Users\Jelle\Documents\projecten\maastro\boost\boost_1_55_0\stage\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../utf8_v2.3.2_source;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../../utf8_v2.3.2_source;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -77,38 +75,38 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\lib\JSONresultsParser.hpp" />
-    <ClInclude Include="..\..\lib\MapSetParser.hpp" />
-    <ClInclude Include="..\..\lib\SPARQLParser.hpp" />
-    <ClInclude Include="..\..\lib\SPARQLScanner.hpp" />
-    <ClInclude Include="..\..\lib\SQLParser.hpp" />
-    <ClInclude Include="..\..\lib\TrigParser.hpp" />
-    <ClInclude Include="..\..\lib\TrigScanner.hpp" />
-    <ClInclude Include="..\..\lib\TurtleParser.hpp" />
-    <ClInclude Include="..\..\lib\TurtleScanner.hpp" />
-    <ClInclude Include="..\config.h" />
-    <ClInclude Include="..\..\lib\ExpressionInverter.hpp" />
-    <ClInclude Include="..\..\lib\exs.hpp" />
-    <ClInclude Include="..\..\lib\JSONresultsScanner.hpp" />
-    <ClInclude Include="..\..\lib\MapSetScanner.hpp" />
-    <ClInclude Include="..\..\lib\ParserCommon.hpp" />
-    <ClInclude Include="..\..\lib\POS2BGPMap.hpp" />
-    <ClInclude Include="..\..\lib\position.hpp" />
-    <ClInclude Include="..\..\lib\QueryMapper.hpp" />
-    <ClInclude Include="..\..\lib\RdfDB.hpp" />
-    <ClInclude Include="..\..\lib\RdfQueryDB.hpp" />
-    <ClInclude Include="..\..\lib\ResultSet.hpp" />
-    <ClInclude Include="..\..\lib\RuleInverter.hpp" />
-    <ClInclude Include="..\..\lib\SPARQLSerializer.hpp" />
-    <ClInclude Include="..\..\lib\SQLizer.hpp" />
-    <ClInclude Include="..\..\lib\SQLScanner.hpp" />
-    <ClInclude Include="..\..\lib\stack.hpp" />
-    <ClInclude Include="..\..\lib\SWObjectDuplicator.hpp" />
-    <ClInclude Include="..\..\lib\SWObjects.hpp" />
-    <ClInclude Include="..\..\lib\XMLQueryExpressor.hpp" />
-    <ClInclude Include="..\..\lib\XMLSerializer.hpp" />
+    <ClInclude Include="../config.h" />
+    <ClInclude Include="../../lib/exs.hpp" />
+    <ClInclude Include="../../lib/ExpressionInverter.hpp" />
+    <ClInclude Include="../../lib/POS2BGPMap.hpp" />
+    <ClInclude Include="../../lib/position.hpp" />
+    <ClInclude Include="../../lib/QueryMapper.hpp" />
+    <ClInclude Include="../../lib/RdfDB.hpp" />
+    <ClInclude Include="../../lib/RdfQueryDB.hpp" />
+    <ClInclude Include="../../lib/ResultSet.hpp" />
+    <ClInclude Include="../../lib/RuleInverter.hpp" />
+    <ClInclude Include="../../lib/SPARQLSerializer.hpp" />
+    <ClInclude Include="../../lib/SQLizer.hpp" />
+    <ClInclude Include="../../lib/stack.hpp" />
+    <ClInclude Include="../../lib/SWObjectDuplicator.hpp" />
+    <ClInclude Include="../../lib/SWObjects.hpp" />
+    <ClInclude Include="../../lib/XMLQueryExpressor.hpp" />
+    <ClInclude Include="../../lib/XMLSerializer.hpp" />
+    <ClInclude Include="../../lib/ParserCommon.hpp" />
+    <ClInclude Include="../../lib/JSONresultsParser.hpp" />
+    <ClInclude Include="../../lib/JSONresultsScanner.hpp" />
+    <ClInclude Include="../../lib/MapSetParser.hpp" />
+    <ClInclude Include="../../lib/MapSetScanner.hpp" />
+    <ClInclude Include="../../lib/SPARQLParser.hpp" />
+    <ClInclude Include="../../lib/SPARQLScanner.hpp" />
+    <ClInclude Include="../../lib/SQLParser.hpp" />
+    <ClInclude Include="../../lib/SQLScanner.hpp" />
+    <ClInclude Include="../../lib/TrigParser.hpp" />
+    <ClInclude Include="../../lib/TrigScanner.hpp" />
+    <ClInclude Include="../../lib/TurtleParser.hpp" />
+    <ClInclude Include="../../lib/TurtleScanner.hpp" />
   </ItemGroup>
-  <ItemGroup>
+  <!-- ItemGroup>
     <BisonParser Include="..\..\lib\JSONresultsParser.ypp" />
     <BisonParser Include="..\..\lib\MapSetParser.ypp" />
     <BisonParser Include="..\..\lib\ShExCParser.ypp" />
@@ -117,34 +115,58 @@
     <BisonParser Include="..\..\lib\SQLParser.ypp" />
     <BisonParser Include="..\..\lib\TrigParser.ypp" />
     <BisonParser Include="..\..\lib\TurtleParser.ypp" />
-  </ItemGroup>
+  </ItemGroup -->
   <ItemGroup>
-    <ClCompile Include="..\..\lib\exs.cpp" />
-    <ClCompile Include="..\..\lib\JSONresultsParser.cpp" />
-    <ClCompile Include="..\..\lib\JSONresultsScanner.cpp" />
-    <ClCompile Include="..\..\lib\MapSetParser.cpp" />
-    <ClCompile Include="..\..\lib\MapSetScanner.cpp" />
-    <ClCompile Include="..\..\lib\ParserCommon.cpp" />
-    <ClCompile Include="..\..\lib\RdfDB.cpp" />
-    <ClCompile Include="..\..\lib\RdfQueryDB.cpp" />
-    <ClCompile Include="..\..\lib\ResultSet.cpp" />
-    <ClCompile Include="..\..\lib\ShExCParser.cpp" />
-    <ClCompile Include="..\..\lib\ShExCScanner.cpp" />
-    <ClCompile Include="..\..\lib\ShExSchema.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLalgebraParser.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLalgebraScanner.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLParser.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLScanner.cpp" />
-    <ClCompile Include="..\..\lib\SQLParser.cpp" />
-    <ClCompile Include="..\..\lib\SQLScanner.cpp" />
-    <ClCompile Include="..\..\lib\SWObjects.cpp" />
-    <ClCompile Include="..\..\lib\TrigParser.cpp" />
-    <ClCompile Include="..\..\lib\TrigScanner.cpp" />
-    <ClCompile Include="..\..\lib\TurtleParser.cpp" />
-    <ClCompile Include="..\..\lib\TurtleScanner.cpp" />
+    <ClCompile Include="../../lib/exs.cpp" />
+    <ClCompile Include="../../lib/SWObjects.cpp" />
+    <ClCompile Include="../../lib/RdfDB.cpp" />
+    <ClCompile Include="../../lib/RdfQueryDB.cpp" />
+    <ClCompile Include="../../lib/ResultSet.cpp" />
+    <ClCompile Include="../../lib/ShExSchema.cpp" />
+    <ClCompile Include="../../lib/ParserCommon.cpp" />
+    <ClCompile Include="../../lib/JSONresultsParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/JSONresultsScanner.cpp" />
+    <ClCompile Include="../../lib/MapSetParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/MapSetScanner.cpp" />
+    <ClCompile Include="../../lib/ShExCParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/ShExCScanner.cpp" />
+    <ClCompile Include="../../lib/SPARQLalgebraParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SPARQLalgebraScanner.cpp" />
+    <ClCompile Include="../../lib/SPARQLParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SPARQLScanner.cpp" />
+    <ClCompile Include="../../lib/SQLParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SQLScanner.cpp" />
+    <ClCompile Include="../../lib/TrigParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/TrigScanner.cpp" />
+    <ClCompile Include="../../lib/TurtleParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/TurtleScanner.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\FlexBison.targets" />
+    <!-- Import Project="..\FlexBison.targets" / -->
   </ImportGroup>
 </Project>

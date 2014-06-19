@@ -175,7 +175,7 @@ HTURI::HTURI (std::string name) : DummyHTURI()
     }
 
     p = after_scheme;
-    if (name[p]=='/'){
+    if (p < name.size() && name[p]=='/'){
 	if (name[p+1]=='/') {
 	    host = name.substr(p+2, name.size());/* host has been specified 	*/
 	    hostP = true;
@@ -653,7 +653,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 #define EXTENCONST(lname) { URI("https://github.com/ericprud/SWObjects/wiki/Sparql-extensions#" #lname), NULL}
 
     /** URI constants, shared between all AtomFactories: */
-    const AtomFactory::URIstr AtomFactory::_URIConstants[] = {
+    const _URIstr_initializer AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
 	XPATHCONST   (normalize_space),
 	EXTENCONST   (lastTail),
@@ -1477,7 +1477,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		std::string::iterator c = from.begin();
 		try {
 		    utf8::advance(c, start, from.end());
-		} catch (utf8::not_enough_room& e) {
+		} catch (utf8::not_enough_room&) {
 		    c = from.end();
 		}
 		from.erase(from.begin(), c);
@@ -1487,7 +1487,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		if (len > 0) {
 		    try {
 			utf8::advance(c, len, from.end());
-		    } catch (utf8::not_enough_room& e) {
+		    } catch (utf8::not_enough_room&) {
 			c = from.end();
 		    }
 		    from.erase(c, from.end());
@@ -1600,7 +1600,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return ss.str();
 	    }
 
-	    const TTerm* FUNC_md5 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_md5 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "MD5");
@@ -1608,21 +1608,21 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return atomFactory->getRDFLiteral(hashIntoHex(md, key->getLexicalValue()));
 	    }
 
-	    const TTerm* FUNC_sha1 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha1 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA1");
 		CryptoPP::SHA1 hash;
 		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
 	    }
-	    const TTerm* FUNC_sha256 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha256 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA256");
 		CryptoPP::SHA256 hash;
 		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
 	    }
-	    const TTerm* FUNC_sha512 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha512 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA512");
@@ -2362,7 +2362,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     static std::string canonical (double d) {
 	std::stringstream canonical;
-	int ex = ::log10(d);
+	int ex = (int)::log10(d);
 	if (d < 1)
 	    --ex;
 	double logOf10 = ::log(10.0);
@@ -4184,7 +4184,7 @@ compared against
     }
 
     void _invokeSADI (const char* service, const TableOperation* op, ResultSet* rs,
-		      AtomFactory* atomFactory, RdfDB* requestDB, RdfDB* responseDB) {
+		      AtomFactory* /* atomFactory */, RdfDB* requestDB, RdfDB* responseDB) {
 	MakeNewBNode makeNewBNode(rs->getAtomFactory()); // !! what about atomFactory argument?
 	op->construct(requestDB, rs, &makeNewBNode, requestDB->ensureGraph(DefaultGraph));
 	// w3c_sw_LINEN << "CONSTRUCTED: " << *requestDB << std::endl;
@@ -4741,7 +4741,7 @@ namespace w3c_sw {
 
 	    ::time(&rawtime);
 		#ifdef _MSC_VER
-		  ::localtime(&rawtime);
+		  ::localtime_s(&t, &rawtime);
 		#else
 		  ::localtime_r(&rawtime, &t);
 		#endif

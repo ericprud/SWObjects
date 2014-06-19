@@ -1,5 +1,5 @@
-/* BRTparser.hpp - simple SPARQL duplicator for SPARQL compile trees.
- *
+/* BRTparser.hpp - Parser for Sesame binary RDF results table format
+ * http://openrdf.callimachus.net/sesame/2.7/docs/system.docbook?view
  *
  * $Id: BRTparser.hpp,v 1.8 2008-11-21 17:13:29 eric Exp $
  */

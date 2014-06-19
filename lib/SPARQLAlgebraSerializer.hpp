@@ -701,7 +701,7 @@ public:
 	p_ArgList->express(this);
 	ret << ")";
     }
-    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness distinctness, const AggregateCall::ScalarVals* scalarVals) {
+    virtual void aggregateCall (const AggregateCall* const /* self */, const URI* p_IRIref, const ArgList* p_ArgList, e_distinctness /* distinctness */, const AggregateCall::ScalarVals* scalarVals) {
 	p_IRIref->express(this);
 	ret << "(";
 	p_ArgList->express(this);

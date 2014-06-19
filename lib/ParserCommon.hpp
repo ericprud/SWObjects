@@ -138,13 +138,13 @@ public:
 };
 
 struct CharacterRange {
-    const wchar_t (*ranges)[2];
+    const unsigned long (*ranges)[2];
     size_t size;
 
-    CharacterRange (const wchar_t (*ranges)[2], size_t size)
+    CharacterRange (const unsigned long (*ranges)[2], size_t size)
 	: ranges(ranges), size(size) {  }
 
-    bool includes (wchar_t ch) const {
+    bool includes (unsigned long ch) const {
 	for (size_t pair = 0; pair < size; ++pair) {
 	    if (ranges[pair][0] >  ch) return false;
 	    if (ranges[pair][1] >= ch) return true;
@@ -152,7 +152,7 @@ struct CharacterRange {
 	return false;
     }
 
-    static std::string label (wchar_t ch) {
+    static std::string label (unsigned long ch) {
 	if (ch == 0x00000) return "NULL";
 	if (ch  < 0x00020) return "control";
 	if (ch == 0x00020) return "space";
@@ -294,7 +294,7 @@ public:
 
     const BooleanRDFLiteral* getBooleanRDFLiteral (std::string p_String, bool p_value) { return atomFactory->getBooleanRDFLiteral(p_String, p_value); }
 
-    static unsigned short _h2n (char c) {
+    static unsigned long _h2n (char c) {
 	return
 	    c<='9'?c-'0':
 	    c<='F'?c-'A'+10:
@@ -308,7 +308,7 @@ public:
 		case 'u':
 		case 'U':
 		    if (i < len - (yytext[i] == 'u' ? 4 : 8)) {
-			wchar_t w[2] = {
+			unsigned long w[2] = {
 			    yytext[i] == 'u' ?
 			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
 			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4])
@@ -358,7 +358,7 @@ public:
 		case '\\': (*space) += '\\'; break;
 		case 'u':
 		    if (i < len-4) {
-			wchar_t w[2] = {
+			unsigned long w[2] = {
 			    _h2n(yytext[i+1])<<12 | _h2n(yytext[i+2])<<8 |
 			    _h2n(yytext[i+3])<<04 | _h2n(yytext[i+4]),
 			    0};
@@ -372,7 +372,7 @@ public:
 			     + std::string(yytext+i, len-i) + "\"");
 		case 'U':
 		    if (i < len-8) {
-			wchar_t w[2] = {
+			unsigned long w[2] = {
 			    _h2n(yytext[i+1])<<28 | _h2n(yytext[i+2])<<24|
 			    _h2n(yytext[i+3])<<20 | _h2n(yytext[i+4])<<16 |
 			    _h2n(yytext[i+5])<<12 | _h2n(yytext[i+6])<<8 |

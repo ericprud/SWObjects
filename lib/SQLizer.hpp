@@ -710,25 +710,25 @@ namespace w3c_sw {
 	}
 	virtual void nulltterm (const NULLtterm* const) {  }
 
-	virtual void predicate (const PropertyPath::Predicate* const, const URI* uri) {
+	virtual void predicate (const PropertyPath::Predicate* const, const URI* /* uri */) {
 	    w3c_sw_NEED_IMPL("predicate");
 	}
-	virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* nested) {
+	virtual void inverse (const PropertyPath::Inverse* const, const PropertyPath::PathBase* /* nested */) {
 	    w3c_sw_NEED_IMPL("inverse");
 	}
-	virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	virtual void sequence (const PropertyPath::Sequence* const, const PropertyPath::PathBase* /* l */, const PropertyPath::PathBase* /* r */) {
 	    w3c_sw_NEED_IMPL("sequence");
 	}
-	virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* l, const PropertyPath::PathBase* r) {
+	virtual void alternative (const PropertyPath::Alternative* const, const PropertyPath::PathBase* /* l */, const PropertyPath::PathBase* /* r */) {
 	    w3c_sw_NEED_IMPL("alternative");
 	}
-	virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* nested, unsigned min, unsigned max) {
+	virtual void repeated (const PropertyPath::Repeated* const, const PropertyPath::PathBase* /* nested */, unsigned /* min */, unsigned /* max */) {
 	    w3c_sw_NEED_IMPL("repeated");
 	}
-	virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* nested) {
+	virtual void negated (const PropertyPath::Negated* const, const PropertyPath::PathBase* /* nested */) {
 	    w3c_sw_NEED_IMPL("negated");
 	}
-	virtual void propertyPath (const PropertyPath* const self, const PropertyPath::PathBase* nested) {
+	virtual void propertyPath (const PropertyPath* const, const PropertyPath::PathBase* /* nested */) {
 	    w3c_sw_NEED_IMPL("propertyPath");
 	}
 

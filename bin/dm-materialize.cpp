@@ -109,7 +109,7 @@ struct Materializer {
 	TypeTripleMaker (AtomFactory* atomFactory, const TTerm* p, const TTerm* type)
 	    : TripleMaker(atomFactory), p(p), type(type)
 	{  }
-	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
+	virtual void doIt (SQLclient::Result* /* res */, SQLclient::Result::Row& /* row */,
 			   BasicGraphPattern* bgp, const TTerm* s) const {
 	    bgp->addTriplePattern
 		(atomFactory->getTriple
@@ -149,7 +149,7 @@ struct Materializer {
 	    : TripleMaker(atomFactory), baseURI(baseURI),
 	      p(tableName + "#ref-"), targetRel(targetRel), colNos(colNos)
 	{ reference(colNos, from, to); }
-	void reference (const std::vector<size_t>& colNos,
+	void reference (const std::vector<size_t>& /* colNos */,
 			const sql::schema::ForeignKey* from, const sql::schema::Key* to) {
 	    for (size_t i = 0; i < from->size(); ++i) {
 		if (i > 0)
@@ -173,7 +173,7 @@ struct Materializer {
 	    for (size_t i = 0; i < pk->size(); ++i)
 		attrNames.push_back(IRIsafe(pk->at(i)));
 	}
-	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
+	virtual void doIt (SQLclient::Result* /* res */, SQLclient::Result::Row& row,
 			   BasicGraphPattern* bgp, const TTerm* s) const {
 	    std::string oStr = targetRel + "/";
 	    for (size_t i = 0; i < size(); ++i) {
@@ -203,7 +203,7 @@ struct Materializer {
 	    : ReferenceTripleMaker(atomFactory, baseURI, tableName, targetRel, from, to, colNos),
 	      v2b(v2b)
 	{  }
-	virtual void doIt (SQLclient::Result* res, SQLclient::Result::Row& row,
+	virtual void doIt (SQLclient::Result* /* res */, SQLclient::Result::Row& row,
 			   BasicGraphPattern* bgp, const TTerm* s) const {
 	    std::string key;
 	    for (size_t i = 0; i < size(); ++i)
@@ -443,7 +443,7 @@ struct Materializer {
 
 };
 
-int main (int argc, const char* argv[]) {
+int main (int /* argc */, const char* argv[]) {
     Logger::prepare();
     sqlContext sqlParserContext;
     SQLDriver sqlParser(sqlParserContext);

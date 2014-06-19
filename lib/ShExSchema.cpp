@@ -165,13 +165,13 @@ namespace w3c_sw {
     const TTerm* SWSexSchema::AtomicRule::NameAll::getP () const {
 	return NULL;
     }
-    bool SWSexSchema::AtomicRule::NameAll::matchP (const TTerm* test) const {
+    bool SWSexSchema::AtomicRule::NameAll::matchP (const TTerm* /* test */) const {
 	return true;
     }
     const TTerm* SWSexSchema::AtomicRule::NamePattern::getP () const {
 	return NULL;
     }
-    bool SWSexSchema::AtomicRule::NamePattern::matchP (const TTerm* test) const {
+    bool SWSexSchema::AtomicRule::NamePattern::matchP (const TTerm* /* test */) const {
 	throw NotImplemented("matchP on * !rdf:* !dc:*");
     }
 
@@ -180,7 +180,7 @@ namespace w3c_sw {
 	ret.push_back(NULL);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueReference::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueReference::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* /* rule */, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* /* point */) const {
 	// !!! also record the current matched from tp
 	RuleMap::const_iterator referencedRule = rm.find(label);
 	if (referencedRule == rm.end())
@@ -197,7 +197,7 @@ namespace w3c_sw {
 	ret.push_back(NULL);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueType::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueType::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& /* rm */, const TTerm* /* point */) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(rule);
 	const RDFLiteral* asLiteral = dynamic_cast<const RDFLiteral*>(tp->getO());
 	const URI* type = asLiteral == NULL ? NULL : asLiteral->getDatatype();
@@ -212,7 +212,7 @@ namespace w3c_sw {
     SWSexSchema::AtomicRule::Value::TermSet SWSexSchema::AtomicRule::ValueSet::getOs () const {
 	return tterms;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueSet::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueSet::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& /* rm */, const TTerm* /* point */) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(rule);
 	for (TermSet::const_iterator it = tterms.begin(); it != tterms.end(); ++it)
 	    if (tp->getO() == *it) {
@@ -229,7 +229,7 @@ namespace w3c_sw {
 	ret.push_back(NULL);
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueAny::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::AtomicRule::ValueAny::validateTriple (const w3c_sw::SWSexSchema::AtomicRule* rule, const TriplePattern* tp, DefaultGraphPattern& source, const RuleMap& /* rm */, const TTerm* /* point */) const {
 	SWSexSchema::AtomicSolution* ret = new SWSexSchema::AtomicSolution(rule);
 	ret->passes = true;
 	source.erase(source.find(tp));
@@ -237,7 +237,7 @@ namespace w3c_sw {
 	return ret;
     }
 
-    SWSexSchema::Solution* SWSexSchema::OrRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::OrRule::validate (DefaultGraphPattern& /* source */, const RuleMap& /* rm */, const TTerm* /* point */) const {
 	throw NotImplemented("SWSexSchema::OrRule::validate");
 	SWSexSchema::SetSolution* ret = new SWSexSchema::SetSolution(this);
 	return ret;
@@ -260,7 +260,7 @@ namespace w3c_sw {
 	}
 	return ret;
     }
-    SWSexSchema::Solution* SWSexSchema::NegatedRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {
+    SWSexSchema::Solution* SWSexSchema::NegatedRule::validate (DefaultGraphPattern& /* source */, const RuleMap& /* rm */, const TTerm* /* point */) const {
 	throw NotImplemented("SWSexSchema::NegatedRule::validate");
     }
     SWSexSchema::Solution* SWSexSchema::AtomicRule::validate (DefaultGraphPattern& source, const RuleMap& rm, const TTerm* point) const {

@@ -72,6 +72,7 @@ std::string iterStr (InputIterator first, InputIterator last) {
   #ifndef SWIG
     #define POSIX_cat "c:/cygwin/bin/cat"
   #endif
+  #define _w3c_sw_STREAMSIZE int
 #else /* !_MSC_VER */
   #include <errno.h>
 
@@ -88,6 +89,7 @@ std::string iterStr (InputIterator first, InputIterator last) {
   #ifndef SWIG
     #define POSIX_cat "/bin/cat"
   #endif
+  #define _w3c_sw_STREAMSIZE std::streamsize
 #endif /* !_MSC_VER */
 
 #include "Logging.hpp"
@@ -963,6 +965,7 @@ typedef std::vector<const TTerm*>::const_iterator VariableVectorConstIterator;
 
 class URI : public TTerm {
     friend class AtomFactory;
+    friend struct _URIstr_initializer;
 private:
     URI (std::string str) : TTerm(str) {  }
     ~URI () { }
@@ -978,6 +981,11 @@ public:
     }
     virtual std::string getBindingAttributeName () const { return "uri"; }
     //bool matches (std::string toMatch) const { return terminal == toMatch; } // !!! added for SPARQLSerializer::functionCall
+};
+
+struct _URIstr_initializer {
+    URI uri;
+    const char* op;
 };
 
 class Bindable : public TTerm {
@@ -1177,8 +1185,8 @@ public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Integer; }
     int getValue () const { return m_value; }
     virtual int getInt () const { return m_value; }
-    virtual float getFloat () const { return m_value; }
-    virtual double getDouble () const { return m_value; }
+    virtual float getFloat () const { return (float)m_value; }
+    virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString (MediaType mediaType = MediaType()) const {
 	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_integer)
@@ -1200,9 +1208,9 @@ protected:
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Float; }
     float getValue () const { return m_value; }
-    virtual int getInt () const { return m_value; }
+    virtual int getInt () const { return (int)m_value; }
     virtual float getFloat () const { return m_value; }
-    virtual double getDouble () const { return m_value; }
+    virtual double getDouble () const { return (double)m_value; }
     virtual void express(Expressor* p_expressor) const;
     virtual std::string toString (MediaType mediaType = MediaType()) const {
 	if ((mediaType.match("text/ntriples") || mediaType.match("text/csv")) || getDatatype() != TTerm::URI_xsd_float)
@@ -1234,8 +1242,8 @@ protected:
 public:
     virtual e_TYPE getTypeOrder () const { return TYPE_Double; }
     double getValue () const { return m_value; }
-    virtual int getInt () const { return m_value; }
-    virtual float getFloat () const { return m_value; }
+    virtual int getInt () const { return (int)m_value; }
+    virtual float getFloat () const { return (float)m_value; }
     virtual double getDouble () const { return m_value; }
     virtual void express(Expressor* p_expressor) const;
     // <DOUBLE> ::= ([0-9])+ "." ([0-9])+ EXPONENT
@@ -1993,6 +2001,7 @@ public:
 
 class DefaultGraphPattern;
 class Expression;
+
 class AtomFactory {
     friend class TTerm;
 
@@ -2000,15 +2009,10 @@ protected:
     typedef std::set<const BNode*> BNodeSet;
     typedef std::map<std::string, const Variable*> VariableMap;
 
-    struct URIstr {
-	URI uri;
-	const char* op;
-    };
-
     struct URIMap : public std::map<std::string, const URI*> {
 	URIMap () {  }
-	URIMap (const URIstr* b, const URIstr* e) {
-	    for (const URIstr* p = b; p != e; ++p)
+	URIMap (const _URIstr_initializer* b, const _URIstr_initializer* e) {
+	    for (const _URIstr_initializer* p = b; p != e; ++p)
 		insert(std::pair<std::string, const URI*>(p->uri.getLexicalValue(), &p->uri));
 	}
     };
@@ -2027,8 +2031,8 @@ protected:
     typedef std::map<std::string, const TriplePattern*> TriplePatternMap; // I don't know what the key should be. string for now...
 
     struct pURI_str : public std::map<const URI*, const char*> {
-	pURI_str (const URIstr* b, const URIstr* e) {
-	    for (const URIstr* p = b; p != e; ++p)
+	pURI_str (const _URIstr_initializer* b, const _URIstr_initializer* e) {
+	    for (const _URIstr_initializer* p = b; p != e; ++p)
 		insert(std::pair<const URI*, const char*>(&p->uri, p->op));
 	}
     };
@@ -2059,7 +2063,7 @@ protected:
 	AtomFactory not require the initialization of the constant
 	hashes. EGP 20100922
      */
-    static const URIstr _URIConstants[];
+    static const _URIstr_initializer _URIConstants[];
     static const BooleanRDFLiteral _BooleanConstants[];
     static const NULLtterm _NULLtterm;
 
@@ -2425,7 +2429,7 @@ public:
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
 public:
-	
+
     struct TTerm2Triple_type : public std::multimap<const TTerm*, const TriplePattern*> {
 	/**
 	 * returns: whether the index is now empty.
@@ -2441,7 +2445,6 @@ public:
 	}
     };
     typedef std::pair<const TTerm*, const TriplePattern*> TTerm2Triple_pair;
-	
     typedef std::pair<TTerm2Triple_type::const_iterator, TTerm2Triple_type::const_iterator> TTerm2Triple_range;
 
     struct TTerm2TTerm2Triple_type : public std::map<const TTerm*, TTerm2Triple_type> {
@@ -2521,9 +2524,8 @@ public:
     triple_iterator getTripleIterator(const TTerm* s, const TTerm* p, const TTerm* o) const;
 
     typedef std::vector<const TriplePattern*>::const_reference const_reference;
+    typedef const TriplePattern* value_type;
 	
-	/// FIXME what should value_type be?????
-	typedef const TriplePattern* value_type;
 protected:
 
     // make sure we don't delete the TriplePatterns
@@ -4119,7 +4121,7 @@ public:
 	       A / B op:numeric-divide(A, B) numeric; but xsd:decimal if both operands are xsd:integer
 	       Is this a hack or brilliant extreme programming?
 	    */
-	    float fl = l;
+	    float fl = (float)l;
 	    if (r == 0)
 		throw DivisionByZeroError(boost::lexical_cast<std::string>(fl));
 	    float ret = fl / r;
@@ -4327,11 +4329,11 @@ public:
 	    : istr(ref.istr), streamRewinder(ref.streamRewinder)
 	{ /* w3c_sw_LINE << "copy constructor: " << toString() << "\n"; */ }
 
-	std::streamsize read(char_type* s, std::streamsize n) {
+	_w3c_sw_STREAMSIZE read(char_type* s, _w3c_sw_STREAMSIZE n) {
 	    switch (streamRewinder.state) {
 	    case STATE_replay: {
-		std::streamsize amt = static_cast<std::streamsize>(streamRewinder.buffer.size() - streamRewinder.pos);
-		std::streamsize result = (std::min)(n, amt);
+		_w3c_sw_STREAMSIZE amt = static_cast<_w3c_sw_STREAMSIZE>(streamRewinder.buffer.size() - streamRewinder.pos);
+		_w3c_sw_STREAMSIZE result = (std::min)(n, amt);
 		if (result != 0) {
 		    std::copy( streamRewinder.buffer.begin() + streamRewinder.pos, 
 			       streamRewinder.buffer.begin() + streamRewinder.pos + result, 
@@ -4347,11 +4349,11 @@ public:
 	    case STATE_copy:
 	    case STATE_pass: {
 		istr.read(s, n);
-		std::streamsize red = istr.gcount();
+		_w3c_sw_STREAMSIZE red = (_w3c_sw_STREAMSIZE)istr.gcount();
 		if (streamRewinder.state == STATE_copy) {
 		    if (streamRewinder.buffer.size() > (2<<15)) {
 			streamRewinder.buffer.clear();
-			streamRewinder.state == STATE_pass;
+			streamRewinder.state = STATE_pass;
 		    } else {
 			streamRewinder.buffer.append(s, red);
 		    }
@@ -4411,12 +4413,12 @@ public:
 	// CERR << "unlinked " << name.c_str() << "\n";
     }
 
-    std::streamsize write (const char_type* s, std::streamsize n) {
+    _w3c_sw_STREAMSIZE write (const char_type* s, _w3c_sw_STREAMSIZE n) {
 	std::string dbg(s, n);
 	size_t ret = POSIX_write(fileHandle, s, n);
 	if (ret == 0 && n != 0)
 	    throw std::string("write returned 0.");
-	return (std::streamsize)ret; // n is a streamsize so we won't have written more than that.
+	return (_w3c_sw_STREAMSIZE)ret; // n is a streamsize so we won't have written more than that.
     }
 
     // void close () { // never gets called.
@@ -4869,7 +4871,7 @@ public:
 /** some handy RecursiveExpressors
   */
 class TestExpressor : public RecursiveExpressor {
-    virtual void base (const Base*, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
+    virtual void base (const Base* const, std::string) { throw(std::runtime_error("hit base in TestExpressor")); }
 };
 
 /** GetDependentVariables - Recursively visit the query tree, reporting and
