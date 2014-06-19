@@ -1600,7 +1600,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return ss.str();
 	    }
 
-	    const TTerm* FUNC_md5 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_md5 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "MD5");
@@ -1608,21 +1608,21 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return atomFactory->getRDFLiteral(hashIntoHex(md, key->getLexicalValue()));
 	    }
 
-	    const TTerm* FUNC_sha1 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha1 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA1");
 		CryptoPP::SHA1 hash;
 		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
 	    }
-	    const TTerm* FUNC_sha256 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha256 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA256");
 		CryptoPP::SHA256 hash;
 		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
 	    }
-	    const TTerm* FUNC_sha512 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha512 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA512");
@@ -4184,7 +4184,7 @@ compared against
     }
 
     void _invokeSADI (const char* service, const TableOperation* op, ResultSet* rs,
-		      AtomFactory* atomFactory, RdfDB* requestDB, RdfDB* responseDB) {
+		      AtomFactory* /* atomFactory */, RdfDB* requestDB, RdfDB* responseDB) {
 	MakeNewBNode makeNewBNode(rs->getAtomFactory()); // !! what about atomFactory argument?
 	op->construct(requestDB, rs, &makeNewBNode, requestDB->ensureGraph(DefaultGraph));
 	// w3c_sw_LINEN << "CONSTRUCTED: " << *requestDB << std::endl;
