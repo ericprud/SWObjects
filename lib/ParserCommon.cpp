@@ -12,7 +12,7 @@ namespace w3c_sw {
 
     bool YaccDriver::defaultDescriptiveBNodeLabels = false;
 
-    const wchar_t nonIRIchars[][2] = {
+    const unsigned long nonIRIchars[][2] = {
 	{0x00000, 0x00020}, {0x00022, 0x00022}, {0x0003c, 0x0003c}, 
 	{0x0003e, 0x0003e}, {0x0005c, 0x0005c}, {0x0005e, 0x0005e},
 	{0x00060, 0x00060}, {0x0007b, 0x0007d}, {0x0d800, 0x0dfff},
