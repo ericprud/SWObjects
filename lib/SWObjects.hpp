@@ -2429,7 +2429,7 @@ public:
 };
 class BasicGraphPattern : public TableOperation { // ⊌⊍
 public:
-	
+
     struct TTerm2Triple_type : public std::multimap<const TTerm*, const TriplePattern*> {
 	/**
 	 * returns: whether the index is now empty.
@@ -2445,7 +2445,6 @@ public:
 	}
     };
     typedef std::pair<const TTerm*, const TriplePattern*> TTerm2Triple_pair;
-	
     typedef std::pair<TTerm2Triple_type::const_iterator, TTerm2Triple_type::const_iterator> TTerm2Triple_range;
 
     struct TTerm2TTerm2Triple_type : public std::map<const TTerm*, TTerm2Triple_type> {
@@ -2525,9 +2524,8 @@ public:
     triple_iterator getTripleIterator(const TTerm* s, const TTerm* p, const TTerm* o) const;
 
     typedef std::vector<const TriplePattern*>::const_reference const_reference;
+    typedef const TriplePattern* value_type;
 	
-	/// FIXME what should value_type be?????
-	typedef const TriplePattern* value_type;
 protected:
 
     // make sure we don't delete the TriplePatterns
