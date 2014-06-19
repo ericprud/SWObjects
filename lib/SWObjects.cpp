@@ -175,7 +175,7 @@ HTURI::HTURI (std::string name) : DummyHTURI()
     }
 
     p = after_scheme;
-    if (name[p]=='/'){
+    if (p < name.size() && name[p]=='/'){
 	if (name[p+1]=='/') {
 	    host = name.substr(p+2, name.size());/* host has been specified 	*/
 	    hostP = true;
