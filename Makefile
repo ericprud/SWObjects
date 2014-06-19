@@ -290,7 +290,9 @@ lib/%.cpp  lib/%.hpp : lib/%.ypp
 
 lib/%.cpp : lib/%.lpp
 	$(FLEX) -o $@  $<
-	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
+	$(SED) -i~ '1i\#ifdef _MSC_VER\n#include <stdint.h>\n#endif\n' $@
+	$(SED) -i~ 's,return yyin->gcount();,return (int)yyin->gcount();,' $@
+	$(SED) -i~ 's,extern "C" int isatty (int );,#ifndef _MSC_VER\nextern "C" int isatty (int ) throw();\n#endif,' $@
 
 
 # # Parser maintenance
