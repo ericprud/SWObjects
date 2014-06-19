@@ -75,36 +75,36 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\lib\JSONresultsParser.hpp" />
-    <ClInclude Include="..\..\lib\MapSetParser.hpp" />
-    <ClInclude Include="..\..\lib\SPARQLParser.hpp" />
-    <ClInclude Include="..\..\lib\SPARQLScanner.hpp" />
-    <ClInclude Include="..\..\lib\SQLParser.hpp" />
-    <ClInclude Include="..\..\lib\TrigParser.hpp" />
-    <ClInclude Include="..\..\lib\TrigScanner.hpp" />
-    <ClInclude Include="..\..\lib\TurtleParser.hpp" />
-    <ClInclude Include="..\..\lib\TurtleScanner.hpp" />
-    <ClInclude Include="..\config.h" />
-    <ClInclude Include="..\..\lib\ExpressionInverter.hpp" />
-    <ClInclude Include="..\..\lib\exs.hpp" />
-    <ClInclude Include="..\..\lib\JSONresultsScanner.hpp" />
-    <ClInclude Include="..\..\lib\MapSetScanner.hpp" />
-    <ClInclude Include="..\..\lib\ParserCommon.hpp" />
-    <ClInclude Include="..\..\lib\POS2BGPMap.hpp" />
-    <ClInclude Include="..\..\lib\position.hpp" />
-    <ClInclude Include="..\..\lib\QueryMapper.hpp" />
-    <ClInclude Include="..\..\lib\RdfDB.hpp" />
-    <ClInclude Include="..\..\lib\RdfQueryDB.hpp" />
-    <ClInclude Include="..\..\lib\ResultSet.hpp" />
-    <ClInclude Include="..\..\lib\RuleInverter.hpp" />
-    <ClInclude Include="..\..\lib\SPARQLSerializer.hpp" />
-    <ClInclude Include="..\..\lib\SQLizer.hpp" />
-    <ClInclude Include="..\..\lib\SQLScanner.hpp" />
-    <ClInclude Include="..\..\lib\stack.hpp" />
-    <ClInclude Include="..\..\lib\SWObjectDuplicator.hpp" />
-    <ClInclude Include="..\..\lib\SWObjects.hpp" />
-    <ClInclude Include="..\..\lib\XMLQueryExpressor.hpp" />
-    <ClInclude Include="..\..\lib\XMLSerializer.hpp" />
+    <ClInclude Include="../config.h" />
+    <ClInclude Include="../../lib/exs.hpp" />
+    <ClInclude Include="../../lib/ExpressionInverter.hpp" />
+    <ClInclude Include="../../lib/POS2BGPMap.hpp" />
+    <ClInclude Include="../../lib/position.hpp" />
+    <ClInclude Include="../../lib/QueryMapper.hpp" />
+    <ClInclude Include="../../lib/RdfDB.hpp" />
+    <ClInclude Include="../../lib/RdfQueryDB.hpp" />
+    <ClInclude Include="../../lib/ResultSet.hpp" />
+    <ClInclude Include="../../lib/RuleInverter.hpp" />
+    <ClInclude Include="../../lib/SPARQLSerializer.hpp" />
+    <ClInclude Include="../../lib/SQLizer.hpp" />
+    <ClInclude Include="../../lib/stack.hpp" />
+    <ClInclude Include="../../lib/SWObjectDuplicator.hpp" />
+    <ClInclude Include="../../lib/SWObjects.hpp" />
+    <ClInclude Include="../../lib/XMLQueryExpressor.hpp" />
+    <ClInclude Include="../../lib/XMLSerializer.hpp" />
+    <ClInclude Include="../../lib/ParserCommon.hpp" />
+    <ClInclude Include="../../lib/JSONresultsParser.hpp" />
+    <ClInclude Include="../../lib/JSONresultsScanner.hpp" />
+    <ClInclude Include="../../lib/MapSetParser.hpp" />
+    <ClInclude Include="../../lib/MapSetScanner.hpp" />
+    <ClInclude Include="../../lib/SPARQLParser.hpp" />
+    <ClInclude Include="../../lib/SPARQLScanner.hpp" />
+    <ClInclude Include="../../lib/SQLParser.hpp" />
+    <ClInclude Include="../../lib/SQLScanner.hpp" />
+    <ClInclude Include="../../lib/TrigParser.hpp" />
+    <ClInclude Include="../../lib/TrigScanner.hpp" />
+    <ClInclude Include="../../lib/TurtleParser.hpp" />
+    <ClInclude Include="../../lib/TurtleScanner.hpp" />
   </ItemGroup>
   <!-- ItemGroup>
     <BisonParser Include="..\..\lib\JSONresultsParser.ypp" />
@@ -117,29 +117,53 @@
     <BisonParser Include="..\..\lib\TurtleParser.ypp" />
   </ItemGroup -->
   <ItemGroup>
-    <ClCompile Include="..\..\lib\exs.cpp" />
-    <ClCompile Include="..\..\lib\JSONresultsParser.cpp" />
-    <ClCompile Include="..\..\lib\JSONresultsScanner.cpp" />
-    <ClCompile Include="..\..\lib\MapSetParser.cpp" />
-    <ClCompile Include="..\..\lib\MapSetScanner.cpp" />
-    <ClCompile Include="..\..\lib\ParserCommon.cpp" />
-    <ClCompile Include="..\..\lib\RdfDB.cpp" />
-    <ClCompile Include="..\..\lib\RdfQueryDB.cpp" />
-    <ClCompile Include="..\..\lib\ResultSet.cpp" />
-    <ClCompile Include="..\..\lib\ShExCParser.cpp" />
-    <ClCompile Include="..\..\lib\ShExCScanner.cpp" />
-    <ClCompile Include="..\..\lib\ShExSchema.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLalgebraParser.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLalgebraScanner.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLParser.cpp" />
-    <ClCompile Include="..\..\lib\SPARQLScanner.cpp" />
-    <ClCompile Include="..\..\lib\SQLParser.cpp" />
-    <ClCompile Include="..\..\lib\SQLScanner.cpp" />
-    <ClCompile Include="..\..\lib\SWObjects.cpp" />
-    <ClCompile Include="..\..\lib\TrigParser.cpp" />
-    <ClCompile Include="..\..\lib\TrigScanner.cpp" />
-    <ClCompile Include="..\..\lib\TurtleParser.cpp" />
-    <ClCompile Include="..\..\lib\TurtleScanner.cpp" />
+    <ClCompile Include="../../lib/exs.cpp" />
+    <ClCompile Include="../../lib/SWObjects.cpp" />
+    <ClCompile Include="../../lib/RdfDB.cpp" />
+    <ClCompile Include="../../lib/RdfQueryDB.cpp" />
+    <ClCompile Include="../../lib/ResultSet.cpp" />
+    <ClCompile Include="../../lib/ShExSchema.cpp" />
+    <ClCompile Include="../../lib/ParserCommon.cpp" />
+    <ClCompile Include="../../lib/JSONresultsParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/JSONresultsScanner.cpp" />
+    <ClCompile Include="../../lib/MapSetParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/MapSetScanner.cpp" />
+    <ClCompile Include="../../lib/ShExCParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/ShExCScanner.cpp" />
+    <ClCompile Include="../../lib/SPARQLalgebraParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SPARQLalgebraScanner.cpp" />
+    <ClCompile Include="../../lib/SPARQLParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SPARQLScanner.cpp" />
+    <ClCompile Include="../../lib/SQLParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SQLScanner.cpp" />
+    <ClCompile Include="../../lib/TrigParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/TrigScanner.cpp" />
+    <ClCompile Include="../../lib/TurtleParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/TurtleScanner.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
