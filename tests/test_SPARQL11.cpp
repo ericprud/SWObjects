@@ -8,8 +8,8 @@
 //#define BOOST_TEST_MAIN
 //#define BOOST_TEST_MODULE SPARQL11_tests
 #define NEEDDEF_W3C_SW_WEBAGENT
-#include "SPARQLTest.hpp"
-#include "ServerInteraction.hpp"
+#include "tests/SPARQLTest.hpp"
+#include "tests/ServerInteraction.hpp"
 
 #define LG(SOURCE, NAME) LabeledGraph(SOURCE, NAME)
 #define SIZE(ARRAY) (sizeof(ARRAY)/sizeof(ARRAY[0]))
