@@ -562,7 +562,8 @@ namespace w3c_sw {
 	Failures failed;
 
 	Bindings (AtomFactory* atomFactory, const std::vector<Rule>& rules, MapSet::e_sharedVars sharedVars, const NodeShare& nodeShare)
-	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare) {  }
+	    : atomFactory(atomFactory), rules(rules), alternatives(sharedVars, nodeShare), mappingConstants(NULL)
+	{  }
 	// Can't have an operator= with const pointers.
 	// void operator= (const Bindings& ref) {
 	//     atomFactory = ref.atomFactory;
