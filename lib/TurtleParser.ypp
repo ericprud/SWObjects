@@ -111,25 +111,16 @@ public:
  /*** BEGIN Turtle language tokens. ***/
 
 %union {
-    void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
-    /* Terminals */
-    LANGTAG* p_LANGTAG;
-
     std::string* p_string;
 
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    const BooleanRDFLiteral* p_BooleanRDFLiteral;
-
-    /* Productions */
-    BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
     const URI* p_URI;
-    ProductionVector<URI*>* p_URIs;
-    const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
+    LANGTAG* p_LANGTAG;
+    BasicGraphPattern* p_DefaultGraphPattern;
 }
 
 %{
@@ -309,7 +300,7 @@ verb:
 	driver.curPredicate = $$;
     }
   | RDF_TYPE	{
-      $$ = TTerm::RDF_type;
+	$$ = TTerm::RDF_type;
 	driver.curPredicate = $$;
     }
 ;

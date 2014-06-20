@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+/* A Bison parser, made by GNU Bison 2.7.  */
 
 /* Skeleton interface for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
+      Copyright (C) 2002-2012 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,14 +30,18 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+/**
+ ** \file tmp/TurtleParser/TurtleParser.hpp
+ ** Define the w3c_sw::parser class.
+ */
+
 /* C++ LALR(1) parser skeleton written by Akim Demaille.  */
 
-#ifndef PARSER_HEADER_H
-# define PARSER_HEADER_H
+#ifndef YY_W3C_SW_TMP_TURTLEPARSER_TURTLEPARSER_HPP_INCLUDED
+# define YY_W3C_SW_TMP_TURTLEPARSER_TURTLEPARSER_HPP_INCLUDED
 
 /* "%code requires" blocks.  */
-
-/* Line 35 of lalr1.cc  */
+/* Line 33 of lalr1.cc  */
 #line 46 "lib/TurtleParser.ypp"
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
@@ -104,9 +108,8 @@ public:
 // %} // ##bison1
 
 
-
-/* Line 35 of lalr1.cc  */
-#line 110 "tmp/TurtleParser/TurtleParser.hpp"
+/* Line 33 of lalr1.cc  */
+#line 113 "tmp/TurtleParser/TurtleParser.hpp"
 
 
 #include <string>
@@ -119,24 +122,10 @@ public:
 # define YYDEBUG 1
 #endif
 
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 1
-#endif
-
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
-#endif
-
 
 namespace w3c_sw {
-
-/* Line 35 of lalr1.cc  */
-#line 140 "tmp/TurtleParser/TurtleParser.hpp"
+/* Line 33 of lalr1.cc  */
+#line 129 "tmp/TurtleParser/TurtleParser.hpp"
 
   /// A Bison parser.
   class TurtleParser
@@ -146,34 +135,23 @@ namespace w3c_sw {
 #ifndef YYSTYPE
     union semantic_type
     {
-
-/* Line 35 of lalr1.cc  */
+/* Line 33 of lalr1.cc  */
 #line 113 "lib/TurtleParser.ypp"
 
-    void* p_void;
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
-    /* Terminals */
-    LANGTAG* p_LANGTAG;
-
     std::string* p_string;
 
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    const BooleanRDFLiteral* p_BooleanRDFLiteral;
-
-    /* Productions */
-    BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
     const URI* p_URI;
-    ProductionVector<URI*>* p_URIs;
-    const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
+    LANGTAG* p_LANGTAG;
+    BasicGraphPattern* p_DefaultGraphPattern;
 
 
-
-/* Line 35 of lalr1.cc  */
-#line 177 "tmp/TurtleParser/TurtleParser.hpp"
+/* Line 33 of lalr1.cc  */
+#line 155 "tmp/TurtleParser/TurtleParser.hpp"
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -326,16 +304,14 @@ namespace w3c_sw {
     /// For a rule, its LHS.
     static const unsigned char yyr1_[];
     /// For a rule, its RHS length.
-    static const unsigned char yyr2_[];
-
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
-    /// For a symbol, its name in clear.
-    static const char* const yytname_[];
-#endif
+    static const unsigned char yyr2_[]; 
 
     /// Convert the symbol name \a n to a form suitable for a diagnostic.
     static std::string yytnamerr_ (const char *n);
 
+
+    /// For a symbol, its name in clear.
+    static const char* const yytname_[];
 #if YYDEBUG
     /// A type to store symbol numbers and -1.
     typedef signed char rhs_number_type;
@@ -362,6 +338,7 @@ namespace w3c_sw {
 
     /// \brief Reclaim the memory associated to a symbol.
     /// \param yymsg        Why this token is reclaimed.
+    ///                     If null, do not display the symbol, just free it.
     /// \param yytype       The symbol type.
     /// \param yyvaluep     Its semantic value.
     /// \param yylocationp  Its location.
@@ -391,10 +368,9 @@ namespace w3c_sw {
   };
 
 } // w3c_sw
-
-/* Line 35 of lalr1.cc  */
-#line 397 "tmp/TurtleParser/TurtleParser.hpp"
-
+/* Line 33 of lalr1.cc  */
+#line 373 "tmp/TurtleParser/TurtleParser.hpp"
 
 
-#endif /* ! defined PARSER_HEADER_H */
+
+#endif /* !YY_W3C_SW_TMP_TURTLEPARSER_TURTLEPARSER_HPP_INCLUDED  */

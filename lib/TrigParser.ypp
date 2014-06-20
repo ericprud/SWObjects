@@ -103,21 +103,13 @@ public:
     struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
 
-    /* Terminals */
-    LANGTAG* p_LANGTAG;
-
     std::string* p_string;
 
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    const BooleanRDFLiteral* p_BooleanRDFLiteral;
-
-    /* Productions */
-    BasicGraphPattern* p_DefaultGraphPattern;
     const TTerm* p_TTerm;
     const URI* p_URI;
-    ProductionVector<URI*>* p_URIs;
-    const RDFLiteral* p_RDFLiteral;
     const BNode* p_BNode;
+    LANGTAG* p_LANGTAG;
+    BasicGraphPattern* p_DefaultGraphPattern;
 }
 
 %{
@@ -127,32 +119,35 @@ public:
 /* START TokenBlock */
 /* Terminals */
 
-%token IT_GRAPH GT_DOT GT_LCURLEY GT_RCURLEY IT_BASE IT_PREFIX GT_SEMI
-       GT_COMMA GT_LBRACKET GT_RBRACKET GT_LPAREN GT_RPAREN GT_DTYPE
-       RDF_TYPE AT_BASE AT_PREFIX
-
-%token <p_BooleanRDFLiteral> IT_true IT_false
-%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE
+%token AT_BASE AT_PREFIX IT_BASE RDF_TYPE IT_PREFIX GT_LPAREN GT_RPAREN GT_DOT
+       GT_COMMA GT_SEMI GT_LBRACKET GT_RBRACKET GT_DTYPE
+       IT_GRAPH GT_LCURLEY GT_RCURLEY
+%token <p_TTerm> IT_true IT_false INTEGER DECIMAL DOUBLE BLANK_NODE_LABEL ANON
+// deepest typing for these tokens:
+// %token <p_BooleanRDFLiteral> IT_true IT_false
+// %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE
+// %token <p_BNode> BLANK_NODE_LABEL ANON
 %token <p_string> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
-%token <p_URI> IRIREF PNAME_NS PNAME_LN
-%token <p_BNode> BLANK_NODE_LABEL ANON
+%token <p_URI> PNAME_NS PNAME_LN IRIREF
 %token <p_LANGTAG> LANGTAG
-%token <p_NIL> NIL
 
-/* Productions */
 %type <p_trigDoc> trigDoc
 
-//%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate
-
-%type <p_TTerm> _Qobject_E_Star verb predicate object _object1 blank collection subject
-%type <p_RDFLiteral> RDFLiteral literal
-%type <p_NumericRDFLiteral> NumericLiteral
-%type <p_BooleanRDFLiteral> BooleanLiteral
-%type <p_string> String
-%type <p_BNode> BlankNode blankNodePropertyList
-
+%type <p_TTerm> subject object _object1 collection RDFLiteral literal NumericLiteral BooleanLiteral BlankNode blankNodePropertyList verb predicate blank
 %type <p_URI> iri PrefixedName
-%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
+// deepest typing for these productions:
+// %type <p_TTerm> subject object collection
+// %type <p_RDFLiteral> RDFLiteral literal
+// %type <p_NumericRDFLiteral> NumericLiteral
+// %type <p_BooleanRDFLiteral> BooleanLiteral
+// %type <p_BNode> BlankNode blankNodePropertyList
+// %type <p_URI> verb predicate iri PrefixedName
+%type <p_string> String
+%type <p_TTerm> _Qobject_E_Star
+%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C
+                         _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
+
+//%type <p_DefaultGraphPattern> ConstructTriples _Q_O_QGT_DOT_E_S_QConstructTriples_E_Opt_C_E_Opt _O_QGT_DOT_E_S_QConstructTriples_E_Opt_C _QConstructTriples_E_Opt TrigTemplate
 
 /* END TokenBlock */
 
@@ -378,7 +373,7 @@ verb:
 	driver.curPredicate = $$;
     }
   | RDF_TYPE	{
-	$$ = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	$$ = TTerm::RDF_type;
 	driver.curPredicate = $$;
     }
 ;
@@ -387,9 +382,7 @@ subject:
     iri	{
 	$$ = $1;
     }
-  | blank	{
-	$$ = $1;
-    }
+  | blank	
 ;
 
 predicate:
@@ -411,36 +404,20 @@ _object1:
     iri	{
 	$$ = $1;
     }
-  | blank	{
-      $$ = $1;
-    }
-  | blankNodePropertyList	{
-	$$ = $1;
-    }
-  | literal	{
-      $$ = $1;
-    }
+  | blank	
+  | blankNodePropertyList	
+  | literal	
 ;
 
 literal:
-    RDFLiteral	{
-	$$ = $1;
-    }
-  | NumericLiteral	{
-	$$ = $1;
-    }
-  | BooleanLiteral	{
-	$$ = $1;
-    }
+    RDFLiteral	
+  | NumericLiteral	
+  | BooleanLiteral	
 ;
 
 blank:
-    BlankNode	{
-      $$ = $1;
-    }
-  | collection	{
-	$$ = $1;
-    }
+    BlankNode	
+  | collection	
 ;
 
 blankNodePropertyList:
@@ -499,15 +476,9 @@ _Qobject_E_Star:
 ;
 
 NumericLiteral:
-    INTEGER	{
-	$$ = $1;
-    }
-  | DECIMAL	{
-	$$ = $1;
-    }
-  | DOUBLE	{
-	$$ = $1;
-    }
+    INTEGER	
+  | DECIMAL	
+  | DOUBLE	
 ;
 
 RDFLiteral:
@@ -536,60 +507,34 @@ _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt:
 	$$.uri = NULL;
 	$$.langtag = NULL;
     }
-  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C	{
-	$$ = $1;
-    }
+  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C	
 ;
 
 BooleanLiteral:
-    IT_true	{
-	$$ = $1;
-    }
-  | IT_false	{
-	$$ = $1;
-    }
+    IT_true	
+  | IT_false	
 ;
 
 String:
-    STRING_LITERAL1	{
-	$$ = $1;
-    }
-  | STRING_LITERAL2	{
-	$$ = $1;
-    }
-  | STRING_LITERAL_LONG1	{
-	$$ = $1;
-    }
-  | STRING_LITERAL_LONG2	{
-	$$ = $1;
-    }
+    STRING_LITERAL1	
+  | STRING_LITERAL2	
+  | STRING_LITERAL_LONG1	
+  | STRING_LITERAL_LONG2	
 ;
 
 iri:
-    IRIREF	{
-	$$ = $1;
-    }
-  | PrefixedName	{
-	$$ = $1;
-    }
+    IRIREF	
+  | PrefixedName	
 ;
 
 PrefixedName:
-    PNAME_LN	{
-	$$ = $1;
-    }
-  | PNAME_NS	{
-	$$ = $1;
-    }
+    PNAME_LN	
+  | PNAME_NS	
 ;
 
 BlankNode:
-    BLANK_NODE_LABEL	{
-	$$ = $1;
-    }
-  | ANON	{
-	$$ = $1;
-    }
+    BLANK_NODE_LABEL	
+  | ANON	
 ;
 
  /*** END Trig language structure. ***/

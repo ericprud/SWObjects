@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+/* A Bison parser, made by GNU Bison 2.7.  */
 
 /* Skeleton implementation for Bison LALR(1) parsers in C++
    
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
+      Copyright (C) 2002-2012 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,22 +35,19 @@
 
 /* First part of user declarations.  */
 
-
-/* Line 293 of lalr1.cc  */
-#line 41 "lib/TrigParser.cpp"
+/* Line 279 of lalr1.cc  */
+#line 40 "lib/TrigParser.cpp"
 
 
 #include "TrigParser.hpp"
 
 /* User implementation prologue.  */
-
-/* Line 299 of lalr1.cc  */
-#line 123 "lib/TrigParser.ypp"
+/* Line 285 of lalr1.cc  */
+#line 115 "lib/TrigParser.ypp"
 
 #include "TrigScanner.hpp"
-
-/* Line 299 of lalr1.cc  */
-#line 163 "lib/TrigParser.ypp"
+/* Line 285 of lalr1.cc  */
+#line 158 "lib/TrigParser.ypp"
 
 #include "TrigScanner.hpp"
 
@@ -62,9 +59,17 @@
 
 #include "RdfDB.hpp"
 
+/* Line 285 of lalr1.cc  */
+#line 64 "lib/TrigParser.cpp"
 
-/* Line 299 of lalr1.cc  */
-#line 68 "lib/TrigParser.cpp"
+
+# ifndef YY_NULL
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULL nullptr
+#  else
+#   define YY_NULL 0
+#  endif
+# endif
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -78,25 +83,26 @@
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
 /* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
    If N is 0, then set CURRENT to the empty location which ends
    the previous symbol: RHS[0] (always defined).  */
 
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
- do                                                                    \
-   if (N)                                                              \
-     {                                                                 \
-       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
-       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
-     }                                                                 \
-   else                                                                \
-     {                                                                 \
-       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
-     }                                                                 \
- while (false)
-#endif
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
+
 
 /* Suppress unused-variable warnings by "using" E.  */
 #define YYUSE(e) ((void) (e))
@@ -132,9 +138,9 @@ do {					\
 #else /* !YYDEBUG */
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_REDUCE_PRINT(Rule)
-# define YY_STACK_PRINT()
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location) YYUSE(Type)
+# define YY_REDUCE_PRINT(Rule)        static_cast<void>(0)
+# define YY_STACK_PRINT()             static_cast<void>(0)
 
 #endif /* !YYDEBUG */
 
@@ -148,9 +154,8 @@ do {					\
 
 
 namespace w3c_sw {
-
-/* Line 382 of lalr1.cc  */
-#line 154 "lib/TrigParser.cpp"
+/* Line 353 of lalr1.cc  */
+#line 159 "lib/TrigParser.cpp"
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -216,6 +221,9 @@ namespace w3c_sw {
   {
     YYUSE (yylocationp);
     YYUSE (yyvaluep);
+    std::ostream& yyo = debug_stream ();
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
     switch (yytype)
       {
          default:
@@ -244,7 +252,8 @@ namespace w3c_sw {
     YYUSE (yymsg);
     YYUSE (yyvaluep);
 
-    YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
 
     switch (yytype)
       {
@@ -308,17 +317,18 @@ namespace w3c_sw {
     int yychar = yyempty_;
     int yytoken = 0;
 
-    /* State.  */
+    // State.
     int yyn;
     int yylen = 0;
     int yystate = 0;
 
-    /* Error handling.  */
+    // Error handling.
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
     /// Semantic value of the lookahead.
-    semantic_type yylval;
+    static semantic_type yyval_default;
+    semantic_type yylval = yyval_default;
     /// Location of the lookahead.
     location_type yylloc;
     /// The locations where the error started and ended.
@@ -331,20 +341,22 @@ namespace w3c_sw {
 
     int yyresult;
 
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
+    try
+      {
     YYCDEBUG << "Starting parse" << std::endl;
 
 
-    /* User initialization code.  */
-    
-/* Line 565 of lalr1.cc  */
+/* User initialization code.  */
+/* Line 545 of lalr1.cc  */
 #line 31 "lib/TrigParser.ypp"
 {
     // initialize the initial location object
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
-
-/* Line 565 of lalr1.cc  */
-#line 348 "lib/TrigParser.cpp"
+/* Line 545 of lalr1.cc  */
+#line 360 "lib/TrigParser.cpp"
 
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -378,10 +390,9 @@ namespace w3c_sw {
     /* Read a lookahead token.  */
     if (yychar == yyempty_)
       {
-	YYCDEBUG << "Reading a token: ";
-	yychar = yylex (&yylval, &yylloc);
+        YYCDEBUG << "Reading a token: ";
+        yychar = yylex (&yylval, &yylloc);
       }
-
 
     /* Convert token to internal form.  */
     if (yychar <= yyeof_)
@@ -453,17 +464,19 @@ namespace w3c_sw {
     else
       yyval = yysemantic_stack_[0];
 
+    // Compute the default @$.
     {
       slice<location_type, location_stack_type> slice (yylocation_stack_, yylen);
       YYLLOC_DEFAULT (yyloc, slice, yylen);
     }
+
+    // Perform the reduction.
     YY_REDUCE_PRINT (yyn);
     switch (yyn)
       {
-	  case 2:
-
-/* Line 690 of lalr1.cc  */
-#line 180 "lib/TrigParser.ypp"
+          case 2:
+/* Line 670 of lalr1.cc  */
+#line 175 "lib/TrigParser.ypp"
     {
 	driver.root = driver.defaultBGP;
 	// driver.root = $<p_DefaultGraphPattern>1;
@@ -471,9 +484,8 @@ namespace w3c_sw {
     break;
 
   case 9:
-
-/* Line 690 of lalr1.cc  */
-#line 200 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 195 "lib/TrigParser.ypp"
     {
 	driver.curBGP = driver.db->ensureGraph(NULL);
 	driver.neededBGP = NULL;
@@ -481,18 +493,16 @@ namespace w3c_sw {
     break;
 
   case 12:
-
-/* Line 690 of lalr1.cc  */
-#line 209 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 204 "lib/TrigParser.ypp"
     {
 	driver.curSubject = NULL;
       }
     break;
 
   case 14:
-
-/* Line 690 of lalr1.cc  */
-#line 216 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 211 "lib/TrigParser.ypp"
     {
 	driver.curBGP = driver.db->ensureGraph(NULL);
 	driver.neededBGP = NULL;
@@ -500,45 +510,40 @@ namespace w3c_sw {
     break;
 
   case 16:
-
-/* Line 690 of lalr1.cc  */
-#line 223 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 218 "lib/TrigParser.ypp"
     {
-      driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
+      driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 17:
-
-/* Line 690 of lalr1.cc  */
-#line 225 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 220 "lib/TrigParser.ypp"
     {
 	driver.curSubject = NULL;
       }
     break;
 
   case 18:
-
-/* Line 690 of lalr1.cc  */
-#line 228 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 223 "lib/TrigParser.ypp"
     {
       driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 19:
-
-/* Line 690 of lalr1.cc  */
-#line 230 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 225 "lib/TrigParser.ypp"
     {
 	driver.curSubject = NULL;
       }
     break;
 
   case 22:
-
-/* Line 690 of lalr1.cc  */
-#line 242 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 237 "lib/TrigParser.ypp"
     {
 	driver.curBGP = driver.db->ensureGraph(driver.curSubject);
 	driver.neededBGP = NULL;
@@ -546,63 +551,56 @@ namespace w3c_sw {
     break;
 
   case 23:
-
-/* Line 690 of lalr1.cc  */
-#line 245 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 240 "lib/TrigParser.ypp"
     {
 	  driver.curSubject = NULL;
       }
     break;
 
   case 27:
-
-/* Line 690 of lalr1.cc  */
-#line 257 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 252 "lib/TrigParser.ypp"
     {
 	driver.neededBGP = NULL;
     }
     break;
 
   case 31:
-
-/* Line 690 of lalr1.cc  */
-#line 272 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 267 "lib/TrigParser.ypp"
     {
       driver.curSubject = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 32:
-
-/* Line 690 of lalr1.cc  */
-#line 275 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 270 "lib/TrigParser.ypp"
     {
-      driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
+      driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 37:
-
-/* Line 690 of lalr1.cc  */
-#line 290 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 285 "lib/TrigParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
     break;
 
   case 38:
-
-/* Line 690 of lalr1.cc  */
-#line 292 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 287 "lib/TrigParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
     break;
 
   case 39:
-
-/* Line 690 of lalr1.cc  */
-#line 294 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 289 "lib/TrigParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -610,45 +608,40 @@ namespace w3c_sw {
     break;
 
   case 41:
-
-/* Line 690 of lalr1.cc  */
-#line 302 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 297 "lib/TrigParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(3) - (2)].p_URI)->getLexicalValue());
     }
     break;
 
   case 42:
-
-/* Line 690 of lalr1.cc  */
-#line 309 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 304 "lib/TrigParser.ypp"
     {
 	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
     }
     break;
 
   case 43:
-
-/* Line 690 of lalr1.cc  */
-#line 316 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 311 "lib/TrigParser.ypp"
     {
 	driver.ignorePrefix(true);
       }
     break;
 
   case 44:
-
-/* Line 690 of lalr1.cc  */
-#line 318 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 313 "lib/TrigParser.ypp"
     {
 	  driver.ignorePrefix(false);
       }
     break;
 
   case 45:
-
-/* Line 690 of lalr1.cc  */
-#line 320 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 315 "lib/TrigParser.ypp"
     {
 	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
@@ -656,27 +649,24 @@ namespace w3c_sw {
     break;
 
   case 46:
-
-/* Line 690 of lalr1.cc  */
-#line 328 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 323 "lib/TrigParser.ypp"
     {
 	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 48:
-
-/* Line 690 of lalr1.cc  */
-#line 331 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 326 "lib/TrigParser.ypp"
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_BNode);
+	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
     }
     break;
 
   case 61:
-
-/* Line 690 of lalr1.cc  */
-#line 376 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 371 "lib/TrigParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
 	driver.curPredicate = (yyval.p_TTerm);
@@ -684,46 +674,33 @@ namespace w3c_sw {
     break;
 
   case 62:
-
-/* Line 690 of lalr1.cc  */
-#line 380 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 375 "lib/TrigParser.ypp"
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	(yyval.p_TTerm) = TTerm::RDF_type;
 	driver.curPredicate = (yyval.p_TTerm);
     }
     break;
 
   case 63:
-
-/* Line 690 of lalr1.cc  */
-#line 387 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 382 "lib/TrigParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
-  case 64:
-
-/* Line 690 of lalr1.cc  */
-#line 390 "lib/TrigParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
   case 65:
-
-/* Line 690 of lalr1.cc  */
-#line 396 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 389 "lib/TrigParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
   case 66:
-
-/* Line 690 of lalr1.cc  */
-#line 402 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 395 "lib/TrigParser.ypp"
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
@@ -733,90 +710,16 @@ namespace w3c_sw {
     break;
 
   case 67:
-
-/* Line 690 of lalr1.cc  */
-#line 411 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 404 "lib/TrigParser.ypp"
     {
 	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
     }
     break;
 
-  case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 414 "lib/TrigParser.ypp"
-    {
-      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
-  case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 417 "lib/TrigParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    }
-    break;
-
-  case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 420 "lib/TrigParser.ypp"
-    {
-      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
-    }
-    break;
-
-  case 71:
-
-/* Line 690 of lalr1.cc  */
-#line 426 "lib/TrigParser.ypp"
-    {
-	(yyval.p_RDFLiteral) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
-    }
-    break;
-
-  case 72:
-
-/* Line 690 of lalr1.cc  */
-#line 429 "lib/TrigParser.ypp"
-    {
-	(yyval.p_RDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 73:
-
-/* Line 690 of lalr1.cc  */
-#line 432 "lib/TrigParser.ypp"
-    {
-	(yyval.p_RDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    }
-    break;
-
-  case 74:
-
-/* Line 690 of lalr1.cc  */
-#line 438 "lib/TrigParser.ypp"
-    {
-      (yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    }
-    break;
-
-  case 75:
-
-/* Line 690 of lalr1.cc  */
-#line 441 "lib/TrigParser.ypp"
-    {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-    }
-    break;
-
   case 76:
-
-/* Line 690 of lalr1.cc  */
-#line 447 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 424 "lib/TrigParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -825,20 +728,18 @@ namespace w3c_sw {
     break;
 
   case 77:
-
-/* Line 690 of lalr1.cc  */
-#line 451 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 428 "lib/TrigParser.ypp"
     {
-	  (yyval.p_BNode) = (BNode*)driver.curSubject; // could store w/ type in ctx..
+	  (yyval.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
       }
     break;
 
   case 78:
-
-/* Line 690 of lalr1.cc  */
-#line 460 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 437 "lib/TrigParser.ypp"
     {
 	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
@@ -846,9 +747,8 @@ namespace w3c_sw {
     break;
 
   case 79:
-
-/* Line 690 of lalr1.cc  */
-#line 463 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 440 "lib/TrigParser.ypp"
     {
 	  if ((yysemantic_stack_[(4) - (3)].p_TTerm) == NULL) {
 	      (yyval.p_TTerm) = TTerm::RDF_nil;
@@ -864,18 +764,16 @@ namespace w3c_sw {
     break;
 
   case 80:
-
-/* Line 690 of lalr1.cc  */
-#line 483 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 460 "lib/TrigParser.ypp"
     {
 	(yyval.p_TTerm) = NULL;
     }
     break;
 
   case 81:
-
-/* Line 690 of lalr1.cc  */
-#line 486 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 463 "lib/TrigParser.ypp"
     {
 	const TTerm* nextTail = driver.createBNode();
 	if ((yysemantic_stack_[(1) - (1)].p_TTerm) == NULL) // on first element
@@ -890,55 +788,25 @@ namespace w3c_sw {
     break;
 
   case 82:
-
-/* Line 690 of lalr1.cc  */
-#line 496 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 473 "lib/TrigParser.ypp"
     {
 	  (yyval.p_TTerm) = (yysemantic_stack_[(3) - (2)].p_TTerm);
       }
     break;
 
-  case 83:
-
-/* Line 690 of lalr1.cc  */
-#line 502 "lib/TrigParser.ypp"
-    {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 84:
-
-/* Line 690 of lalr1.cc  */
-#line 505 "lib/TrigParser.ypp"
-    {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
-  case 85:
-
-/* Line 690 of lalr1.cc  */
-#line 508 "lib/TrigParser.ypp"
-    {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
-    }
-    break;
-
   case 86:
-
-/* Line 690 of lalr1.cc  */
-#line 515 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 486 "lib/TrigParser.ypp"
     {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
+	(yyval.p_TTerm) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
 	delete (yysemantic_stack_[(2) - (1)].p_string);
     }
     break;
 
   case 87:
-
-/* Line 690 of lalr1.cc  */
-#line 523 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 494 "lib/TrigParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
@@ -946,9 +814,8 @@ namespace w3c_sw {
     break;
 
   case 88:
-
-/* Line 690 of lalr1.cc  */
-#line 527 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 498 "lib/TrigParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(2) - (2)].p_URI);
 	(yyval.p_uri_or_langtag).langtag = NULL;
@@ -956,139 +823,21 @@ namespace w3c_sw {
     break;
 
   case 89:
-
-/* Line 690 of lalr1.cc  */
-#line 535 "lib/TrigParser.ypp"
+/* Line 670 of lalr1.cc  */
+#line 506 "lib/TrigParser.ypp"
     {
 	(yyval.p_uri_or_langtag).uri = NULL;
 	(yyval.p_uri_or_langtag).langtag = NULL;
     }
     break;
 
-  case 90:
 
-/* Line 690 of lalr1.cc  */
-#line 539 "lib/TrigParser.ypp"
-    {
-	(yyval.p_uri_or_langtag) = (yysemantic_stack_[(1) - (1)].p_uri_or_langtag);
-    }
-    break;
-
-  case 91:
-
-/* Line 690 of lalr1.cc  */
-#line 545 "lib/TrigParser.ypp"
-    {
-	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    }
-    break;
-
-  case 92:
-
-/* Line 690 of lalr1.cc  */
-#line 548 "lib/TrigParser.ypp"
-    {
-	(yyval.p_BooleanRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
-    }
-    break;
-
-  case 93:
-
-/* Line 690 of lalr1.cc  */
-#line 554 "lib/TrigParser.ypp"
-    {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    }
-    break;
-
-  case 94:
-
-/* Line 690 of lalr1.cc  */
-#line 557 "lib/TrigParser.ypp"
-    {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    }
-    break;
-
-  case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 560 "lib/TrigParser.ypp"
-    {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    }
-    break;
-
-  case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 563 "lib/TrigParser.ypp"
-    {
-	(yyval.p_string) = (yysemantic_stack_[(1) - (1)].p_string);
-    }
-    break;
-
-  case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 569 "lib/TrigParser.ypp"
-    {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
-  case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 572 "lib/TrigParser.ypp"
-    {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
-  case 99:
-
-/* Line 690 of lalr1.cc  */
-#line 578 "lib/TrigParser.ypp"
-    {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
-  case 100:
-
-/* Line 690 of lalr1.cc  */
-#line 581 "lib/TrigParser.ypp"
-    {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
-    }
-    break;
-
-  case 101:
-
-/* Line 690 of lalr1.cc  */
-#line 587 "lib/TrigParser.ypp"
-    {
-	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    }
-    break;
-
-  case 102:
-
-/* Line 690 of lalr1.cc  */
-#line 590 "lib/TrigParser.ypp"
-    {
-	(yyval.p_BNode) = (yysemantic_stack_[(1) - (1)].p_BNode);
-    }
-    break;
-
-
-
-/* Line 690 of lalr1.cc  */
-#line 1089 "lib/TrigParser.cpp"
-	default:
-          break;
+/* Line 670 of lalr1.cc  */
+#line 837 "lib/TrigParser.cpp"
+      default:
+        break;
       }
+
     /* User semantic actions sometimes alter yychar, and that requires
        that yytoken be updated with the new translation.  We take the
        approach of translating immediately before every use of yytoken.
@@ -1139,20 +888,19 @@ namespace w3c_sw {
     yyerror_range[1] = yylloc;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
-
-	if (yychar <= yyeof_)
-	  {
-	  /* Return failure if at end of input.  */
-	  if (yychar == yyeof_)
-	    YYABORT;
-	  }
-	else
-	  {
-	    yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
-	    yychar = yyempty_;
-	  }
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
+        if (yychar <= yyeof_)
+          {
+            /* Return failure if at end of input.  */
+            if (yychar == yyeof_)
+              YYABORT;
+          }
+        else
+          {
+            yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
+            yychar = yyempty_;
+          }
       }
 
     /* Else will try to reuse lookahead token after shifting the error
@@ -1201,7 +949,7 @@ namespace w3c_sw {
 
 	/* Pop the current state because it cannot handle the error token.  */
 	if (yystate_stack_.height () == 1)
-	YYABORT;
+	  YYABORT;
 
 	yyerror_range[1] = yylocation_stack_[0];
 	yydestruct_ ("Error: popping",
@@ -1249,16 +997,42 @@ namespace w3c_sw {
     /* Do not reclaim the symbols of the rule which action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
-    while (yystate_stack_.height () != 1)
+    while (1 < yystate_stack_.height ())
       {
-	yydestruct_ ("Cleanup: popping",
-		   yystos_[yystate_stack_[0]],
-		   &yysemantic_stack_[0],
-		   &yylocation_stack_[0]);
-	yypop_ ();
+        yydestruct_ ("Cleanup: popping",
+                     yystos_[yystate_stack_[0]],
+                     &yysemantic_stack_[0],
+                     &yylocation_stack_[0]);
+        yypop_ ();
       }
 
     return yyresult;
+    }
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printer might throw an exception.
+        if (yychar != yyempty_)
+          {
+            /* Make sure we have latest lookahead translation.  See
+               comments at user semantic actions for why this is
+               necessary.  */
+            yytoken = yytranslate_ (yychar);
+            yydestruct_ (YY_NULL, yytoken, &yylval, &yylloc);
+          }
+
+        while (1 < yystate_stack_.height ())
+          {
+            yydestruct_ (YY_NULL,
+                         yystos_[yystate_stack_[0]],
+                         &yysemantic_stack_[0],
+                         &yylocation_stack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
   }
 
   // Generate an error message.
@@ -1327,7 +1101,7 @@ namespace w3c_sw {
           }
       }
 
-    char const* yyformat = 0;
+    char const* yyformat = YY_NULL;
     switch (yycount)
       {
 #define YYCASE_(N, S)                         \
@@ -1359,23 +1133,23 @@ namespace w3c_sw {
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char TrigParser::yypact_ninf_ = -95;
+  const signed char TrigParser::yypact_ninf_ = -97;
   const signed char
   TrigParser::yypact_[] =
   {
-       -95,    15,     4,   -95,    24,   -95,   -12,   -95,     2,   -95,
-     -95,   -95,   -95,   -95,   -95,   -95,   -95,    -3,   -95,   -95,
-      26,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,    26,
-      14,   -95,     8,    36,    29,   -95,   -95,   -95,   -95,   -95,
-     -95,   -11,   -95,   -95,   -95,   -95,    58,   -95,   -95,   -95,
-     -95,   -95,   -95,   -95,   -95,   -95,   -11,   -95,   -11,   -11,
-     -95,    75,    46,   -95,   -95,    74,    14,   -95,   -95,   -11,
-     -11,    53,    54,    71,    70,    81,   -95,    82,   -95,   -95,
-     -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,
-     -95,   -95,   -95,   -95,   -95,   -95,   -95,    -9,   -95,   -95,
-     -95,   -95,   -95,   -95,   -95,   -95,   -95,    46,   -95,   -95,
-      78,    79,    19,   -95,   -95,   -95,    84,   -95,   -11,   -95,
-      46,   -95,   -95,   -95,   -95,   -95,    46,   -95,   -95
+       -97,     8,     9,   -97,   -21,   -97,   -17,   -97,    13,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,   -97,    38,   -97,   -97,
+       0,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,    20,
+       1,   -97,    17,     0,    75,   -97,   -97,   -97,   -97,   -97,
+     -97,    -3,   -97,   -97,   -97,   -97,   -97,   -97,   -97,    39,
+     -97,   -97,   -97,   -97,   -97,   -97,   -97,    -3,    -3,    -3,
+     -97,    47,    48,   -97,   -97,    18,    26,    41,    75,   -97,
+     -97,    -3,    -3,    10,    49,    52,   -97,    54,   -97,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,   -97,   -11,   -97,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,    48,   -97,   -97,   -97,
+      53,    70,    23,   -97,   -97,   -97,    72,   -97,    -3,   -97,
+      48,   -97,   -97,   -97,   -97,   -97,    48,   -97,   -97
   };
 
   /* YYDEFACT[S] -- default reduction number in state S.  Performed when
@@ -1384,17 +1158,17 @@ namespace w3c_sw {
   const unsigned char
   TrigParser::yydefact_[] =
   {
-         5,     0,     9,     1,     0,    22,     0,    43,     0,    37,
-      97,   100,    99,   101,   102,     6,     4,     0,     7,     8,
+         5,     0,     9,     1,     0,    37,     0,    43,     0,    22,
+     101,   102,   100,    99,    97,     6,     4,     0,     7,     8,
       14,     3,    33,    34,    36,    35,    31,    98,    32,     0,
-      25,    42,     0,     0,     0,    76,    78,    10,    16,    18,
-      12,     0,    13,    11,    23,    26,    29,    46,    64,    48,
-      75,    63,    74,    44,    41,    38,     0,    80,    20,     0,
-      62,     0,     0,    61,    65,     0,    25,    30,    27,     0,
-      20,     0,     0,     0,    81,     0,    21,     0,    15,    91,
+       0,    42,     0,     0,    25,    78,    76,    10,    16,    18,
+      12,     0,    13,    41,    38,    44,    11,    23,    26,    29,
+      46,    64,    48,    75,    63,    74,    80,     0,    20,     0,
+      62,     0,     0,    61,    65,     0,     0,     0,    25,    30,
+      27,     0,    20,    81,     0,     0,    21,     0,    15,    91,
       92,    83,    84,    85,    93,    94,    95,    96,    55,    59,
-      66,    70,    68,    69,    72,    71,    73,    89,    67,    24,
-      28,    47,    49,    45,    39,    77,    79,     0,    17,    19,
+      66,    70,    68,    69,    72,    71,    73,    89,    67,    39,
+      45,    24,    28,    47,    49,    79,     0,    77,    17,    19,
       50,    57,     0,    87,    90,    86,     0,    82,    52,    56,
        0,    60,    88,    40,    53,    54,     0,    58,    51
   };
@@ -1403,13 +1177,13 @@ namespace w3c_sw {
   const signed char
   TrigParser::yypgoto_[] =
   {
-       -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,
-     -95,   -95,    20,     0,   -95,   -95,    25,   -95,   -95,   -95,
-      88,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,
-     -95,   -95,   -95,   -95,   -18,   -95,   -95,   -95,   -95,   -33,
-     -95,   -95,   -24,   -95,   -95,   -94,   -95,   -95,   -27,   -16,
-     -95,    80,   -95,   -95,   -95,   -95,   -95,   -95,   -95,   -95,
-     -95,    -2,   -95,    59
+       -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
+     -97,   -97,    12,   -13,   -97,   -97,    19,   -97,   -97,   -97,
+      77,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
+     -97,   -97,   -97,   -97,   -36,   -97,   -97,   -97,   -97,   -40,
+     -97,   -97,   -29,   -97,   -97,   -96,   -97,   -97,   -32,   -16,
+     -97,    73,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
+     -97,    -2,   -97,    40
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
@@ -1417,12 +1191,12 @@ namespace w3c_sw {
   TrigParser::yydefgoto_[] =
   {
         -1,     1,    15,     2,    16,    17,    18,    40,    41,    37,
-      58,    59,    75,    19,    30,    65,    44,    45,    67,    68,
-      20,    21,    22,    34,    72,   116,    23,    24,    25,    32,
-      71,    46,    69,    70,    76,   124,   125,   119,   110,    88,
-     121,   111,    62,    47,    63,    89,    90,    91,    92,    93,
-      56,    50,    57,    74,   107,    94,    95,   114,   115,    96,
-      97,    64,    27,    52
+      58,    59,    75,    19,    34,    67,    47,    48,    69,    70,
+      20,    21,    22,    30,    65,   116,    23,    24,    25,    32,
+      66,    49,    71,    72,    76,   124,   125,   119,   110,    88,
+     121,   111,    62,    50,    63,    89,    90,    91,    92,    93,
+      57,    53,    56,    73,   106,    94,    95,   114,   115,    96,
+      97,    64,    27,    55
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -1432,17 +1206,17 @@ namespace w3c_sw {
   const short int
   TrigParser::yytable_[] =
   {
-        26,    38,    26,    48,    -2,    60,   112,     4,    35,     5,
-      36,     6,     7,   117,    49,     3,    31,    10,    11,    12,
-      42,     8,     9,    61,   113,    35,   127,    36,    51,    43,
-      33,     5,    10,    11,    12,    13,    14,    53,    73,    48,
-      54,    77,    10,    11,    12,    13,    14,    10,    11,    12,
-      49,   101,    10,    11,    12,    13,    14,    35,    55,    36,
-      98,    28,    66,    28,    51,    79,    80,    81,    82,    83,
-      84,    85,    86,    87,    10,    11,    12,    13,    14,    78,
-      99,   103,   104,   105,   106,   108,   109,   118,   123,   120,
-     102,   100,    29,   128,   126,     0,     0,    39,     0,     0,
-       0,     0,     0,     0,     0,    98,     0,     0,     0,     0,
+        26,    38,    51,    60,   112,    61,    26,    42,     3,    -2,
+     117,    29,     4,     5,     6,    31,     7,     9,    52,   105,
+      46,    74,   113,    77,   127,     8,     9,    12,    13,    14,
+      43,    44,    54,    10,    11,   103,    51,    10,    11,    12,
+      13,    14,    28,    12,    13,    14,    35,    45,    28,    68,
+      99,    36,    52,    12,    13,    14,    35,    78,   100,   101,
+      98,    36,   108,   107,   109,   118,    54,    79,    80,    81,
+      82,    83,    10,    11,    84,    85,    86,    87,    12,    13,
+      14,   120,   123,    35,   104,    33,   128,   102,    36,   126,
+      39,     0,     0,     0,     0,     0,     0,     0,     0,    10,
+      11,     0,     0,     0,    98,    12,    13,    14,     0,     0,
      122,     0,     0,     0,     0,     0,     0,     0,    98,     0,
        0,     0,     0,     0,    98
   };
@@ -1451,17 +1225,17 @@ namespace w3c_sw {
   const signed char
   TrigParser::yycheck_[] =
   {
-         2,    17,     4,    30,     0,    16,    15,     3,    11,     5,
-      13,     7,     8,   107,    30,     0,    28,    28,    29,    30,
-      20,    17,    18,    41,    33,    11,   120,    13,    30,    29,
-      28,     5,    28,    29,    30,    31,    32,    29,    56,    66,
-       4,    59,    28,    29,    30,    31,    32,    28,    29,    30,
-      66,    69,    28,    29,    30,    31,    32,    11,    29,    13,
-      62,     2,     4,     4,    66,    19,    20,    21,    22,    23,
-      24,    25,    26,    27,    28,    29,    30,    31,    32,     4,
-       6,    28,    28,    12,    14,     4,     4,     9,     4,    10,
-      70,    66,     4,   126,   118,    -1,    -1,    17,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,   107,    -1,    -1,    -1,    -1,
+         2,    17,    34,     6,    15,    41,     8,    20,     0,     0,
+     106,    32,     3,     4,     5,    32,     7,    17,    34,     9,
+      33,    57,    33,    59,   120,    16,    17,    30,    31,    32,
+      10,    30,    34,    24,    25,    71,    68,    24,    25,    30,
+      31,    32,     2,    30,    31,    32,     8,    30,     8,    10,
+      32,    13,    68,    30,    31,    32,     8,    10,    32,    18,
+      62,    13,    10,    14,    10,    12,    68,    19,    20,    21,
+      22,    23,    24,    25,    26,    27,    28,    29,    30,    31,
+      32,    11,    10,     8,    72,     8,   126,    68,    13,   118,
+      17,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    24,
+      25,    -1,    -1,    -1,   106,    30,    31,    32,    -1,    -1,
      112,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   120,    -1,
       -1,    -1,    -1,    -1,   126
   };
@@ -1471,19 +1245,19 @@ namespace w3c_sw {
   const unsigned char
   TrigParser::yystos_[] =
   {
-         0,    36,    38,     0,     3,     5,     7,     8,    17,    18,
-      28,    29,    30,    31,    32,    37,    39,    40,    41,    48,
-      55,    56,    57,    61,    62,    63,    96,    97,    98,    55,
-      49,    28,    64,    28,    58,    11,    13,    44,    84,    86,
-      42,    43,    48,    48,    51,    52,    66,    78,    83,    84,
-      86,    96,    98,    29,     4,    29,    85,    87,    45,    46,
-      16,    69,    77,    79,    96,    50,     4,    53,    54,    67,
-      68,    65,    59,    69,    88,    47,    69,    69,     4,    19,
-      20,    21,    22,    23,    24,    25,    26,    27,    74,    80,
-      81,    82,    83,    84,    90,    91,    94,    95,    96,     6,
-      51,    69,    47,    28,    28,    12,    14,    89,     4,     4,
-      73,    76,    15,    33,    92,    93,    60,    80,     9,    72,
-      10,    75,    96,     4,    70,    71,    77,    80,    74
+         0,    35,    37,     0,     3,     4,     5,     7,    16,    17,
+      24,    25,    30,    31,    32,    36,    38,    39,    40,    47,
+      54,    55,    56,    60,    61,    62,    95,    96,    97,    32,
+      57,    32,    63,    54,    48,     8,    13,    43,    83,    85,
+      41,    42,    47,    10,    30,    30,    47,    50,    51,    65,
+      77,    82,    83,    85,    95,    97,    86,    84,    44,    45,
+       6,    68,    76,    78,    95,    58,    64,    49,    10,    52,
+      53,    66,    67,    87,    68,    46,    68,    68,    10,    19,
+      20,    21,    22,    23,    26,    27,    28,    29,    73,    79,
+      80,    81,    82,    83,    89,    90,    93,    94,    95,    32,
+      32,    18,    50,    68,    46,     9,    88,    14,    10,    10,
+      72,    75,    15,    33,    91,    92,    59,    79,    12,    71,
+      11,    74,    95,    10,    69,    70,    76,    79,    73
   };
 
 #if YYDEBUG
@@ -1495,7 +1269,7 @@ namespace w3c_sw {
          0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289
+     285,   286,   287,   288
   };
 #endif
 
@@ -1503,17 +1277,17 @@ namespace w3c_sw {
   const unsigned char
   TrigParser::yyr1_[] =
   {
-         0,    35,    36,    37,    37,    38,    38,    39,    39,    40,
-      39,    39,    41,    42,    43,    42,    45,    44,    46,    44,
-      47,    47,    49,    50,    48,    51,    51,    52,    53,    54,
-      54,    55,    55,    56,    56,    56,    56,    58,    59,    60,
-      57,    61,    62,    64,    65,    63,    67,    66,    68,    66,
-      69,    70,    71,    71,    72,    73,    73,    74,    75,    76,
-      76,    77,    77,    78,    78,    79,    80,    81,    81,    81,
-      81,    82,    82,    82,    83,    83,    85,    84,    87,    86,
-      88,    89,    88,    90,    90,    90,    91,    92,    92,    93,
-      93,    94,    94,    95,    95,    95,    95,    96,    96,    97,
-      97,    98,    98
+         0,    34,    35,    36,    36,    37,    37,    38,    38,    39,
+      38,    38,    40,    41,    42,    41,    44,    43,    45,    43,
+      46,    46,    48,    49,    47,    50,    50,    51,    52,    53,
+      53,    54,    54,    55,    55,    55,    55,    57,    58,    59,
+      56,    60,    61,    63,    64,    62,    66,    65,    67,    65,
+      68,    69,    70,    70,    71,    72,    72,    73,    74,    75,
+      75,    76,    76,    77,    77,    78,    79,    80,    80,    80,
+      80,    81,    81,    81,    82,    82,    84,    83,    86,    85,
+      87,    88,    87,    89,    89,    89,    90,    91,    91,    92,
+      92,    93,    93,    94,    94,    94,    94,    95,    95,    96,
+      96,    97,    97
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1533,20 +1307,20 @@ namespace w3c_sw {
        1,     1,     1
   };
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
+
   /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
      First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
   const char*
   const TrigParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_GRAPH", "GT_DOT",
-  "GT_LCURLEY", "GT_RCURLEY", "IT_BASE", "IT_PREFIX", "GT_SEMI",
-  "GT_COMMA", "GT_LBRACKET", "GT_RBRACKET", "GT_LPAREN", "GT_RPAREN",
-  "GT_DTYPE", "RDF_TYPE", "AT_BASE", "AT_PREFIX", "IT_true", "IT_false",
-  "INTEGER", "DECIMAL", "DOUBLE", "STRING_LITERAL1", "STRING_LITERAL2",
-  "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2", "IRIREF", "PNAME_NS",
-  "PNAME_LN", "BLANK_NODE_LABEL", "ANON", "LANGTAG", "NIL", "$accept",
-  "trigDoc", "_O_Qdirective_E_Or_Qblock_E_C",
+    "\"end of file\"", "error", "$undefined", "AT_BASE", "AT_PREFIX",
+  "IT_BASE", "RDF_TYPE", "IT_PREFIX", "GT_LPAREN", "GT_RPAREN", "GT_DOT",
+  "GT_COMMA", "GT_SEMI", "GT_LBRACKET", "GT_RBRACKET", "GT_DTYPE",
+  "IT_GRAPH", "GT_LCURLEY", "GT_RCURLEY", "IT_true", "IT_false", "INTEGER",
+  "DECIMAL", "DOUBLE", "BLANK_NODE_LABEL", "ANON", "STRING_LITERAL1",
+  "STRING_LITERAL2", "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2",
+  "PNAME_NS", "PNAME_LN", "IRIREF", "LANGTAG", "$accept", "trigDoc",
+  "_O_Qdirective_E_Or_Qblock_E_C",
   "_Q_O_Qdirective_E_Or_Qblock_E_C_E_Star", "block", "$@1",
   "triplesOrGraph",
   "_O_QwrappedGraph_E_Or_QpredicateObjectList_E_S_QGT_DOT_E_C", "$@2",
@@ -1566,39 +1340,38 @@ namespace w3c_sw {
   "@16", "NumericLiteral", "RDFLiteral",
   "_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C",
   "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt", "BooleanLiteral",
-  "String", "iri", "PrefixedName", "BlankNode", 0
+  "String", "iri", "PrefixedName", "BlankNode", YY_NULL
   };
-#endif
 
 #if YYDEBUG
   /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
   const TrigParser::rhs_number_type
   TrigParser::yyrhs_[] =
   {
-        36,     0,    -1,    38,    -1,    56,    -1,    39,    -1,    -1,
-      38,    37,    -1,    41,    -1,    48,    -1,    -1,    40,    44,
-      -1,     3,    55,    48,    -1,    55,    42,    -1,    48,    -1,
-      -1,    43,    69,     4,    -1,    -1,    84,    45,    47,     4,
-      -1,    -1,    86,    46,    69,     4,    -1,    -1,    69,    -1,
-      -1,    -1,     5,    49,    51,    50,     6,    -1,    -1,    52,
-      -1,    66,    54,    -1,     4,    51,    -1,    -1,    53,    -1,
-      96,    -1,    98,    -1,    57,    -1,    61,    -1,    63,    -1,
-      62,    -1,    -1,    -1,    -1,    18,    58,    29,    59,    28,
-      60,     4,    -1,    17,    28,     4,    -1,     7,    28,    -1,
-      -1,    -1,     8,    64,    29,    65,    28,    -1,    -1,    78,
-      67,    69,    -1,    -1,    84,    68,    47,    -1,    77,    74,
-      73,    -1,    77,    74,    -1,    -1,    70,    -1,     9,    71,
-      -1,    -1,    73,    72,    -1,    80,    76,    -1,    10,    80,
-      -1,    -1,    76,    75,    -1,    79,    -1,    16,    -1,    96,
-      -1,    83,    -1,    96,    -1,    81,    -1,    96,    -1,    83,
-      -1,    84,    -1,    82,    -1,    91,    -1,    90,    -1,    94,
-      -1,    98,    -1,    86,    -1,    -1,    11,    85,    69,    12,
-      -1,    -1,    13,    87,    88,    14,    -1,    -1,    -1,    88,
-      89,    80,    -1,    21,    -1,    22,    -1,    23,    -1,    95,
-      93,    -1,    33,    -1,    15,    96,    -1,    -1,    92,    -1,
-      19,    -1,    20,    -1,    24,    -1,    25,    -1,    26,    -1,
-      27,    -1,    28,    -1,    97,    -1,    30,    -1,    29,    -1,
-      31,    -1,    32,    -1
+        35,     0,    -1,    37,    -1,    55,    -1,    38,    -1,    -1,
+      37,    36,    -1,    40,    -1,    47,    -1,    -1,    39,    43,
+      -1,    16,    54,    47,    -1,    54,    41,    -1,    47,    -1,
+      -1,    42,    68,    10,    -1,    -1,    83,    44,    46,    10,
+      -1,    -1,    85,    45,    68,    10,    -1,    -1,    68,    -1,
+      -1,    -1,    17,    48,    50,    49,    18,    -1,    -1,    51,
+      -1,    65,    53,    -1,    10,    50,    -1,    -1,    52,    -1,
+      95,    -1,    97,    -1,    56,    -1,    60,    -1,    62,    -1,
+      61,    -1,    -1,    -1,    -1,     4,    57,    30,    58,    32,
+      59,    10,    -1,     3,    32,    10,    -1,     5,    32,    -1,
+      -1,    -1,     7,    63,    30,    64,    32,    -1,    -1,    77,
+      66,    68,    -1,    -1,    83,    67,    46,    -1,    76,    73,
+      72,    -1,    76,    73,    -1,    -1,    69,    -1,    12,    70,
+      -1,    -1,    72,    71,    -1,    79,    75,    -1,    11,    79,
+      -1,    -1,    75,    74,    -1,    78,    -1,     6,    -1,    95,
+      -1,    82,    -1,    95,    -1,    80,    -1,    95,    -1,    82,
+      -1,    83,    -1,    81,    -1,    90,    -1,    89,    -1,    93,
+      -1,    97,    -1,    85,    -1,    -1,    13,    84,    68,    14,
+      -1,    -1,     8,    86,    87,     9,    -1,    -1,    -1,    87,
+      88,    79,    -1,    21,    -1,    22,    -1,    23,    -1,    94,
+      92,    -1,    33,    -1,    15,    95,    -1,    -1,    91,    -1,
+      19,    -1,    20,    -1,    26,    -1,    27,    -1,    28,    -1,
+      29,    -1,    32,    -1,    96,    -1,    31,    -1,    30,    -1,
+      24,    -1,    25,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1623,17 +1396,17 @@ namespace w3c_sw {
   const unsigned short int
   TrigParser::yyrline_[] =
   {
-         0,   180,   180,   187,   188,   191,   193,   198,   199,   200,
-     200,   204,   209,   215,   216,   216,   223,   223,   228,   228,
-     235,   237,   242,   245,   242,   250,   252,   257,   263,   266,
-     268,   272,   275,   282,   283,   284,   285,   290,   292,   294,
-     290,   302,   309,   316,   318,   316,   328,   328,   331,   331,
-     338,   342,   345,   347,   351,   354,   356,   361,   366,   370,
-     372,   376,   380,   387,   390,   396,   402,   411,   414,   417,
-     420,   426,   429,   432,   438,   441,   447,   447,   460,   460,
-     483,   486,   486,   502,   505,   508,   515,   523,   527,   535,
-     539,   545,   548,   554,   557,   560,   563,   569,   572,   578,
-     581,   587,   590
+         0,   175,   175,   182,   183,   186,   188,   193,   194,   195,
+     195,   199,   204,   210,   211,   211,   218,   218,   223,   223,
+     230,   232,   237,   240,   237,   245,   247,   252,   258,   261,
+     263,   267,   270,   277,   278,   279,   280,   285,   287,   289,
+     285,   297,   304,   311,   313,   311,   323,   323,   326,   326,
+     333,   337,   340,   342,   346,   349,   351,   356,   361,   365,
+     367,   371,   375,   382,   385,   389,   395,   404,   407,   408,
+     409,   413,   414,   415,   419,   420,   424,   424,   437,   437,
+     460,   463,   463,   479,   480,   481,   486,   494,   498,   506,
+     510,   514,   515,   519,   520,   521,   522,   526,   527,   531,
+     532,   536,   537
   };
 
   // Print the state stack on the debug stream.
@@ -1701,7 +1474,7 @@ namespace w3c_sw {
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33,    34
+      25,    26,    27,    28,    29,    30,    31,    32,    33
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -1716,20 +1489,17 @@ namespace w3c_sw {
   const int TrigParser::yyfinal_ = 3;
   const int TrigParser::yyterror_ = 1;
   const int TrigParser::yyerrcode_ = 256;
-  const int TrigParser::yyntokens_ = 35;
+  const int TrigParser::yyntokens_ = 34;
 
-  const unsigned int TrigParser::yyuser_token_number_max_ = 289;
+  const unsigned int TrigParser::yyuser_token_number_max_ = 288;
   const TrigParser::token_number_type TrigParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
-
-/* Line 1136 of lalr1.cc  */
-#line 1729 "lib/TrigParser.cpp"
-
-
-/* Line 1138 of lalr1.cc  */
-#line 597 "lib/TrigParser.ypp"
+/* Line 1141 of lalr1.cc  */
+#line 1501 "lib/TrigParser.cpp"
+/* Line 1142 of lalr1.cc  */
+#line 542 "lib/TrigParser.ypp"
  /*** Additional Code ***/
 
 void w3c_sw::TrigParser::error(const TrigParser::location_type& l,
@@ -1782,5 +1552,4 @@ void TrigDriver::parse (std::string turtleStr, BasicGraphPattern* bgp) {
 } // namespace w3c_sw
 
 /* END Driver */
-
 
