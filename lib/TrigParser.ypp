@@ -31,6 +31,7 @@
 {
     // initialize the initial location object
     @$.begin.filename = @$.end.filename = &driver.streamname;
+    driver.yylloc = &@$;
 };
 
 /* The driver is passed by reference to the parser and to the scanner. This
@@ -48,8 +49,8 @@
  * this parser.
  */
 #endif /* !PARSER_HEADER_H */
-#ifndef TRIGS_PARSER_HPP
-#define TRIGS_PARSER_HPP
+#ifndef TRIG_PARSER_HPP
+#define TRIG_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
@@ -67,6 +68,7 @@ namespace w3c_sw {
  * structure into which the parsed data is saved. */
 
 class TrigDriver : public YaccDataDriver {
+    location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
     friend class TrigParser;
 protected:
     const TTerm* curSubject;
@@ -90,6 +92,16 @@ public:
      * parser to the scanner. It is used in the yylex macro. */
     class TrigScanner* lexer;
     BasicGraphPattern* root;
+
+    const BNode* createBNode () {
+	if (descriptiveBNodeLabels) {
+	    std::stringstream ss;
+	    ss << *(yylloc->begin.filename) <<":"<< yylloc->begin.line <<":"<< yylloc->begin.column;
+	    return atomFactory->getBNode(ss.str(), &bnodeMap);
+	} else {
+	    return atomFactory->createBNode();
+	}
+    }
 };
 
 } // namespace w3c_sw

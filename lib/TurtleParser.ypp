@@ -49,8 +49,8 @@
  * this parser.
  */
 #endif /* !PARSER_HEADER_H */
-#ifndef TURTLES_PARSER_HPP
-#define TURTLES_PARSER_HPP
+#ifndef TURTLE_PARSER_HPP
+#define TURTLE_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
@@ -153,7 +153,7 @@ public:
 %type <p_string> String
 %type <p_TTerm> _Qobject_E_Star
 %type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C
-                       _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
+                         _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
 
 /* END TokenBlock */
 

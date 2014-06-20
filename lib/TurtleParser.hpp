@@ -49,8 +49,8 @@
  * this parser.
  */
 #endif /* !PARSER_HEADER_H */
-#ifndef TURTLES_PARSER_HPP
-#define TURTLES_PARSER_HPP
+#ifndef TURTLE_PARSER_HPP
+#define TURTLE_PARSER_HPP
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
