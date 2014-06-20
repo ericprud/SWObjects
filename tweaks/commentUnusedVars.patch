@@ -1,0 +1,569 @@
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/algebra.h cryptopp562/algebra.h
+--- cryptopp562-orig/algebra.h	2010-08-06 17:44:30.000000000 -0400
++++ cryptopp562/algebra.h	2014-06-19 09:28:42.761282767 -0400
+@@ -47,7 +47,7 @@
+ 	typedef T Element;
+ 
+ 	AbstractRing() {m_mg.m_pRing = this;}
+-	AbstractRing(const AbstractRing &source) {m_mg.m_pRing = this;}
++	AbstractRing(const AbstractRing &/* source */) {m_mg.m_pRing = this;}
+ 	AbstractRing& operator=(const AbstractRing &source) {return *this;}
+ 
+ 	virtual bool IsUnit(const Element &a) const =0;
+@@ -207,7 +207,7 @@
+ 	void DivisionAlgorithm(Element &r, Element &q, const Element &a, const Element &d) const
+ 		{Element::Divide(r, q, a, d);}
+ 
+-	bool operator==(const EuclideanDomainOf<T> &rhs) const
++	bool operator==(const EuclideanDomainOf<T> &/* rhs */) const
+ 		{return true;}
+ 
+ private:
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/algparam.h cryptopp562/algparam.h
+--- cryptopp562-orig/algparam.h	2010-08-06 17:46:14.000000000 -0400
++++ cryptopp562/algparam.h	2014-06-19 09:28:43.225282754 -0400
+@@ -152,7 +152,7 @@
+ };
+ 
+ template <class BASE, class T>
+-GetValueHelperClass<T, BASE> GetValueHelper(const T *pObject, const char *name, const std::type_info &valueType, void *pValue, const NameValuePairs *searchFirst=NULL, BASE *dummy=NULL)
++GetValueHelperClass<T, BASE> GetValueHelper(const T *pObject, const char *name, const std::type_info &valueType, void *pValue, const NameValuePairs *searchFirst=NULL, BASE * /* dummy */=NULL)
+ {
+ 	return GetValueHelperClass<T, BASE>(pObject, name, valueType, pValue, searchFirst);
+ }
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/asn.h cryptopp562/asn.h
+--- cryptopp562-orig/asn.h	2010-08-06 17:44:28.000000000 -0400
++++ cryptopp562/asn.h	2014-06-19 09:28:49.197282577 -0400
+@@ -151,7 +151,7 @@
+ 
+ private:
+ 	void Init(byte asnTag);
+-	void StoreInitialize(const NameValuePairs &parameters) {assert(false);}
++	void StoreInitialize(const NameValuePairs &/* parameters */) {assert(false);}
+ 	lword ReduceLength(lword delta);
+ };
+ 
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/cryptlib.h cryptopp562/cryptlib.h
+--- cryptopp562-orig/cryptlib.h	2013-02-20 15:30:54.000000000 -0500
++++ cryptopp562/cryptlib.h	2014-06-19 09:23:12.937292513 -0400
+@@ -399,7 +399,7 @@
+ 	//! returns maximal length of IVs accepted by this object
+ 	virtual unsigned int MaxIVLength() const {return IVSize();}
+ 	//! resynchronize with an IV. ivLength=-1 means use IVSize()
+-	virtual void Resynchronize(const byte *iv, int ivLength=-1) {throw NotImplemented(GetAlgorithm().AlgorithmName() + ": this object doesn't support resynchronization");}
++	virtual void Resynchronize(const byte * /* iv */, int /* ivLength */=-1) {throw NotImplemented(GetAlgorithm().AlgorithmName() + ": this object doesn't support resynchronization");}
+ 	//! get a secure IV for the next message
+ 	/*! This method should be called after you finish encrypting one message and are ready to start the next one.
+ 		After calling it, you must call SetKey() or Resynchronize() before using this object again. 
+@@ -508,7 +508,7 @@
+ 	//! returns whether this cipher supports random access
+ 	virtual bool IsRandomAccess() const =0;
+ 	//! for random access ciphers, seek to an absolute position
+-	virtual void Seek(lword n)
++	virtual void Seek(lword /* n */)
+ 	{
+ 		assert(!IsRandomAccess());
+ 		throw NotImplemented("StreamTransformation: this object doesn't support random access");
+@@ -656,7 +656,7 @@
+ 
+ protected:
+ 	const Algorithm & GetAlgorithm() const {return *static_cast<const MessageAuthenticationCode *>(this);}
+-	virtual void UncheckedSpecifyDataLengths(lword headerLength, lword messageLength, lword footerLength) {}
++	virtual void UncheckedSpecifyDataLengths(lword /* headerLength */, lword /* messageLength */, lword /* footerLength */) {}
+ };
+ 
+ #ifdef CRYPTOPP_MAINTAIN_BACKWARDS_COMPATIBILITY
+@@ -670,7 +670,7 @@
+ {
+ public:
+ 	//! update RNG state with additional unpredictable values
+-	virtual void IncorporateEntropy(const byte *input, size_t length) {throw NotImplemented("RandomNumberGenerator: IncorporateEntropy not implemented");}
++    virtual void IncorporateEntropy(const byte * /* input */, size_t /* length */) {throw NotImplemented("RandomNumberGenerator: IncorporateEntropy not implemented");}
+ 
+ 	//! returns true if IncorporateEntropy is implemented
+ 	virtual bool CanIncorporateEntropy() const {return false;}
+@@ -830,9 +830,9 @@
+ 
+ 	//!	\name SIGNALS
+ 	//@{
+-		virtual void IsolatedInitialize(const NameValuePairs &parameters) {throw NotImplemented("BufferedTransformation: this object can't be reinitialized");}
++		virtual void IsolatedInitialize(const NameValuePairs &/* parameters */) {throw NotImplemented("BufferedTransformation: this object can't be reinitialized");}
+ 		virtual bool IsolatedFlush(bool hardFlush, bool blocking) =0;
+-		virtual bool IsolatedMessageSeriesEnd(bool blocking) {return false;}
++		virtual bool IsolatedMessageSeriesEnd(bool /* blocking */) {return false;}
+ 
+ 		//! initialize or reinitialize this object
+ 		virtual void Initialize(const NameValuePairs &parameters=g_nullNameValuePairs, int propagation=-1);
+@@ -854,7 +854,7 @@
+ 
+ 		//! set propagation of automatically generated and transferred signals
+ 		/*! propagation == 0 means do not automaticly generate signals */
+-		virtual void SetAutoSignalPropagation(int propagation) {}
++		virtual void SetAutoSignalPropagation(int /* propagation */) {}
+ 
+ 		//!
+ 		virtual int GetAutoSignalPropagation() const {return 0;}
+@@ -1013,7 +1013,7 @@
+ 		virtual const BufferedTransformation *AttachedTransformation() const
+ 			{return const_cast<BufferedTransformation *>(this)->AttachedTransformation();}
+ 		//! delete the current attachment chain and replace it with newAttachment
+-		virtual void Detach(BufferedTransformation *newAttachment = 0)
++		virtual void Detach(BufferedTransformation * /* newAttachment = 0 */)
+ 			{assert(!Attachable()); throw NotImplemented("BufferedTransformation: this object is not attachable");}
+ 		//! add newAttachment to the end of attachment chain
+ 		virtual void Attach(BufferedTransformation *newAttachment);
+@@ -1062,14 +1062,14 @@
+ //	virtual std::vector<std::string> GetSupportedFormats(bool includeSaveOnly=false, bool includeLoadOnly=false);
+ 
+ 	//! save key into a BufferedTransformation
+-	virtual void Save(BufferedTransformation &bt) const
++	virtual void Save(BufferedTransformation &/* bt */) const
+ 		{throw NotImplemented("CryptoMaterial: this object does not support saving");}
+ 
+ 	//! load key from a BufferedTransformation
+ 	/*! \throws KeyingErr if decode fails
+ 		\note Generally does not check that the key is valid.
+ 			Call ValidateKey() or ThrowIfInvalidKey() to check that. */
+-	virtual void Load(BufferedTransformation &bt)
++	virtual void Load(BufferedTransformation &/* bt */)
+ 		{throw NotImplemented("CryptoMaterial: this object does not support loading");}
+ 
+ 	//! \return whether this object supports precomputation
+@@ -1078,13 +1078,13 @@
+ 	/*! The exact semantics of Precompute() is varies, but
+ 		typically it means calculate a table of n objects
+ 		that can be used later to speed up computation. */
+-	virtual void Precompute(unsigned int n)
++	virtual void Precompute(unsigned int /* n */)
+ 		{assert(!SupportsPrecomputation()); throw NotImplemented("CryptoMaterial: this object does not support precomputation");}
+ 	//! retrieve previously saved precomputation
+-	virtual void LoadPrecomputation(BufferedTransformation &storedPrecomputation)
++	virtual void LoadPrecomputation(BufferedTransformation &/* storedPrecomputation */)
+ 		{assert(!SupportsPrecomputation()); throw NotImplemented("CryptoMaterial: this object does not support precomputation");}
+ 	//! save precomputation for later use
+-	virtual void SavePrecomputation(BufferedTransformation &storedPrecomputation) const
++	virtual void SavePrecomputation(BufferedTransformation &/* storedPrecomputation */) const
+ 		{assert(!SupportsPrecomputation()); throw NotImplemented("CryptoMaterial: this object does not support precomputation");}
+ 
+ 	// for internal library use
+@@ -1104,7 +1104,7 @@
+ 	//! generate a random key or crypto parameters
+ 	/*! \throws KeyingErr if algorithm parameters are invalid, or if a key can't be generated
+ 		(e.g., if this is a public key object) */
+-	virtual void GenerateRandom(RandomNumberGenerator &rng, const NameValuePairs &params = g_nullNameValuePairs)
++    virtual void GenerateRandom(RandomNumberGenerator &/* rng */, const NameValuePairs &/* params = g_nullNameValuePairs */)
+ 		{throw NotImplemented("GeneratableCryptoMaterial: this object does not support key/parameter generation");}
+ 
+ 	//! calls the above function with a NameValuePairs object that just specifies "KeySize"
+@@ -1305,7 +1305,7 @@
+ 	virtual size_t SignatureLength() const =0;
+ 
+ 	//! maximum signature length produced for a given length of recoverable message part
+-	virtual size_t MaxSignatureLength(size_t recoverablePartLength = 0) const {return SignatureLength();}
++	virtual size_t MaxSignatureLength(size_t /* recoverablePartLength */ = 0) const {return SignatureLength();}
+ 
+ 	//! length of longest message that can be recovered, or 0 if this signature scheme does not support message recovery
+ 	virtual size_t MaxRecoverableLength() const =0;
+@@ -1338,7 +1338,7 @@
+ 	unsigned int DigestSize() const
+ 		{throw NotImplemented("PK_MessageAccumulator: DigestSize() should not be called");}
+ 	//! should not be called on PK_MessageAccumulator
+-	void TruncatedFinal(byte *digest, size_t digestSize) 
++	void TruncatedFinal(byte * /* digest */, size_t /* digestSize */) 
+ 		{throw NotImplemented("PK_MessageAccumulator: TruncatedFinal() should not be called");}
+ };
+ 
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/dll.h cryptopp562/dll.h
+--- cryptopp562-orig/dll.h	2010-08-06 17:44:30.000000000 -0400
++++ cryptopp562/dll.h	2014-06-19 09:34:48.661271956 -0400
+@@ -48,7 +48,9 @@
+ #endif
+ #endif
+ 
++#ifdef _MSC_VER
+ #pragma comment(lib, "cryptopp")
++#endif
+ 
+ #endif		// #ifdef CRYPTOPP_IMPORTS
+ 
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/emsa2.h cryptopp562/emsa2.h
+--- cryptopp562-orig/emsa2.h	2010-08-06 17:44:26.000000000 -0400
++++ cryptopp562/emsa2.h	2014-06-19 09:28:46.497282657 -0400
+@@ -61,7 +61,7 @@
+ public:
+ 	static const char * CRYPTOPP_API StaticAlgorithmName() {return "EMSA2";}
+ 	
+-	size_t MinRepresentativeBitLength(size_t hashIdentifierLength, size_t digestLength) const
++	size_t MinRepresentativeBitLength(size_t /* hashIdentifierLength */, size_t digestLength) const
+ 		{return 8*digestLength + 31;}
+ 
+ 	void ComputeMessageRepresentative(RandomNumberGenerator &rng, 
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/filters.h cryptopp562/filters.h
+--- cryptopp562-orig/filters.h	2010-08-09 13:22:42.000000000 -0400
++++ cryptopp562/filters.h	2014-06-16 04:39:00.798021769 -0400
+@@ -91,7 +91,7 @@
+ 	void SetTransparent(bool transparent) {m_transparent = transparent;}
+ 	void AddRangeToSkip(unsigned int message, lword position, lword size, bool sortNow = true);
+ 	void ResetMeter();
+-	void IsolatedInitialize(const NameValuePairs &parameters) {ResetMeter();}
++	void IsolatedInitialize(const NameValuePairs &/* parameters */) {ResetMeter();}
+ 
+ 	lword GetCurrentMessageBytes() const {return m_currentMessageBytes;}
+ 	lword GetTotalBytes() {return m_totalBytes;}
+@@ -171,14 +171,14 @@
+ protected:
+ 	bool DidFirstPut() {return m_firstInputDone;}
+ 
+-	virtual void InitializeDerivedAndReturnNewSizes(const NameValuePairs &parameters, size_t &firstSize, size_t &blockSize, size_t &lastSize)
++	virtual void InitializeDerivedAndReturnNewSizes(const NameValuePairs &parameters, size_t &/* firstSize */, size_t &/* blockSize */, size_t &/* lastSize */)
+ 		{InitializeDerived(parameters);}
+-	virtual void InitializeDerived(const NameValuePairs &parameters) {}
++	virtual void InitializeDerived(const NameValuePairs &/* parameters */) {}
+ 	// FirstPut() is called if (firstSize != 0 and totalLength >= firstSize)
+ 	// or (firstSize == 0 and (totalLength > 0 or a MessageEnd() is received))
+ 	virtual void FirstPut(const byte *inString) =0;
+ 	// NextPut() is called if totalLength >= firstSize+blockSize+lastSize
+-	virtual void NextPutSingle(const byte *inString) {assert(false);}
++	virtual void NextPutSingle(const byte * /* inString */) {assert(false);}
+ 	// Same as NextPut() except length can be a multiple of blockSize
+ 	// Either NextPut() or NextPutMultiple() must be overriden
+ 	virtual void NextPutMultiple(const byte *inString, size_t length);
+@@ -202,7 +202,7 @@
+ 
+ 	// This function should no longer be used, put this here to cause a compiler error
+ 	// if someone tries to override NextPut().
+-	virtual int NextPut(const byte *inString, size_t length) {assert(false); return 0;}
++	virtual int NextPut(const byte * /* inString */, size_t /* length */) {assert(false); return 0;}
+ 
+ 	class BlockQueue
+ 	{
+@@ -248,7 +248,7 @@
+ 
+ protected:
+ 	virtual bool IsolatedMessageEnd(bool blocking) =0;
+-	void IsolatedInitialize(const NameValuePairs &parameters) {m_inQueue.Clear();}
++	void IsolatedInitialize(const NameValuePairs &/* parameters */) {m_inQueue.Clear();}
+ 
+ 	ByteQueue m_inQueue;
+ };
+@@ -697,7 +697,7 @@
+ 	lword MaxRetrievable() const {return m_length-m_count;}
+ 
+ 	size_t TransferTo2(BufferedTransformation &target, lword &transferBytes, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true);
+-	size_t CopyRangeTo2(BufferedTransformation &target, lword &begin, lword end=LWORD_MAX, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true) const
++	size_t CopyRangeTo2(BufferedTransformation &/* target */, lword &/* begin */, lword /* end=LWORD_MAX */, const std::string &/* channel=DEFAULT_CHANNEL */, bool /* blocking=true */) const
+ 	{
+ 		throw NotImplemented("RandomNumberStore: CopyRangeTo2() is not supported by this store");
+ 	}
+@@ -714,7 +714,7 @@
+ {
+ public:
+ 	NullStore(lword size = ULONG_MAX) : m_size(size) {}
+-	void StoreInitialize(const NameValuePairs &parameters) {}
++	void StoreInitialize(const NameValuePairs &/* parameters */) {}
+ 	lword MaxRetrievable() const {return m_size;}
+ 	size_t TransferTo2(BufferedTransformation &target, lword &transferBytes, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true);
+ 	size_t CopyRangeTo2(BufferedTransformation &target, lword &begin, lword end=LWORD_MAX, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true) const;
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/gf2n.h cryptopp562/gf2n.h
+--- cryptopp562-orig/gf2n.h	2010-08-06 17:46:24.000000000 -0400
++++ cryptopp562/gf2n.h	2014-06-19 09:28:48.173282608 -0400
+@@ -284,7 +284,7 @@
+ 	GF2NP(const PolynomialMod2 &modulus);
+ 
+ 	virtual GF2NP * Clone() const {return new GF2NP(*this);}
+-	virtual void DEREncode(BufferedTransformation &bt) const
++	virtual void DEREncode(BufferedTransformation &/* bt */) const
+ 		{assert(false);}	// no ASN.1 syntax yet for general polynomial basis
+ 
+ 	void DEREncodeElement(BufferedTransformation &out, const Element &a) const;
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/gfpcrypt.h cryptopp562/gfpcrypt.h
+--- cryptopp562-orig/gfpcrypt.h	2013-02-20 15:30:52.000000000 -0500
++++ cryptopp562/gfpcrypt.h	2014-06-19 09:28:48.701282592 -0400
+@@ -50,9 +50,9 @@
+ 	bool ValidateGroup(RandomNumberGenerator &rng, unsigned int level) const;
+ 	bool ValidateElement(unsigned int level, const Integer &element, const DL_FixedBasePrecomputation<Integer> *precomp) const;
+ 	bool FastSubgroupCheckAvailable() const {return GetCofactor() == 2;}
+-	void EncodeElement(bool reversible, const Element &element, byte *encoded) const
++	void EncodeElement(bool /* reversible */, const Element &element, byte *encoded) const
+ 		{element.Encode(encoded, GetModulus().ByteCount());}
+-	unsigned int GetEncodedElementSize(bool reversible) const {return GetModulus().ByteCount();}
++	unsigned int GetEncodedElementSize(bool /* reversible */) const {return GetModulus().ByteCount();}
+ 	Integer DecodeElement(const byte *encoded, bool checkForGroupMembership) const;
+ 	Integer ConvertElementToInteger(const Element &element) const
+ 		{return element;}
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/misc.h cryptopp562/misc.h
+--- cryptopp562-orig/misc.h	2013-02-20 15:30:52.000000000 -0500
++++ cryptopp562/misc.h	2014-06-19 09:28:41.081282817 -0400
+@@ -360,7 +360,7 @@
+ }
+ 
+ template <class T>
+-inline unsigned int GetAlignmentOf(T *dummy=NULL)	// VC60 workaround
++inline unsigned int GetAlignmentOf(T * /* dummy */=NULL)	// VC60 workaround
+ {
+ #ifdef CRYPTOPP_ALLOW_UNALIGNED_DATA_ACCESS
+ 	if (sizeof(T) < 16)
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/modarith.h cryptopp562/modarith.h
+--- cryptopp562-orig/modarith.h	2010-08-06 17:44:28.000000000 -0400
++++ cryptopp562/modarith.h	2014-06-16 04:39:01.146021759 -0400
+@@ -27,7 +27,7 @@
+ 		: m_modulus(modulus), m_result((word)0, modulus.reg.size()) {}
+ 
+ 	ModularArithmetic(const ModularArithmetic &ma)
+-		: m_modulus(ma.m_modulus), m_result((word)0, m_modulus.reg.size()) {}
++	    : AbstractRing<Integer>(), m_modulus(ma.m_modulus), m_result((word)0, m_modulus.reg.size()) {}
+ 
+ 	ModularArithmetic(BufferedTransformation &bt);	// construct from BER encoded parameters
+ 
+@@ -98,7 +98,7 @@
+ 	unsigned int MaxElementByteLength() const
+ 		{return (m_modulus-1).ByteCount();}
+ 
+-	Element RandomElement( RandomNumberGenerator &rng , const RandomizationParameter &ignore_for_now = 0 ) const
++	Element RandomElement( RandomNumberGenerator &rng , const RandomizationParameter &/* ignore_for_now = 0 */ ) const
+ 		// left RandomizationParameter arg as ref in case RandomizationParameter becomes a more complicated struct
+ 	{ 
+ 		return Element( rng , Integer( (long) 0) , m_modulus - Integer( (long) 1 )   ) ; 
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/mqueue.h cryptopp562/mqueue.h
+--- cryptopp562-orig/mqueue.h	2010-08-06 17:46:28.000000000 -0400
++++ cryptopp562/mqueue.h	2014-06-19 09:28:47.193282637 -0400
+@@ -15,7 +15,7 @@
+ 
+ 	void IsolatedInitialize(const NameValuePairs &parameters)
+ 		{m_queue.IsolatedInitialize(parameters); m_lengths.assign(1, 0U); m_messageCounts.assign(1, 0U);}
+-	size_t Put2(const byte *begin, size_t length, int messageEnd, bool blocking)
++	size_t Put2(const byte *begin, size_t length, int messageEnd, bool /* blocking */)
+ 	{
+ 		m_queue.Put(begin, length);
+ 		m_lengths.back() += length;
+@@ -26,8 +26,8 @@
+ 		}
+ 		return 0;
+ 	}
+-	bool IsolatedFlush(bool hardFlush, bool blocking) {return false;}
+-	bool IsolatedMessageSeriesEnd(bool blocking)
++	bool IsolatedFlush(bool /* hardFlush */, bool /* blocking */) {return false;}
++	bool IsolatedMessageSeriesEnd(bool /* blocking */)
+ 		{m_messageCounts.push_back(0); return false;}
+ 
+ 	lword MaxRetrievable() const
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/pubkey.h cryptopp562/pubkey.h
+--- cryptopp562-orig/pubkey.h	2010-08-06 17:46:26.000000000 -0400
++++ cryptopp562/pubkey.h	2014-06-19 09:30:10.253280182 -0400
+@@ -68,7 +68,7 @@
+ class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE TrapdoorFunction : public RandomizedTrapdoorFunction
+ {
+ public:
+-	Integer ApplyRandomizedFunction(RandomNumberGenerator &rng, const Integer &x) const
++	Integer ApplyRandomizedFunction(RandomNumberGenerator &/* rng */, const Integer &x) const
+ 		{return ApplyFunction(x);}
+ 	bool IsRandomized() const {return false;}
+ 
+@@ -106,7 +106,7 @@
+ public:
+ 	virtual ~PK_EncryptionMessageEncodingMethod() {}
+ 
+-	virtual bool ParameterSupported(const char *name) const {return false;}
++	virtual bool ParameterSupported(const char * /* name */) const {return false;}
+ 
+ 	//! max size of unpadded message in bytes, given max size of padded message in bits (1 less than size of modulus)
+ 	virtual size_t MaxUnpaddedLength(size_t paddedLength) const =0;
+@@ -186,9 +186,9 @@
+ public:
+ 	virtual ~PK_SignatureMessageEncodingMethod() {}
+ 
+-	virtual size_t MinRepresentativeBitLength(size_t hashIdentifierLength, size_t digestLength) const
++	virtual size_t MinRepresentativeBitLength(size_t /* hashIdentifierLength */, size_t /* digestLength */) const
+ 		{return 0;}
+-	virtual size_t MaxRecoverableLength(size_t representativeBitLength, size_t hashIdentifierLength, size_t digestLength) const
++	virtual size_t MaxRecoverableLength(size_t /* representativeBitLength */, size_t /* hashIdentifierLength */, size_t /* digestLength */) const
+ 		{return 0;}
+ 
+ 	bool IsProbabilistic() const 
+@@ -199,13 +199,13 @@
+ 		{throw NotImplemented("PK_MessageEncodingMethod: this signature scheme does not support message recovery");}
+ 
+ 	// for verification, DL
+-	virtual void ProcessSemisignature(HashTransformation &hash, const byte *semisignature, size_t semisignatureLength) const {}
++	virtual void ProcessSemisignature(HashTransformation &/* hash */, const byte * /* semisignature */, size_t /* semisignatureLength */) const {}
+ 
+ 	// for signature
+-	virtual void ProcessRecoverableMessage(HashTransformation &hash, 
+-		const byte *recoverableMessage, size_t recoverableMessageLength, 
+-		const byte *presignature, size_t presignatureLength,
+-		SecByteBlock &semisignature) const
++	virtual void ProcessRecoverableMessage(HashTransformation &/* hash */, 
++		const byte * /* recoverableMessage */, size_t /* recoverableMessageLength */, 
++		const byte * /* presignature */, size_t /* presignatureLength */,
++		SecByteBlock &/* semisignature */) const
+ 	{
+ 		if (RecoverablePartFirst())
+ 			assert(!"ProcessRecoverableMessage() not implemented");
+@@ -221,16 +221,16 @@
+ 		byte *representative, size_t representativeBitLength) const =0;
+ 
+ 	virtual DecodingResult RecoverMessageFromRepresentative(	// for TF
+-		HashTransformation &hash, HashIdentifier hashIdentifier, bool messageEmpty,
+-		byte *representative, size_t representativeBitLength,
+-		byte *recoveredMessage) const
++		HashTransformation &/* hash */, HashIdentifier /* hashIdentifier */, bool /* messageEmpty */,
++		byte * /* representative */, size_t /* representativeBitLength */,
++		byte * /* recoveredMessage */) const
+ 		{throw NotImplemented("PK_MessageEncodingMethod: this signature scheme does not support message recovery");}
+ 
+ 	virtual DecodingResult RecoverMessageFromSemisignature(		// for DL
+-		HashTransformation &hash, HashIdentifier hashIdentifier,
+-		const byte *presignature, size_t presignatureLength,
+-		const byte *semisignature, size_t semisignatureLength,
+-		byte *recoveredMessage) const
++		HashTransformation &/* hash */, HashIdentifier /* hashIdentifier */,
++		const byte * /* presignature */, size_t /* presignatureLength */,
++		const byte * /* semisignature */, size_t /* semisignatureLength */,
++		byte * /* recoveredMessage */) const
+ 		{throw NotImplemented("PK_MessageEncodingMethod: this signature scheme does not support message recovery");}
+ 
+ 	// VC60 workaround
+@@ -934,7 +934,7 @@
+ class CRYPTOPP_NO_VTABLE DL_SymmetricEncryptionAlgorithm
+ {
+ public:
+-	virtual bool ParameterSupported(const char *name) const {return false;}
++	virtual bool ParameterSupported(const char * /* name */) const {return false;}
+ 	virtual size_t GetSymmetricKeyLength(size_t plaintextLength) const =0;
+ 	virtual size_t GetSymmetricCiphertextLength(size_t plaintextLength) const =0;
+ 	virtual size_t GetMaxSymmetricPlaintextLength(size_t ciphertextLength) const =0;
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/secblock.h cryptopp562/secblock.h
+--- cryptopp562-orig/secblock.h	2013-02-20 15:30:52.000000000 -0500
++++ cryptopp562/secblock.h	2014-06-19 09:30:22.949279807 -0400
+@@ -140,13 +140,13 @@
+ public:
+ 	CRYPTOPP_INHERIT_ALLOCATOR_TYPES
+ 
+-	pointer allocate(size_type n, const void * = NULL)
++	pointer allocate(size_type /* n */, const void * = NULL)
+ 	{
+ 		assert(false);
+ 		return NULL;
+ 	}
+ 
+-	void deallocate(void *p, size_type n)
++	void deallocate(void * /* p */, size_type /* n */)
+ 	{
+ 		assert(false);
+ 	}
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/simple.h cryptopp562/simple.h
+--- cryptopp562-orig/simple.h	2010-08-06 17:44:24.000000000 -0400
++++ cryptopp562/simple.h	2014-06-19 09:36:06.713269650 -0400
+@@ -49,7 +49,7 @@
+ class CRYPTOPP_NO_VTABLE Bufferless : public T
+ {
+ public:
+-	bool IsolatedFlush(bool hardFlush, bool blocking) {return false;}
++	bool IsolatedFlush(bool /* hardFlush */, bool /* blocking */) {return false;}
+ };
+ 
+ //! _
+@@ -59,7 +59,7 @@
+ public:
+ 	bool Flush(bool completeFlush, int propagation=-1, bool blocking=true)
+ 		{return ChannelFlush(DEFAULT_CHANNEL, completeFlush, propagation, blocking);}
+-	bool IsolatedFlush(bool hardFlush, bool blocking)
++	bool IsolatedFlush(bool /* hardFlush */, bool /* blocking */)
+ 		{assert(false); return false;}
+ 	bool ChannelFlush(const std::string &channel, bool hardFlush, int propagation=-1, bool blocking=true)
+ 	{
+@@ -85,12 +85,12 @@
+ 		{InputRejected() : NotImplemented("BufferedTransformation: this object doesn't allow input") {}};
+ 
+ 	// shouldn't be calling these functions on this class
+-	size_t Put2(const byte *begin, size_t length, int messageEnd, bool blocking)
++	size_t Put2(const byte * /* begin*/, size_t /* length*/, int /* messageEnd */, bool /* blocking*/)
+ 		{throw InputRejected();}
+ 	bool IsolatedFlush(bool, bool) {return false;}
+ 	bool IsolatedMessageSeriesEnd(bool) {throw InputRejected();}
+ 
+-	size_t ChannelPut2(const std::string &channel, const byte *begin, size_t length, int messageEnd, bool blocking)
++	size_t ChannelPut2(const std::string &/* channel */, const byte * /* begin */, size_t /* length */, int /* messageEnd */, bool /* blocking */)
+ 		{throw InputRejected();}
+ 	bool ChannelMessageSeriesEnd(const std::string &, int, bool) {throw InputRejected();}
+ };
+@@ -103,7 +103,7 @@
+ 	virtual bool Flush(bool hardFlush, int propagation=-1, bool blocking=true) =0;
+ 
+ private:
+-	bool IsolatedFlush(bool hardFlush, bool blocking) {assert(false); return false;}
++	bool IsolatedFlush(bool /* hardFlush */, bool /* blocking */) {assert(false); return false;}
+ };
+ 
+ //! _
+@@ -114,7 +114,7 @@
+ 	virtual void Initialize(const NameValuePairs &parameters=g_nullNameValuePairs, int propagation=-1) =0;
+ 
+ private:
+-	void IsolatedInitialize(const NameValuePairs &parameters) {assert(false);}
++	void IsolatedInitialize(const NameValuePairs &/* parameters */) {assert(false);}
+ };
+ 
+ //! _
+@@ -135,7 +135,7 @@
+ 
+ //	void ChannelMessageSeriesEnd(const std::string &channel, int propagation=-1)
+ //		{PropagateMessageSeriesEnd(propagation, channel);}
+-	byte * ChannelCreatePutSpace(const std::string &channel, size_t &size)
++	byte * ChannelCreatePutSpace(const std::string &/* channel */, size_t &size)
+ 		{size = 0; return NULL;}
+ 	bool ChannelPutModifiable(const std::string &channel, byte *inString, size_t length)
+ 		{this->ChannelPut(channel, inString, length); return false;}
+@@ -189,9 +189,9 @@
+ class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE Sink : public BufferedTransformation
+ {
+ public:
+-	size_t TransferTo2(BufferedTransformation &target, lword &transferBytes, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true)
++    size_t TransferTo2(BufferedTransformation &/* target */, lword &transferBytes, const std::string &/* channel=DEFAULT_CHANNEL */, bool /* blocking=true */)
+ 		{transferBytes = 0; return 0;}
+-	size_t CopyRangeTo2(BufferedTransformation &target, lword &begin, lword end=LWORD_MAX, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true) const
++    size_t CopyRangeTo2(BufferedTransformation &/* target */, lword &/* begin */, lword /* end=LWORD_MAX */, const std::string &/* channel=DEFAULT_CHANNEL */, bool /* blocking=true */) const
+ 		{return 0;}
+ };
+ 
+@@ -199,8 +199,8 @@
+ {
+ public:
+ 	std::string AlgorithmName() const {return "BitBucket";}
+-	void IsolatedInitialize(const NameValuePairs &parameters) {}
+-	size_t Put2(const byte *begin, size_t length, int messageEnd, bool blocking)
++	void IsolatedInitialize(const NameValuePairs &/* parameters */) {}
++	size_t Put2(const byte * /* begin */, size_t /* length */, int /* messageEnd */, bool /* blocking */)
+ 		{return 0;}
+ };
+ 
+diff -x '*.o' -x '*.a' -x '*.exe' -x '*~' -x adhoc.cpp -Naur cryptopp562-orig/strciphr.h cryptopp562/strciphr.h
+--- cryptopp562-orig/strciphr.h	2010-08-06 17:44:24.000000000 -0400
++++ cryptopp562/strciphr.h	2014-06-16 04:39:01.502021748 -0400
+@@ -73,11 +73,11 @@
+ 	virtual void WriteKeystream(byte *keystream, size_t iterationCount)
+ 		{OperateKeystream(KeystreamOperation(INPUT_NULL | (KeystreamOperationFlags)IsAlignedOn(keystream, GetAlignment())), keystream, NULL, iterationCount);}
+ 	virtual bool CanOperateKeystream() const {return false;}
+-	virtual void OperateKeystream(KeystreamOperation operation, byte *output, const byte *input, size_t iterationCount) {assert(false);}
++	virtual void OperateKeystream(KeystreamOperation /* operation */, byte * /* output */, const byte * /* input */, size_t /* iterationCount */) {assert(false);}
+ 	virtual void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length) =0;
+-	virtual void CipherResynchronize(byte *keystreamBuffer, const byte *iv, size_t length) {throw NotImplemented("SimpleKeyingInterface: this object doesn't support resynchronization");}
++	virtual void CipherResynchronize(byte * /* keystreamBuffer */, const byte * /* iv */, size_t /* length */) {throw NotImplemented("SimpleKeyingInterface: this object doesn't support resynchronization");}
+ 	virtual bool CipherIsRandomAccess() const =0;
+-	virtual void SeekToIteration(lword iterationCount) {assert(!CipherIsRandomAccess()); throw NotImplemented("StreamTransformation: this object doesn't support random access");}
++	virtual void SeekToIteration(lword /* iterationCount */) {assert(!CipherIsRandomAccess()); throw NotImplemented("StreamTransformation: this object doesn't support random access");}
+ };
+ 
+ template <typename WT, unsigned int W, unsigned int X = 1, class BASE = AdditiveCipherAbstractPolicy>
+@@ -168,9 +168,9 @@
+ 	virtual byte * GetRegisterBegin() =0;
+ 	virtual void TransformRegister() =0;
+ 	virtual bool CanIterate() const {return false;}
+-	virtual void Iterate(byte *output, const byte *input, CipherDir dir, size_t iterationCount) {assert(false); throw 0;}
++	virtual void Iterate(byte * /* output */, const byte * /* input */, CipherDir /* dir */, size_t /* iterationCount */) {assert(false); throw 0;}
+ 	virtual void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length) =0;
+-	virtual void CipherResynchronize(const byte *iv, size_t length) {throw NotImplemented("SimpleKeyingInterface: this object doesn't support resynchronization");}
++	virtual void CipherResynchronize(const byte * /* iv */, size_t /* length */) {throw NotImplemented("SimpleKeyingInterface: this object doesn't support resynchronization");}
+ };
+ 
+ template <typename WT, unsigned int W, class BASE = CFB_CipherAbstractPolicy>
