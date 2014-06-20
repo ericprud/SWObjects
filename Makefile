@@ -19,26 +19,26 @@
 # Edit CONFIG to set your build preferences.
 -include CONFIG
 
-FLEX:=flex
-YACC:=bison
-TEE:=tee
-SED:=sed
+FLEX?=flex
+YACC?=bison
+TEE?=tee
+SED?=sed
 XSLT ?= saxonb-xslt -ext:on
-OPTIM:=-g -O0
-PYTHON_INC:=$(shell python-config --includes)
-PHP_HOME:=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
-LUA_HOME:=/usr/include/lua5.1
-PERL_HOME:=/usr/lib/perl/5.10.1
-JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
+OPTIM?=-g -O0
+PYTHON_INC?=$(shell python-config --includes)
+PHP_HOME?=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
+LUA_HOME?=/usr/include/lua5.1
+PERL_HOME?=/usr/lib/perl/5.10.1
+JAVA_HOME?=/usr/lib/jvm/java-6-openjdk
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
-#ECHO:=`which echo`
-#OSX: ECHO:= /bin/echo
+#ECHO?=`which echo`
+#OSX: ECHO?= /bin/echo
 ECHO ?= echo
 #LIBS
-DEBUG:=-g -O0
+DEBUG?=-g -O0
 OPT=-fPIC
 DEFS += -DYYTEXT_POINTER=1
-WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
+WARN?=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
@@ -244,7 +244,7 @@ OBJLIST  :=  $(subst .cpp,.o,$(wildcard lib/*.cpp))
 BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
 TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
 TESTNAMELIST  :=  $(subst .cpp,,$(wildcard tests/test_*.cpp))
-LIBNAME  :=  SWObjects
+LIBNAME  ?=  SWObjects
 LIB	 :=	 lib/lib$(LIBNAME).a
 LIBINC	+=	 -l$(LIBNAME)
 
