@@ -62,7 +62,7 @@ namespace MSSQL {
         //   ostringstream& op<<(errorHandler_t& h, err_stream_t& unused) { /* ... */ ; return h.stringstream; }
 
 	/** msg_handler - default function for building message strings. */
-	virtual int msg_handler (DBPROCESS */* dbproc */, DBINT msgno, int msgstate, int severity,
+	virtual int msg_handler (DBPROCESS * /* dbproc */, DBINT msgno, int msgstate, int severity,
 			 char *msgtext, char *srvname, char *procname, int line)
 	{									/* (1) */
 	    enum {changed_database = 5701, changed_language = 5703 };		/* (2) */
@@ -96,8 +96,8 @@ namespace MSSQL {
 	}
 
 	/** err_handler - default function for building error strings. */
-	virtual int err_handler (DBPROCESS */* dbproc */, int severity, int dberr, 
-				 int /* oserr */, char *dberrstr, char */* oserrstr */)
+	virtual int err_handler (DBPROCESS * /* dbproc */, int severity, int dberr, 
+				 int /* oserr */, char *dberrstr, char * /* oserrstr */)
 	{									/* (5) */
 	    if (dberr) {							/* (6) */
 		std::stringstream ss; ss << "Msg " << dberr << ", Level " << severity << "\n";
