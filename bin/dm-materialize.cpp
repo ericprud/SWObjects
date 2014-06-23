@@ -150,7 +150,7 @@ struct Materializer {
 	      p(tableName + "#ref-"), targetRel(targetRel), colNos(colNos)
 	{ reference(colNos, from, to); }
 	void reference (const std::vector<size_t>& /* colNos */,
-			const sql::schema::ForeignKey* from, const sql::schema::Key* to) {
+			const sql::schema::ForeignKey* from, const sql::schema::Key* /* to */) {
 	    for (size_t i = 0; i < from->size(); ++i) {
 		if (i > 0)
 		    p += ATRSEPSTR;
