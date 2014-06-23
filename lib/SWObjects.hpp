@@ -51,10 +51,10 @@ std::string iterStr (InputIterator first, InputIterator last) {
 
 #ifdef _MSC_VER
   #pragma warning(disable:4996)
-  #define _WINSOCKAPI_	// Don't let windows include winsock.h .
+  #define _WINSOCKAPI_	// Don't let windows include winsock.h
+  #define NOMINMAX	//   or rediculous min max macros.
   #include <windows.h>
   #undef _WINSOCKAPI_
-  #undef max		// Disable rediculous max macro.
   #include <fcntl.h>
   #include <io.h>
   #include <sys/stat.h>
@@ -1879,7 +1879,7 @@ public:
 	unsigned min, max;
     public:
 	const static unsigned Unlimited = ~0U;
-	Repeated (const PathBase* nested, unsigned min_, unsigned max_) : Unary(nested) { min = min_; max = max_; }
+	Repeated (const PathBase* nested, unsigned min, unsigned max) : Unary(nested), min(min), max(max) {  }
 	virtual TriplesTemplates from(const TTerm* s, const TTerm* o) const;
 	virtual bool walk(const TriplePattern* start, const BasicGraphPattern* bgp, SubjObjPairs* tps, bool reverse, bool negated) const;
 	virtual std::string toString(MediaType mediaType = MediaType(), NamespaceMap* namespaces = NULL, e_Precedence prec = PREC_min) const;
@@ -3555,9 +3555,9 @@ namespace AtomicFunction {
     struct Invocation {
 	size_t min, max;
 	FPtr* func;
-	Invocation (size_t min_, size_t max_, FPtr* func)
-	    : func(func)
-	{ min = min_; max = max_; }
+	Invocation (size_t min, size_t max, FPtr* func)
+	    : min(min), max(max), func(func)
+	{  }
     };
 
     struct Map : public std::map<const TTerm*, Invocation> {
@@ -3565,9 +3565,9 @@ namespace AtomicFunction {
 	    const TTerm* name;
 	    size_t min, max;
 	    FPtr* func;
-	    Initializer (const TTerm* name, size_t min_, size_t max_, FPtr* func)
-		: name(name), func(func)
-	    { min = min_; max = max_; }
+	    Initializer (const TTerm* name, size_t min, size_t max, FPtr* func)
+		: name(name), min(min), max(max), func(func)
+	    {  }
 	};
 
 	Map () {
