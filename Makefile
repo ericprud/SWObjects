@@ -3,7 +3,7 @@
 
 # recipies:
 #   normal build:
-#     make SPARQLfed
+#     make SPARQL
 #   force the use of the tracing facilities (and redirect to stdout):
 #     make -W tests/test_HealthCare1.cpp test
 #   have valgrind start a debugger
@@ -19,26 +19,26 @@
 # Edit CONFIG to set your build preferences.
 -include CONFIG
 
-FLEX:=flex
-YACC:=bison
-TEE:=tee
-SED:=sed
+FLEX?=flex
+YACC?=bison
+TEE?=tee
+SED?=sed
 XSLT ?= saxonb-xslt -ext:on
-OPTIM:=-g -O0
-PYTHON_INC:=$(shell python-config --includes)
-PHP_HOME:=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
-LUA_HOME:=/usr/include/lua5.1
-PERL_HOME:=/usr/lib/perl/5.10.1
-JAVA_HOME:=/usr/lib/jvm/java-6-openjdk
+OPTIM?=-g -O0
+PYTHON_INC?=$(shell python-config --includes)
+PHP_HOME?=/usr/include/php5 -I/usr/include/php5/Zend -I/usr/include/php5/TSRM -I/usr/include/php5/main
+LUA_HOME?=/usr/include/lua5.1
+PERL_HOME?=/usr/lib/perl/5.10.1
+JAVA_HOME?=/usr/lib/jvm/java-6-openjdk
 # GNU Make 3.81 seems to have a built-in echo which doesn't swallow "-e"
-#ECHO:=`which echo`
-#OSX: ECHO:= /bin/echo
+#ECHO?=`which echo`
+#OSX: ECHO?= /bin/echo
 ECHO ?= echo
 #LIBS
-DEBUG:=-g -O0
+DEBUG?=-g -O0
 OPT=-fPIC
 DEFS += -DYYTEXT_POINTER=1
-WARN:=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
+WARN?=-W -Wall -Wextra -Wnon-virtual-dtor -ansi -std=c++98
 # --pedantic
 # pedantic works on GNU if you uncomment the isatty (int ) throw() patch below
 
@@ -56,7 +56,7 @@ APR ?= /usr/include/apr-1.0
 INCLUDES += -I${PWD} -I${PWD}/lib -I${PWD}/docs -I${PWD}/utf8_v2.3.2_source  # . (for config.h) and ./lib (for the rest)
 I2=$(subst /, ,$(BISONOBJ:.o=)) # e.g. lib JSONresultsParser JSONresultsParser lib MapSetParser MapSetParser
 I3=$(sort $(I2)) # e.g. JSONresultsParser MapSetParser ... lib
-INCLUDES += $(I3:%=-I${PWD}/%)
+#INCLUDES += $(I3:%=-I${PWD}/%)
 
 PWD ?= $(shell pwd -P)
 
@@ -180,7 +180,7 @@ ifdef $(CRYPTLIBDEFINED)
 endif
 
 
-.PHONY: all dep lib test NOGEN
+.PHONY: all dep lib test TOUCH_PARSER_GENERATED
 all:   lib test
 
 
@@ -237,14 +237,14 @@ CFLAGS	+= $(LLVMCFLAGS)
 LIBINC	+= $(LIBS) -L$(PWD)/lib
 
 ### dirt simple generic static module ###
-BISONOBJ :=  $(subst .ypp,.o,$(wildcard lib/*/*.ypp)) 
-BISONH :=  $(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) 
+BISONOBJ :=  $(subst .ypp,.o,$(wildcard lib/*.ypp)) 
+BISONH :=  $(subst .ypp,.hpp,$(wildcard lib/*.ypp)) 
 FLEXOBJ  :=  $(subst .lpp,.o,$(wildcard lib/*.lpp))
 OBJLIST  :=  $(subst .cpp,.o,$(wildcard lib/*.cpp))
 BINOBJLIST  :=  $(subst .cpp,.o,$(wildcard bin/*.cpp))
 TESTSOBJLIST  :=  $(subst .cpp,.o,$(wildcard tests/*.cpp))
 TESTNAMELIST  :=  $(subst .cpp,,$(wildcard tests/test_*.cpp))
-LIBNAME  :=  SWObjects
+LIBNAME  ?=  SWObjects
 LIB	 :=	 lib/lib$(LIBNAME).a
 LIBINC	+=	 -l$(LIBNAME)
 
@@ -273,52 +273,39 @@ lib/%.o : lib/%.cpp lib/%.dep config.h docs/version.h
 
 
 
-# The following doesn't fire, so I have to create the specialied rules below:
-# lib/%/%.dep: lib/%/%.cpp config.h
-# 	($(ECHO) -n $@ ONE lib/%/ TWO; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-
-lib/SPARQLfedParser/SPARQLfedParser.dep: lib/SPARQLfedParser/SPARQLfedParser.cpp config.h
-	($(ECHO) -n $@ lib/SPARQLfedParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-lib/MapSetParser/MapSetParser.dep: lib/MapSetParser/MapSetParser.cpp config.h
-	($(ECHO) -n $@ lib/MapSetParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-lib/TurtleSParser/TurtleSParser.dep: lib/TurtleSParser/TurtleSParser.cpp config.h
-	($(ECHO) -n $@ lib/TurtleSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-lib/TrigSParser/TrigSParser.dep: lib/TrigSParser/TrigSParser.cpp config.h
-	($(ECHO) -n $@ lib/TrigSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-lib/SQLParser/SQLParser.dep: lib/SQLParser/SQLParser.cpp config.h
-	($(ECHO) -n $@ lib/SQLParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-lib/JSONresultsParser/JSONresultsParser.dep: lib/JSONresultsParser/JSONresultsParser.cpp config.h
-	($(ECHO) -n $@ lib/JSONresultsParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-lib/SWSexSParser/SWSexSParser.dep: lib/SWSexSParser/SWSexSParser.cpp config.h
-	($(ECHO) -n $@ lib/SWSexSParser/; $(COMPILE) -MM $< $(CFLAGS)) > $@ || (rm $@; false)
-
 DEPEND += $(OBJLIST:.o=.dep) $(BISONOBJ:.o=.dep) $(FLEXOBJ:.o=.dep)
-GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
+PARSER_GENERATED += $(BISONOBJ:.o=.cpp) $(BISONOBJ:.o=.hpp) $(FLEXOBJ:.o=.cpp)
 
 # don't run flex and bison
-NOGEN:
-	touch $(GENERATED)
+TOUCH_PARSER_GENERATED:
+	touch $(PARSER_GENERATED)
 
 lib/%.cpp  lib/%.hpp : lib/%.ypp
-	$(YACC) -o $(@:.hpp=.cpp) $<
-	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' $(@:.cpp=.hpp)
+	@mkdir -p tmp/$(*F)
+	$(YACC) -o tmp/$(*F)/$(*F).cpp $<
+	$(SED) -i~ 's,# define PARSER_HEADER_H,#pragma once,' tmp/$(*F)/$(*F).cpp
+	$(SED) -i~ 's,"tmp/$(*F)/$(*F).cpp","lib/$(*F).cpp",' tmp/$(*F)/$(*F).cpp
+	@mv tmp/$(*F)/$(*F).[hc]pp lib
+	@rm -r tmp/$(*F)
 
 lib/%.cpp : lib/%.lpp
 	$(FLEX) -o $@  $<
-	$(SED) -i~ 's,extern "C" int isatty (int );,extern "C" int isatty (int ) throw();,' $@
+	$(SED) -i~ '1i\#ifdef _MSC_VER\n#include <stdint.h>\n#endif\n' $@
+	$(SED) -i~ 's,return yyin->gcount();,return (int)yyin->gcount();,' $@
+	$(SED) -i~ 's,extern "C" int isatty (int );,#ifndef _MSC_VER\nextern "C" int isatty (int ) throw();\n#endif,' $@
 
 
-# Parser maintenance
-lib/SPARQLfedParser/bnf-new:
-	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/bnf | perl -pi -e 's{^\[\d+\]\s+(\S+)\s+::=\s+}{"[0]     $$1".(" " x (27-length($$1)))."::= "}e' > $@
-
-lib/SPARQLfedParser/SPARQLfedParser-new.yy:
-	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPParser.yy -o $@
-
-lib/SPARQLfedScanner-new.ll:
-	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPScanner.ll -o $@
-
-SPARQLfed-next: lib/SPARQLfedParser/bnf-new lib/SPARQLfedParser/SPARQLfedParser-new.yy lib/SPARQLfedScanner-new.ll
+# # Parser maintenance
+# lib/SPARQLParser/bnf-new:
+# 	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/bnf | perl -pi -e 's{^\[\d+\]\s+(\S+)\s+::=\s+}{"[0]     $$1".(" " x (27-length($$1)))."::= "}e' > $@
+# 
+# lib/SPARQLParser/SPARQLParser-new.yy:
+# 	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPParser.yy -o $@
+# 
+# lib/SPARQLScanner-new.ll:
+# 	curl http://www.w3.org/2005/01/yacker/uploads/SPARUL_EGP/SPARUL_EGPScanner.ll -o $@
+# 
+# SPARQL-next: lib/SPARQLParser/bnf-new lib/SPARQLParser/SPARQLParser-new.yy lib/SPARQLScanner-new.ll
 
 
 # Status files
@@ -429,6 +416,25 @@ t_%: tests/test_%
 
 
 ## Rules specific to certain tests ##
+tests/TurtleTests:
+	(cd tests && curl http://www.w3.org/2013/TurtleTests/TESTS.tar.gz | tar xzf -)
+
+t_Turtle: tests/TurtleTests
+
+tests/sparql11-test-suite:
+	(cd tests && curl http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite-20121023.tar.gz | tar xzf -)
+	# normalize expected results and apply fix described in
+	#   http://www.w3.org/mid/50897A80.5020701@epimorphics.com
+	(cd tests/sparql11-test-suite && patch -p 0 < ../sparql11-test-suite.patch)
+
+t_SPARQL11: tests/sparql11-test-suite
+
+tests/TriGTests:
+	mkdir -p $@
+	(cd $@ && curl http://www.w3.org/2013/TrigTests/TESTS.tar.gz | tar xzf -) # don't be fooled by Trig vs. TriG
+
+t_Trig: tests/TriGTests
+
 t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
 	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)
 
@@ -565,8 +571,8 @@ SWIG_SUBST_LUA = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s+arg(\d)
 SWIG_SUBST_PHP = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s+arg(\d)\s+;)(.*?)(arg\2 = \*tmp\2)}{\1\3va_copy(arg\2, *tmp\2)}sg'
 
 
-SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o lib/JSONresultsParser/JSONresultsParser.o lib/JSONresultsScanner.o lib/SWSexSParser/SWSexSParser.o lib/SWSexSScanner.o
-SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjectDuplicator.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/RdfDB.cpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp lib/RuleInverter.hpp lib/QueryMapper.hpp lib/MapSetParser/MapSetParser.hpp interface/WEBagent_boostASIO.hpp interface/SAXparser_expat.hpp lib/ParserCommon.hpp lib/SPARQLfedParser/SPARQLfedParser.hpp lib/TurtleSParser/TurtleSParser.hpp lib/TrigSParser/TrigSParser.hpp interface/WEBagent.hpp lib/JSONresultsParser/JSONresultsParser.hpp lib/SWSexSParser/SWSexSParser.hpp
+SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleParser.o lib/TurtleScanner.o lib/TrigSParser.o lib/TrigSScanner.o lib/SPARQLParser.o lib/SPARQLScanner.o lib/MapSetParser.o lib/MapSetScanner.o lib/JSONresultsParser.o lib/JSONresultsScanner.o lib/ShExCSParser.o lib/ShExCSScanner.o
+SWIG_HEADERS = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjectDuplicator.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/RdfDB.cpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp lib/RuleInverter.hpp lib/QueryMapper.hpp lib/MapSetParser.hpp interface/WEBagent_boostASIO.hpp interface/SAXparser_expat.hpp lib/ParserCommon.hpp lib/SPARQLParser.hpp lib/TurtleParser.hpp lib/TrigSParser.hpp interface/WEBagent.hpp lib/JSONresultsParser.hpp lib/ShExCSParser.hpp
 SWIG_LIBS =  $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 
  # Python
@@ -741,16 +747,16 @@ Sparql.dmg: Sparql.app/Contents/MacOS/Sparql
 ##### Clean - rm everything we remember to rm #####
 .PHONY: clean parse-clean meta-clean cleaner
 clean:
-	$(RM) */*.o lib/*.a lib/*.dylib lib/*.so lib/*.la */*.bak config.h \
-	$(subst .ypp,.o,$(wildcard lib/*/*.ypp)) \
+	$(RM) lib/*.o lib/*.a lib/*.dylib lib/*.so lib/*.la *.bak config.h \
+	$(subst .ypp,.o,$(wildcard lib/*.ypp)) \
         $(transformTEST_RESULTS) $(transformVALGRIND) \
-	$(unitTESTexes) *~ */*.dep */*/*.dep
+	$(unitTESTexes) *~ *.dep */*.dep
 
 parse-clean:
 	$(RM) \
 	$(subst .lpp,.cpp,$(wildcard lib/*.lpp)) \
-	$(subst .ypp,.cpp,$(wildcard lib/*/*.ypp)) \
-	$(subst .ypp,.hpp,$(wildcard lib/*/*.ypp)) \
+	$(subst .ypp,.cpp,$(wildcard lib/*.ypp)) \
+	$(subst .ypp,.hpp,$(wildcard lib/*.ypp)) \
 	$(BISONHH:%=*/%)
 
 meta-clean:

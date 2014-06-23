@@ -1646,6 +1646,14 @@ namespace w3c_sw {
 		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
 						    new IntConstraint(value)));
 	    }
+	    void addConstantJoinConstraint (Attribute myAttr, float value) {
+		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
+						    new FloatConstraint(value)));
+	    }
+	    void addConstantJoinConstraint (Attribute myAttr, double value) {
+		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
+						    new DoubleConstraint(value)));
+	    }
 	    void addConstantJoinConstraint (Attribute myAttr, std::string value) {
 		constraints.push_back(new BooleanEQ(new AliasAttrConstraint(AliasAttr(alias, myAttr)), 
 						    new LiteralConstraint(value)));

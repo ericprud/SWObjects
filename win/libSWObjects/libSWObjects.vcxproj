@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}</ProjectGuid>
+    <RootNamespace>libSWObjects</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <!-- Import Project="..\FlexBison.props" / -->
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../utf8_v2.3.2_source;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../../utf8_v2.3.2_source;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\win;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies>Rpcrt4.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\win;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="../config.h" />
+    <ClInclude Include="../../lib/exs.hpp" />
+    <ClInclude Include="../../lib/ExpressionInverter.hpp" />
+    <ClInclude Include="../../lib/POS2BGPMap.hpp" />
+    <ClInclude Include="../../lib/position.hpp" />
+    <ClInclude Include="../../lib/QueryMapper.hpp" />
+    <ClInclude Include="../../lib/RdfDB.hpp" />
+    <ClInclude Include="../../lib/RdfQueryDB.hpp" />
+    <ClInclude Include="../../lib/ResultSet.hpp" />
+    <ClInclude Include="../../lib/RuleInverter.hpp" />
+    <ClInclude Include="../../lib/SPARQLSerializer.hpp" />
+    <ClInclude Include="../../lib/SQLizer.hpp" />
+    <ClInclude Include="../../lib/stack.hpp" />
+    <ClInclude Include="../../lib/SWObjectDuplicator.hpp" />
+    <ClInclude Include="../../lib/SWObjects.hpp" />
+    <ClInclude Include="../../lib/XMLQueryExpressor.hpp" />
+    <ClInclude Include="../../lib/XMLSerializer.hpp" />
+    <ClInclude Include="../../lib/ParserCommon.hpp" />
+    <ClInclude Include="../../lib/JSONresultsParser.hpp" />
+    <ClInclude Include="../../lib/JSONresultsScanner.hpp" />
+    <ClInclude Include="../../lib/MapSetParser.hpp" />
+    <ClInclude Include="../../lib/MapSetScanner.hpp" />
+    <ClInclude Include="../../lib/SPARQLParser.hpp" />
+    <ClInclude Include="../../lib/SPARQLScanner.hpp" />
+    <ClInclude Include="../../lib/SQLParser.hpp" />
+    <ClInclude Include="../../lib/SQLScanner.hpp" />
+    <ClInclude Include="../../lib/TrigParser.hpp" />
+    <ClInclude Include="../../lib/TrigScanner.hpp" />
+    <ClInclude Include="../../lib/TurtleParser.hpp" />
+    <ClInclude Include="../../lib/TurtleScanner.hpp" />
+  </ItemGroup>
+  <!-- ItemGroup>
+    <BisonParser Include="..\..\lib\JSONresultsParser.ypp" />
+    <BisonParser Include="..\..\lib\MapSetParser.ypp" />
+    <BisonParser Include="..\..\lib\ShExCParser.ypp" />
+    <BisonParser Include="..\..\lib\SPARQLalgebraParser.ypp" />
+    <BisonParser Include="..\..\lib\SPARQLParser.ypp" />
+    <BisonParser Include="..\..\lib\SQLParser.ypp" />
+    <BisonParser Include="..\..\lib\TrigParser.ypp" />
+    <BisonParser Include="..\..\lib\TurtleParser.ypp" />
+  </ItemGroup -->
+  <ItemGroup>
+    <ClCompile Include="../../lib/exs.cpp" />
+    <ClCompile Include="../../lib/SWObjects.cpp" />
+    <ClCompile Include="../../lib/RdfDB.cpp" />
+    <ClCompile Include="../../lib/RdfQueryDB.cpp" />
+    <ClCompile Include="../../lib/ResultSet.cpp" />
+    <ClCompile Include="../../lib/ShExSchema.cpp" />
+    <ClCompile Include="../../lib/ParserCommon.cpp" />
+    <ClCompile Include="../../lib/JSONresultsParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/JSONresultsScanner.cpp" />
+    <ClCompile Include="../../lib/MapSetParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/MapSetScanner.cpp" />
+    <ClCompile Include="../../lib/ShExCParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/ShExCScanner.cpp" />
+    <ClCompile Include="../../lib/SPARQLalgebraParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SPARQLalgebraScanner.cpp" />
+    <ClCompile Include="../../lib/SPARQLParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SPARQLScanner.cpp" />
+    <ClCompile Include="../../lib/SQLParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/SQLScanner.cpp" />
+    <ClCompile Include="../../lib/TrigParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/TrigScanner.cpp" />
+    <ClCompile Include="../../lib/TurtleParser.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4065</DisableSpecificWarnings>
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4065</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="../../lib/TurtleScanner.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <!-- Import Project="..\FlexBison.targets" / -->
+  </ImportGroup>
+</Project>

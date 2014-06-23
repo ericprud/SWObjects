@@ -1158,8 +1158,8 @@ struct SimpleEngine {
     std::string serviceURI;
     std::string defaultGraphURI;
     bool printQuery, bestEffort;
-    SPARQLfedDriver sparqlParser;
-    TurtleSDriver turtleParser;
+    SPARQLDriver sparqlParser;
+    TurtleDriver turtleParser;
     std::string pkAttribute;
     KeyMap keyMap;
     MapSetDriver mapSetParser;

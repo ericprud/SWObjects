@@ -8,8 +8,8 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_MODULE SWSex_tests
 #include "tests/SPARQLTest.hpp"
-#include "SWSexParser/SWSexParser.hpp"
-#include "SWSexSchema.hpp"
+#include "ShExCParser.hpp"
+#include "ShExSchema.hpp"
 #include <ctype.h>
 
 w3c_sw_DEBUGGING_FUNCTIONS(); // still reachable: 680 bytes in 7 blocks from logger

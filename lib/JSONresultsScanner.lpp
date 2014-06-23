@@ -4,7 +4,7 @@
 
 %{ /*** C/C++ Declarations ***/
 
-#include "JSONresultsParser/JSONresultsParser.hpp"
+#include "JSONresultsParser.hpp"
 #include "JSONresultsScanner.hpp"
 
 /* import the parser's token type into a local typedef */

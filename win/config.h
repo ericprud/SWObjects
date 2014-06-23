@@ -38,3 +38,4 @@
 #define HAVE_REGEX
 #define _WIN32_WINNT 0x0501
 #define SQL_CLIENT_MYSQL
+#define SQL_CLIENT_MSSQL

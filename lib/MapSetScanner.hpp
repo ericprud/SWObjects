@@ -22,7 +22,7 @@
 #undef yyFlexLexer
 #endif
 
-#include "MapSetParser/MapSetParser.hpp"
+#include "MapSetParser.hpp"
 
 namespace w3c_sw {
 

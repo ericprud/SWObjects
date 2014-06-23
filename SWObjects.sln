@@ -1,77 +1,37 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libSWObjects", "win\libSWObjects\libSWObjects.vcproj", "{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libSWObjects", "win\libSWObjects\libSWObjects.vcxproj", "{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DAWG", "win\test_DAWG\test_DAWG.vcproj", "{A7163889-6F8D-4788-8DDA-39B6459C82CC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_DAWG", "win\test_DAWG\test_DAWG.vcxproj", "{A7163889-6F8D-4788-8DDA-39B6459C82CC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_QueryMap", "win\test_QueryMap\test_QueryMap.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898491B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_QueryMap", "win\test_QueryMap\test_QueryMap.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A898491B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RDFaParser", "win\test_RDFaParser\test_RDFaParser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980001}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RDFaParser", "win\test_RDFaParser\test_RDFaParser.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980001}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_WEBagents", "win\test_WEBagents\test_WEBagents.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980002}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_WEBagents", "win\test_WEBagents\test_WEBagents.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980002}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_Algebra", "win\test_Algebra\test_Algebra.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980003}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_Algebra", "win\test_Algebra\test_Algebra.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980003}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARQLSerializer", "win\test_SPARQLSerializer\test_SPARQLSerializer.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980004}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARQLSerializer", "win\test_SPARQLSerializer\test_SPARQLSerializer.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980004}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RdfXmlParser", "win\test_RdfXmlParser\test_RdfXmlParser.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980005}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_RdfXmlParser", "win\test_RdfXmlParser\test_RdfXmlParser.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980005}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARQL11", "win\test_SPARQL11\test_SPARQL11.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980006}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARQL11", "win\test_SPARQL11\test_SPARQL11.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980006}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_GraphMatch", "win\test_GraphMatch\test_GraphMatch.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980007}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_GraphMatch", "win\test_GraphMatch\test_GraphMatch.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980007}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARUL", "win\test_SPARUL\test_SPARUL.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980008}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_SPARUL", "win\test_SPARUL\test_SPARUL.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980008}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL", "win\SPARQL\SPARQL.vcproj", "{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{56EF9C8B-007E-4CEE-AE32-6233A8980009} = {56EF9C8B-007E-4CEE-AE32-6233A8980009}
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPARQL", "win\SPARQL\SPARQL.vcxproj", "{C129C540-4E6E-45AD-BE1D-96D7DA4317B6}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SPARQL_msi", "SPARQL_Msi\SPARQL_Msi.vdproj", "{08909057-98BD-4844-A38E-C2C66952F8A0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libboost-log", "win\libboost-log\libboost-log.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980009}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libboost-log", "win\libboost-log\libboost-log.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A8980009}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_logging", "win\test_logging\test_logging.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_logging", "win\test_logging\test_logging.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_BackChain", "win\test_BackChain\test_BackChain.vcproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{BD2A49C4-3C2C-4988-90F9-7956E0CD51EA} = {BD2A49C4-3C2C-4988-90F9-7956E0CD51EA}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_BackChain", "win\test_BackChain\test_BackChain.vcxproj", "{56EF9C8B-007E-4CEE-AE32-6233A898000B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -146,3 +106,4 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
+

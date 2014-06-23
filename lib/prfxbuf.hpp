@@ -50,7 +50,7 @@ class prfxbuf: public std::streambuf {
 
 protected:
     std::streambuf	*i_sbuf;	// the actual streambuf used to read and write chars
-    std::streamsize	i_len;		// the length of the prefix
+    _w3c_sw_STREAMSIZE	i_len;		// the length of the prefix
     char		*i_prfx;	// the prefix
     bool		i_newline;	// remember whether we are at a new line
     int		i_cache;	// may cache a read character

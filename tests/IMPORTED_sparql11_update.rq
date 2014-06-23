@@ -9,14 +9,14 @@ PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
 
 # Construct test case code like:
 # BOOST_AUTO_TEST_CASE( add03 ) {
-#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/add/manifest#add03";
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite/add/manifest#add03";
 #     // name: ADD 3
-#     // manifest: data-sparql11/add/manifest.ttl
-#     const char* defaultGraph_in = "data-sparql11/add/add-default.ttl";
-#     LabeledGraph namedGraphs_in[] = {LG("data-sparql11/add/add-01-pre.ttl", "http://example.org/g1"), LG("data-sparql11/add/add-02-pre.ttl", "http://example.org/g2")};
-#     const char* request = "data-sparql11/add/add-03.ru";
-#     const char* defaultGraph_out = "data-sparql11/add/add-default.ttl";
-#     LabeledGraph namedGraphs_out[] = {LG("data-sparql11/add/add-01-pre.ttl", "http://example.org/g1"), LG("data-sparql11/add/add-02-post.ttl", "http://example.org/g2")};
+#     // manifest: sparql11-test-suite/add/manifest.ttl
+#     const char* defaultGraph_in = "sparql11-test-suite/add/add-default.ttl";
+#     LabeledGraph namedGraphs_in[] = {LG("sparql11-test-suite/add/add-01-pre.ttl", "http://example.org/g1"), LG("sparql11-test-suite/add/add-02-pre.ttl", "http://example.org/g2")};
+#     const char* request = "sparql11-test-suite/add/add-03.ru";
+#     const char* defaultGraph_out = "sparql11-test-suite/add/add-default.ttl";
+#     LabeledGraph namedGraphs_out[] = {LG("sparql11-test-suite/add/add-01-pre.ttl", "http://example.org/g1"), LG("sparql11-test-suite/add/add-02-post.ttl", "http://example.org/g2")};
 #     UPDATE_TEST();
 # } /* BOOST_AUTO_TEST_CASE( add03 ) */
 

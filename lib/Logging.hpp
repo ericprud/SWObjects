@@ -141,7 +141,7 @@ namespace w3c_sw {
 	    class prfxnbuf: public prfxbuf {
 
 	    public:
-		prfxnbuf (std::streambuf *sb, std::streamsize width, const char space):
+		prfxnbuf (std::streambuf *sb, _w3c_sw_STREAMSIZE width, const char space):
 		    prfxbuf(sb, std::string(width, space).c_str())
 		{
 		    i_newline = false; // don't indent first line
@@ -151,7 +151,7 @@ namespace w3c_sw {
 	    {
 		prfxnbuf* b;
 	    public:
-		oprfxnstream (std::streambuf *sb, std::streamsize width, const char space):
+		oprfxnstream (std::streambuf *sb, _w3c_sw_STREAMSIZE width, const char space):
 		    std::ostream(new prfxnbuf(sb, width, space)), b((prfxnbuf*)rdbuf())
 		{  }
 		~oprfxnstream () {
@@ -361,7 +361,7 @@ namespace w3c_sw {
 			int l;
 			try {
 			    l = boost::lexical_cast<int>(is);
-			} catch (boost::bad_lexical_cast& e) {
+			} catch (boost::bad_lexical_cast&) {
 			    std::stringstream ss;
 			    ss << "invalid int \"" << is << "\" at offeset " << start << " in \"" << parm << "\".";
 			    throw ss.str();

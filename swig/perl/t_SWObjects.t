@@ -59,7 +59,7 @@ sub test_turtleParser {
 			"<s> <p2> <o3> .", $bnodeMap);
     # print "manualDB: ", $manualDB->toString();
     $parsedDB = new SWObjects::RdfDB();
-    my $tparser = new SWObjects::TurtleSDriver("", $F);
+    my $tparser = new SWObjects::TurtleDriver("", $F);
     # Instruct the parser to insert data into the default graph.
     # Shortcut: undef = SWObjects.cvar.DefaultGraph
     $tparser->setGraph($parsedDB->ensureGraph(undef));
@@ -72,7 +72,7 @@ sub test_turtleParser {
 
     my $different = new SWObjects::RdfDB();
     # Shortcut: parse strings without the IStreamContext.
-    # Shortcut: let TurtleSDriver parse directly to default graph in a DB.
+    # Shortcut: let TurtleDriver parse directly to default graph in a DB.
     $tparser->parse("<s2> <p1> <o1> ; <p2> <o2> .", $different);
     # print "different: ", different->toString();
     ok($parsedDB != $different, 'DB difference');
@@ -89,7 +89,7 @@ sub test_trigParser {
     # print "manualDB: ", $manualDB->toString();
     $parsedDB = new SWObjects::RdfDB();
     eval {
-	my $tparser = new SWObjects::TrigSDriver("", $F);
+	my $tparser = new SWObjects::TrigDriver("", $F);
 	$tparser->parse("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }", $parsedDB);
 	# print "parsedDB: ", $parsedDB->toString();
 	ok($manualDB == $parsedDB, 'trig DB eqivalance');
@@ -107,12 +107,12 @@ sub test_s_p1_o1_p2_o2 {
     # Test a query.
     my $F = new SWObjects::AtomFactory();
     my $DB = new SWObjects::RdfDB();
-    my $tparser = new SWObjects::TurtleSDriver("", $F);
+    my $tparser = new SWObjects::TurtleDriver("", $F);
     $tparser->parse("<s> <p1> <o1> ; <p2> <o2> .", $DB);
     # print "DB: ", $DB->toString();
     my $rs = new SWObjects::ResultSet($F);
-    # Parse simple query strings with a SPARQLfedDriver.
-    new SWObjects::SPARQLfedDriver("", $F)->executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", $DB, $rs);
+    # Parse simple query strings with a SPARQLDriver.
+    new SWObjects::SPARQLDriver("", $F)->executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", $DB, $rs);
     my $bnodereps = new SWObjects::BNode2string();
     my $bnodeMap = new SWObjects::String2BNode();
     my $reference = new SWObjects::ResultSet($F, new SWObjects::IStreamContext("
@@ -141,7 +141,7 @@ sub test_remote {
     my $agent = new SWObjects::WEBagent_boostASIO();
     my $xmlParser = new SWObjects::SAXparser_expat();
     my $DB = new SWObjects::RdfDB($agent, $xmlParser);
-    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    my $sparser = new SWObjects::SPARQLDriver("", $F);
     my $srvc = 'http://api.talis.com/stores/space/services/sparql';
     # Parsing can be done from a FILE or a STRING (shown below).
     # The StreamContextIstream.STRING argument is eqivalent to parse("...").
@@ -174,7 +174,7 @@ sub test_update {
     my $F = new SWObjects::AtomFactory();
 
     $updatedDB = new SWObjects::RdfDB();
-    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    my $sparser = new SWObjects::SPARQLDriver("", $F);
     my $query = $sparser->parse("INSERT DATA { <s> <p1> <o1> ; <p2> <o2> }");
     # my $s = new SWObjects::SPARQLSerializer();
     # $query->express($s);
@@ -184,7 +184,7 @@ sub test_update {
     $query->execute($updatedDB, $rs);
 
     $referenceDB = new SWObjects::RdfDB();
-    my $tparser = new SWObjects::TurtleSDriver("", $F);
+    my $tparser = new SWObjects::TurtleDriver("", $F);
     $tparser->setGraph($referenceDB->ensureGraph(undef));
     $tparser->parse(new SWObjects::IStreamContext(
 			"<s> <p1> <o1> ; <p2> <o2> .",
@@ -201,7 +201,7 @@ sub test_construct {
     my $manDefault = $sourceDB->ensureGraph(undef);
     my $bnodeMap = new SWObjects::String2BNode();
     $F->parseNTPatterns($manDefault, "<s> <p1> <o1> .", $bnodeMap);
-    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    my $sparser = new SWObjects::SPARQLDriver("", $F);
     my $query = $sparser->parse("CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }");
     # my $s = new SWObjects::SPARQLSerializer();
     # $query->express($s);
@@ -227,7 +227,7 @@ sub test_construct {
 sub test_parser_exception {
     # Test SPARQL parser exception .
     my $F = new SWObjects::AtomFactory();
-    my $sparser = new SWObjects::SPARQLfedDriver("", $F);
+    my $sparser = new SWObjects::SPARQLDriver("", $F);
     my $istr = new SWObjects::IStreamContext(
 	    "SELECT * WHERE ~~~",
 	    $SWObjects::StreamContextIstream::STRING);

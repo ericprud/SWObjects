@@ -22,7 +22,7 @@
 #undef yyFlexLexer
 #endif
 
-#include "JSONresultsParser/JSONresultsParser.hpp"
+#include "JSONresultsParser.hpp"
 
 namespace w3c_sw {
 

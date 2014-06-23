@@ -14,9 +14,9 @@
 #include <iostream>
 #include <iterator>
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
-#include "TrigSParser/TrigSParser.hpp"
+#include "SPARQLParser.hpp"
+#include "TurtleParser.hpp"
+#include "TrigParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 #include "SPARQLSerializer.hpp"
@@ -52,9 +52,9 @@ using namespace w3c_sw;
 #define BASE_URI ""
 
 AtomFactory F;
-SPARQLfedDriver sparqlParser(BASE_URI, &F);
-TurtleSDriver turtleParser(BASE_URI, &F);
-TrigSDriver trigParser(BASE_URI, &F);
+SPARQLDriver sparqlParser(BASE_URI, &F);
+TurtleDriver turtleParser(BASE_URI, &F);
+TrigDriver trigParser(BASE_URI, &F);
 RdfXmlParser GRdfXmlParser(BASE_URI, &F, &P);
 
 struct LabeledGraph {
@@ -433,11 +433,12 @@ struct ReferenceDB : public RdfDB {
 	    MeasuredRS::read(namedGraphs[i].source, baseURI, ensureGraph(F.getURI(namedGraphs[i].name)));
     }
 
-    ReferenceDB (const char* trig, const char* queryPath)
+    ReferenceDB (const char* trig, const char* queryPath, bool noTruncate = false)
 	: RdfDB() {
 
 	std::string baseURI(queryPath);
-	baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
+	if (!noTruncate)
+	    baseURI = baseURI.substr(0, baseURI.find_last_of("/")+1);
 
 	/* Parse data. */
 	if (trig != NULL)

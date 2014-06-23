@@ -1,7 +1,7 @@
 /* test_SADI.hpp -- 
  *
  * Test the SADI server built in to ../bin/sparql and SADI interactions built
- * into the SPARQLfed language.
+ * into the SPARQL language.
  *
  * $Id: test_Sadi.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */

@@ -22,7 +22,7 @@
 #undef yyFlexLexer
 #endif
 
-#include "SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#include "SPARQLalgebraParser.hpp"
 
 namespace w3c_sw {
 

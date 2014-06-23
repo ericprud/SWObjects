@@ -42,7 +42,7 @@ public class t_SWObjects extends TestCase {
 			  "<s> <p2> <o3> .", bnodeMap);
         // print "manualDB: ", manualDB.toString();
         RdfDB parsedDB = new RdfDB();
-        TurtleSDriver tparser = new TurtleSDriver("", F);
+        TurtleDriver tparser = new TurtleDriver("", F);
         // Instruct the parser to insert data into the default graph.
         // Shortcut: null = SWObjects.cvar.DefaultGraph
         tparser.setGraph(parsedDB.ensureGraph(null));
@@ -55,7 +55,7 @@ public class t_SWObjects extends TestCase {
 
         RdfDB different = new RdfDB();
         // Shortcut: parse strings without the IStreamContext.
-        // Shortcut: let TurtleSDriver parse directly to default graph in a DB.
+        // Shortcut: let TurtleDriver parse directly to default graph in a DB.
         tparser.parse("<s2> <p1> <o1> ; <p2> <o2> ; <p2> <o2> .", different);
         // print "different: ", different.toString();
 	assertFalse(different.equals(parsedDB));
@@ -73,7 +73,7 @@ public class t_SWObjects extends TestCase {
         F.parseNTPatterns(manG, "<s> <p2> <o2> .", bnodeMap);
         // print "manualDB: ", manualDB.toString();
         RdfDB parsedDB = new RdfDB();
-        TrigSDriver tparser = new TrigSDriver("", F);
+        TrigDriver tparser = new TrigDriver("", F);
         tparser.parse("{ <s> <p1> <o1> . } <g> { <s> <p2> <o2> . }", parsedDB);
         // print "parsedDB: ", parsedDB.toString();
         assertTrue(manualDB.equals(parsedDB));
@@ -89,12 +89,12 @@ public class t_SWObjects extends TestCase {
         // Test a query.
         AtomFactory F = new AtomFactory();
         RdfDB DB = new RdfDB();
-        TurtleSDriver tparser = new TurtleSDriver("", F);
+        TurtleDriver tparser = new TurtleDriver("", F);
         tparser.parse("<s> <p1> <o1> ; <p2> <o2> .", DB);
         // print "DB: ", DB.toString();
         ResultSet rs = new ResultSet(F);
-        // Parse simple query strings with a SPARQLfedDriver.
-        new SPARQLfedDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs);
+        // Parse simple query strings with a SPARQLDriver.
+        new SPARQLDriver("", F).executeSelect("SELECT * { ?s <p1> ?o1 ; <p2> ?o2 }", DB, rs);
         BNode2string bnodereps = new BNode2string();
         String2BNode bnodeMap = new String2BNode();
         ResultSet reference = new ResultSet(F, new IStreamContext(
@@ -123,7 +123,7 @@ public class t_SWObjects extends TestCase {
 	AtomFactory F = new AtomFactory();
 
         RdfDB updatedDB = new RdfDB();
-        SPARQLfedDriver sparser = new SPARQLfedDriver("", F);
+        SPARQLDriver sparser = new SPARQLDriver("", F);
         sparser.parse(new IStreamContext(
                 "INSERT DATA { <s> <p1> <o1> ; <p2> <o2> }",
 		StreamContextIstream.e_opts.STRING));
@@ -136,7 +136,7 @@ public class t_SWObjects extends TestCase {
         query.execute(updatedDB, rs);
 
         RdfDB referenceDB = new RdfDB();
-        TurtleSDriver tparser = new TurtleSDriver("", F);
+        TurtleDriver tparser = new TurtleDriver("", F);
         tparser.setGraph(referenceDB.ensureGraph(null));
         tparser.parse(new IStreamContext(
                 "<s> <p1> <o1> ; <p2> <o2> .",
@@ -152,7 +152,7 @@ public class t_SWObjects extends TestCase {
         BasicGraphPattern manDefault = sourceDB.ensureGraph(null);
         String2BNode bnodeMap = new String2BNode();
 	F.parseNTPatterns(manDefault, "<s> <p1> <o1> .", bnodeMap);
-        SPARQLfedDriver sparser = new SPARQLfedDriver("", F);
+        SPARQLDriver sparser = new SPARQLDriver("", F);
         sparser.parse(new IStreamContext(
                 "CONSTRUCT { ?s ?p <o2> ; <p2> <o3> } WHERE { ?s ?p ?o }",
 		StreamContextIstream.e_opts.STRING));
