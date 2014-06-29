@@ -6,6 +6,14 @@
 #ifndef INCLUDED_lib_SimpleServer_hpp
  #define INCLUDED_lib_SimpleServer_hpp
 
+#if HTTP_SERVER == SWOb_ASIO
+#include <sys/inotify.h>
+#include <sys/epoll.h>
+
+#define EVENT_SIZE  (sizeof (struct inotify_event))
+#define BUF_LEN        (1024 * (EVENT_SIZE + 16))
+#endif /* HTTP_SERVER == SWOb_ASIO */
+
 namespace w3c_sw {
 
     template <class engine_type, class data_loader, class controller_type>
@@ -1142,6 +1150,179 @@ struct SimpleEngine {
 
     };
 
+#if HTTP_SERVER == SWOb_ASIO
+
+    struct InotifySet {
+	struct InotifyInstance {
+	    int watch;
+	    const char* name;
+	};
+	int pollfd;
+	std::map<int, InotifyInstance> inotMap;
+	std::vector<struct epoll_event> events;
+	SimpleEngine& engine;
+	std::map<const char*, BasicGraphPattern*> targets;
+
+	InotifySet (SimpleEngine& engine)
+	    : pollfd(::epoll_create1(0)), engine(engine)
+	{
+	    assert(pollfd != -1);
+	}
+	~InotifySet () {
+	    for (std::map<int, InotifyInstance>::const_iterator
+		     it = inotMap.begin(); it != inotMap.end(); ++it) {
+		::inotify_rm_watch(it->first, it->second.watch);
+		::close(it->first);
+	    }
+	    ::close(pollfd);
+	}
+
+	size_t size () const {
+	    return inotMap.size();
+	}
+	void add (const char* name, BasicGraphPattern* target) {
+	    targets[name] = target;
+	    int inotifyInstance = ::inotify_init1(IN_NONBLOCK);
+	    assert(inotifyInstance > 0);
+	    inotMap[inotifyInstance].name = name;
+	    inotMap[inotifyInstance].watch
+		= inotify_add_watch(inotifyInstance, name, 
+				    IN_DELETE_SELF|IN_MODIFY|IN_MOVE_SELF);
+	    struct epoll_event event;
+	    event.data.fd = inotifyInstance;
+	    event.events = EPOLLIN | EPOLLET;
+	    assert(::epoll_ctl(pollfd, EPOLL_CTL_ADD,
+			       inotifyInstance, &event) != -1);
+	}
+	const char* _name (int inotifyInstance) const {
+	    std::map<int, InotifyInstance>::const_iterator it
+		= inotMap.find(inotifyInstance);
+	    assert(it != inotMap.end());
+	    return it->second.name;
+	}
+	/**
+	 * example usage:
+	 *   for (int j = 0; j < 3; ++j) {
+	 *   	   std::vector<const char*> fns = fd2.poll();
+	 *   	   for (std::vector<const char*>::const_iterator it = fns.begin();
+	 *   	        it != fns.end(); ++it)
+	 *   	       std::cerr << "modified " << *it << "\n";
+	 *   }
+	 */
+	std::vector<const char*> poll () {
+	    std::vector<const char*> ret;
+	    std::set<const char*> seen;
+	    events.resize(size());
+	    int ready = ::epoll_wait (pollfd, &events[0], events.size(), -1);
+	    for (int eventNo = 0; eventNo < ready; eventNo++) {
+		// w3c_sw_LINEN << "ready " << events[eventNo].data.fd << "\n";
+		if ((events[eventNo].events & EPOLLERR) ||
+		    (events[eventNo].events & EPOLLHUP) ||
+		    (!(events[eventNo].events & EPOLLIN))) {
+		    /* An error has occured on this fd, or the socket is not
+		       ready for reading (why were we notified then?) */
+		    w3c_sw_LINEN << "epoll error on " << events[eventNo].data.fd << "\n";
+		    ::close(events[eventNo].data.fd);
+		    continue;
+		} else {
+		    /* reasonable guess as to size of 1024 events */
+			char buf[2 * (sizeof(struct inotify_event) + 16)];
+		    for (;;) {
+			int len = ::read(events[eventNo].data.fd, buf, sizeof(buf));
+			if (len < 0) {
+			    if (errno == EINTR) {
+				w3c_sw_LINEN << "EINTR in epoll_wait\n"; // reissue system call
+			    } else if (errno == EWOULDBLOCK) {
+				// w3c_sw_LINEN << "EWOULDBLOCK\n";
+				break;
+			    } else {
+				w3c_sw_LINEN << errno;
+				perror (": read error in epoll_wait");
+				w3c_sw_LINEN << "Closed connection on descriptor "
+					     << events[eventNo].data.fd << "\n";
+				::close(events[eventNo].data.fd); // automatically removed
+				break;
+			    }
+			} else if (!len) {
+			    /* BUF_LEN too small? */
+			    assert(false);
+			} else {
+			    for (int readOffset = 0; readOffset < len; ) {
+				struct inotify_event *event;
+
+				event = (struct inotify_event *) &buf[readOffset];
+
+				const char* name
+				    = event->len
+				    ? event->name
+				    : _name(events[eventNo].data.fd);
+				// w3c_sw_LINEN << name
+				// 		 << ": wd=" << event->wd
+				// 		 << " mask=" << event->mask
+				// 		 << " cookie=" << event->cookie
+				// 		 << " len=" << event->len << "\n";
+				if (seen.find(name) == seen.end()) {
+				    seen.insert(name);
+				    ret.push_back(name);
+				}
+
+				if (false) {
+				    w3c_sw_LINEN << "Closed connection on descriptor "
+						 << events[eventNo].data.fd << "\n";
+				    ::close(events[eventNo].data.fd); // automatically removed
+				}
+
+				readOffset += sizeof(struct inotify_event) + event->len;
+			    }
+			}
+		    }
+		}
+	    }
+	    return ret;
+	}
+
+	void start () {
+	    m_Thread = boost::thread(&InotifySet::spin, this);
+	}
+
+	void join () {
+	    m_Thread.join();
+	}
+    
+	void interrupt () {
+	    m_Thread.interrupt();
+	}
+    
+	void spin () {
+	    for (;;) {
+		std::vector<const char*> fns = poll();
+		for (std::vector<const char*>::const_iterator it = fns.begin();
+		     it != fns.end(); ++it) {
+		    w3c_sw_LINEN << "loading: " << *it << "\n";
+
+		    IStreamContext istr(*it, IStreamContext::FILE, NULL, NULL); // &engine.webClient
+		    // loadData(finalEnsureGraph(name), istr, engine.uriString(engine.baseURI), 
+		    // 	 engine.baseURI ? engine.uriString(engine.baseURI) : outres, &engine.atomFactory);
+
+		    boost::mutex::scoped_lock lock(engine.executeMutex);
+		    targets[*it]->clearTriples();
+		    engine.turtleParser.parse(istr, targets[*it]);
+		    // make parser.
+		    // db.clearGraphLog();
+		    // query->execute(&db, &rs);
+		    engine.db.synch();
+		    //executeMutex.unlock_shared();
+		    // executed = true;
+		}
+	    }
+	}
+
+    protected:
+
+	boost::thread m_Thread;
+    };
+#endif /* HTTP_SERVER == SWOb_ASIO */
+
     AtomFactory atomFactory;
     NamespaceAccumulator nsAccumulator;
     NamespaceRelay nsRelay;
@@ -1166,7 +1347,8 @@ struct SimpleEngine {
     ChainingMapper queryMapper;
     SQLConnectInfo sqlConnectInfo;
 #if HTTP_SERVER == SWOb_ASIO
-    boost::mutex executeMutex;    
+    boost::mutex executeMutex;
+    InotifySet inotifySet;
 #endif /* HTTP_SERVER == SWOb_ASIO */
     GRDDLmap grddlMap;
 #if HTTP_CLIENT != SWOb_DISABLED
@@ -1200,6 +1382,9 @@ struct SimpleEngine {
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory),
+#if HTTP_SERVER == SWOb_ASIO
+	  inotifySet(*this),
+#endif /* HTTP_SERVER == SWOb_ASIO */
 #if HTTP_CLIENT != SWOb_DISABLED
 	  webClient_authPrompter(),
 	  webClient(&webClient_authPrompter),
