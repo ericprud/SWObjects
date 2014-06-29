@@ -435,8 +435,12 @@ tests/TriGTests:
 
 t_Trig: tests/TriGTests
 
-t_DM: tests/test_DM tests/DM-manifest.txt bin/dm-materialize
-	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib $^ $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)
+tests/rdb2rdf-tests:
+	mkdir -p $@
+	(cd $@ && curl https://dvcs.w3.org/hg/rdb2rdf-tests/raw-file/d53b6a1cc393/rdb2rdf-ts.zip > rdb2rdf-ts.zip && unzip -q rdb2rdf-ts.zip && rm rdb2rdf-ts.zip)
+
+t_DM: tests/rdb2rdf-tests tests/test_DM tests/DM-manifest.txt bin/dm-materialize
+	NLS_LANG=_.UTF8 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(BOOST_TARGET)lib tests/test_DM tests/DM-manifest.txt bin/dm-materialize $(DM_BASE_URI) $(SQL_DM_TESTS) $(TEST_ARGS)
 
 tests/test_WEBagents: tests/test_WEBagents.o $(LIB)
 	$(LINK) -o $@ $< -lboost_filesystem$(BOOST_SUFFIX) -lboost_thread$(BOOST_SUFFIX) $(LDFLAGS) $(TEST_LIB)
