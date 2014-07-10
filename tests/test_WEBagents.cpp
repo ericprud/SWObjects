@@ -177,12 +177,16 @@ BOOST_AUTO_TEST_CASE( a ) {
     const char* address = SERVER_ADDRESS;
     const char* port = SERVER_PORT;
     size_t num_threads = 1;
+    bool runServer =
+	boost::unit_test::framework::master_test_suite().argc > 1 && 
+	std::string("serve") == boost::unit_test::framework::master_test_suite().argv[1]
+	? true
+	: false;
     try	{
 	W3C_SW_WEBSERVER<ServerConfig> s;
 	ServerConfig config;
 	MyHandler h(".", s, true);
-	if (boost::unit_test::framework::master_test_suite().argc > 1 && 
-	    std::string("all") == boost::unit_test::framework::master_test_suite().argv[1])
+	if (runServer)
 	    s.serve(address, port, num_threads, h, config);
     }
     catch (std::exception& e)	{
