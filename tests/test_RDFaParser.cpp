@@ -15,7 +15,7 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
+#include "TurtleParser.hpp"
 #include "RDFaParser.hpp"
 
 #if HTTP_CLIENT != SWOb_DISABLED
@@ -39,7 +39,7 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,Process:
 using namespace w3c_sw;
 
 AtomFactory F;
-TurtleSDriver turtleParser("", &F);
+TurtleDriver turtleParser("", &F);
 RDFaParser GRDFaParser("", &F, &P);
 
 BOOST_AUTO_TEST_CASE( QName_eqiv ) {

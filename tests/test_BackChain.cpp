@@ -12,6 +12,7 @@
 #include "TurtleParser.hpp"
 #include "SPARQLParser.hpp"
 #include "BackwardChainingRdfDB.hpp"
+#include <boost/utility/empty_deleter.hpp>
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).

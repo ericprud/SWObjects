@@ -16,6 +16,7 @@
 #include "ResultSet.hpp"
 #include "ChainingMapper.hpp"
 #include "SQLizer.hpp"
+#include <boost/utility/empty_deleter.hpp>
 
 #ifndef MANUAL_TEST
   #include <boost/test/unit_test.hpp>

@@ -400,7 +400,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_query )
 	BOOST_ERROR ( s.what() );					       \
     }
 
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_query.rq -L text/raw > IMPORTED_sparql11_query.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_query.rq -L text/raw > IMPORTED_sparql11_query.hpp 
 #include "tests/IMPORTED_sparql11_query.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_query */)
 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_update )
 BOOST_AUTO_TEST_CASE( construct_filter ) {
     const char* test = NULL; // disable EARL report.
     // name: ADD 1
-    // manifest: data-sparql11/add/manifest.ttl
+    // manifest: sparql11-test-suite/add/manifest.ttl
     const char* defaultGraph_in = "sparql11/dates.ttl";
     LabeledGraph namedGraphs_in[] = {};
     const char* request = "sparql11/insert_filter.ru";
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE( construct_filter ) {
     UPDATE_TEST();
 } /* BOOST_AUTO_TEST_CASE( construct_filter ) */
 
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_update.rq -L text/raw > IMPORTED_sparql11_update.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_update.rq -L text/raw > IMPORTED_sparql11_update.hpp 
 #include "tests/IMPORTED_sparql11_update.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_update */)
 
@@ -465,15 +465,15 @@ BOOST_AUTO_TEST_SUITE( sparql11_results_csv_tsv )
 	BOOST_ERROR ( s.what() );					       \
     }
 
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_csv.rq -L text/raw > IMPORTED_sparql11_csv.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_csv.rq -L text/raw > IMPORTED_sparql11_csv.hpp 
 #include "tests/IMPORTED_sparql11_csv.hpp"
 
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_tsv.rq -L text/raw > IMPORTED_sparql11_tsv.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_tsv.rq -L text/raw > IMPORTED_sparql11_tsv.hpp 
 #include "tests/IMPORTED_sparql11_tsv.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_results_csv_tsv */)
 
 BOOST_AUTO_TEST_SUITE( sparql11_json )
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_json.rq -L text/raw > IMPORTED_sparql11_json.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_json.rq -L text/raw > IMPORTED_sparql11_json.hpp 
 #include "tests/IMPORTED_sparql11_json.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_json */)
 
@@ -546,7 +546,7 @@ struct FederationTest {
 
 
 BOOST_AUTO_TEST_SUITE( sparql11_federated_query )
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_federated_query.rq -L text/raw > IMPORTED_sparql11_federated_query.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_federated_query.rq -L text/raw > IMPORTED_sparql11_federated_query.hpp 
 #include "tests/IMPORTED_sparql11_federated_query.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_federated_query */)
 
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_syntax_positive )
     BOOST_CHECK(parsed);					\
     G_EARL.report(test, parsed);				\
 
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_syntax_positive.rq -L text/raw > IMPORTED_sparql11_syntax_positive.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_syntax_positive.rq -L text/raw > IMPORTED_sparql11_syntax_positive.hpp 
 #include "tests/IMPORTED_sparql11_syntax_positive.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_syntax_positive */)
 
@@ -600,7 +600,7 @@ BOOST_AUTO_TEST_SUITE( sparql11_syntax_negative )
     BOOST_CHECK(!parsed);					\
     G_EARL.report(test, !parsed);				\
 
-// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d data-sparql11/manifest-all.ttl IMPORTED_sparql11_syntax_negative.rq -L text/raw > IMPORTED_sparql11_syntax_negative.hpp 
+// update with: LD_LIBRARY_PATH=/usr/local/instantclient_11_2/:/home/eric/checkouts/libbooost.inst/lib/:../boost-log-1.46/stage/lib ../bin/sparql --get-graph-arguments true -d sparql11-test-suite/manifest-all.ttl IMPORTED_sparql11_syntax_negative.rq -L text/raw > IMPORTED_sparql11_syntax_negative.hpp 
 #include "tests/IMPORTED_sparql11_syntax_negative.hpp"
 BOOST_AUTO_TEST_SUITE_END(/* sparql11_syntax_negative */)
 

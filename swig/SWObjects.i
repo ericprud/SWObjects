@@ -183,7 +183,7 @@ struct ConnectSet : std::set<RuleTerm> {
 #include "RuleInverter.hpp"
 #include "QueryMapper.hpp"
 #include "ChainingMapper.hpp"
-#include "MapSetParser/MapSetParser.hpp"
+#include "MapSetParser.hpp"
 #include "interface/WEBagent_boostASIO.hpp"
 #include "interface/SAXparser_expat.hpp"
   //#include "ServiceOptimizer.hpp"
@@ -215,15 +215,15 @@ struct ConnectSet : std::set<RuleTerm> {
 %include "ChainingMapper.hpp"
  //%include "ServiceOptimizer.hpp"
 namespace w3c_sw {
-    class SPARQLfedScanner;
+    class SPARQLScanner;
     class MapSetScanner;
-    class TurtleSScanner;
-    class TrigSScanner;
+    class TurtleScanner;
+    class TrigScanner;
 }
-%include "SPARQLfedParser/SPARQLfedParser.hpp"
-%include "MapSetParser/MapSetParser.hpp"
-%include "TurtleSParser/TurtleSParser.hpp"
-%include "TrigSParser/TrigSParser.hpp"
+%include "SPARQLParser.hpp"
+%include "MapSetParser.hpp"
+%include "TurtleParser.hpp"
+%include "TrigParser.hpp"
 %include "interface/WEBagent.hpp"
 %include "interface/WEBagent_boostASIO.hpp"
 %include "interface/SAXparser.hpp"

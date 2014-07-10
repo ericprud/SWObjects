@@ -25,6 +25,43 @@
 #include "md5.h"
 #endif /* CRYPT_LIB */
 
+#ifdef _MSC_VER
+#define snprintf c99_snprintf
+float roundf(float x)
+{
+	return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f);
+}
+double round(double number)
+{
+    return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
+}
+
+inline int c99_vsnprintf(char* str, size_t size, const char* format, va_list ap)
+{
+    int count = -1;
+
+    if (size != 0)
+        count = _vsnprintf_s(str, size, _TRUNCATE, format, ap);
+    if (count == -1)
+        count = _vscprintf(format, ap);
+
+    return count;
+}
+
+inline int c99_snprintf(char* str, size_t size, const char* format, ...)
+{
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(str, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+
+#endif
+
 extern "C"
 {
 #ifdef WIN32
@@ -48,6 +85,7 @@ extern "C"
   #define SET_Variable_CONSTIT_NE(L, R) L != R
   #define SET_POS_CONSTIT_NE(L, R) L != R
 #endif /* !_MSC_VER */
+
 
 namespace w3c_sw {
 
@@ -137,7 +175,7 @@ HTURI::HTURI (std::string name) : DummyHTURI()
     }
 
     p = after_scheme;
-    if (name[p]=='/'){
+    if (p < name.size() && name[p]=='/'){
 	if (name[p+1]=='/') {
 	    host = name.substr(p+2, name.size());/* host has been specified 	*/
 	    hostP = true;
@@ -615,7 +653,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 #define EXTENCONST(lname) { URI("https://github.com/ericprud/SWObjects/wiki/Sparql-extensions#" #lname), NULL}
 
     /** URI constants, shared between all AtomFactories: */
-    const AtomFactory::URIstr AtomFactory::_URIConstants[] = {
+    const _URIstr_initializer AtomFactory::_URIConstants[] = {
 	// { "http://www.w3.org/2001/XMLSchema#integer", URI("http://www.w3.org/2001/XMLSchema#integer") }
 	XPATHCONST   (normalize_space),
 	EXTENCONST   (lastTail),
@@ -1314,12 +1352,19 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return atomFactory->applyCommonNumeric(args[0], &f);
 	    }
 
+
 	    const TTerm* FUNC_numeric_round (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		struct UnaryRounder : public AtomFactory::UnaryFunctor {
 		    UnaryRounder () : AtomFactory::UnaryFunctor(NULL, NULL, NULL, NULL) {  } // @@ get rid of these
 		    virtual int eval (int v) { return v; }
 		    virtual float eval (float v) { return ::roundf(v); }
-		    virtual double eval (double v) { return ::round(v); }
+		    virtual double eval (double v) { 
+#ifdef _MSC_VER
+				return ::round(v); 
+#else
+				return ::round(v); 
+#endif
+			}
 		};
 		UnaryRounder f;
 		return atomFactory->applyCommonNumeric(args[0], &f);
@@ -1432,7 +1477,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		std::string::iterator c = from.begin();
 		try {
 		    utf8::advance(c, start, from.end());
-		} catch (utf8::not_enough_room& e) {
+		} catch (utf8::not_enough_room&) {
 		    c = from.end();
 		}
 		from.erase(from.begin(), c);
@@ -1442,7 +1487,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		if (len > 0) {
 		    try {
 			utf8::advance(c, len, from.end());
-		    } catch (utf8::not_enough_room& e) {
+		    } catch (utf8::not_enough_room&) {
 			c = from.end();
 		    }
 		    from.erase(c, from.end());
@@ -1555,7 +1600,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return ss.str();
 	    }
 
-	    const TTerm* FUNC_md5 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_md5 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "MD5");
@@ -1563,21 +1608,21 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return atomFactory->getRDFLiteral(hashIntoHex(md, key->getLexicalValue()));
 	    }
 
-	    const TTerm* FUNC_sha1 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha1 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA1");
 		CryptoPP::SHA1 hash;
 		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
 	    }
-	    const TTerm* FUNC_sha256 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha256 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA256");
 		CryptoPP::SHA256 hash;
 		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
 	    }
-	    const TTerm* FUNC_sha512 (const URI* name, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+	    const TTerm* FUNC_sha512 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
 		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
 		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
 		    throw TypeError(args[2]->toString(), "SHA512");
@@ -2233,9 +2278,9 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     static std::string canonical (float f) { // decimal notation
 	std::stringstream canonical;
 	canonical << f;
-	// obselete: XSD 1.0 canonical notation for decimal required a '.'
-	// if (canonical.str().find_first_of(".") == std::string::npos)
-	//     canonical << ".0";
+	// XSD 1.0 canonical notation for decimal requires a '.'
+	if (canonical.str().find_first_of(".") == std::string::npos)
+	    canonical << ".0";
 	return canonical.str();
     }
 
@@ -2317,10 +2362,10 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     static std::string canonical (double d) {
 	std::stringstream canonical;
-	int ex = ::log10(d);
+	int ex = (int)::log10(d);
 	if (d < 1)
 	    --ex;
-	double logOf10 = ::log(10);
+	double logOf10 = ::log(10.0);
 	canonical << d/::exp(ex*logOf10);
 	if (canonical.str().find('.') == std::string::npos)
 	    canonical << ".0";
@@ -3433,6 +3478,34 @@ compared against
 	    return false;
 	return true; // !! only good for ... it != end()
     }
+    /* BGP index dumper
+    std::string dump (const TTerm* t) {
+	std::ostringstream os;
+	os << t->toString() << "(" << t << ")";
+	return os.str();
+    }
+    std::string dump (const BasicGraphPattern::TTerm2Triple_type& r) {
+	std::ostringstream os;
+	for (std::multimap<const TTerm*, const TriplePattern*>::const_iterator t2T = r.begin();
+	     t2T != r.end(); ++t2T)
+	    os << "----" << dump(t2T->first) << ": " << t2T->second->toString() << "\n";
+	return os.str();
+    }
+    std::string dump (const BasicGraphPattern::TTerm2Triple_range& r) {
+	std::ostringstream os;
+	for (BasicGraphPattern::TTerm2Triple_type::const_iterator t2t2T = r.first;
+	     t2t2T != r.second; ++t2t2T)
+	    os << t2t2T->first->toString() << ":\n" << t2t2T->second->toString() << "\n";
+	return os.str();
+    }
+    std::string dump (const BasicGraphPattern::TTerm2TTerm2Triple_type& r) {
+	std::ostringstream os;
+	for (std::map<const TTerm*, BasicGraphPattern::TTerm2Triple_type>::const_iterator t2t2T = r.begin();
+	     t2t2T != r.end(); ++t2t2T)
+	    os << dump(t2t2T->first) << ":\n" << dump(t2t2T->second);
+	return os.str();
+    }
+    */
     BasicGraphPattern::triple_iterator BasicGraphPattern::getTripleIterator (const TTerm* s, const TTerm* p, const TTerm* o) const {
 	if (s)
 	    if (p) {
@@ -4111,7 +4184,7 @@ compared against
     }
 
     void _invokeSADI (const char* service, const TableOperation* op, ResultSet* rs,
-		      AtomFactory* atomFactory, RdfDB* requestDB, RdfDB* responseDB) {
+		      AtomFactory* /* atomFactory */, RdfDB* requestDB, RdfDB* responseDB) {
 	MakeNewBNode makeNewBNode(rs->getAtomFactory()); // !! what about atomFactory argument?
 	op->construct(requestDB, rs, &makeNewBNode, requestDB->ensureGraph(DefaultGraph));
 	// w3c_sw_LINEN << "CONSTRUCTED: " << *requestDB << std::endl;
@@ -4667,7 +4740,11 @@ namespace w3c_sw {
 	    struct tm t;
 
 	    ::time(&rawtime);
-	    ::localtime_r(&rawtime, &t);
+		#ifdef _MSC_VER
+		  ::localtime_s(&t, &rawtime);
+		#else
+		  ::localtime_r(&rawtime, &t);
+		#endif
 	    char space[20];
 	    ::snprintf(space, 20, "%04d-%02d-%02dT%02d:%02d:%02dZ", 
 		       1900+t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);

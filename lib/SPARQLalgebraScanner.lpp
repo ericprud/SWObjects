@@ -4,7 +4,7 @@
 
 %{ /*** C/C++ Declarations ***/
 
-#include "SPARQLalgebraParser/SPARQLalgebraParser.hpp"
+#include "SPARQLalgebraParser.hpp"
 #include "SPARQLalgebraScanner.hpp"
 
 /* import the parser's token type into a local typedef */

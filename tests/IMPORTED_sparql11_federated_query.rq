@@ -8,13 +8,13 @@ PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
 
 # Construct test case code like:
 # BOOST_AUTO_TEST_CASE( service2 ) {
-#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/service/manifest#service2";
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite/service/manifest#service2";
 #     // name: SERVICE test 2
-#     // manifest: data-sparql11/service/manifest.ttl
+#     // manifest: sparql11-test-suite/service/manifest.ttl
 #     const char* defaultGraph_in = NULL;
-#     LabeledGraph services[] = {LG("data-sparql11/service/data02endpoint1.ttl", "http://example1.org/sparql"), LG("data-sparql11/service/data02endpoint2.ttl", "http://example2.org/sparql")};
-#     const char* request = "data-sparql11/service/service02.rq";
-#     const char* results = "data-sparql11/service/service02.srx";
+#     LabeledGraph services[] = {LG("sparql11-test-suite/service/data02endpoint1.ttl", "http://example1.org/sparql"), LG("sparql11-test-suite/service/data02endpoint2.ttl", "http://example2.org/sparql")};
+#     const char* request = "sparql11-test-suite/service/service02.rq";
+#     const char* results = "sparql11-test-suite/service/service02.srx";
 #     SERVICE_TEST();
 # } /* BOOST_AUTO_TEST_CASE( service2 ) */
 

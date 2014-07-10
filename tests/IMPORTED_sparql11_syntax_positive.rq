@@ -8,10 +8,10 @@ PREFIX fn: <http://www.w3.org/2005/xpath-functions#>
 
 # Construct test case code like:
 # BOOST_AUTO_TEST_CASE( query_test_1 ) {
-#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/syntax-query/manifest#test_1";
+#     const char* test = "http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite/syntax-query/manifest#test_1";
 #     // name: syntax-select-expr-01.rq
-#     // manifest: data-sparql11/syntax-query/manifest.ttl
-#     const char* request = "data-sparql11/syntax-query/syntax-select-expr-01.rq";
+#     // manifest: sparql11-test-suite/syntax-query/manifest.ttl
+#     const char* request = "sparql11-test-suite/syntax-query/syntax-select-expr-01.rq";
 #     POSITIVE_SYNTAX_TEST();
 # } /* BOOST_AUTO_TEST_CASE( query_test_1 ) */
 
@@ -39,6 +39,6 @@ SELECT
   FILTER (?type = mf:PositiveSyntaxTest11 || ?type = mf:PositiveUpdateSyntaxTest11)
 
   # Shorten test name
-  BIND (fn:replace(fn:replace(strafter(str(?entry), "data-sparql11/syntax-"), "/manifest#", "_"), "-", "_") AS ?id)
+  BIND (fn:replace(fn:replace(strafter(str(?entry), "sparql11-test-suite/syntax-"), "/manifest#", "_"), "-", "_") AS ?id)
   #  FILTER (?id = "query_test_1") # limit to one for fiddling
 }

@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#include <stdint.h>
+#endif
+
 #line 2 "lib/JSONresultsScanner.cpp"
 
 #line 4 "lib/JSONresultsScanner.cpp"
@@ -755,7 +759,7 @@ static yyconst flex_int16_t yy_rule_linenum[42] =
 /** Flex scanner for SPARQL + SPARUL */
 #line 6 "lib/JSONresultsScanner.lpp"
 
-#include "JSONresultsParser/JSONresultsParser.hpp"
+#include "JSONresultsParser.hpp"
 #include "JSONresultsScanner.hpp"
 
 /* import the parser's token type into a local typedef */
@@ -1508,7 +1512,7 @@ int yyFlexLexer::LexerInput( char* buf, int max_size )
 	if ( yyin->bad() )
 		return -1;
 	else
-		return yyin->gcount();
+		return (int)yyin->gcount();
 #endif
 }
 
@@ -1988,7 +1992,9 @@ int yyFlexLexer::yy_get_next_buffer()
 
 /* %if-c++-only */
 
+#ifndef _MSC_VER
 extern "C" int isatty (int ) throw();
+#endif
 
 /* %endif */
 

@@ -1,7 +1,7 @@
 /* test_LDP.hpp -- 
  *
  * Test the LDP server built in to ../bin/sparql and LDP interactions built
- * into the SPARQLfed language.
+ * into the SPARQL language.
  *
  * $Id: test_Ldp.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
@@ -16,8 +16,8 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #define NEEDDEF_W3C_SW_WEBAGENT
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "TrigSParser/TrigSParser.hpp"
+#include "SPARQLParser.hpp"
+#include "TrigParser.hpp"
 #include "ServerInteraction.hpp"
 #include "../tests/SPARQLTest.hpp"
 
@@ -76,7 +76,7 @@ struct EvaluatedPOSTresponseResultSet : public w3c_sw::ResultSet {
 
 	{
 	    w3c_sw::IStreamContext istr(query, w3c_sw::IStreamContext::STRING);
-	    w3c_sw::SPARQLfedDriver sparqlParser("", &F);
+	    w3c_sw::SPARQLDriver sparqlParser("", &F);
 	    w3c_sw::Operation* op = sparqlParser.parse(istr);
 	    sparqlParser.clear(""); // clear out namespaces and base URI.
 	    op->execute(&d, this);
@@ -103,7 +103,7 @@ std::ostream& operator<< (std::ostream& os, const EvaluatedPOSTresponseResultSet
 struct RdfDBFromTrig : public w3c_sw::RdfDB {
     RdfDBFromTrig (std::string trig) {
 	w3c_sw::IStreamContext istr(trig, w3c_sw::IStreamContext::STRING);
-	w3c_sw::TrigSDriver trigParser("", &F);
+	w3c_sw::TrigDriver trigParser("", &F);
 	trigParser.parse(istr, this);
     }
 };

@@ -4,8 +4,8 @@
 
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
-#include "TrigSParser/TrigSParser.hpp"
+#include "TurtleParser.hpp"
+#include "TrigParser.hpp"
 #include "RdfXmlParser.hpp"
 #include <boost/iostreams/stream.hpp>
 
@@ -111,7 +111,7 @@ namespace w3c_sw {
 	    } else if (istr.mediaType.match("text/plain") ||
 		       istr.mediaType.match("text/turtle") || 
 		       istr.mediaType.match("text/ntriples")) {
-		TurtleSDriver parser(nameStr, atomFactory);
+		TurtleDriver parser(nameStr, atomFactory);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
@@ -119,7 +119,7 @@ namespace w3c_sw {
 		parser.parse(istr, target);
 		return false;
 	    } else {
-		TrigSDriver parser(nameStr, atomFactory);
+		TrigDriver parser(nameStr, atomFactory);
 		if (baseURI != "")
 		    parser.setBase(baseURI);
 		if (nsMap != NULL)
@@ -146,6 +146,113 @@ namespace w3c_sw {
 
     DefaultGraphClass defaultGraphInst;
     TTerm* DefaultGraph = &defaultGraphInst;
+
+    bool RdfDB::onto (const RdfDB& ref) const {
+	AtomFactory temp;
+	ResultSet rs(&temp);
+	bindVariables(&rs, &ref); // signal that we have to iterate over graphs with a NULL.
+	// std::cerr << "rs: \n" << rs;
+	// make sure there is at least one solution which is 1:1 for mappables.
+	for (ResultSetIterator row = rs.begin(); row != rs.end(); ++row) {
+	    std::set<const TTerm*> seen;
+	    // std::cerr << "checking " << **row << "\n";
+	    bool onto = true;
+	    for (BindingSetConstIterator b = (*row)->begin(); b != (*row)->end(); ++b) {
+		// std::cerr << "have we seen " << b->second.tterm->toString() << "?\n";
+		if (seen.find(b->second.tterm) != seen.end()) {
+		    // std::cerr << b->second.tterm->toString() << " already seen\n";
+		    onto = false;
+		    break;
+		    // return false; // break and see if next row is 1:1?
+		}
+		seen.insert(b->second.tterm);
+	    }
+	    if (onto)
+		return true;
+	}
+	return false;
+    }
+
+    //void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const
+    void RdfDB::bindVariables (ResultSet* rs, const RdfDB* ref) const {
+	JoinCache jc;
+	for (graphmap_type::const_iterator refIterator = ref->graphs.begin(); refIterator != ref->graphs.end(); refIterator++) {
+	    const TTerm* graph = refIterator->first;
+	    const BasicGraphPattern* toMatch = refIterator->second;
+
+	/* Look in each candidate graph. */
+	if (graph->isConstant()) {
+	    const BasicGraphPattern* found = findGraph(graph);
+	    if (found != NULL)
+		found->bindVariables(rs, toMatch, graph, graph);
+	} else {
+
+	    /* Variable graph name so we have to look in row to see whether the graph variable is bound.
+	     * Fortunately, the JoinCache keeps us from executing identical matches on duplicate rows.
+	     */
+	    for (ResultSetIterator outerRow = rs->begin() ; outerRow != rs->end(); ) {
+		ResultSet* nested = jc.find(*outerRow);
+		if (nested == NULL) {
+
+		    /* *outerRow doesn't show up in the cache.
+		     */
+		    nested = (*outerRow)->makeResultSet(rs->getAtomFactory());
+		    jc.add(*outerRow, nested);
+		    const TTerm* graphName = (*outerRow)->get(graph);
+		    if (graphName != NULL) {
+
+			/* This result has a binding to the graph name we're matching against.
+			 */
+			BasicGraphPattern* found = findGraph(graphName);
+			if (found == NULL && GetGraphArguments == true) {
+			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Loading graph " << graphName->toString() << std::endl;
+			    IStreamContext istr(graphName->getLexicalValue(), IStreamContext::FILE, NULL, NULL); // @@ no web
+			    found = const_cast<RdfDB*>(this)->ensureGraph(graphName); // !! const cheat
+			    const_cast<RdfDB*>(this)->loadData(found, istr, graphName->getLexicalValue(), 
+							       graphName->getLexicalValue(), rs->getAtomFactory());
+			}
+			if (found != NULL)
+			    found->bindVariables(nested, toMatch, graphName, graphName);
+		    } else {
+
+			/* The graph name is still unbound so we have to iterate across all graphs.
+			 * The lack of SPOG index means we have to try this Multi-graph match algorithm:
+			 * for each graph
+			 *     BasicGraphPattern::bindVariables(... ?graph, foundGraph)
+			 *         for each rs row...all graphs.
+			 */
+			ResultSet island(rs->getAtomFactory());
+			delete *(island.begin());
+			island.erase(island.begin());
+			for (graphmap_type::const_iterator vi = graphs.begin(); vi != graphs.end(); vi++)
+			    if (!isDefaultGraph(vi->first)) {
+				ResultSet disjoint(rs->getAtomFactory());
+				vi->second->bindVariables(&disjoint, toMatch, graph, vi->first);
+				for (ResultSetIterator row = disjoint.begin() ; row != disjoint.end(); ) {
+				    island.insert(island.end(), (*row)->duplicate(&island, island.end()));
+				    delete *row;
+				    row = disjoint.erase(row);
+				}
+			    }
+			nested->joinIn(&island);
+		    }
+		}
+
+		/* Copy the nested results into rs and clean up.
+		 */
+		const VariableList* innerVars = nested->getKnownVars();
+		for (VariableList::const_iterator v = innerVars->begin(); v != innerVars->end(); ++v)
+		    rs->addKnownVar(*v);
+		for (ResultSetIterator innerRow = nested->begin();
+		     innerRow != nested->end(); ++innerRow)
+		    rs->insert(outerRow, (*innerRow)->duplicate(rs, outerRow));
+		delete *outerRow;
+		outerRow = rs->erase(outerRow);
+	    }
+	}
+	}
+    }
+
 
     void RdfDB::bindVariables (ResultSet* rs, const TTerm* graph, const BasicGraphPattern* toMatch) const {
 	if (graph == NULL) graph = DefaultGraph;

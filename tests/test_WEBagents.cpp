@@ -50,7 +50,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 	    // Decode url to path.
 	    std::string request_path(req.getPath());
 
-	    std::map<std::string, std::string>::const_iterator force = req.parms.find("force");
+	    std::multimap<std::string, std::string>::const_iterator force = req.parms.find("force");
 	    if (force != req.parms.end()) {
 		std::stringstream s;
 		if (force->second == "all") {
@@ -65,7 +65,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 		}
 
 		if (force->second == "parms" || force->second == "all")
-		    for (std::map<std::string, std::string>::const_iterator it = req.parms.begin(); 
+		    for (std::multimap<std::string, std::string>::const_iterator it = req.parms.begin(); 
 			 it != req.parms.end(); ++it)
 			s << it->first << ": " << it->second << "\n";
 		else
@@ -112,7 +112,13 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 		for ( boost::filesystem::directory_iterator itr( doc_root_ + request_path );
 		      itr != end_itr;
 		      ++itr ) {
+#ifdef _MSC_VER
+		    std::string name;
+		    std::wstring wname = itr->path().filename().native();
+		    ::utf8::utf16to8(wname.begin(), wname.end(), std::back_inserter(name));
+#else
 		    std::string name = itr->path().filename().native();
+#endif
 		    if (boost::filesystem::is_directory(itr->status()))
 			name += "/";
 		    s << "      <li><a href=\"" << name << "\">" << name << "</a></li>\n";
@@ -152,7 +158,7 @@ class MyHandler : public w3c_sw::webserver::request_handler {
 	    rep.status = w3c_sw::webserver::reply::ok;
 	    char buf[512];
 	    while (is.read(buf, sizeof(buf)).gcount() > 0)
-		rep.content.append(buf, is.gcount());
+		rep.content.append(buf, (_w3c_sw_STREAMSIZE)is.gcount());
 	    rep.headers.resize(2);
 	    rep.headers[0].name = "Content-Length";
 	    rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());

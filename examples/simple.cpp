@@ -3,8 +3,8 @@
  */
 
 #include "SWObjects.hpp"
-#include "SPARQLfedParser/SPARQLfedParser.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
+#include "SPARQLParser.hpp"
+#include "TurtleParser.hpp"
 #include "RdfDB.hpp"
 #include "ResultSet.hpp"
 
@@ -16,8 +16,8 @@ int main () {
 
     POSFactory f;
     RdfDB db;
-    SPARQLfedDriver sparqlParser(BASE_URI, &f);
-    TurtleSDriver turtleParser(BASE_URI, &f);
+    SPARQLDriver sparqlParser(BASE_URI, &f);
+    TurtleDriver turtleParser(BASE_URI, &f);
     ResultSet rs(&f);
 
     IStreamContext q("select*{?s?p?o}", IStreamContext::STRING);

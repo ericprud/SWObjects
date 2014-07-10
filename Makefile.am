@@ -3,7 +3,7 @@
 
 # recipies:
 #   normal build:
-#     make SPARQLfed
+#     make SPARQL
 #   force the use of the tracing facilities (and redirect to stdout):
 #     make -W tests/test_HealthCare1.cpp test
 #   have valgrind start a debugger (works as M-x gdb invocation command):
@@ -29,8 +29,8 @@ lib: dep $(LIB)
 
 lib/%.dep: lib/%.cpp config.h
 	($(ECHO) -n $@ lib/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
-lib/SPARQLfedParser/%.dep: lib/SPARQLfedParser/%.cpp config.h
-	($(ECHO) -n $@ lib/SPARQLfedParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
+lib/SPARQLParser/%.dep: lib/SPARQLParser/%.cpp config.h
+	($(ECHO) -n $@ lib/SPARQLParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/MapSetParser/%.dep: lib/MapSetParser/%.cpp config.h
 	($(ECHO) -n $@ lib/MapSetParser/; $(CXX) $(DEFS) $(INCLUDES) -MM $<) > $@ || (rm $@; false)
 lib/TurtleSParser/%.dep: lib/TurtleSParser/%.cpp config.h
@@ -238,7 +238,7 @@ SWIG ?= swig
 #      arg3 = *temp => va_copy(arg3, *temp)
 SWIG_SUBST = perl -0777 -pi -e 's{const const}{const}g; s{(va_list\s*\*[^\r\n]+\r?\n\s*)(arg\d) = (\*temp)}{$${1}va_copy($$2, $$3)}g'
 
-SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLfedParser/SPARQLfedParser.o lib/SPARQLfedScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
+SWIG_OBJS = lib/exs.o lib/RdfQueryDB.o lib/ParserCommon.o lib/TurtleSParser/TurtleSParser.o lib/TurtleSScanner.o lib/TrigSParser/TrigSParser.o lib/TrigSScanner.o lib/SPARQLParser/SPARQLParser.o lib/SPARQLScanner.o lib/MapSetParser/MapSetParser.o lib/MapSetScanner.o
 SWIG_HPP = lib/SWObjects.hpp lib/SWObjects.cpp lib/SWObjects.hpp interface/SAXparser.hpp lib/XMLSerializer.hpp lib/ResultSet.hpp lib/ResultSet.cpp lib/RdfDB.hpp lib/SWObjects.cpp lib/SPARQLSerializer.hpp interface/WEBagent_boostASIO.hpp
 SWIG_LIBS =  $(REGEX_LIB) $(HTTP_CLIENT_LIB) $(XML_PARSER_LIB) $(SQL_CLIENT_LIB)
 

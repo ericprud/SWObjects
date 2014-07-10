@@ -247,74 +247,74 @@ BOOST_AUTO_TEST_CASE( no_objects ) { ERROR_RECOVERY_TEST
 	("<s> <p> .\n"
 	 "<s2> <p2> . ",
 	 "<s> <p> .\n"
-	 "<s2> <p2> . :1.8: syntax error, unexpected '.'\n"
+	 "<s2> <p2> . :1.9: syntax error, unexpected '.'\n"
 	 "-- \n"
 	 "<s> <p> .\n"
-	 "<s2> <p2> . :2.10: syntax error, unexpected '.'",
+	 "<s2> <p2> . :2.11: syntax error, unexpected '.'",
 	 NULL, // no expected triples
 	 0, 2);
 }
 BOOST_AUTO_TEST_CASE( extra_spo_objects ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. ",
-	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
-	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.33-39: syntax error, unexpected 'string', expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> 'o2' 'o2bis'. :1.34-40: syntax error, unexpected 'string', expecting '.' or ';' or ']'",
 	 "<s> <p> <o>      .<s2> <p2> 'o2'        . ", 0, 2);
 }
 BOOST_AUTO_TEST_CASE( _1_of_3_errors ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> <o>      .                                            ", 1, 1);
 }
 BOOST_AUTO_TEST_CASE( _2_of_3_errors ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.28-38: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.29-39: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> <o>      .<s2> <p2> <o2>       .                      ", 2, 2);
 }
 BOOST_AUTO_TEST_CASE( _3_of_3_errors ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.28-38: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.50-60: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.29-39: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.51-61: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> <o>      .<s2> <p2> <o2>       .<s3> <p3> <o3>       .", 3, 3);
 }
 BOOST_AUTO_TEST_CASE( _all_of_3_errors ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.",
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.28-38: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
-	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.50-60: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.29-39: syntax error, unexpected IRI, expecting '.' or ';' or ']'\n"
+	 "<s> <p> <o><obis>.<s2> <p2> <o2><o2bis>.<s3> <p3> <o3><o3bis>.:1.51-61: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> <o>      .<s2> <p2> <o2>       .<s3> <p3> <o3>       .", 0, 3);
 }
 BOOST_AUTO_TEST_CASE( extra_po_objects_before_comma ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>, <o2>. ",
-	 "<s> <p> <o><obis>, <o2>. :1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>, <o2>. :1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> <o>, <o2>. ", 0, 1);
 }
 BOOST_AUTO_TEST_CASE( extra_po_objects_before_semi ) { ERROR_RECOVERY_TEST
 	("<s> <p> <o><obis>; <p2> <o2>. ",
-	 "<s> <p> <o><obis>; <p2> <o2>. :1.8-16: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> <o><obis>; <p2> <o2>. :1.9-17: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> <o>; <p2> <o2>. ", 0, 1);
 }
 BOOST_AUTO_TEST_CASE( extra_po_objects ) { ERROR_RECOVERY_TEST
 	("<s> <p> [ <p2> <o2><o2bis> ]. ",
-	 "<s> <p> [ <p2> <o2><o2bis> ]. :1.15-25: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> [ <p2> <o2><o2bis> ]. :1.16-26: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> [ <p2> <o2>        ]. ", 0, 1);
 }
 BOOST_AUTO_TEST_CASE( extra_po_objects_plus ) { ERROR_RECOVERY_TEST
 	("<s> <p> [ <p2> <o2><o2bis> ; <p3> <o3> ]. ",
-	 "<s> <p> [ <p2> <o2><o2bis> ; <p3> <o3> ]. :1.15-25: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
+	 "<s> <p> [ <p2> <o2><o2bis> ; <p3> <o3> ]. :1.16-26: syntax error, unexpected IRI, expecting '.' or ';' or ']'",
 	 "<s> <p> [ <p2> <o2>        ; <p3> <o3> ]. ", 0, 1);
 }
 BOOST_AUTO_TEST_CASE( unterminated_url ) { ERROR_RECOVERY_TEST
 	("<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .",
-	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.10-12: Malformed single-quoted simple literal \"'o1\"\n"
-	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.41-43: Malformed IRI \"<o3\"",
+	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.11-13: Malformed single-quoted simple literal \"'o1\"\n"
+	 "<s1> <p1> 'o1 . <s2> <p2> <o2>.<s3> <p3> <o3 .:1.42-44: Malformed IRI \"<o3\"",
 	 "<s1> <p1> 'o1'. <s2> <p2> <o2>.<s3> <p3> <o3>.", 0, 2);
 }
 BOOST_AUTO_TEST_CASE( commas_and_semis ) { ERROR_RECOVERY_TEST
 	("<s1> <p1> 'o1a', 'o1b ; <o2>.",
-	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.17-20: Malformed single-quoted simple literal \"'o1b\"\n"
-	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.24-28: syntax error, unexpected '.'", // @@ improving the error grammar should eliminate this.
+	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.18-21: Malformed single-quoted simple literal \"'o1b\"\n"
+	 "<s1> <p1> 'o1a', 'o1b ; <o2>.:1.25-29: syntax error, unexpected '.'", // @@ improving the error grammar should eliminate this.
 	 "<s1> <p1> 'o1a', 'o1b';     .", 0, 2);
 }
 BOOST_AUTO_TEST_CASE( undefined_prefixes ) { ERROR_RECOVERY_TEST
@@ -324,11 +324,11 @@ BOOST_AUTO_TEST_CASE( undefined_prefixes ) { ERROR_RECOVERY_TEST
 
 	 "PREFIX x: <x#>\n"
 	 "x:s1 x:p1 x:o1 .\n"
-	 "y:s2 y:p2 :o2 .:2.15-3.3: Unknown prefix: \"y\" (2 more times)\n"
+	 "y:s2 y:p2 :o2 .:2.16-3.4: Unknown prefix: \"y\" (2 more times)\n"
 	 "-- \n"
 	 "PREFIX x: <x#>\n"
 	 "x:s1 x:p1 x:o1 .\n"
-	 "y:s2 y:p2 :o2 .:3.10-12: Unknown prefix: \"\"",
+	 "y:s2 y:p2 :o2 .:3.11-13: Unknown prefix: \"\"",
 
 	 "PREFIX x: <x#>\n"
 	 "PREFIX y: <unknownPrefix:0#>\n"

@@ -7,6 +7,7 @@
 // g++ -o test_logging test_logging.cpp -DBOOST_TEST_DYN_LINK -I. -Iboost-log -g -O0 -W -Wextra -Wnon-virtual-dtor -ansi -std=c++98 -Lboost-log/stage/lib -lboost_log -lboost_date_time -lboost_filesystem -lboost_system -lboost_thread -lpthread -lboost_unit_test_framework-mt && LD_LIBRARY_PATH=boost-log/stage/lib ./test_logging
 
 #include "SWObjects.hpp"
+#include <boost/utility/empty_deleter.hpp>
 
 #define BOOST_TEST_MODULE logging
 #include <boost/test/unit_test.hpp>

@@ -672,7 +672,7 @@ BOOST_AUTO_TEST_CASE( D_post_STOP ) {
 }
 
 
-#include "TrigSParser/TrigSParser.hpp"
+#include "TrigParser.hpp"
 
 struct ServerGraphQuery : w3c_sw::SPARQLClientServerInteraction {
     w3c_sw::RdfDB expected, got;
@@ -685,14 +685,14 @@ struct ServerGraphQuery : w3c_sw::SPARQLClientServerInteraction {
 	{
 	    std::stringstream tss(clientS);
 	    w3c_sw::IStreamContext tstream ("got:", tss, "text/trig");
-	    w3c_sw::TrigSDriver parser("", &F);
+	    w3c_sw::TrigDriver parser("", &F);
 	    parser.parse(tstream, &got, NULL);
 	}
 
 	{
 	    std::stringstream ess (expectedStr);
 	    w3c_sw::IStreamContext estream ("expected:", ess, "text/trig");
-	    w3c_sw::TrigSDriver parser(serverURL, &F);
+	    w3c_sw::TrigDriver parser(serverURL, &F);
 	    parser.parse(estream, &expected, NULL);
 	}
     }
@@ -763,14 +763,14 @@ struct Agent {
     {
 	std::stringstream tss(clientS);
 	w3c_sw::IStreamContext tstream ("got:", tss, "text/trig");
-	w3c_sw::TrigSDriver parser("", &F);
+	w3c_sw::TrigDriver parser("", &F);
 	parser.parse(tstream, &got, NULL);
     }
 
     {
 	std::stringstream ess(Dtrig);
 	w3c_sw::IStreamContext estream ("expected:", ess, "text/trig");
-	w3c_sw::TrigSDriver parser(serverURL, &F);
+	w3c_sw::TrigDriver parser(serverURL, &F);
 	parser.parse(estream, &expected, NULL);
     }
 #endif /* THREADING != SWOb_DISABLED */

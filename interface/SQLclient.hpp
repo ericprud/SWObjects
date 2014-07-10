@@ -208,10 +208,10 @@ namespace w3c_sw {
 			    } else {
 				// canonical << std::scientific << val; yields e.g. 1.230000E04
 				std::stringstream canonical;
-				int ex = log10(val);
+				int ex = (int)log10(val);
 				if (val < 1)
 				    --ex;
-				canonical << val/exp(ex*log(10)/log10(10));
+				canonical << val/exp(ex*log(10.0)/log10(10.0));
 				if (canonical.str().find('.') == std::string::npos)
 				    canonical << ".0";
 				canonical << "E" << ex;

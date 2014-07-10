@@ -9,11 +9,11 @@
 #define NEEDDEF_W3C_SW_SAXPARSER
 #include "SWObjects.hpp"
 #include "ResultSet.hpp"
-#include "TurtleSParser/TurtleSParser.hpp"
+#include "TurtleParser.hpp"
 /* We don't define NEEDDEF_W3C_SW_SQLCLIENT because we link to multiple
  * SQL clients. */
 #include "interface/SQLclient.hpp"
-#include "SQLParser/SQLParser.hpp"
+#include "SQLParser.hpp"
 
 #undef BOOST_ALL_DYN_LINK // Can't use dynamic linking with init_unit_test_suite()
 #include <boost/test/included/unit_test.hpp>
@@ -26,7 +26,7 @@ w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. "--log *:-1,IO,GraphMat
 
 #define BASE_URI ""
 w3c_sw::AtomFactory F;
-w3c_sw::TurtleSDriver TurtleParser(BASE_URI, &F);
+w3c_sw::TurtleDriver TurtleParser(BASE_URI, &F);
 
 /* SQL */
 w3c_sw::sqlContext sqlParserContext;
@@ -203,10 +203,10 @@ void expectGraph () {
 	if (!(h.expect == h.test)) {
 	    {
 		std::stringstream ss;
-		ss << "[[" << h.expect << " != " << h.test << "]]\n";
+		ss << "[[" << h.expect << " ?= " << h.test << "]]\n";
 		doing = ss.str();
 	    }
-	    errorStr << "[[" << h.expect << " != " << h.test << "]]";
+	    errorStr << "expect != test [[" << h.expect << " != " << h.test << "]]";
 	}
 	doing = "tearing down";
     } catch (w3c_sw::ParserException& p) {
