@@ -41,8 +41,11 @@
 #include "boost/random/variate_generator.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/barrier.hpp"
-#include "boost/utility/empty_deleter.hpp"
-
+#if BOOST_VERSION == 105400
+# include "boost/log/utility/empty_deleter.hpp"
+#else /* BOOST_VERSION != 105400 */
+# include "boost/utility/empty_deleter.hpp"
+#endif /* BOOST_VERSION != 105400 */
 
 namespace w3c_sw {
 
@@ -408,7 +411,11 @@ namespace w3c_sw {
 	    boost::shared_ptr< Logger::Sink_t > LogSink;
 	    LogSink = Logger::prepare();
 	    Logger::addStream(LogSink, boost::shared_ptr< std::ostream >
+#if BOOST_VERSION == 105400
+			      (os, boost::log::empty_deleter()));
+#else /* BOOST_VERSION != 105400 */
 			      (os, boost::empty_deleter()));
+#endif /* BOOST_VERSION != 105400 */
 
 	    for (int c = 0; c < argc - 1; ++c)
 		if (!strcmp(argv[c], flag)) {
