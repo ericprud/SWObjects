@@ -1191,8 +1191,8 @@ int main(int ac, char* av[])
         if (vm.count("version"))
             std::cout <<
 		"sparql version 1.0 .\n"
-		"Revision " SVN_Revision " modified " SVN_Last_Changed_Date " by " SVN_Last_Changed_Author ".\n"
-		SVN_URL "\n";
+		"Revision " GIT_Revision " modified " GIT_Last_Changed_Date " by " GIT_Last_Changed_Author ".\n"
+		GIT_URL "\n";
 	else {
 	    if (TheServer.engine.noExec == false) {
 		if (vm.count("description")) {

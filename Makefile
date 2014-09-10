@@ -310,7 +310,7 @@ lib/%.cpp : lib/%.lpp
 
 # Status files
 docs/version.h:
-	((svn info 2>/dev/null) || (git --no-pager log --max-count=1 | perl -ne 'print "URL: $$1\nRevision: $$2\nLast Changed Date: $$1\n" if (m/^ +git-svn-id: (.*?)@(\d+) (.*)$$/); print "Last Changed Author: $$1\n" if (m/^Author: ([^ ]+) </);')) | perl -ne 'if (m/([^:]+): (.*)/) { my ($$attr, $$val) = ($$1, $$2); $$attr =~ s/ /_/g; print "#define SVN_$$attr \"$$val\"\n" }' > $@
+	(echo '#define GIT_URL "'$$(grep 'url = ' .git/config | cut -b 8-)'"' && echo '#define GIT_Revision "'$$(git log | grep commit | wc -l)'"' && echo '#define GIT_Last_Changed_Author "'$$(git log -n 1 | grep Author: | cut -b 9-)'"' && echo '#define GIT_Last_Changed_Date "'$$(git log -n 1 --date=iso | grep Date: | cut -b 9-)'"') > $@
 	cp $@ win/
 
 win/version.h: docs/version.h
