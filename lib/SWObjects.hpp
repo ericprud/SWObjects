@@ -230,11 +230,11 @@ public:
     OptString (std::string p_emptyString = "")
 	: m_initialized(false), m_emptyString(p_emptyString) {  }
     OptString (const char* p_str, std::string p_emptyString = "")
-	: m_initialized(false), m_emptyString(p_emptyString) {
+	: m_initialized(true), m_emptyString(p_emptyString) {
 	assign(p_str);
     }
     OptString (std::string p_str, std::string p_emptyString = "")
-	: m_initialized(false), m_str(p_str), m_emptyString(p_emptyString)
+	: m_initialized(true), m_str(p_str), m_emptyString(p_emptyString)
     {  }
     void operator= (const char* p_str) {
 	assign(p_str);
