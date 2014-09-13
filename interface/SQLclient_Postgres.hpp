@@ -15,7 +15,11 @@
 #endif /* NEEDDEF_W3C_SW_SQLCLIENT */
 
 #include <stdexcept>
-#include <postgresql/libpq-fe.h>
+#ifdef _MSC_VER
+# include <pgsql/include/libpq-fe.h>
+#else
+# include <postgresql/libpq-fe.h>
+#endif
 
 namespace w3c_sw {
 

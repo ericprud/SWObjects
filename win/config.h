@@ -23,6 +23,9 @@
  #define HTTP_CLIENT SWOb_ASIO 
  #define HTTP_SERVER SWOb_ASIO 
  #define SQL_CLIENT SWOb_MYSQL 
+ #define SQL_CLIENT_MYSQL 
+ #define SQL_CLIENT_POSTGRES 
+ #define SQL_CLIENT_MSSQL 
 
 #ifdef _DEBUG
   /* Debug builds can use the dynamic libs as you probably installed them
