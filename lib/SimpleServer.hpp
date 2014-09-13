@@ -6,13 +6,15 @@
 #ifndef INCLUDED_lib_SimpleServer_hpp
  #define INCLUDED_lib_SimpleServer_hpp
 
-#if HTTP_SERVER == SWOb_ASIO
+#ifdef INOTIFY_LIB
+#ifndef _MSC_VER
 #include <sys/inotify.h>
 #include <sys/epoll.h>
 
 #define EVENT_SIZE  (sizeof (struct inotify_event))
 #define BUF_LEN        (1024 * (EVENT_SIZE + 16))
-#endif /* HTTP_SERVER == SWOb_ASIO */
+#endif
+#endif /* INOTIFY_LIB */
 
 namespace w3c_sw {
 
@@ -1150,7 +1152,7 @@ struct SimpleEngine {
 
     };
 
-#if HTTP_SERVER == SWOb_ASIO
+#ifdef INOTIFY_LIB
 
     struct InotifySet {
 	struct InotifyInstance {
@@ -1321,7 +1323,7 @@ struct SimpleEngine {
 
 	boost::thread m_Thread;
     };
-#endif /* HTTP_SERVER == SWOb_ASIO */
+#endif /* INOTIFY_LIB */
 
     AtomFactory atomFactory;
     NamespaceAccumulator nsAccumulator;
@@ -1348,8 +1350,10 @@ struct SimpleEngine {
     SQLConnectInfo sqlConnectInfo;
 #if HTTP_SERVER == SWOb_ASIO
     boost::mutex executeMutex;
-    InotifySet inotifySet;
 #endif /* HTTP_SERVER == SWOb_ASIO */
+#ifdef INOTIFY_LIB
+    InotifySet inotifySet;
+#endif /* INOTIFY_LIB */
     GRDDLmap grddlMap;
 #if HTTP_CLIENT != SWOb_DISABLED
     console_auth_prompter webClient_authPrompter;
@@ -1382,9 +1386,9 @@ struct SimpleEngine {
 	  sparqlParser("", &atomFactory), turtleParser("", &atomFactory), 
 	  pkAttribute(pkAttribute), mapSetParser("", &atomFactory), 
 	  queryMapper(&atomFactory),
-#if HTTP_SERVER == SWOb_ASIO
+#ifdef INOTIFY_LIB
 	  inotifySet(*this),
-#endif /* HTTP_SERVER == SWOb_ASIO */
+#endif /* INOTIFY_LIB */
 #if HTTP_CLIENT != SWOb_DISABLED
 	  webClient_authPrompter(),
 	  webClient(&webClient_authPrompter),
