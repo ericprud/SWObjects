@@ -1,56 +1,57 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+// A Bison parser, made by GNU Bison 3.0.2.
 
-/* Skeleton implementation for Bison LALR(1) parsers in C++
-   
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+// Skeleton implementation for Bison LALR(1) parsers in C++
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
-   
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
+// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// As a special exception, you may create a larger work that contains
+// part or all of the Bison parser skeleton and distribute that work
+// under terms of your choice, so long as that work isn't itself a
+// parser generator using the skeleton or a modified version thereof
+// as a parser skeleton.  Alternatively, if you modify or redistribute
+// the parser skeleton itself, you may (at your option) remove this
+// special exception, which will cause the skeleton and the resulting
+// Bison output files to be licensed under the GNU General Public
+// License without this special exception.
+
+// This special exception was added by the Free Software Foundation in
+// version 2.2 of Bison.
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
-/* First part of user declarations.  */
+// First part of user declarations.
 
+#line 39 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:399
 
-/* Line 293 of lalr1.cc  */
-#line 41 "lib/SPARQLalgebraParser.cpp"
-
+# ifndef YY_NULLPTR
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULLPTR nullptr
+#  else
+#   define YY_NULLPTR 0
+#  endif
+# endif
 
 #include "SPARQLalgebraParser.hpp"
 
-/* User implementation prologue.  */
-
-/* Line 299 of lalr1.cc  */
-#line 260 "lib/SPARQLalgebraParser.ypp"
+// User implementation prologue.
+#line 260 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:407
 
 #include "SPARQLalgebraScanner.hpp"
-
-/* Line 299 of lalr1.cc  */
-#line 318 "lib/SPARQLalgebraParser.ypp"
+#line 318 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:407
 
 #include <stdarg.h>
 #include "SPARQLalgebraScanner.hpp"
@@ -61,14 +62,13 @@
 #undef yylex
 #define yylex driver.lexer->lex
 
+#line 66 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:407
 
-/* Line 299 of lalr1.cc  */
-#line 67 "lib/SPARQLalgebraParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
-#   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
+#   include <libintl.h> // FIXME: INFRINGES ON USER NAME SPACE.
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
 #  endif
 # endif
@@ -77,79 +77,78 @@
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
 /* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
    If N is 0, then set CURRENT to the empty location which ends
    the previous symbol: RHS[0] (always defined).  */
 
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
- do                                                                    \
-   if (N)                                                              \
-     {                                                                 \
-       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
-       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
-     }                                                                 \
-   else                                                                \
-     {                                                                 \
-       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
-     }                                                                 \
- while (false)
-#endif
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
 
-/* Suppress unused-variable warnings by "using" E.  */
-#define YYUSE(e) ((void) (e))
 
-/* Enable debugging if requested.  */
+// Suppress unused-variable warnings by "using" E.
+#define YYUSE(E) ((void) (E))
+
+// Enable debugging if requested.
 #if YYDEBUG
 
-/* A pseudo ostream that takes yydebug_ into account.  */
+// A pseudo ostream that takes yydebug_ into account.
 # define YYCDEBUG if (yydebug_) (*yycdebug_)
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
-do {							\
-  if (yydebug_)						\
-    {							\
-      *yycdebug_ << Title << ' ';			\
-      yy_symbol_print_ ((Type), (Value), (Location));	\
-      *yycdebug_ << std::endl;				\
-    }							\
-} while (false)
+# define YY_SYMBOL_PRINT(Title, Symbol)         \
+  do {                                          \
+    if (yydebug_)                               \
+    {                                           \
+      *yycdebug_ << Title << ' ';               \
+      yy_print_ (*yycdebug_, Symbol);           \
+      *yycdebug_ << std::endl;                  \
+    }                                           \
+  } while (false)
 
-# define YY_REDUCE_PRINT(Rule)		\
-do {					\
-  if (yydebug_)				\
-    yy_reduce_print_ (Rule);		\
-} while (false)
+# define YY_REDUCE_PRINT(Rule)          \
+  do {                                  \
+    if (yydebug_)                       \
+      yy_reduce_print_ (Rule);          \
+  } while (false)
 
-# define YY_STACK_PRINT()		\
-do {					\
-  if (yydebug_)				\
-    yystack_print_ ();			\
-} while (false)
+# define YY_STACK_PRINT()               \
+  do {                                  \
+    if (yydebug_)                       \
+      yystack_print_ ();                \
+  } while (false)
 
-#else /* !YYDEBUG */
+#else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_REDUCE_PRINT(Rule)
-# define YY_STACK_PRINT()
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
+# define YY_STACK_PRINT()                static_cast<void>(0)
 
-#endif /* !YYDEBUG */
+#endif // !YYDEBUG
 
-#define yyerrok		(yyerrstatus_ = 0)
-#define yyclearin	(yychar = yyempty_)
+#define yyerrok         (yyerrstatus_ = 0)
+#define yyclearin       (yyempty = true)
 
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrorlab
+#define YYACCEPT        goto yyacceptlab
+#define YYABORT         goto yyabortlab
+#define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
 namespace w3c_sw {
-
-/* Line 382 of lalr1.cc  */
-#line 153 "lib/SPARQLalgebraParser.cpp"
+#line 152 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:474
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -174,7 +173,7 @@ namespace w3c_sw {
             case '\\':
               if (*++yyp != '\\')
                 goto do_not_strip_quotes;
-              /* Fall through.  */
+              // Fall through.
             default:
               yyr += *yyp;
               break;
@@ -197,68 +196,213 @@ namespace w3c_sw {
       yycdebug_ (&std::cerr),
 #endif
       driver (driver_yyarg)
+  {}
+
+  SPARQLalgebraParser::~SPARQLalgebraParser ()
+  {}
+
+
+  /*---------------.
+  | Symbol types.  |
+  `---------------*/
+
+  inline
+  SPARQLalgebraParser::syntax_error::syntax_error (const location_type& l, const std::string& m)
+    : std::runtime_error (m)
+    , location (l)
+  {}
+
+  // basic_symbol.
+  template <typename Base>
+  inline
+  SPARQLalgebraParser::basic_symbol<Base>::basic_symbol ()
+    : value ()
+  {}
+
+  template <typename Base>
+  inline
+  SPARQLalgebraParser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
+    : Base (other)
+    , value ()
+    , location (other.location)
+  {
+    value = other.value;
+  }
+
+
+  template <typename Base>
+  inline
+  SPARQLalgebraParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v, const location_type& l)
+    : Base (t)
+    , value (v)
+    , location (l)
+  {}
+
+
+  /// Constructor for valueless symbols.
+  template <typename Base>
+  inline
+  SPARQLalgebraParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const location_type& l)
+    : Base (t)
+    , value ()
+    , location (l)
+  {}
+
+  template <typename Base>
+  inline
+  SPARQLalgebraParser::basic_symbol<Base>::~basic_symbol ()
   {
   }
 
-  SPARQLalgebraParser::~SPARQLalgebraParser ()
+  template <typename Base>
+  inline
+  void
+  SPARQLalgebraParser::basic_symbol<Base>::move (basic_symbol& s)
   {
+    super_type::move(s);
+    value = s.value;
+    location = s.location;
+  }
+
+  // by_type.
+  inline
+  SPARQLalgebraParser::by_type::by_type ()
+     : type (empty)
+  {}
+
+  inline
+  SPARQLalgebraParser::by_type::by_type (const by_type& other)
+    : type (other.type)
+  {}
+
+  inline
+  SPARQLalgebraParser::by_type::by_type (token_type t)
+    : type (yytranslate_ (t))
+  {}
+
+  inline
+  void
+  SPARQLalgebraParser::by_type::move (by_type& that)
+  {
+    type = that.type;
+    that.type = empty;
+  }
+
+  inline
+  int
+  SPARQLalgebraParser::by_type::type_get () const
+  {
+    return type;
+  }
+
+
+  // by_state.
+  inline
+  SPARQLalgebraParser::by_state::by_state ()
+    : state (empty)
+  {}
+
+  inline
+  SPARQLalgebraParser::by_state::by_state (const by_state& other)
+    : state (other.state)
+  {}
+
+  inline
+  void
+  SPARQLalgebraParser::by_state::move (by_state& that)
+  {
+    state = that.state;
+    that.state = empty;
+  }
+
+  inline
+  SPARQLalgebraParser::by_state::by_state (state_type s)
+    : state (s)
+  {}
+
+  inline
+  SPARQLalgebraParser::symbol_number_type
+  SPARQLalgebraParser::by_state::type_get () const
+  {
+    return state == empty ? 0 : yystos_[state];
+  }
+
+  inline
+  SPARQLalgebraParser::stack_symbol_type::stack_symbol_type ()
+  {}
+
+
+  inline
+  SPARQLalgebraParser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
+    : super_type (s, that.location)
+  {
+    value = that.value;
+    // that is emptied.
+    that.type = empty;
+  }
+
+  inline
+  SPARQLalgebraParser::stack_symbol_type&
+  SPARQLalgebraParser::stack_symbol_type::operator= (const stack_symbol_type& that)
+  {
+    state = that.state;
+    value = that.value;
+    location = that.location;
+    return *this;
+  }
+
+
+  template <typename Base>
+  inline
+  void
+  SPARQLalgebraParser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  {
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yysym);
+
+    // User destructor.
+    YYUSE (yysym.type_get ());
   }
 
 #if YYDEBUG
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  inline void
-  SPARQLalgebraParser::yy_symbol_value_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
-  {
-    YYUSE (yylocationp);
-    YYUSE (yyvaluep);
-    switch (yytype)
-      {
-         default:
-	  break;
-      }
-  }
-
-
+  template <typename Base>
   void
-  SPARQLalgebraParser::yy_symbol_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
+  SPARQLalgebraParser::yy_print_ (std::ostream& yyo,
+                                     const basic_symbol<Base>& yysym) const
   {
-    *yycdebug_ << (yytype < yyntokens_ ? "token" : "nterm")
-	       << ' ' << yytname_[yytype] << " ("
-	       << *yylocationp << ": ";
-    yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
-    *yycdebug_ << ')';
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
+    symbol_number_type yytype = yysym.type_get ();
+    yyo << (yytype < yyntokens_ ? "token" : "nterm")
+        << ' ' << yytname_[yytype] << " ("
+        << yysym.location << ": ";
+    YYUSE (yytype);
+    yyo << ')';
   }
 #endif
 
+  inline
   void
-  SPARQLalgebraParser::yydestruct_ (const char* yymsg,
-			   int yytype, semantic_type* yyvaluep, location_type* yylocationp)
+  SPARQLalgebraParser::yypush_ (const char* m, state_type s, symbol_type& sym)
   {
-    YYUSE (yylocationp);
-    YYUSE (yymsg);
-    YYUSE (yyvaluep);
-
-    YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
-
-    switch (yytype)
-      {
-  
-	default:
-	  break;
-      }
+    stack_symbol_type t (s, sym);
+    yypush_ (m, t);
   }
 
+  inline
+  void
+  SPARQLalgebraParser::yypush_ (const char* m, stack_symbol_type& s)
+  {
+    if (m)
+      YY_SYMBOL_PRINT (m, s);
+    yystack_.push (s);
+  }
+
+  inline
   void
   SPARQLalgebraParser::yypop_ (unsigned int n)
   {
-    yystate_stack_.pop (n);
-    yysemantic_stack_.pop (n);
-    yylocation_stack_.pop (n);
+    yystack_.pop (n);
   }
 
 #if YYDEBUG
@@ -286,7 +430,17 @@ namespace w3c_sw {
   {
     yydebug_ = l;
   }
-#endif
+#endif // YYDEBUG
+
+  inline SPARQLalgebraParser::state_type
+  SPARQLalgebraParser::yy_lr_goto_state_ (state_type yystate, int yysym)
+  {
+    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
+      return yytable_[yyr];
+    else
+      return yydefgoto_[yysym - yyntokens_];
+  }
 
   inline bool
   SPARQLalgebraParser::yy_pact_value_is_default_ (int yyvalue)
@@ -303,136 +457,118 @@ namespace w3c_sw {
   int
   SPARQLalgebraParser::parse ()
   {
-    /// Lookahead and lookahead in internal form.
-    int yychar = yyempty_;
-    int yytoken = 0;
+    /// Whether yyla contains a lookahead.
+    bool yyempty = true;
 
-    /* State.  */
+    // State.
     int yyn;
+    /// Length of the RHS of the rule being reduced.
     int yylen = 0;
-    int yystate = 0;
 
-    /* Error handling.  */
+    // Error handling.
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the lookahead.
-    semantic_type yylval;
-    /// Location of the lookahead.
-    location_type yylloc;
+    /// The lookahead symbol.
+    symbol_type yyla;
+
     /// The locations where the error started and ended.
-    location_type yyerror_range[3];
+    stack_symbol_type yyerror_range[3];
 
-    /// $$.
-    semantic_type yyval;
-    /// @$.
-    location_type yyloc;
-
+    /// The return value of parse ().
     int yyresult;
 
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
+    try
+      {
     YYCDEBUG << "Starting parse" << std::endl;
 
 
-    /* User initialization code.  */
-    
-/* Line 565 of lalr1.cc  */
-#line 37 "lib/SPARQLalgebraParser.ypp"
+    // User initialization code.
+    #line 37 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:725
 {
     // initialize the initial location object
-    yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
-    driver.yylloc = &yylloc;
+    yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
+    driver.yylloc = &yyla.location;
 }
 
-/* Line 565 of lalr1.cc  */
-#line 348 "lib/SPARQLalgebraParser.cpp"
+#line 497 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:725
 
-    /* Initialize the stacks.  The initial state will be pushed in
+    /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
        stacks with a primary value.  */
-    yystate_stack_ = state_stack_type (0);
-    yysemantic_stack_ = semantic_stack_type (0);
-    yylocation_stack_ = location_stack_type (0);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
+    yystack_.clear ();
+    yypush_ (YY_NULLPTR, 0, yyla);
 
-    /* New state.  */
+    // A new symbol was pushed on the stack.
   yynewstate:
-    yystate_stack_.push (yystate);
-    YYCDEBUG << "Entering state " << yystate << std::endl;
+    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
 
-    /* Accept?  */
-    if (yystate == yyfinal_)
+    // Accept?
+    if (yystack_[0].state == yyfinal_)
       goto yyacceptlab;
 
     goto yybackup;
 
-    /* Backup.  */
+    // Backup.
   yybackup:
 
-    /* Try to take a decision without lookahead.  */
-    yyn = yypact_[yystate];
+    // Try to take a decision without lookahead.
+    yyn = yypact_[yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
-    /* Read a lookahead token.  */
-    if (yychar == yyempty_)
+    // Read a lookahead token.
+    if (yyempty)
       {
-	YYCDEBUG << "Reading a token: ";
-	yychar = yylex (&yylval, &yylloc);
+        YYCDEBUG << "Reading a token: ";
+        try
+          {
+            yyla.type = yytranslate_ (yylex (&yyla.value, &yyla.location));
+          }
+        catch (const syntax_error& yyexc)
+          {
+            error (yyexc);
+            goto yyerrlab1;
+          }
+        yyempty = false;
       }
+    YY_SYMBOL_PRINT ("Next token is", yyla);
 
-
-    /* Convert token to internal form.  */
-    if (yychar <= yyeof_)
-      {
-	yychar = yytoken = yyeof_;
-	YYCDEBUG << "Now at end of input." << std::endl;
-      }
-    else
-      {
-	yytoken = yytranslate_ (yychar);
-	YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
-      }
-
-    /* If the proper action on seeing token YYTOKEN is to reduce or to
-       detect an error, take that action.  */
-    yyn += yytoken;
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yytoken)
+    /* If the proper action on seeing token YYLA.TYPE is to reduce or
+       to detect an error, take that action.  */
+    yyn += yyla.type_get ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
       goto yydefault;
 
-    /* Reduce or error.  */
+    // Reduce or error.
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yy_table_value_is_error_ (yyn))
-	  goto yyerrlab;
-	yyn = -yyn;
-	goto yyreduce;
+        if (yy_table_value_is_error_ (yyn))
+          goto yyerrlab;
+        yyn = -yyn;
+        goto yyreduce;
       }
 
-    /* Shift the lookahead token.  */
-    YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
+    // Discard the token being shifted.
+    yyempty = true;
 
-    /* Discard the token being shifted.  */
-    yychar = yyempty_;
-
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
-
-    /* Count tokens shifted since error; after three, turn off error
-       status.  */
+    // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
       --yyerrstatus_;
 
-    yystate = yyn;
+    // Shift the lookahead token.
+    yypush_ ("Shifting", yyn, yyla);
     goto yynewstate;
 
   /*-----------------------------------------------------------.
   | yydefault -- do the default action for the current state.  |
   `-----------------------------------------------------------*/
   yydefault:
-    yyn = yydefact_[yystate];
+    yyn = yydefact_[yystack_[0].state];
     if (yyn == 0)
       goto yyerrlab;
     goto yyreduce;
@@ -442,2156 +578,1922 @@ namespace w3c_sw {
   `-----------------------------*/
   yyreduce:
     yylen = yyr2_[yyn];
-    /* If YYLEN is nonzero, implement the default value of the action:
-       `$$ = $1'.  Otherwise, use the top of the stack.
-
-       Otherwise, the following line sets YYVAL to garbage.
-       This behavior is undocumented and Bison
-       users should not rely upon it.  */
-    if (yylen)
-      yyval = yysemantic_stack_[yylen - 1];
-    else
-      yyval = yysemantic_stack_[0];
-
     {
-      slice<location_type, location_stack_type> slice (yylocation_stack_, yylen);
-      YYLLOC_DEFAULT (yyloc, slice, yylen);
-    }
-    YY_REDUCE_PRINT (yyn);
-    switch (yyn)
+      stack_symbol_type yylhs;
+      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
+      /* If YYLEN is nonzero, implement the default value of the
+         action: '$$ = $1'.  Otherwise, use the top of the stack.
+
+         Otherwise, the following line sets YYLHS.VALUE to garbage.
+         This behavior is undocumented and Bison users should not rely
+         upon it.  */
+      if (yylen)
+        yylhs.value = yystack_[yylen - 1].value;
+      else
+        yylhs.value = yystack_[0].value;
+
+      // Compute the default @$.
       {
-	  case 2:
+        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+      }
 
-/* Line 690 of lalr1.cc  */
-#line 335 "lib/SPARQLalgebraParser.ypp"
+      // Perform the reduction.
+      YY_REDUCE_PRINT (yyn);
+      try
+        {
+          switch (yyn)
+            {
+  case 2:
+#line 335 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
+	driver.root = (yylhs.value.p_Operation) = (yystack_[0].value.p_Operation);
     }
+#line 613 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 3:
-
-/* Line 690 of lalr1.cc  */
-#line 338 "lib/SPARQLalgebraParser.ypp"
+#line 338 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
+	driver.root = (yylhs.value.p_Operation) = (yystack_[0].value.p_Operation);
     }
+#line 621 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 5:
-
-/* Line 690 of lalr1.cc  */
-#line 348 "lib/SPARQLalgebraParser.ypp"
+#line 348 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
+	(yylhs.value.p_Operation) = (yystack_[1].value.p_Operation);
     }
+#line 629 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 7:
-
-/* Line 690 of lalr1.cc  */
-#line 355 "lib/SPARQLalgebraParser.ypp"
+#line 355 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
+	(yylhs.value.p_Operation) = (yystack_[1].value.p_Operation);
     }
+#line 637 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 9:
-
-/* Line 690 of lalr1.cc  */
-#line 362 "lib/SPARQLalgebraParser.ypp"
+#line 362 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Select((yysemantic_stack_[(4) - (3)].p_protoSelect).distinctness, (yysemantic_stack_[(4) - (3)].p_protoSelect).varSet, (yysemantic_stack_[(4) - (2)].p_DatasetClauses), (yysemantic_stack_[(4) - (3)].p_protoSelect).p_WhereClause, (yysemantic_stack_[(4) - (3)].p_protoSelect).p_SolutionModifier);
+	(yylhs.value.p_Operation) = new Select((yystack_[1].value.p_protoSelect).distinctness, (yystack_[1].value.p_protoSelect).varSet, (yystack_[2].value.p_DatasetClauses), (yystack_[1].value.p_protoSelect).p_WhereClause, (yystack_[1].value.p_protoSelect).p_SolutionModifier);
     }
+#line 645 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 10:
-
-/* Line 690 of lalr1.cc  */
-#line 365 "lib/SPARQLalgebraParser.ypp"
+#line 365 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Ask((yysemantic_stack_[(4) - (2)].p_DatasetClauses), new WhereClause((yysemantic_stack_[(4) - (3)].p_op)), NULL); // !! add SliceOpt?
+	(yylhs.value.p_Operation) = new Ask((yystack_[2].value.p_DatasetClauses), new WhereClause((yystack_[1].value.p_op)), NULL); // !! add SliceOpt?
     }
+#line 653 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 11:
-
-/* Line 690 of lalr1.cc  */
-#line 368 "lib/SPARQLalgebraParser.ypp"
+#line 368 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Ask(new ProductionVector<const DatasetClause*>(), new WhereClause((yysemantic_stack_[(1) - (1)].p_op)), NULL); // !! add SliceOpt?
+	(yylhs.value.p_Operation) = new Ask(new ProductionVector<const DatasetClause*>(), new WhereClause((yystack_[0].value.p_op)), NULL); // !! add SliceOpt?
     }
+#line 661 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 12:
-
-/* Line 690 of lalr1.cc  */
-#line 371 "lib/SPARQLalgebraParser.ypp"
+#line 371 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Select((yysemantic_stack_[(1) - (1)].p_protoSelect).distinctness, (yysemantic_stack_[(1) - (1)].p_protoSelect).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(1) - (1)].p_protoSelect).p_WhereClause, (yysemantic_stack_[(1) - (1)].p_protoSelect).p_SolutionModifier);
+	(yylhs.value.p_Operation) = new Select((yystack_[0].value.p_protoSelect).distinctness, (yystack_[0].value.p_protoSelect).varSet, new ProductionVector<const DatasetClause*>(), (yystack_[0].value.p_protoSelect).p_WhereClause, (yystack_[0].value.p_protoSelect).p_SolutionModifier);
     }
+#line 669 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 13:
-
-/* Line 690 of lalr1.cc  */
-#line 377 "lib/SPARQLalgebraParser.ypp"
+#line 377 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>((yysemantic_stack_[(1) - (1)].p_DatasetClause));
+	(yylhs.value.p_DatasetClauses) = new ProductionVector<const DatasetClause*>((yystack_[0].value.p_DatasetClause));
     }
+#line 677 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 14:
-
-/* Line 690 of lalr1.cc  */
-#line 380 "lib/SPARQLalgebraParser.ypp"
+#line 380 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
-	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
+	(yystack_[1].value.p_DatasetClauses)->push_back((yystack_[0].value.p_DatasetClause));
+	(yylhs.value.p_DatasetClauses) = (yystack_[1].value.p_DatasetClauses);
     }
+#line 686 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 16:
-
-/* Line 690 of lalr1.cc  */
-#line 388 "lib/SPARQLalgebraParser.ypp"
+#line 388 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
-	(yyval.p_protoSelect).p_SolutionModifier = new SolutionModifier(NULL, NULL, NULL, -1, -1);
+	(yylhs.value.p_protoSelect) = (yystack_[0].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).p_SolutionModifier = new SolutionModifier(NULL, NULL, NULL, -1, -1);
     }
+#line 695 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 18:
-
-/* Line 690 of lalr1.cc  */
-#line 396 "lib/SPARQLalgebraParser.ypp"
+#line 396 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
-	(yyval.p_protoSelect).distinctness = DIST_all;
+	(yylhs.value.p_protoSelect) = (yystack_[0].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).distinctness = DIST_all;
     }
+#line 704 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 20:
-
-/* Line 690 of lalr1.cc  */
-#line 404 "lib/SPARQLalgebraParser.ypp"
+#line 404 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
-	(yyval.p_protoSelect).varSet = new StarVarSet();
+	(yylhs.value.p_protoSelect) = (yystack_[0].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).varSet = new StarVarSet();
     }
+#line 713 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 22:
-
-/* Line 690 of lalr1.cc  */
-#line 412 "lib/SPARQLalgebraParser.ypp"
+#line 412 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
-	(yyval.p_protoSelect).p_OrderConditions = NULL;
+	(yylhs.value.p_protoSelect) = (yystack_[0].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).p_OrderConditions = NULL;
     }
+#line 722 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 24:
-
-/* Line 690 of lalr1.cc  */
-#line 420 "lib/SPARQLalgebraParser.ypp"
+#line 420 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
-	(yyval.p_protoSelect).p_having = NULL;
+	(yylhs.value.p_protoSelect) = (yystack_[0].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).p_having = NULL;
     }
+#line 731 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 25:
-
-/* Line 690 of lalr1.cc  */
-#line 427 "lib/SPARQLalgebraParser.ypp"
+#line 427 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	throw std::string("ExtendOpt: not ready to parse aggregates");
-	(yyval.p_protoSelect) = (yysemantic_stack_[(4) - (3)].p_protoSelect);
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect);
     }
+#line 740 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 26:
-
-/* Line 690 of lalr1.cc  */
-#line 431 "lib/SPARQLalgebraParser.ypp"
+#line 431 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(1) - (1)].p_protoSelect);
+	(yylhs.value.p_protoSelect) = (yystack_[0].value.p_protoSelect);
     }
+#line 748 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 28:
-
-/* Line 690 of lalr1.cc  */
-#line 438 "lib/SPARQLalgebraParser.ypp"
+#line 438 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect).p_WhereClause = new WhereClause((yysemantic_stack_[(1) - (1)].p_op));
+	(yylhs.value.p_protoSelect).p_WhereClause = new WhereClause((yystack_[0].value.p_op));
     }
+#line 756 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 29:
-
-/* Line 690 of lalr1.cc  */
-#line 446 "lib/SPARQLalgebraParser.ypp"
+#line 446 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = (yysemantic_stack_[(4) - (3)].p_op);
+	(yylhs.value.p_op) = (yystack_[1].value.p_op);
     }
+#line 764 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 30:
-
-/* Line 690 of lalr1.cc  */
-#line 452 "lib/SPARQLalgebraParser.ypp"
+#line 452 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
+	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
+#line 772 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 32:
-
-/* Line 690 of lalr1.cc  */
-#line 462 "lib/SPARQLalgebraParser.ypp"
+#line 462 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	driver.ignorePrefix(true);
       }
+#line 780 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 33:
-
-/* Line 690 of lalr1.cc  */
-#line 464 "lib/SPARQLalgebraParser.ypp"
+#line 464 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	  driver.ignorePrefix(false);
       }
+#line 788 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 34:
-
-/* Line 690 of lalr1.cc  */
-#line 466 "lib/SPARQLalgebraParser.ypp"
+#line 466 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	  std::string prefix((yysemantic_stack_[(6) - (3)].p_URI)->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(6) - (5)].p_URI));
+	  std::string prefix((yystack_[3].value.p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[1].value.p_URI));
       }
+#line 797 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 37:
-
-/* Line 690 of lalr1.cc  */
-#line 478 "lib/SPARQLalgebraParser.ypp"
+#line 478 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(7) - (6)].p_protoSelect);
-	(yyval.p_protoSelect).varSet = (yysemantic_stack_[(7) - (4)].p_ExpressionAliaseList);
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).varSet = (yystack_[3].value.p_ExpressionAliaseList);
     }
+#line 806 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 38:
-
-/* Line 690 of lalr1.cc  */
-#line 485 "lib/SPARQLalgebraParser.ypp"
+#line 485 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList();
+	(yylhs.value.p_ExpressionAliaseList) = new ExpressionAliasList();
     }
+#line 814 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 39:
-
-/* Line 690 of lalr1.cc  */
-#line 488 "lib/SPARQLalgebraParser.ypp"
+#line 488 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(2) - (2)].p_Variable))));
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+	(yystack_[1].value.p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yystack_[0].value.p_Variable))));
+	(yylhs.value.p_ExpressionAliaseList) = (yystack_[1].value.p_ExpressionAliaseList);
     }
+#line 823 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 40:
-
-/* Line 690 of lalr1.cc  */
-#line 495 "lib/SPARQLalgebraParser.ypp"
+#line 495 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	throw std::string("Extend: not ready to parse aggregates");
     }
+#line 831 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 51:
-
-/* Line 690 of lalr1.cc  */
-#line 528 "lib/SPARQLalgebraParser.ypp"
+#line 528 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(4) - (3)].p_protoSelect);
-	(yyval.p_protoSelect).distinctness = DIST_distinct;
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).distinctness = DIST_distinct;
     }
+#line 840 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 52:
-
-/* Line 690 of lalr1.cc  */
-#line 532 "lib/SPARQLalgebraParser.ypp"
+#line 532 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(4) - (3)].p_protoSelect);
-	(yyval.p_protoSelect).distinctness = DIST_reduced;
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).distinctness = DIST_reduced;
     }
+#line 849 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 54:
-
-/* Line 690 of lalr1.cc  */
-#line 568 "lib/SPARQLalgebraParser.ypp"
+#line 568 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	throw std::string("GroupClause: not ready to parse aggregates");
-	(yyval.p_protoSelect).p_WhereClause = new WhereClause((yysemantic_stack_[(10) - (9)].p_op));
+	(yylhs.value.p_protoSelect).p_WhereClause = new WhereClause((yystack_[1].value.p_op));
     }
+#line 858 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 59:
-
-/* Line 690 of lalr1.cc  */
-#line 587 "lib/SPARQLalgebraParser.ypp"
+#line 587 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(5) - (4)].p_protoSelect);
-	(yyval.p_protoSelect).p_having = new w3c_sw::ProductionVector<const w3c_sw::Expression*>((yysemantic_stack_[(5) - (3)].p_Expression)); // !!!
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).p_having = new w3c_sw::ProductionVector<const w3c_sw::Expression*>((yystack_[2].value.p_Expression)); // !!!
     }
+#line 867 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 60:
-
-/* Line 690 of lalr1.cc  */
-#line 596 "lib/SPARQLalgebraParser.ypp"
+#line 596 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(7) - (6)].p_protoSelect);
-	(yyval.p_protoSelect).p_OrderConditions = (yysemantic_stack_[(7) - (4)].p_OrderConditions);
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect);
+	(yylhs.value.p_protoSelect).p_OrderConditions = (yystack_[3].value.p_OrderConditions);
     }
+#line 876 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 61:
-
-/* Line 690 of lalr1.cc  */
-#line 603 "lib/SPARQLalgebraParser.ypp"
+#line 603 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
-	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
+	(yylhs.value.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
+	(yylhs.value.p_OrderConditions)->push_back((yystack_[0].value.p_OrderConditionPair));
     }
+#line 885 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 62:
-
-/* Line 690 of lalr1.cc  */
-#line 607 "lib/SPARQLalgebraParser.ypp"
+#line 607 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_OrderConditions)->push_back((yysemantic_stack_[(2) - (2)].p_OrderConditionPair));
-	(yyval.p_OrderConditions) = (yysemantic_stack_[(2) - (1)].p_OrderConditions);
+	(yystack_[1].value.p_OrderConditions)->push_back((yystack_[0].value.p_OrderConditionPair));
+	(yylhs.value.p_OrderConditions) = (yystack_[1].value.p_OrderConditions);
     }
+#line 894 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 64:
-
-/* Line 690 of lalr1.cc  */
-#line 615 "lib/SPARQLalgebraParser.ypp"
+#line 615 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
-	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(1) - (1)].p_Expression);
+	(yylhs.value.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
+	(yylhs.value.p_OrderConditionPair).expression = (yystack_[0].value.p_Expression);
     }
+#line 903 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 65:
-
-/* Line 690 of lalr1.cc  */
-#line 622 "lib/SPARQLalgebraParser.ypp"
+#line 622 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Asc;
+	(yylhs.value.p_e_ASCorDESC) = ORDER_Asc;
     }
+#line 911 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 66:
-
-/* Line 690 of lalr1.cc  */
-#line 626 "lib/SPARQLalgebraParser.ypp"
+#line 626 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Desc;
+	(yylhs.value.p_e_ASCorDESC) = ORDER_Desc;
     }
+#line 919 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 67:
-
-/* Line 690 of lalr1.cc  */
-#line 632 "lib/SPARQLalgebraParser.ypp"
+#line 632 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditionPair).ascOrDesc = (yysemantic_stack_[(4) - (2)].p_e_ASCorDESC);
-	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(4) - (3)].p_Expression);
+	(yylhs.value.p_OrderConditionPair).ascOrDesc = (yystack_[2].value.p_e_ASCorDESC);
+	(yylhs.value.p_OrderConditionPair).expression = (yystack_[1].value.p_Expression);
     }
+#line 928 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 639 "lib/SPARQLalgebraParser.ypp"
+#line 639 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_protoSelect) = (yysemantic_stack_[(6) - (5)].p_protoSelect); // ($5.p_group, ...)
-	(yyval.p_protoSelect).p_SolutionModifier = new SolutionModifier(NULL, (yysemantic_stack_[(6) - (5)].p_protoSelect).p_having, (yysemantic_stack_[(6) - (5)].p_protoSelect).p_OrderConditions, (yysemantic_stack_[(6) - (3)].p_int), (yysemantic_stack_[(6) - (4)].p_int)); // !!!
+	(yylhs.value.p_protoSelect) = (yystack_[1].value.p_protoSelect); // ($5.p_group, ...)
+	(yylhs.value.p_protoSelect).p_SolutionModifier = new SolutionModifier(NULL, (yystack_[1].value.p_protoSelect).p_having, (yystack_[1].value.p_protoSelect).p_OrderConditions, (yystack_[3].value.p_int), (yystack_[2].value.p_int)); // !!!
     }
+#line 937 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 646 "lib/SPARQLalgebraParser.ypp"
+#line 646 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = ((IntegerRDFLiteral*)(yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral))->getValue();
+	(yylhs.value.p_int) = ((IntegerRDFLiteral*)(yystack_[0].value.p_NumericRDFLiteral))->getValue();
     }
+#line 945 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 649 "lib/SPARQLalgebraParser.ypp"
+#line 649 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = LIMIT_None;
+	(yylhs.value.p_int) = LIMIT_None;
     }
+#line 953 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 72:
-
-/* Line 690 of lalr1.cc  */
-#line 673 "lib/SPARQLalgebraParser.ypp"
+#line 673 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
+	(yylhs.value.p_Operation) = (yystack_[1].value.p_Operation);
     }
+#line 961 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 74:
-
-/* Line 690 of lalr1.cc  */
-#line 680 "lib/SPARQLalgebraParser.ypp"
+#line 680 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = (yysemantic_stack_[(4) - (3)].p_Operation);
+	(yylhs.value.p_Operation) = (yystack_[1].value.p_Operation);
     }
+#line 969 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 76:
-
-/* Line 690 of lalr1.cc  */
-#line 687 "lib/SPARQLalgebraParser.ypp"
+#line 687 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = (yysemantic_stack_[(3) - (2)]. p_OperationSet);
+	(yylhs.value.p_Operation) = (yystack_[1].value. p_OperationSet);
 }
+#line 977 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 77:
-
-/* Line 690 of lalr1.cc  */
-#line 693 "lib/SPARQLalgebraParser.ypp"
+#line 693 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	OperationSet* ret = new OperationSet();
-	ret->push_back((yysemantic_stack_[(1) - (1)].p_Operation));
+	ret->push_back((yystack_[0].value.p_Operation));
     }
+#line 986 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 78:
-
-/* Line 690 of lalr1.cc  */
-#line 697 "lib/SPARQLalgebraParser.ypp"
+#line 697 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)]. p_OperationSet)->push_back((yysemantic_stack_[(2) - (2)].p_Operation));
-	(yyval. p_OperationSet) = (yysemantic_stack_[(2) - (1)]. p_OperationSet);
+	(yystack_[1].value. p_OperationSet)->push_back((yystack_[0].value.p_Operation));
+	(yylhs.value. p_OperationSet) = (yystack_[1].value. p_OperationSet);
     }
+#line 995 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 90:
-
-/* Line 690 of lalr1.cc  */
-#line 720 "lib/SPARQLalgebraParser.ypp"
+#line 720 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Load((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Load((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[1].value.p_URI));
     }
+#line 1003 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 91:
-
-/* Line 690 of lalr1.cc  */
-#line 726 "lib/SPARQLalgebraParser.ypp"
+#line 726 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = NULL;
+	(yylhs.value.p_URI) = NULL;
     }
+#line 1011 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 93:
-
-/* Line 690 of lalr1.cc  */
-#line 735 "lib/SPARQLalgebraParser.ypp"
+#line 735 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Clear((yysemantic_stack_[(5) - (3)].p_Silence), (yysemantic_stack_[(5) - (4)].p_URI));
+	(yylhs.value.p_Operation) = new Clear((yystack_[2].value.p_Silence), (yystack_[1].value.p_URI));
     }
+#line 1019 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 94:
-
-/* Line 690 of lalr1.cc  */
-#line 741 "lib/SPARQLalgebraParser.ypp"
+#line 741 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Silence) = SILENT_No;
+	(yylhs.value.p_Silence) = SILENT_No;
     }
+#line 1027 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 744 "lib/SPARQLalgebraParser.ypp"
+#line 744 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Silence) = SILENT_Yes;
+	(yylhs.value.p_Silence) = SILENT_Yes;
     }
+#line 1035 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 752 "lib/SPARQLalgebraParser.ypp"
+#line 752 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Drop((yysemantic_stack_[(5) - (3)].p_Silence), (yysemantic_stack_[(5) - (4)].p_URI));
+	(yylhs.value.p_Operation) = new Drop((yystack_[2].value.p_Silence), (yystack_[1].value.p_URI));
     }
+#line 1043 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 760 "lib/SPARQLalgebraParser.ypp"
+#line 760 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Create((yysemantic_stack_[(5) - (3)].p_Silence), (yysemantic_stack_[(5) - (4)].p_URI));
+	(yylhs.value.p_Operation) = new Create((yystack_[2].value.p_Silence), (yystack_[1].value.p_URI));
     }
+#line 1051 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 768 "lib/SPARQLalgebraParser.ypp"
+#line 768 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Add((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Add((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[1].value.p_URI));
     }
+#line 1059 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 99:
-
-/* Line 690 of lalr1.cc  */
-#line 776 "lib/SPARQLalgebraParser.ypp"
+#line 776 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Move((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Move((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[1].value.p_URI));
     }
+#line 1067 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 100:
-
-/* Line 690 of lalr1.cc  */
-#line 784 "lib/SPARQLalgebraParser.ypp"
+#line 784 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Copy((yysemantic_stack_[(6) - (3)].p_Silence), (yysemantic_stack_[(6) - (4)].p_URI), (yysemantic_stack_[(6) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Copy((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[1].value.p_URI));
     }
+#line 1075 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 101:
-
-/* Line 690 of lalr1.cc  */
-#line 792 "lib/SPARQLalgebraParser.ypp"
+#line 792 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Insert((yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yylhs.value.p_Operation) = new Insert((yystack_[1].value.p_op), NULL);
     }
+#line 1083 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 102:
-
-/* Line 690 of lalr1.cc  */
-#line 800 "lib/SPARQLalgebraParser.ypp"
+#line 800 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Delete(false, (yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yylhs.value.p_Operation) = new Delete(false, (yystack_[1].value.p_op), NULL);
     }
+#line 1091 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 103:
-
-/* Line 690 of lalr1.cc  */
-#line 808 "lib/SPARQLalgebraParser.ypp"
+#line 808 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Delete(true, (yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yylhs.value.p_Operation) = new Delete(true, (yystack_[1].value.p_op), NULL);
     }
+#line 1099 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 104:
-
-/* Line 690 of lalr1.cc  */
-#line 816 "lib/SPARQLalgebraParser.ypp"
+#line 816 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Modify((yysemantic_stack_[(6) - (5)].p_DeleteInsert).del, (yysemantic_stack_[(6) - (5)].p_DeleteInsert).ins, new WhereClause((yysemantic_stack_[(6) - (4)].p_op)), NULL, NULL, NULL); // !! synch with SPARQLParser
+	(yylhs.value.p_Operation) = new Modify((yystack_[1].value.p_DeleteInsert).del, (yystack_[1].value.p_DeleteInsert).ins, new WhereClause((yystack_[2].value.p_op)), NULL, NULL, NULL); // !! synch with SPARQLParser
     }
+#line 1107 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 105:
-
-/* Line 690 of lalr1.cc  */
-#line 822 "lib/SPARQLalgebraParser.ypp"
+#line 822 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
+	(yylhs.value.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
     }
+#line 1115 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 106:
-
-/* Line 690 of lalr1.cc  */
-#line 825 "lib/SPARQLalgebraParser.ypp"
+#line 825 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
-	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
+	(yystack_[1].value.p_DatasetClauses)->push_back((yystack_[0].value.p_DatasetClause));
+	(yylhs.value.p_DatasetClauses) = (yystack_[1].value.p_DatasetClauses);
     }
+#line 1124 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 107:
-
-/* Line 690 of lalr1.cc  */
-#line 832 "lib/SPARQLalgebraParser.ypp"
+#line 832 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Insert) = NULL;
+	(yylhs.value.p_Insert) = NULL;
     }
+#line 1132 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 109:
-
-/* Line 690 of lalr1.cc  */
-#line 839 "lib/SPARQLalgebraParser.ypp"
+#line 839 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DeleteInsert).del = (yysemantic_stack_[(2) - (1)].p_Delete);
-	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(2) - (2)].p_Insert);
+	(yylhs.value.p_DeleteInsert).del = (yystack_[1].value.p_Delete);
+	(yylhs.value.p_DeleteInsert).ins = (yystack_[0].value.p_Insert);
     }
+#line 1141 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 110:
-
-/* Line 690 of lalr1.cc  */
-#line 843 "lib/SPARQLalgebraParser.ypp"
+#line 843 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DeleteInsert).del = NULL;
-	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(1) - (1)].p_Insert);
+	(yylhs.value.p_DeleteInsert).del = NULL;
+	(yylhs.value.p_DeleteInsert).ins = (yystack_[0].value.p_Insert);
     }
+#line 1150 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 111:
-
-/* Line 690 of lalr1.cc  */
-#line 852 "lib/SPARQLalgebraParser.ypp"
+#line 852 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Delete) = new Delete(true, (yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yylhs.value.p_Delete) = new Delete(true, (yystack_[1].value.p_op), NULL);
     }
+#line 1158 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 112:
-
-/* Line 690 of lalr1.cc  */
-#line 860 "lib/SPARQLalgebraParser.ypp"
+#line 860 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Insert) = new Insert((yysemantic_stack_[(4) - (3)].p_op), NULL);
+	(yylhs.value.p_Insert) = new Insert((yystack_[1].value.p_op), NULL);
     }
+#line 1166 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 113:
-
-/* Line 690 of lalr1.cc  */
-#line 868 "lib/SPARQLalgebraParser.ypp"
+#line 868 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(4) - (3)].p_URI), driver.atomFactory);
+	(yylhs.value.p_DatasetClause) = new DefaultGraphClause((yystack_[1].value.p_URI), driver.atomFactory);
     }
+#line 1174 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 114:
-
-/* Line 690 of lalr1.cc  */
-#line 871 "lib/SPARQLalgebraParser.ypp"
+#line 871 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(5) - (3)].p_URI), driver.atomFactory);
+	(yylhs.value.p_DatasetClause) = new NamedGraphClause((yystack_[2].value.p_URI), driver.atomFactory);
     }
+#line 1182 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 115:
-
-/* Line 690 of lalr1.cc  */
-#line 879 "lib/SPARQLalgebraParser.ypp"
+#line 879 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = NULL;
+	(yylhs.value.p_URI) = NULL;
     }
+#line 1190 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 119:
-
-/* Line 690 of lalr1.cc  */
-#line 895 "lib/SPARQLalgebraParser.ypp"
+#line 895 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("DEFAULT");
     }
+#line 1198 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 120:
-
-/* Line 690 of lalr1.cc  */
-#line 898 "lib/SPARQLalgebraParser.ypp"
+#line 898 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("NAMED");
     }
+#line 1206 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 121:
-
-/* Line 690 of lalr1.cc  */
-#line 901 "lib/SPARQLalgebraParser.ypp"
+#line 901 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("ALL");
     }
+#line 1214 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 124:
-
-/* Line 690 of lalr1.cc  */
-#line 917 "lib/SPARQLalgebraParser.ypp"
+#line 917 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = (yysemantic_stack_[(1) - (1)].p_conj);
+	(yylhs.value.p_op) = (yystack_[0].value.p_conj);
     }
+#line 1222 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 127:
-
-/* Line 690 of lalr1.cc  */
-#line 928 "lib/SPARQLalgebraParser.ypp"
+#line 928 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_conj) = new ParserTableConjunction();
+	(yylhs.value.p_conj) = new ParserTableConjunction();
     }
+#line 1230 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 128:
-
-/* Line 690 of lalr1.cc  */
-#line 931 "lib/SPARQLalgebraParser.ypp"
+#line 931 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_conj)->addTableOperation((yysemantic_stack_[(2) - (2)].p_op), false);
-	(yyval.p_conj) = (yysemantic_stack_[(2) - (1)].p_conj);
+	(yystack_[1].value.p_conj)->addTableOperation((yystack_[0].value.p_op), false);
+	(yylhs.value.p_conj) = (yystack_[1].value.p_conj);
     }
+#line 1239 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 129:
-
-/* Line 690 of lalr1.cc  */
-#line 938 "lib/SPARQLalgebraParser.ypp"
+#line 938 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.curGraphName;
-	driver.curGraphName = (yysemantic_stack_[(2) - (2)].p_TTerm);
+	(yylhs.value.p_TTerm) = driver.curGraphName;
+	driver.curGraphName = (yystack_[0].value.p_TTerm);
       }
+#line 1248 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 130:
-
-/* Line 690 of lalr1.cc  */
-#line 941 "lib/SPARQLalgebraParser.ypp"
+#line 941 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_op) = (yysemantic_stack_[(4) - (4)].p_op);
-	  driver.curGraphName = (yysemantic_stack_[(4) - (3)].p_TTerm);
+	  (yylhs.value.p_op) = (yystack_[0].value.p_op);
+	  driver.curGraphName = (yystack_[1].value.p_TTerm);
       }
+#line 1257 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 131:
-
-/* Line 690 of lalr1.cc  */
-#line 948 "lib/SPARQLalgebraParser.ypp"
+#line 948 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = (yysemantic_stack_[(4) - (3)].p_BasicGraphPattern);
+	(yylhs.value.p_op) = (yystack_[1].value.p_BasicGraphPattern);
     }
+#line 1265 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 132:
-
-/* Line 690 of lalr1.cc  */
-#line 951 "lib/SPARQLalgebraParser.ypp"
+#line 951 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = driver.ensureGraphPattern();
+	(yylhs.value.p_op) = driver.ensureGraphPattern();
     }
+#line 1273 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 133:
-
-/* Line 690 of lalr1.cc  */
-#line 957 "lib/SPARQLalgebraParser.ypp"
+#line 957 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BasicGraphPattern) = driver.ensureGraphPattern();
-	(yyval.p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(1) - (1)].p_TriplePattern), true);
+	(yylhs.value.p_BasicGraphPattern) = driver.ensureGraphPattern();
+	(yylhs.value.p_BasicGraphPattern)->addTriplePattern((yystack_[0].value.p_TriplePattern), true);
     }
+#line 1282 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 134:
-
-/* Line 690 of lalr1.cc  */
-#line 961 "lib/SPARQLalgebraParser.ypp"
+#line 961 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-      (yysemantic_stack_[(2) - (1)].p_BasicGraphPattern)->addTriplePattern((yysemantic_stack_[(2) - (2)].p_TriplePattern), true);
-	(yyval.p_BasicGraphPattern) = (yysemantic_stack_[(2) - (1)].p_BasicGraphPattern);
+      (yystack_[1].value.p_BasicGraphPattern)->addTriplePattern((yystack_[0].value.p_TriplePattern), true);
+	(yylhs.value.p_BasicGraphPattern) = (yystack_[1].value.p_BasicGraphPattern);
     }
+#line 1291 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 137:
-
-/* Line 690 of lalr1.cc  */
-#line 970 "lib/SPARQLalgebraParser.ypp"
+#line 970 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(5) - (4)].p_conj)->insertTableOperation((yysemantic_stack_[(5) - (3)].p_op));
-	(yyval.p_op) = (yysemantic_stack_[(5) - (4)].p_conj);
+	(yystack_[1].value.p_conj)->insertTableOperation((yystack_[2].value.p_op));
+	(yylhs.value.p_op) = (yystack_[1].value.p_conj);
     }
+#line 1300 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 143:
-
-/* Line 690 of lalr1.cc  */
-#line 979 "lib/SPARQLalgebraParser.ypp"
+#line 979 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	throw new std::string("GroupGraphPatternNoSub: GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN not implemented");
-	(yyval.p_op) = driver.ensureGraphPattern();
+	(yylhs.value.p_op) = driver.ensureGraphPattern();
     }
+#line 1309 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 146:
-
-/* Line 690 of lalr1.cc  */
-#line 991 "lib/SPARQLalgebraParser.ypp"
+#line 991 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_conj) = new ParserTableConjunction();
-	(yyval.p_conj)->addTableOperation((yysemantic_stack_[(1) - (1)].p_op), driver.unnestTree);
+	(yylhs.value.p_conj) = new ParserTableConjunction();
+	(yylhs.value.p_conj)->addTableOperation((yystack_[0].value.p_op), driver.unnestTree);
     }
+#line 1318 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 147:
-
-/* Line 690 of lalr1.cc  */
-#line 995 "lib/SPARQLalgebraParser.ypp"
+#line 995 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_conj)->addTableOperation((yysemantic_stack_[(2) - (2)].p_op), driver.unnestTree);
-	(yyval.p_conj) = (yysemantic_stack_[(2) - (1)].p_conj);
+	(yystack_[1].value.p_conj)->addTableOperation((yystack_[0].value.p_op), driver.unnestTree);
+	(yylhs.value.p_conj) = (yystack_[1].value.p_conj);
     }
+#line 1327 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 150:
-
-/* Line 690 of lalr1.cc  */
-#line 1004 "lib/SPARQLalgebraParser.ypp"
+#line 1004 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(5) - (4)].p_conj)->addTableOperation((yysemantic_stack_[(5) - (3)].p_op), driver.unnestTree);
-	(yyval.p_op) = (yysemantic_stack_[(5) - (4)].p_conj);
+	(yystack_[1].value.p_conj)->addTableOperation((yystack_[2].value.p_op), driver.unnestTree);
+	(yylhs.value.p_op) = (yystack_[1].value.p_conj);
     }
+#line 1336 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 156:
-
-/* Line 690 of lalr1.cc  */
-#line 1013 "lib/SPARQLalgebraParser.ypp"
+#line 1013 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	throw new std::string("GroupGraphPatternSub: GT_LPAREN IT_path VarOrTerm Path VarOrTerm GT_RPAREN not implemented");
-	(yyval.p_op) = driver.ensureGraphPattern();
+	(yylhs.value.p_op) = driver.ensureGraphPattern();
     }
+#line 1345 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 157:
-
-/* Line 690 of lalr1.cc  */
-#line 1017 "lib/SPARQLalgebraParser.ypp"
+#line 1017 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = new SubSelect(new Select((yysemantic_stack_[(1) - (1)].p_protoSelect).distinctness, (yysemantic_stack_[(1) - (1)].p_protoSelect).varSet, NULL, (yysemantic_stack_[(1) - (1)].p_protoSelect).p_WhereClause, (yysemantic_stack_[(1) - (1)].p_protoSelect).p_SolutionModifier));
+	(yylhs.value.p_op) = new SubSelect(new Select((yystack_[0].value.p_protoSelect).distinctness, (yystack_[0].value.p_protoSelect).varSet, NULL, (yystack_[0].value.p_protoSelect).p_WhereClause, (yystack_[0].value.p_protoSelect).p_SolutionModifier));
     }
+#line 1353 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 158:
-
-/* Line 690 of lalr1.cc  */
-#line 1023 "lib/SPARQLalgebraParser.ypp"
+#line 1023 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_conj) = new ParserTableConjunction();
-	(yyval.p_conj)->addTableOperation((yysemantic_stack_[(1) - (1)].p_op), driver.unnestTree);
+	(yylhs.value.p_conj) = new ParserTableConjunction();
+	(yylhs.value.p_conj)->addTableOperation((yystack_[0].value.p_op), driver.unnestTree);
     }
+#line 1362 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 159:
-
-/* Line 690 of lalr1.cc  */
-#line 1027 "lib/SPARQLalgebraParser.ypp"
+#line 1027 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_conj)->addTableOperation((yysemantic_stack_[(2) - (2)].p_op), driver.unnestTree);
-	(yyval.p_conj) = (yysemantic_stack_[(2) - (1)].p_conj);
+	(yystack_[1].value.p_conj)->addTableOperation((yystack_[0].value.p_op), driver.unnestTree);
+	(yylhs.value.p_conj) = (yystack_[1].value.p_conj);
     }
+#line 1371 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 160:
-
-/* Line 690 of lalr1.cc  */
-#line 1034 "lib/SPARQLalgebraParser.ypp"
+#line 1034 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = (yysemantic_stack_[(4) - (3)].p_Expressions);
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1379 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 161:
-
-/* Line 690 of lalr1.cc  */
-#line 1040 "lib/SPARQLalgebraParser.ypp"
+#line 1040 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
     }
+#line 1387 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 162:
-
-/* Line 690 of lalr1.cc  */
-#line 1043 "lib/SPARQLalgebraParser.ypp"
+#line 1043 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1396 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 163:
-
-/* Line 690 of lalr1.cc  */
-#line 1050 "lib/SPARQLalgebraParser.ypp"
+#line 1050 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TriplePattern) = driver.atomFactory->getTriple((yysemantic_stack_[(6) - (3)].p_TTerm), (yysemantic_stack_[(6) - (4)].p_TTerm), (yysemantic_stack_[(6) - (5)].p_TTerm));
+	(yylhs.value.p_TriplePattern) = driver.atomFactory->getTriple((yystack_[3].value.p_TTerm), (yystack_[2].value.p_TTerm), (yystack_[1].value.p_TTerm));
     }
+#line 1404 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 164:
-
-/* Line 690 of lalr1.cc  */
-#line 1064 "lib/SPARQLalgebraParser.ypp"
+#line 1064 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	OptionalGraphPattern* opt = new OptionalGraphPattern((yysemantic_stack_[(6) - (4)].p_op));
+	OptionalGraphPattern* opt = new OptionalGraphPattern((yystack_[2].value.p_op));
 	TableConjunction* conj = new TableConjunction();
-	conj->addTableOperation((yysemantic_stack_[(6) - (3)].p_op), driver.unnestTree);
+	conj->addTableOperation((yystack_[3].value.p_op), driver.unnestTree);
 	conj->addTableOperation(opt, driver.unnestTree);
-	if ((yysemantic_stack_[(6) - (5)].p_Expressions) != NULL) {
-	    for (std::vector<const Expression*>::const_iterator it = (yysemantic_stack_[(6) - (5)].p_Expressions)->begin();
-		 it != (yysemantic_stack_[(6) - (5)].p_Expressions)->end(); ++it)
+	if ((yystack_[1].value.p_Expressions) != NULL) {
+	    for (std::vector<const Expression*>::const_iterator it = (yystack_[1].value.p_Expressions)->begin();
+		 it != (yystack_[1].value.p_Expressions)->end(); ++it)
 		opt->addExpression(*it);
-	    (yysemantic_stack_[(6) - (5)].p_Expressions)->clear();
-	    delete (yysemantic_stack_[(6) - (5)].p_Expressions);
+	    (yystack_[1].value.p_Expressions)->clear();
+	    delete (yystack_[1].value.p_Expressions);
 	}
-	(yyval.p_op) = conj;
+	(yylhs.value.p_op) = conj;
     }
+#line 1423 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 165:
-
-/* Line 690 of lalr1.cc  */
-#line 1078 "lib/SPARQLalgebraParser.ypp"
+#line 1078 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	OptionalGraphPattern* opt = new OptionalGraphPattern((yysemantic_stack_[(5) - (3)].p_op));
-	if ((yysemantic_stack_[(5) - (4)].p_Expressions) != NULL) {
-	    for (std::vector<const Expression*>::const_iterator it = (yysemantic_stack_[(5) - (4)].p_Expressions)->begin();
-		 it != (yysemantic_stack_[(5) - (4)].p_Expressions)->end(); ++it)
+	OptionalGraphPattern* opt = new OptionalGraphPattern((yystack_[2].value.p_op));
+	if ((yystack_[1].value.p_Expressions) != NULL) {
+	    for (std::vector<const Expression*>::const_iterator it = (yystack_[1].value.p_Expressions)->begin();
+		 it != (yystack_[1].value.p_Expressions)->end(); ++it)
 		opt->addExpression(*it);
-	    (yysemantic_stack_[(5) - (4)].p_Expressions)->clear();
-	    delete (yysemantic_stack_[(5) - (4)].p_Expressions);
+	    (yystack_[1].value.p_Expressions)->clear();
+	    delete (yystack_[1].value.p_Expressions);
 	}
-	(yyval.p_op) = opt;
+	(yylhs.value.p_op) = opt;
     }
+#line 1439 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 166:
-
-/* Line 690 of lalr1.cc  */
-#line 1092 "lib/SPARQLalgebraParser.ypp"
+#line 1092 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = NULL;
+	(yylhs.value.p_Expressions) = NULL;
     }
+#line 1447 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 168:
-
-/* Line 690 of lalr1.cc  */
-#line 1099 "lib/SPARQLalgebraParser.ypp"
+#line 1099 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.curGraphName;
-	driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_TTerm);
+	(yylhs.value.p_TTerm) = driver.curGraphName;
+	driver.curGraphName = (yystack_[0].value.p_TTerm);
       }
+#line 1456 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 169:
-
-/* Line 690 of lalr1.cc  */
-#line 1102 "lib/SPARQLalgebraParser.ypp"
+#line 1102 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_op) = (yysemantic_stack_[(6) - (5)].p_op);
-	  driver.curGraphName = (yysemantic_stack_[(6) - (4)].p_TTerm);
+	  (yylhs.value.p_op) = (yystack_[1].value.p_op);
+	  driver.curGraphName = (yystack_[2].value.p_TTerm);
       }
+#line 1465 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 170:
-
-/* Line 690 of lalr1.cc  */
-#line 1109 "lib/SPARQLalgebraParser.ypp"
+#line 1109 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = new ServiceGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), (yysemantic_stack_[(6) - (5)].p_op), (yysemantic_stack_[(6) - (3)].p_Silence), driver.atomFactory, false);
+	(yylhs.value.p_op) = new ServiceGraphPattern((yystack_[2].value.p_TTerm), (yystack_[1].value.p_op), (yystack_[3].value.p_Silence), driver.atomFactory, false);
     }
+#line 1473 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 171:
-
-/* Line 690 of lalr1.cc  */
-#line 1117 "lib/SPARQLalgebraParser.ypp"
+#line 1117 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	TableConjunction* ret = new TableConjunction();
-	ret->addTableOperation((yysemantic_stack_[(5) - (3)].p_op), driver.unnestTree);
-	ret->addTableOperation(new MinusGraphPattern((yysemantic_stack_[(5) - (4)].p_op)), driver.unnestTree);
-	(yyval.p_op) = ret;
+	ret->addTableOperation((yystack_[2].value.p_op), driver.unnestTree);
+	ret->addTableOperation(new MinusGraphPattern((yystack_[1].value.p_op)), driver.unnestTree);
+	(yylhs.value.p_op) = ret;
     }
+#line 1484 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 172:
-
-/* Line 690 of lalr1.cc  */
-#line 1126 "lib/SPARQLalgebraParser.ypp"
+#line 1126 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	TableDisjunction* ret = new TableDisjunction();
-	ret->addTableOperation((yysemantic_stack_[(5) - (3)].p_op), driver.unnestTree);
-	ret->addTableOperation((yysemantic_stack_[(5) - (4)].p_op), driver.unnestTree);
-	(yyval.p_op) = ret;
+	ret->addTableOperation((yystack_[2].value.p_op), driver.unnestTree);
+	ret->addTableOperation((yystack_[1].value.p_op), driver.unnestTree);
+	(yylhs.value.p_op) = ret;
     }
+#line 1495 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 173:
-
-/* Line 690 of lalr1.cc  */
-#line 1135 "lib/SPARQLalgebraParser.ypp"
+#line 1135 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_op) = new Filter((yysemantic_stack_[(5) - (4)].p_op), (yysemantic_stack_[(5) - (3)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (3)].p_Expressions)->end());
-	(yysemantic_stack_[(5) - (3)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(5) - (3)].p_Expressions);
+	(yylhs.value.p_op) = new Filter((yystack_[1].value.p_op), (yystack_[2].value.p_Expressions)->begin(), (yystack_[2].value.p_Expressions)->end());
+	(yystack_[2].value.p_Expressions)->clear();
+	delete (yystack_[2].value.p_Expressions);
     }
+#line 1505 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 174:
-
-/* Line 690 of lalr1.cc  */
-#line 1151 "lib/SPARQLalgebraParser.ypp"
+#line 1151 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = NULL;
+	(yylhs.value.p_Expressions) = NULL;
     }
+#line 1513 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 175:
-
-/* Line 690 of lalr1.cc  */
-#line 1154 "lib/SPARQLalgebraParser.ypp"
+#line 1154 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(4) - (3)].p_Expressions)->push_front((yysemantic_stack_[(4) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(4) - (3)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_front((yystack_[2].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1522 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 176:
-
-/* Line 690 of lalr1.cc  */
-#line 1161 "lib/SPARQLalgebraParser.ypp"
+#line 1161 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1530 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 177:
-
-/* Line 690 of lalr1.cc  */
-#line 1167 "lib/SPARQLalgebraParser.ypp"
+#line 1167 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 1538 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 178:
-
-/* Line 690 of lalr1.cc  */
-#line 1170 "lib/SPARQLalgebraParser.ypp"
+#line 1170 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1547 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 185:
-
-/* Line 690 of lalr1.cc  */
-#line 1227 "lib/SPARQLalgebraParser.ypp"
+#line 1227 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	// $$ = new PathAlternative($3, $4);
     }
+#line 1555 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 186:
-
-/* Line 690 of lalr1.cc  */
-#line 1233 "lib/SPARQLalgebraParser.ypp"
+#line 1233 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	// $$ = new PathSequence($3, $4);
     }
+#line 1563 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 187:
-
-/* Line 690 of lalr1.cc  */
-#line 1241 "lib/SPARQLalgebraParser.ypp"
+#line 1241 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	// $$ = new PathEltOrInverse($3);
     }
+#line 1571 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 188:
-
-/* Line 690 of lalr1.cc  */
-#line 1247 "lib/SPARQLalgebraParser.ypp"
+#line 1247 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	// $$ = $3;
     }
+#line 1579 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 189:
-
-/* Line 690 of lalr1.cc  */
-#line 1250 "lib/SPARQLalgebraParser.ypp"
+#line 1250 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	// $$ = $5;
       }
+#line 1587 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 193:
-
-/* Line 690 of lalr1.cc  */
-#line 1262 "lib/SPARQLalgebraParser.ypp"
+#line 1262 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1595 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 194:
-
-/* Line 690 of lalr1.cc  */
-#line 1265 "lib/SPARQLalgebraParser.ypp"
+#line 1265 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	(yylhs.value.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     }
+#line 1603 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 195:
-
-/* Line 690 of lalr1.cc  */
-#line 1273 "lib/SPARQLalgebraParser.ypp"
+#line 1273 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(4) - (3)].p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
     }
+#line 1611 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 197:
-
-/* Line 690 of lalr1.cc  */
-#line 1280 "lib/SPARQLalgebraParser.ypp"
+#line 1280 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	// $1->push_back($2);
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (1)].p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
     }
+#line 1620 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 198:
-
-/* Line 690 of lalr1.cc  */
-#line 1287 "lib/SPARQLalgebraParser.ypp"
+#line 1287 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NumericRDFLiteral) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_NumericRDFLiteral) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 1628 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 199:
-
-/* Line 690 of lalr1.cc  */
-#line 1304 "lib/SPARQLalgebraParser.ypp"
+#line 1304 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 1636 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 201:
-
-/* Line 690 of lalr1.cc  */
-#line 1311 "lib/SPARQLalgebraParser.ypp"
+#line 1311 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 1644 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 202:
-
-/* Line 690 of lalr1.cc  */
-#line 1314 "lib/SPARQLalgebraParser.ypp"
+#line 1314 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1652 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 205:
-
-/* Line 690 of lalr1.cc  */
-#line 1325 "lib/SPARQLalgebraParser.ypp"
+#line 1325 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1660 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 207:
-
-/* Line 690 of lalr1.cc  */
-#line 1329 "lib/SPARQLalgebraParser.ypp"
+#line 1329 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 1668 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 208:
-
-/* Line 690 of lalr1.cc  */
-#line 1332 "lib/SPARQLalgebraParser.ypp"
+#line 1332 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_BooleanRDFLiteral);
     }
+#line 1676 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 210:
-
-/* Line 690 of lalr1.cc  */
-#line 1336 "lib/SPARQLalgebraParser.ypp"
+#line 1336 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	(yylhs.value.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
     }
+#line 1684 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 217:
-
-/* Line 690 of lalr1.cc  */
-#line 1351 "lib/SPARQLalgebraParser.ypp"
+#line 1351 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
-	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
-	t->push_back((yysemantic_stack_[(5) - (4)].p_Expression));
-	(yyval.p_Expression) = new BooleanDisjunction(t);
+	t->push_back((yystack_[2].value.p_Expression));
+	t->push_back((yystack_[1].value.p_Expression));
+	(yylhs.value.p_Expression) = new BooleanDisjunction(t);
     }
+#line 1695 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 218:
-
-/* Line 690 of lalr1.cc  */
-#line 1360 "lib/SPARQLalgebraParser.ypp"
+#line 1360 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
-	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
-	t->push_back((yysemantic_stack_[(5) - (4)].p_Expression));
-	(yyval.p_Expression) = new BooleanConjunction(t);
+	t->push_back((yystack_[2].value.p_Expression));
+	t->push_back((yystack_[1].value.p_Expression));
+	(yylhs.value.p_Expression) = new BooleanConjunction(t);
     }
+#line 1706 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 222:
-
-/* Line 690 of lalr1.cc  */
-#line 1378 "lib/SPARQLalgebraParser.ypp"
+#line 1378 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanEQ((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanEQ((yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1714 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 223:
-
-/* Line 690 of lalr1.cc  */
-#line 1381 "lib/SPARQLalgebraParser.ypp"
+#line 1381 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanNE((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanNE((yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1722 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 224:
-
-/* Line 690 of lalr1.cc  */
-#line 1384 "lib/SPARQLalgebraParser.ypp"
+#line 1384 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanLT((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanLT((yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1730 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 225:
-
-/* Line 690 of lalr1.cc  */
-#line 1387 "lib/SPARQLalgebraParser.ypp"
+#line 1387 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanGT((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanGT((yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1738 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 226:
-
-/* Line 690 of lalr1.cc  */
-#line 1390 "lib/SPARQLalgebraParser.ypp"
+#line 1390 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanLE((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanLE((yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1746 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 227:
-
-/* Line 690 of lalr1.cc  */
-#line 1393 "lib/SPARQLalgebraParser.ypp"
+#line 1393 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanGE((yysemantic_stack_[(5) - (3)].p_Expression), (yysemantic_stack_[(5) - (4)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanGE((yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1754 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 228:
-
-/* Line 690 of lalr1.cc  */
-#line 1396 "lib/SPARQLalgebraParser.ypp"
+#line 1396 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new NaryIn((yysemantic_stack_[(4) - (3)].p_Expressions));
+	(yylhs.value.p_Expression) = new NaryIn((yystack_[1].value.p_Expressions));
     }
+#line 1762 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 230:
-
-/* Line 690 of lalr1.cc  */
-#line 1408 "lib/SPARQLalgebraParser.ypp"
+#line 1408 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
-	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
-	t->push_back((yysemantic_stack_[(5) - (4)].p_Expression));
-	(yyval.p_Expression) = new ArithmeticSum(t);
+	t->push_back((yystack_[2].value.p_Expression));
+	t->push_back((yystack_[1].value.p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticSum(t);
     }
+#line 1773 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 231:
-
-/* Line 690 of lalr1.cc  */
-#line 1414 "lib/SPARQLalgebraParser.ypp"
+#line 1414 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
-	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
-	t->push_back(new ArithmeticNegation((yysemantic_stack_[(5) - (4)].p_Expression)));
-	(yyval.p_Expression) = new ArithmeticSum(t);
+	t->push_back((yystack_[2].value.p_Expression));
+	t->push_back(new ArithmeticNegation((yystack_[1].value.p_Expression)));
+	(yylhs.value.p_Expression) = new ArithmeticSum(t);
     }
+#line 1784 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 232:
-
-/* Line 690 of lalr1.cc  */
-#line 1428 "lib/SPARQLalgebraParser.ypp"
+#line 1428 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
-	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
-	t->push_back(new ArithmeticNegation((yysemantic_stack_[(5) - (4)].p_Expression)));
-	(yyval.p_Expression) = new ArithmeticProduct(t);
+	t->push_back((yystack_[2].value.p_Expression));
+	t->push_back(new ArithmeticNegation((yystack_[1].value.p_Expression)));
+	(yylhs.value.p_Expression) = new ArithmeticProduct(t);
     }
+#line 1795 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 233:
-
-/* Line 690 of lalr1.cc  */
-#line 1434 "lib/SPARQLalgebraParser.ypp"
+#line 1434 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
 	ProductionVector<const Expression*>* t = new ProductionVector<const Expression*>();
-	t->push_back((yysemantic_stack_[(5) - (3)].p_Expression));
-	t->push_back(new ArithmeticInverse((yysemantic_stack_[(5) - (4)].p_Expression)));
-	(yyval.p_Expression) = new ArithmeticProduct(t);
+	t->push_back((yystack_[2].value.p_Expression));
+	t->push_back(new ArithmeticInverse((yystack_[1].value.p_Expression)));
+	(yylhs.value.p_Expression) = new ArithmeticProduct(t);
     }
+#line 1806 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 234:
-
-/* Line 690 of lalr1.cc  */
-#line 1443 "lib/SPARQLalgebraParser.ypp"
+#line 1443 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(4) - (3)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanNegation((yystack_[1].value.p_Expression));
     }
+#line 1814 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 235:
-
-/* Line 690 of lalr1.cc  */
-#line 1446 "lib/SPARQLalgebraParser.ypp"
+#line 1446 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(4) - (3)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 1822 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 236:
-
-/* Line 690 of lalr1.cc  */
-#line 1449 "lib/SPARQLalgebraParser.ypp"
+#line 1449 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(4) - (3)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticNegation((yystack_[1].value.p_Expression));
     }
+#line 1830 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 239:
-
-/* Line 690 of lalr1.cc  */
-#line 1457 "lib/SPARQLalgebraParser.ypp"
+#line 1457 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_TTerm));
     }
+#line 1838 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 240:
-
-/* Line 690 of lalr1.cc  */
-#line 1460 "lib/SPARQLalgebraParser.ypp"
+#line 1460 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 1846 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 241:
-
-/* Line 690 of lalr1.cc  */
-#line 1463 "lib/SPARQLalgebraParser.ypp"
+#line 1463 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_BooleanRDFLiteral));
     }
+#line 1854 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 242:
-
-/* Line 690 of lalr1.cc  */
-#line 1466 "lib/SPARQLalgebraParser.ypp"
+#line 1466 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_Variable));
     }
+#line 1862 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 243:
-
-/* Line 690 of lalr1.cc  */
-#line 1469 "lib/SPARQLalgebraParser.ypp"
+#line 1469 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_TTerm));
     }
+#line 1870 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 244:
-
-/* Line 690 of lalr1.cc  */
-#line 1480 "lib/SPARQLalgebraParser.ypp"
+#line 1480 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1878 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 245:
-
-/* Line 690 of lalr1.cc  */
-#line 1483 "lib/SPARQLalgebraParser.ypp"
+#line 1483 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1886 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 246:
-
-/* Line 690 of lalr1.cc  */
-#line 1486 "lib/SPARQLalgebraParser.ypp"
+#line 1486 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 1894 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 247:
-
-/* Line 690 of lalr1.cc  */
-#line 1489 "lib/SPARQLalgebraParser.ypp"
+#line 1489 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1902 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 248:
-
-/* Line 690 of lalr1.cc  */
-#line 1492 "lib/SPARQLalgebraParser.ypp"
+#line 1492 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yystack_[1].value.p_Variable)), NULL, NULL));
     }
+#line 1910 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 249:
-
-/* Line 690 of lalr1.cc  */
-#line 1495 "lib/SPARQLalgebraParser.ypp"
+#line 1495 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1918 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 250:
-
-/* Line 690 of lalr1.cc  */
-#line 1498 "lib/SPARQLalgebraParser.ypp"
+#line 1498 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1926 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 251:
-
-/* Line 690 of lalr1.cc  */
-#line 1501 "lib/SPARQLalgebraParser.ypp"
+#line 1501 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1934 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 252:
-
-/* Line 690 of lalr1.cc  */
-#line 1504 "lib/SPARQLalgebraParser.ypp"
+#line 1504 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
+#line 1942 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 253:
-
-/* Line 690 of lalr1.cc  */
-#line 1507 "lib/SPARQLalgebraParser.ypp"
+#line 1507 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1950 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 254:
-
-/* Line 690 of lalr1.cc  */
-#line 1510 "lib/SPARQLalgebraParser.ypp"
+#line 1510 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1958 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 255:
-
-/* Line 690 of lalr1.cc  */
-#line 1513 "lib/SPARQLalgebraParser.ypp"
+#line 1513 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1966 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 256:
-
-/* Line 690 of lalr1.cc  */
-#line 1516 "lib/SPARQLalgebraParser.ypp"
+#line 1516 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1974 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 257:
-
-/* Line 690 of lalr1.cc  */
-#line 1519 "lib/SPARQLalgebraParser.ypp"
+#line 1519 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(4) - (3)].p_Expressions))));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yystack_[1].value.p_Expressions))));
     }
+#line 1982 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 259:
-
-/* Line 690 of lalr1.cc  */
-#line 1523 "lib/SPARQLalgebraParser.ypp"
+#line 1523 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1990 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 260:
-
-/* Line 690 of lalr1.cc  */
-#line 1526 "lib/SPARQLalgebraParser.ypp"
+#line 1526 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 1998 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 261:
-
-/* Line 690 of lalr1.cc  */
-#line 1529 "lib/SPARQLalgebraParser.ypp"
+#line 1529 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2006 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 262:
-
-/* Line 690 of lalr1.cc  */
-#line 1532 "lib/SPARQLalgebraParser.ypp"
+#line 1532 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2014 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 263:
-
-/* Line 690 of lalr1.cc  */
-#line 1535 "lib/SPARQLalgebraParser.ypp"
+#line 1535 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2022 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 264:
-
-/* Line 690 of lalr1.cc  */
-#line 1538 "lib/SPARQLalgebraParser.ypp"
+#line 1538 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2030 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 265:
-
-/* Line 690 of lalr1.cc  */
-#line 1541 "lib/SPARQLalgebraParser.ypp"
+#line 1541 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2038 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 266:
-
-/* Line 690 of lalr1.cc  */
-#line 1544 "lib/SPARQLalgebraParser.ypp"
+#line 1544 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2046 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 267:
-
-/* Line 690 of lalr1.cc  */
-#line 1547 "lib/SPARQLalgebraParser.ypp"
+#line 1547 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2054 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 268:
-
-/* Line 690 of lalr1.cc  */
-#line 1550 "lib/SPARQLalgebraParser.ypp"
+#line 1550 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2062 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 269:
-
-/* Line 690 of lalr1.cc  */
-#line 1553 "lib/SPARQLalgebraParser.ypp"
+#line 1553 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2070 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 270:
-
-/* Line 690 of lalr1.cc  */
-#line 1556 "lib/SPARQLalgebraParser.ypp"
+#line 1556 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2078 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 271:
-
-/* Line 690 of lalr1.cc  */
-#line 1559 "lib/SPARQLalgebraParser.ypp"
+#line 1559 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2086 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 272:
-
-/* Line 690 of lalr1.cc  */
-#line 1562 "lib/SPARQLalgebraParser.ypp"
+#line 1562 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2094 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 273:
-
-/* Line 690 of lalr1.cc  */
-#line 1565 "lib/SPARQLalgebraParser.ypp"
+#line 1565 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2102 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 274:
-
-/* Line 690 of lalr1.cc  */
-#line 1568 "lib/SPARQLalgebraParser.ypp"
+#line 1568 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2110 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 275:
-
-/* Line 690 of lalr1.cc  */
-#line 1571 "lib/SPARQLalgebraParser.ypp"
+#line 1571 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2118 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 276:
-
-/* Line 690 of lalr1.cc  */
-#line 1574 "lib/SPARQLalgebraParser.ypp"
+#line 1574 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
+#line 2126 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 277:
-
-/* Line 690 of lalr1.cc  */
-#line 1577 "lib/SPARQLalgebraParser.ypp"
+#line 1577 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2134 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 278:
-
-/* Line 690 of lalr1.cc  */
-#line 1580 "lib/SPARQLalgebraParser.ypp"
+#line 1580 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2142 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 279:
-
-/* Line 690 of lalr1.cc  */
-#line 1583 "lib/SPARQLalgebraParser.ypp"
+#line 1583 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2150 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 280:
-
-/* Line 690 of lalr1.cc  */
-#line 1586 "lib/SPARQLalgebraParser.ypp"
+#line 1586 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2158 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 281:
-
-/* Line 690 of lalr1.cc  */
-#line 1589 "lib/SPARQLalgebraParser.ypp"
+#line 1589 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2166 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 282:
-
-/* Line 690 of lalr1.cc  */
-#line 1592 "lib/SPARQLalgebraParser.ypp"
+#line 1592 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
+	(yylhs.value.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, $2, NULL, NULL));
 	w3c_sw_NEED_IMPL("COALESCE");
     }
+#line 2175 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 283:
-
-/* Line 690 of lalr1.cc  */
-#line 1596 "lib/SPARQLalgebraParser.ypp"
+#line 1596 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yystack_[5].value.p_Expression), (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 2183 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 284:
-
-/* Line 690 of lalr1.cc  */
-#line 1599 "lib/SPARQLalgebraParser.ypp"
+#line 1599 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2191 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 285:
-
-/* Line 690 of lalr1.cc  */
-#line 1602 "lib/SPARQLalgebraParser.ypp"
+#line 1602 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2199 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 286:
-
-/* Line 690 of lalr1.cc  */
-#line 1605 "lib/SPARQLalgebraParser.ypp"
+#line 1605 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2207 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 287:
-
-/* Line 690 of lalr1.cc  */
-#line 1608 "lib/SPARQLalgebraParser.ypp"
+#line 1608 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2215 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 288:
-
-/* Line 690 of lalr1.cc  */
-#line 1611 "lib/SPARQLalgebraParser.ypp"
+#line 1611 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2223 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 289:
-
-/* Line 690 of lalr1.cc  */
-#line 1614 "lib/SPARQLalgebraParser.ypp"
+#line 1614 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2231 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 290:
-
-/* Line 690 of lalr1.cc  */
-#line 1617 "lib/SPARQLalgebraParser.ypp"
+#line 1617 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2239 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 291:
-
-/* Line 690 of lalr1.cc  */
-#line 1620 "lib/SPARQLalgebraParser.ypp"
+#line 1620 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2247 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 294:
-
-/* Line 690 of lalr1.cc  */
-#line 1628 "lib/SPARQLalgebraParser.ypp"
+#line 1628 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 2255 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 296:
-
-/* Line 690 of lalr1.cc  */
-#line 1637 "lib/SPARQLalgebraParser.ypp"
+#line 1637 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 2263 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 297:
-
-/* Line 690 of lalr1.cc  */
-#line 1643 "lib/SPARQLalgebraParser.ypp"
+#line 1643 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 2271 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 299:
-
-/* Line 690 of lalr1.cc  */
-#line 1650 "lib/SPARQLalgebraParser.ypp"
+#line 1650 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 2279 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 300:
-
-/* Line 690 of lalr1.cc  */
-#line 1656 "lib/SPARQLalgebraParser.ypp"
+#line 1656 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
+	(yylhs.value.p_Expression) = NULL; // new FunctionCallExpression(new FunctionCall(TTerm::FUNC_exists, driver.ensureGraphPattern(), NULL, NULL));
 	w3c_sw_NEED_IMPL("EXISTS");
     }
+#line 2288 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 305:
-
-/* Line 690 of lalr1.cc  */
-#line 1678 "lib/SPARQLalgebraParser.ypp"
+#line 1678 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
- 	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression), AggregateCall::ScalarVals()));
+ 	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yystack_[1].value.p_distinctness), (yystack_[0].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 2296 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 306:
-
-/* Line 690 of lalr1.cc  */
-#line 1684 "lib/SPARQLalgebraParser.ypp"
+#line 1684 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yylhs.value.p_distinctness) = DIST_all;
     }
+#line 2304 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 307:
-
-/* Line 690 of lalr1.cc  */
-#line 1687 "lib/SPARQLalgebraParser.ypp"
+#line 1687 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_distinct;
+	(yylhs.value.p_distinctness) = DIST_distinct;
 }
+#line 2312 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 308:
-
-/* Line 690 of lalr1.cc  */
-#line 1693 "lib/SPARQLalgebraParser.ypp"
+#line 1693 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 2320 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 310:
-
-/* Line 690 of lalr1.cc  */
-#line 1700 "lib/SPARQLalgebraParser.ypp"
+#line 1700 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(3) - (1)].p_URI), (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression), AggregateCall::ScalarVals()));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall((yystack_[2].value.p_URI), (yystack_[1].value.p_distinctness), (yystack_[0].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 2328 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 311:
-
-/* Line 690 of lalr1.cc  */
-#line 1706 "lib/SPARQLalgebraParser.ypp"
+#line 1706 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_sum;
+	(yylhs.value.p_URI) = TTerm::FUNC_sum;
     }
+#line 2336 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 312:
-
-/* Line 690 of lalr1.cc  */
-#line 1709 "lib/SPARQLalgebraParser.ypp"
+#line 1709 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_min;
+	(yylhs.value.p_URI) = TTerm::FUNC_min;
     }
+#line 2344 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 313:
-
-/* Line 690 of lalr1.cc  */
-#line 1712 "lib/SPARQLalgebraParser.ypp"
+#line 1712 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_max;
+	(yylhs.value.p_URI) = TTerm::FUNC_max;
     }
+#line 2352 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 314:
-
-/* Line 690 of lalr1.cc  */
-#line 1715 "lib/SPARQLalgebraParser.ypp"
+#line 1715 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_avg;
+	(yylhs.value.p_URI) = TTerm::FUNC_avg;
     }
+#line 2360 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 315:
-
-/* Line 690 of lalr1.cc  */
-#line 1718 "lib/SPARQLalgebraParser.ypp"
+#line 1718 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_sample;
+	(yylhs.value.p_URI) = TTerm::FUNC_sample;
     }
+#line 2368 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 316:
-
-/* Line 690 of lalr1.cc  */
-#line 1724 "lib/SPARQLalgebraParser.ypp"
+#line 1724 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(3) - (2)].p_distinctness), (yysemantic_stack_[(3) - (3)].p_Expression), AggregateCall::ScalarVals()));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yystack_[1].value.p_distinctness), (yystack_[0].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 2376 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 317:
-
-/* Line 690 of lalr1.cc  */
-#line 1727 "lib/SPARQLalgebraParser.ypp"
+#line 1727 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(4) - (2)].p_distinctness), (yysemantic_stack_[(4) - (4)].p_Expression), AggregateCall::ScalarVals()));
+      (yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yystack_[2].value.p_distinctness), (yystack_[0].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 2384 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 319:
-
-/* Line 690 of lalr1.cc  */
-#line 1737 "lib/SPARQLalgebraParser.ypp"
+#line 1737 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_URI));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_URI));
     }
+#line 2392 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 320:
-
-/* Line 690 of lalr1.cc  */
-#line 1740 "lib/SPARQLalgebraParser.ypp"
+#line 1740 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(4) - (2)].p_URI), new ArgList((yysemantic_stack_[(4) - (3)].p_Expressions))));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall((yystack_[2].value.p_URI), new ArgList((yystack_[1].value.p_Expressions))));
     }
+#line 2400 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 321:
-
-/* Line 690 of lalr1.cc  */
-#line 1746 "lib/SPARQLalgebraParser.ypp"
+#line 1746 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
-	delete (yysemantic_stack_[(2) - (1)].p_string);
+	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
+	delete (yystack_[1].value.p_string);
     }
+#line 2409 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 322:
-
-/* Line 690 of lalr1.cc  */
-#line 1753 "lib/SPARQLalgebraParser.ypp"
+#line 1753 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 2417 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 323:
-
-/* Line 690 of lalr1.cc  */
-#line 1759 "lib/SPARQLalgebraParser.ypp"
+#line 1759 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
+#line 2426 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 324:
-
-/* Line 690 of lalr1.cc  */
-#line 1763 "lib/SPARQLalgebraParser.ypp"
+#line 1763 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 2435 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
   case 325:
-
-/* Line 690 of lalr1.cc  */
-#line 1770 "lib/SPARQLalgebraParser.ypp"
+#line 1770 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 2444 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
     break;
 
 
+#line 2448 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:847
+            default:
+              break;
+            }
+        }
+      catch (const syntax_error& yyexc)
+        {
+          error (yyexc);
+          YYERROR;
+        }
+      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      yypop_ (yylen);
+      yylen = 0;
+      YY_STACK_PRINT ();
 
-/* Line 690 of lalr1.cc  */
-#line 2524 "lib/SPARQLalgebraParser.cpp"
-	default:
-          break;
-      }
-    /* User semantic actions sometimes alter yychar, and that requires
-       that yytoken be updated with the new translation.  We take the
-       approach of translating immediately before every use of yytoken.
-       One alternative is translating here after every semantic action,
-       but that translation would be missed if the semantic action
-       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
-       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
-       destructor might then be invoked immediately.  In the case of
-       YYERROR, subsequent parser actions might lead to an incorrect
-       destructor call or verbose syntax error message before the
-       lookahead is translated.  */
-    YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
-
-    yypop_ (yylen);
-    yylen = 0;
-    YY_STACK_PRINT ();
-
-    yysemantic_stack_.push (yyval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the result of the reduction.  */
-    yyn = yyr1_[yyn];
-    yystate = yypgoto_[yyn - yyntokens_] + yystate_stack_[0];
-    if (0 <= yystate && yystate <= yylast_
-	&& yycheck_[yystate] == yystate_stack_[0])
-      yystate = yytable_[yystate];
-    else
-      yystate = yydefgoto_[yyn - yyntokens_];
+      // Shift the result of the reduction.
+      yypush_ (YY_NULLPTR, yylhs);
+    }
     goto yynewstate;
 
-  /*------------------------------------.
-  | yyerrlab -- here on detecting error |
-  `------------------------------------*/
+  /*--------------------------------------.
+  | yyerrlab -- here on detecting error.  |
+  `--------------------------------------*/
   yyerrlab:
-    /* Make sure we have latest lookahead translation.  See comments at
-       user semantic actions for why this is necessary.  */
-    yytoken = yytranslate_ (yychar);
-
-    /* If not already recovering from an error, report this error.  */
+    // If not already recovering from an error, report this error.
     if (!yyerrstatus_)
       {
-	++yynerrs_;
-	if (yychar == yyempty_)
-	  yytoken = yyempty_;
-	error (yylloc, yysyntax_error_ (yystate, yytoken));
+        ++yynerrs_;
+        error (yyla.location, yysyntax_error_ (yystack_[0].state,
+                                           yyempty ? yyempty_ : yyla.type_get ()));
       }
 
-    yyerror_range[1] = yylloc;
+
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
 
-	if (yychar <= yyeof_)
-	  {
-	  /* Return failure if at end of input.  */
-	  if (yychar == yyeof_)
-	    YYABORT;
-	  }
-	else
-	  {
-	    yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
-	    yychar = yyempty_;
-	  }
+        // Return failure if at end of input.
+        if (yyla.type_get () == yyeof_)
+          YYABORT;
+        else if (!yyempty)
+          {
+            yy_destroy_ ("Error: discarding", yyla);
+            yyempty = true;
+          }
       }
 
-    /* Else will try to reuse lookahead token after shifting the error
-       token.  */
+    // Else will try to reuse lookahead token after shifting the error token.
     goto yyerrlab1;
 
 
@@ -2605,100 +2507,105 @@ namespace w3c_sw {
        code.  */
     if (false)
       goto yyerrorlab;
-
-    yyerror_range[1] = yylocation_stack_[yylen - 1];
-    /* Do not reclaim the symbols of the rule which action triggered
+    yyerror_range[1].location = yystack_[yylen - 1].location;
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
-    yystate = yystate_stack_[0];
     goto yyerrlab1;
 
   /*-------------------------------------------------------------.
   | yyerrlab1 -- common code for both syntax error and YYERROR.  |
   `-------------------------------------------------------------*/
   yyerrlab1:
-    yyerrstatus_ = 3;	/* Each real token shifted decrements this.  */
+    yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    {
+      stack_symbol_type error_token;
+      for (;;)
+        {
+          yyn = yypact_[yystack_[0].state];
+          if (!yy_pact_value_is_default_ (yyn))
+            {
+              yyn += yyterror_;
+              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
+                {
+                  yyn = yytable_[yyn];
+                  if (0 < yyn)
+                    break;
+                }
+            }
 
-    for (;;)
-      {
-	yyn = yypact_[yystate];
-	if (!yy_pact_value_is_default_ (yyn))
-	{
-	  yyn += yyterror_;
-	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
-	    {
-	      yyn = yytable_[yyn];
-	      if (0 < yyn)
-		break;
-	    }
-	}
+          // Pop the current state because it cannot handle the error token.
+          if (yystack_.size () == 1)
+            YYABORT;
 
-	/* Pop the current state because it cannot handle the error token.  */
-	if (yystate_stack_.height () == 1)
-	YYABORT;
+          yyerror_range[1].location = yystack_[0].location;
+          yy_destroy_ ("Error: popping", yystack_[0]);
+          yypop_ ();
+          YY_STACK_PRINT ();
+        }
 
-	yyerror_range[1] = yylocation_stack_[0];
-	yydestruct_ ("Error: popping",
-		     yystos_[yystate],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-	yypop_ ();
-	yystate = yystate_stack_[0];
-	YY_STACK_PRINT ();
-      }
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
-    yyerror_range[2] = yylloc;
-    // Using YYLLOC is tempting, but would change the location of
-    // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the error token.  */
-    YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-
-    yystate = yyn;
+      // Shift the error token.
+      error_token.state = yyn;
+      yypush_ ("Shifting", error_token);
+    }
     goto yynewstate;
 
-    /* Accept.  */
+    // Accept.
   yyacceptlab:
     yyresult = 0;
     goto yyreturn;
 
-    /* Abort.  */
+    // Abort.
   yyabortlab:
     yyresult = 1;
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyempty_)
-      {
-        /* Make sure we have latest lookahead translation.  See comments
-           at user semantic actions for why this is necessary.  */
-        yytoken = yytranslate_ (yychar);
-        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
-                     &yylloc);
-      }
+    if (!yyempty)
+      yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
-    /* Do not reclaim the symbols of the rule which action triggered
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
-    while (yystate_stack_.height () != 1)
+    while (1 < yystack_.size ())
       {
-	yydestruct_ ("Cleanup: popping",
-		   yystos_[yystate_stack_[0]],
-		   &yysemantic_stack_[0],
-		   &yylocation_stack_[0]);
-	yypop_ ();
+        yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        yypop_ ();
       }
 
     return yyresult;
   }
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printer might throw an exception.
+        if (!yyempty)
+          yy_destroy_ (YY_NULLPTR, yyla);
+
+        while (1 < yystack_.size ())
+          {
+            yy_destroy_ (YY_NULLPTR, yystack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
+  }
+
+  void
+  SPARQLalgebraParser::error (const syntax_error& yyexc)
+  {
+    error (yyexc.location, yyexc.what());
+  }
 
   // Generate an error message.
   std::string
-  SPARQLalgebraParser::yysyntax_error_ (int yystate, int yytoken)
+  SPARQLalgebraParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
   {
     std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
@@ -2723,7 +2630,7 @@ namespace w3c_sw {
          a consistent state with a default action.  There might have
          been a previous inconsistent state, consistent state with a
          non-default action, or user semantic action that manipulated
-         yychar.
+         yyla.  (However, yyla is currently not documented for users.)
        - Of course, the expected token list depends on states to have
          correct lookahead information, and it depends on the parser not
          to perform extra reductions after fetching a lookahead from the
@@ -2744,7 +2651,7 @@ namespace w3c_sw {
                YYCHECK.  In other words, skip the first -YYN actions for
                this state because they are default actions.  */
             int yyxbegin = yyn < 0 ? -yyn : 0;
-            /* Stay within bounds of both yycheck and yytname.  */
+            // Stay within bounds of both yycheck and yytname.
             int yychecklim = yylast_ - yyn + 1;
             int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
             for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
@@ -2762,7 +2669,7 @@ namespace w3c_sw {
           }
       }
 
-    char const* yyformat = 0;
+    char const* yyformat = YY_NULLPTR;
     switch (yycount)
       {
 #define YYCASE_(N, S)                         \
@@ -2792,13 +2699,14 @@ namespace w3c_sw {
   }
 
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
   const short int SPARQLalgebraParser::yypact_ninf_ = -648;
+
+  const signed char SPARQLalgebraParser::yytable_ninf_ = -1;
+
   const short int
   SPARQLalgebraParser::yypact_[] =
   {
-       -29,   591,    52,  -648,  -648,  -648,  -648,  -648,  -648,  -648,
+     -29,   591,    52,  -648,  -648,  -648,  -648,  -648,  -648,  -648,
     -648,  -648,  -648,  -648,  -648,  -648,  -648,  -648,  -648,  -648,
     -648,  -648,  -648,  -648,  -648,  -648,  -648,  -648,  -648,  -648,
     -648,  -648,  -648,  -648,  -102,   -26,   -12,    -6,    15,    15,
@@ -2873,13 +2781,10 @@ namespace w3c_sw {
      458,  -648
   };
 
-  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
-     YYTABLE doesn't specify something else to do.  Zero means the
-     default is an error.  */
   const unsigned short int
   SPARQLalgebraParser::yydefact_[] =
   {
-         0,     0,     0,     2,     4,     6,     8,    12,    16,    18,
+       0,     0,     0,     2,     4,     6,     8,    12,    16,    18,
       20,    22,    24,    26,    11,    19,    17,    28,    27,    23,
       21,    15,     3,    71,    73,    75,   135,    53,   138,   139,
      140,   141,   142,   136,     0,     0,     0,     0,     0,     0,
@@ -2954,11 +2859,10 @@ namespace w3c_sw {
        0,   318
   };
 
-  /* YYPGOTO[NTERM-NUM].  */
   const short int
   SPARQLalgebraParser::yypgoto_[] =
   {
-      -648,  -648,  -648,  -648,   457,   499,  -648,   502,   243,    26,
+    -648,  -648,  -648,  -648,   457,   499,  -648,   502,   243,    26,
      210,   127,   455,   506,   510,  -648,  -648,  -648,  -648,  -648,
     -648,   -71,  -648,  -648,  -648,  -648,   372,   -30,  -648,   -64,
      -42,  -648,  -648,  -648,   -58,   -57,  -648,   280,  -648,  -648,
@@ -2976,11 +2880,10 @@ namespace w3c_sw {
     -648,  -648
   };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   SPARQLalgebraParser::yydefgoto_[] =
   {
-        -1,     2,     3,     4,     5,     6,    57,     7,     8,     9,
+      -1,     2,     3,     4,     5,     6,    57,     7,     8,     9,
       10,    11,    12,    13,    14,    58,    59,   349,   487,   650,
      208,    15,   209,    60,   210,   354,   214,   599,   195,    16,
       17,    18,   215,   600,    19,    20,   291,   292,   434,   293,
@@ -2998,14 +2901,10 @@ namespace w3c_sw {
      133,   156
   };
 
-  /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const signed char SPARQLalgebraParser::yytable_ninf_ = -1;
   const unsigned short int
   SPARQLalgebraParser::yytable_[] =
   {
-       109,   136,   200,   152,   194,   317,   153,   145,   155,   318,
+     109,   136,   200,   152,   194,   317,   153,   145,   155,   318,
      484,   196,   302,   460,    44,   372,   472,   197,   198,   306,
      479,   199,   202,   306,   203,   181,   567,   568,   154,   467,
      437,   569,   571,   468,   573,   204,   205,   206,   636,   207,
@@ -3208,11 +3107,10 @@ namespace w3c_sw {
      103,     0,     0,   104,   105,   106
   };
 
-  /* YYCHECK.  */
   const short int
   SPARQLalgebraParser::yycheck_[] =
   {
-        41,    43,    75,    51,    75,   159,    51,    50,    51,   162,
+      41,    43,    75,    51,    75,   159,    51,    50,    51,   162,
      344,    75,   141,   322,    13,   228,   327,    75,    75,    47,
      331,    75,    75,    47,    75,    57,   442,   443,    51,    22,
      297,   447,   448,    26,   450,    75,    75,    75,    59,    75,
@@ -3415,12 +3313,10 @@ namespace w3c_sw {
      159,    -1,    -1,   162,   163,   164
   };
 
-  /* STOS_[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
   const unsigned short int
   SPARQLalgebraParser::yystos_[] =
   {
-         0,   106,   167,   168,   169,   170,   171,   173,   174,   175,
+       0,   106,   167,   168,   169,   170,   171,   173,   174,   175,
      176,   177,   178,   179,   180,   187,   195,   196,   197,   200,
      201,   206,   208,   209,   210,   211,   243,   245,   253,   255,
      257,   258,   259,   260,     3,     4,     5,     6,     7,     8,
@@ -3495,37 +3391,10 @@ namespace w3c_sw {
      314,    98
   };
 
-#if YYDEBUG
-  /* TOKEN_NUMBER_[YYLEX-NUM] -- Internal symbol number corresponding
-     to YYLEX-NUM.  */
-  const unsigned short int
-  SPARQLalgebraParser::yytoken_number_[] =
-  {
-         0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,   361,   362,   363,   364,
-     365,   366,   367,   368,   369,   370,   371,   372,   373,   374,
-     375,   376,   377,   378,   379,   380,   381,   382,   383,   384,
-     385,   386,   387,   388,   389,   390,   391,   392,   393,   394,
-     395,   396,   397,   398,   399,   400,   401,   402,   403,   404,
-     405,   406,   407,   408,   409,   410,   411,   412,   413,   414,
-     415,   416,   417,   418,   419,   420
-  };
-#endif
-
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
   const unsigned short int
   SPARQLalgebraParser::yyr1_[] =
   {
-         0,   166,   167,   167,   168,   169,   169,   170,   170,   171,
+       0,   166,   167,   167,   168,   169,   169,   170,   170,   171,
      171,   171,   171,   172,   172,   173,   173,   174,   174,   175,
      175,   176,   176,   177,   177,   178,   178,   179,   179,   180,
      181,   182,   184,   185,   183,   186,   186,   187,   188,   188,
@@ -3563,11 +3432,10 @@ namespace w3c_sw {
      317
   };
 
-  /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
   SPARQLalgebraParser::yyr2_[] =
   {
-         0,     2,     1,     1,     1,     4,     1,     4,     1,     4,
+       0,     2,     1,     1,     1,     4,     1,     4,     1,     4,
        4,     1,     1,     1,     2,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     4,     1,     1,     1,     4,
        2,     4,     0,     0,     6,     0,     2,     7,     0,     2,
@@ -3605,13 +3473,14 @@ namespace w3c_sw {
        1
   };
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
-  /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-     First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
+
+
+  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
   const char*
   const SPARQLalgebraParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_base", "IT_prefix",
+  "\"end of file\"", "error", "$undefined", "IT_base", "IT_prefix",
   "IT_project", "IT_extend", "IT_distinct", "IT_reduced", "IT_group",
   "IT_filter", "IT_order", "IT_ask", "IT_bgp", "IT_triple", "IT_join",
   "IT_sequence", "IT_leftjoin", "IT_optional", "IT_union", "IT_unit",
@@ -3695,185 +3564,14 @@ namespace w3c_sw {
   "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_QIRIref_E_C_E_Opt", "NumericLiteral",
   "NumericLiteralUnsigned", "NumericLiteralPositive",
   "NumericLiteralNegative", "BooleanLiteral", "String", "IRIref",
-  "PrefixedName", "BlankNode", 0
+  "PrefixedName", "BlankNode", YY_NULLPTR
   };
-#endif
 
 #if YYDEBUG
-  /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
-  const SPARQLalgebraParser::rhs_number_type
-  SPARQLalgebraParser::yyrhs_[] =
-  {
-       167,     0,    -1,   168,    -1,   208,    -1,   169,    -1,   106,
-     181,   170,    98,    -1,   170,    -1,   106,   182,   171,    98,
-      -1,   171,    -1,   106,   172,   173,    98,    -1,   106,   172,
-     180,    98,    -1,   180,    -1,   173,    -1,   232,    -1,   172,
-     232,    -1,   206,    -1,   174,    -1,   195,    -1,   175,    -1,
-     187,    -1,   176,    -1,   201,    -1,   177,    -1,   200,    -1,
-     178,    -1,   106,   189,   179,    98,    -1,   179,    -1,   197,
-      -1,   196,    -1,   106,    12,   196,    98,    -1,     3,   157,
-      -1,     4,   106,   186,    98,    -1,    -1,    -1,   106,   184,
-     158,   185,   157,    98,    -1,    -1,   186,   183,    -1,   106,
-       5,   106,   188,    98,   176,    98,    -1,    -1,   188,   276,
-      -1,     6,   106,   190,    98,    -1,    -1,   190,   191,    -1,
-     106,   276,   278,    98,    -1,   106,   162,   278,    98,    -1,
-     106,   162,   295,    98,    -1,   206,    -1,   195,    -1,   187,
-      -1,   201,    -1,   200,    -1,   106,     7,   175,    98,    -1,
-     106,     8,   175,    98,    -1,   245,    -1,   106,     9,   106,
-     198,    98,   106,   199,    98,   196,    98,    -1,   192,    -1,
-     198,   192,    -1,   193,    -1,   199,   193,    -1,   106,    10,
-     278,   178,    98,    -1,   106,    11,   106,   202,    98,   177,
-      98,    -1,   203,    -1,   202,   203,    -1,   205,    -1,   278,
-      -1,    35,    -1,    36,    -1,   106,   204,   278,    98,    -1,
-     106,    79,   207,   207,   174,    98,    -1,   273,    -1,   128,
-      -1,   209,    -1,   106,   181,   210,    98,    -1,   210,    -1,
-     106,   182,   211,    98,    -1,   211,    -1,   106,   212,    98,
-      -1,   213,    -1,   212,   213,    -1,   214,    -1,   216,    -1,
-     218,    -1,   220,    -1,   221,    -1,   222,    -1,   219,    -1,
-     223,    -1,   224,    -1,   225,    -1,   226,    -1,   106,    55,
-     217,   315,   215,    98,    -1,    -1,   234,    -1,   106,   124,
-     217,   235,    98,    -1,    -1,   127,    -1,   106,    77,   217,
-     235,    98,    -1,   106,    34,   217,   234,    98,    -1,   106,
-      52,   217,   233,   233,    98,    -1,   106,    92,   217,   233,
-     233,    98,    -1,   106,   103,   217,   233,   233,    98,    -1,
-     106,   123,   237,    98,    -1,   106,   108,   237,    98,    -1,
-     106,    93,   236,    98,    -1,   106,    23,   227,   245,   229,
-      98,    -1,    -1,   227,   232,    -1,    -1,   231,    -1,   230,
-     228,    -1,   231,    -1,   106,    78,   236,    98,    -1,   106,
-      59,   236,    98,    -1,   106,    46,   315,    98,    -1,   106,
-      22,   315,   315,    98,    -1,   128,    -1,   315,    -1,   315,
-      -1,   234,    -1,    46,    -1,    22,    -1,    26,    -1,   238,
-      -1,   238,    -1,   240,    -1,   241,    -1,   243,    -1,    -1,
-     240,   239,    -1,    -1,   115,   275,   242,   243,    -1,   106,
-      13,   244,    98,    -1,   106,    87,    20,    98,    -1,   252,
-      -1,   244,   252,    -1,   243,    -1,   260,    -1,   106,   246,
-     248,   247,    98,    -1,   253,    -1,   255,    -1,   257,    -1,
-     258,    -1,   259,    -1,   106,    31,   274,   264,   274,    98,
-      -1,    15,    -1,    16,    -1,   245,    -1,   247,   245,    -1,
-     243,    -1,   260,    -1,   106,   246,   248,   249,    98,    -1,
-     253,    -1,   255,    -1,   257,    -1,   258,    -1,   259,    -1,
-     106,    31,   274,   264,   274,    98,    -1,   194,    -1,   248,
-      -1,   249,   248,    -1,   106,   104,   251,    98,    -1,   278,
-      -1,   251,   278,    -1,   106,    14,   274,   274,   274,    98,
-      -1,   106,    17,   245,   245,   254,    98,    -1,   106,    18,
-     245,   254,    98,    -1,    -1,   250,    -1,    -1,   106,    24,
-     275,   256,   245,    98,    -1,   106,    73,   217,   275,   245,
-      98,    -1,   106,    41,   245,   245,    98,    -1,   106,    19,
-     245,   245,    98,    -1,   106,    10,   250,   245,    98,    -1,
-      95,    -1,   106,   278,   263,    98,    -1,   112,   278,    -1,
-      -1,   263,   262,    -1,   265,    -1,   266,    -1,   267,    -1,
-     268,    -1,   271,    -1,   270,    -1,   106,    39,   264,   264,
-      98,    -1,   106,   119,   264,   264,    98,    -1,   106,    21,
-     264,    98,    -1,   106,   269,   264,    98,    -1,   106,   130,
-     207,   207,   264,    98,    -1,    62,    -1,    56,    -1,    51,
-      -1,   315,    -1,    47,    -1,   106,   116,   272,    98,    -1,
-     264,    -1,   272,   264,    -1,   144,    -1,   276,    -1,   277,
-      -1,   276,    -1,   315,    -1,   163,    -1,   164,    -1,   315,
-      -1,   305,    -1,   309,    -1,   313,    -1,   317,    -1,    95,
-      -1,   279,    -1,   280,    -1,   281,    -1,   286,    -1,   287,
-      -1,   288,    -1,   106,   110,   278,   278,    98,    -1,   106,
-      45,   278,   278,    98,    -1,   282,    -1,   284,    -1,   283,
-      -1,   106,   118,   278,   278,    98,    -1,   106,    72,   278,
-     278,    98,    -1,   106,   120,   278,   278,    98,    -1,   106,
-      58,   278,   278,    98,    -1,   106,   113,   278,   278,    98,
-      -1,   106,    53,   278,   278,    98,    -1,   106,    42,   251,
-      98,    -1,   285,    -1,   106,    74,   278,   278,    98,    -1,
-     106,   131,   278,   278,    98,    -1,   106,    85,   278,   278,
-      98,    -1,   106,   132,   278,   278,    98,    -1,   106,    69,
-     278,    98,    -1,   106,    74,   278,    98,    -1,   106,   131,
-     278,    98,    -1,   289,    -1,   304,    -1,   305,    -1,   309,
-      -1,   313,    -1,   276,    -1,   162,    -1,   106,    33,   278,
-      98,    -1,   106,   134,   278,    98,    -1,   106,   122,   278,
-     112,   278,    98,    -1,   106,   129,   278,    98,    -1,   106,
-      40,   276,    98,    -1,   106,    89,   278,    98,    -1,   106,
-      71,   278,    98,    -1,   106,    61,   290,    98,    -1,   106,
-     141,    98,    -1,   106,    63,   278,    98,    -1,   106,    54,
-     278,    98,    -1,   106,    37,   278,    98,    -1,   106,    30,
-     278,    98,    -1,   106,    44,   251,    98,    -1,   293,    -1,
-     106,    67,   278,    98,    -1,   106,    28,   278,    98,    -1,
-     106,    27,   278,    98,    -1,   106,    99,   278,    98,    -1,
-     106,    68,   278,   112,   278,    98,    -1,   106,    88,   278,
-     112,   278,    98,    -1,   106,   107,   278,   112,   278,    98,
-      -1,   106,   139,   278,   112,   278,    98,    -1,   106,   140,
-     278,   112,   278,    98,    -1,   106,   117,   278,    98,    -1,
-     106,   109,   278,    98,    -1,   106,    96,   278,    98,    -1,
-     106,    43,   278,    98,    -1,   106,    38,   278,    98,    -1,
-     106,    32,   278,    98,    -1,   106,   102,   278,    98,    -1,
-     106,   101,   278,    98,    -1,   106,    91,    98,    -1,   106,
-     138,   278,    98,    -1,   106,   135,   278,    98,    -1,   106,
-      29,   278,    98,    -1,   106,    90,   278,    98,    -1,   106,
-      80,   278,    98,    -1,   106,    64,   261,    98,    -1,   106,
-      49,   278,   112,   278,   112,   278,    98,    -1,   106,    84,
-     278,   112,   278,    98,    -1,   106,   105,   278,   112,   278,
-      98,    -1,   106,   114,   278,   112,   278,    98,    -1,   106,
-     126,   278,    98,    -1,   106,    97,   278,    98,    -1,   106,
-      76,   278,    98,    -1,   106,    70,   278,    98,    -1,   106,
-      60,   278,    98,    -1,   291,    -1,   294,    -1,    -1,   278,
-      -1,   106,    50,   278,   112,   278,   292,    98,    -1,    -1,
-     262,    -1,   106,    25,   278,   112,   278,   292,    98,    -1,
-     106,   111,   245,    98,    -1,   106,   296,    98,    -1,   297,
-      -1,   300,    -1,   302,    -1,    83,   298,   299,    -1,    -1,
-      66,    -1,    85,    -1,   278,    -1,   301,   298,   278,    -1,
-      82,    -1,    75,    -1,    81,    -1,    86,    -1,    94,    -1,
-     100,   298,   278,    -1,   100,   298,   303,   278,    -1,   106,
-      57,   314,    98,    -1,   315,    -1,   106,   315,   251,    98,
-      -1,   314,   308,    -1,   133,   315,    -1,   165,    -1,   306,
-      -1,    -1,   307,    -1,   310,    -1,   311,    -1,   312,    -1,
-     144,    -1,   145,    -1,   146,    -1,   147,    -1,   148,    -1,
-     149,    -1,   150,    -1,   151,    -1,   152,    -1,   142,    -1,
-     143,    -1,   153,    -1,   155,    -1,   154,    -1,   156,    -1,
-     157,    -1,   316,    -1,   159,    -1,   158,    -1,   160,    -1,
-     161,    -1
-  };
-
-  /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
-     YYRHS.  */
-  const unsigned short int
-  SPARQLalgebraParser::yyprhs_[] =
-  {
-         0,     0,     3,     5,     7,     9,    14,    16,    21,    23,
-      28,    33,    35,    37,    39,    42,    44,    46,    48,    50,
-      52,    54,    56,    58,    60,    62,    67,    69,    71,    73,
-      78,    81,    86,    87,    88,    95,    96,    99,   107,   108,
-     111,   116,   117,   120,   125,   130,   135,   137,   139,   141,
-     143,   145,   150,   155,   157,   168,   170,   173,   175,   178,
-     184,   192,   194,   197,   199,   201,   203,   205,   210,   217,
-     219,   221,   223,   228,   230,   235,   237,   241,   243,   246,
-     248,   250,   252,   254,   256,   258,   260,   262,   264,   266,
-     268,   275,   276,   278,   284,   285,   287,   293,   299,   306,
-     313,   320,   325,   330,   335,   342,   343,   346,   347,   349,
-     352,   354,   359,   364,   369,   375,   377,   379,   381,   383,
-     385,   387,   389,   391,   393,   395,   397,   399,   400,   403,
-     404,   409,   414,   419,   421,   424,   426,   428,   434,   436,
-     438,   440,   442,   444,   451,   453,   455,   457,   460,   462,
-     464,   470,   472,   474,   476,   478,   480,   487,   489,   491,
-     494,   499,   501,   504,   511,   518,   524,   525,   527,   528,
-     535,   542,   548,   554,   560,   562,   567,   570,   571,   574,
-     576,   578,   580,   582,   584,   586,   592,   598,   603,   608,
-     615,   617,   619,   621,   623,   625,   630,   632,   635,   637,
-     639,   641,   643,   645,   647,   649,   651,   653,   655,   657,
-     659,   661,   663,   665,   667,   669,   671,   673,   679,   685,
-     687,   689,   691,   697,   703,   709,   715,   721,   727,   732,
-     734,   740,   746,   752,   758,   763,   768,   773,   775,   777,
-     779,   781,   783,   785,   787,   792,   797,   804,   809,   814,
-     819,   824,   829,   833,   838,   843,   848,   853,   858,   860,
-     865,   870,   875,   880,   887,   894,   901,   908,   915,   920,
-     925,   930,   935,   940,   945,   950,   955,   959,   964,   969,
-     974,   979,   984,   989,   998,  1005,  1012,  1019,  1024,  1029,
-    1034,  1039,  1044,  1046,  1048,  1049,  1051,  1059,  1060,  1062,
-    1070,  1075,  1079,  1081,  1083,  1085,  1089,  1090,  1092,  1094,
-    1096,  1100,  1102,  1104,  1106,  1108,  1110,  1114,  1119,  1124,
-    1126,  1131,  1134,  1137,  1139,  1141,  1142,  1144,  1146,  1148,
-    1150,  1152,  1154,  1156,  1158,  1160,  1162,  1164,  1166,  1168,
-    1170,  1172,  1174,  1176,  1178,  1180,  1182,  1184,  1186,  1188,
-    1190
-  };
-
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   SPARQLalgebraParser::yyrline_[] =
   {
-         0,   335,   335,   338,   344,   348,   351,   355,   358,   362,
+       0,   335,   335,   338,   344,   348,   351,   355,   358,   362,
      365,   368,   371,   377,   380,   387,   388,   395,   396,   403,
      404,   411,   412,   419,   420,   427,   431,   437,   438,   446,
      452,   458,   462,   464,   462,   472,   474,   478,   485,   488,
@@ -3916,9 +3614,11 @@ namespace w3c_sw {
   SPARQLalgebraParser::yystack_print_ ()
   {
     *yycdebug_ << "Stack now";
-    for (state_stack_type::const_iterator i = yystate_stack_.begin ();
-	 i != yystate_stack_.end (); ++i)
-      *yycdebug_ << ' ' << *i;
+    for (stack_type::const_iterator
+           i = yystack_.begin (),
+           i_end = yystack_.end ();
+         i != i_end; ++i)
+      *yycdebug_ << ' ' << i->state;
     *yycdebug_ << std::endl;
   }
 
@@ -3928,19 +3628,18 @@ namespace w3c_sw {
   {
     unsigned int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
-    /* Print the symbols being reduced, and their result.  */
+    // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "):" << std::endl;
-    /* The symbols being reduced.  */
+               << " (line " << yylno << "):" << std::endl;
+    // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
-		       yyrhs_[yyprhs_[yyrule] + yyi],
-		       &(yysemantic_stack_[(yynrhs) - (yyi + 1)]),
-		       &(yylocation_stack_[(yynrhs) - (yyi + 1)]));
+                       yystack_[(yynrhs) - (yyi + 1)]);
   }
 #endif // YYDEBUG
 
-  /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
+  // Symbol number corresponding to token number t.
+  inline
   SPARQLalgebraParser::token_number_type
   SPARQLalgebraParser::yytranslate_ (int t)
   {
@@ -3948,7 +3647,7 @@ namespace w3c_sw {
     const token_number_type
     translate_table[] =
     {
-           0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -3992,33 +3691,21 @@ namespace w3c_sw {
      155,   156,   157,   158,   159,   160,   161,   162,   163,   164,
      165
     };
-    if ((unsigned int) t <= yyuser_token_number_max_)
+    const unsigned int user_token_number_max_ = 420;
+    const token_number_type undef_token_ = 2;
+
+    if (static_cast<int>(t) <= yyeof_)
+      return yyeof_;
+    else if (static_cast<unsigned int> (t) <= user_token_number_max_)
       return translate_table[t];
     else
-      return yyundef_token_;
+      return undef_token_;
   }
-
-  const int SPARQLalgebraParser::yyeof_ = 0;
-  const int SPARQLalgebraParser::yylast_ = 2005;
-  const int SPARQLalgebraParser::yynnts_ = 152;
-  const int SPARQLalgebraParser::yyempty_ = -2;
-  const int SPARQLalgebraParser::yyfinal_ = 76;
-  const int SPARQLalgebraParser::yyterror_ = 1;
-  const int SPARQLalgebraParser::yyerrcode_ = 256;
-  const int SPARQLalgebraParser::yyntokens_ = 166;
-
-  const unsigned int SPARQLalgebraParser::yyuser_token_number_max_ = 420;
-  const SPARQLalgebraParser::token_number_type SPARQLalgebraParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
-
-/* Line 1136 of lalr1.cc  */
-#line 4018 "lib/SPARQLalgebraParser.cpp"
-
-
-/* Line 1138 of lalr1.cc  */
-#line 1830 "lib/SPARQLalgebraParser.ypp"
+#line 3708 "lib/SPARQLalgebraParser.cpp" // lalr1.cc:1155
+#line 1830 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:1156
  /*** Additional Code ***/
 
 void w3c_sw::SPARQLalgebraParser::error(const SPARQLalgebraParser::location_type& l,
@@ -4086,5 +3773,4 @@ void SPARQLalgebraDriver::executeSelect (std::string queryStr, RdfDB* db, Result
 } // namespace w3c_sw
 
 /* END Driver */
-
 

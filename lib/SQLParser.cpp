@@ -1,56 +1,57 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+// A Bison parser, made by GNU Bison 3.0.2.
 
-/* Skeleton implementation for Bison LALR(1) parsers in C++
-   
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+// Skeleton implementation for Bison LALR(1) parsers in C++
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
-   
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
+// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// As a special exception, you may create a larger work that contains
+// part or all of the Bison parser skeleton and distribute that work
+// under terms of your choice, so long as that work isn't itself a
+// parser generator using the skeleton or a modified version thereof
+// as a parser skeleton.  Alternatively, if you modify or redistribute
+// the parser skeleton itself, you may (at your option) remove this
+// special exception, which will cause the skeleton and the resulting
+// Bison output files to be licensed under the GNU General Public
+// License without this special exception.
+
+// This special exception was added by the Free Software Foundation in
+// version 2.2 of Bison.
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
-/* First part of user declarations.  */
+// First part of user declarations.
 
+#line 39 "lib/SQLParser.cpp" // lalr1.cc:399
 
-/* Line 293 of lalr1.cc  */
-#line 41 "lib/SQLParser.cpp"
-
+# ifndef YY_NULLPTR
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULLPTR nullptr
+#  else
+#   define YY_NULLPTR 0
+#  endif
+# endif
 
 #include "SQLParser.hpp"
 
-/* User implementation prologue.  */
-
-/* Line 299 of lalr1.cc  */
-#line 240 "lib/SQLParser.ypp"
+// User implementation prologue.
+#line 240 "lib/SQLParser.ypp" // lalr1.cc:407
 
 #include "SQLScanner.hpp"
-
-/* Line 299 of lalr1.cc  */
-#line 320 "lib/SQLParser.ypp"
+#line 320 "lib/SQLParser.ypp" // lalr1.cc:407
 
 #include <stdarg.h>
 #include "SQL.hpp"
@@ -62,14 +63,13 @@
 #undef yylex
 #define yylex driver.lexer->lex
 
+#line 67 "lib/SQLParser.cpp" // lalr1.cc:407
 
-/* Line 299 of lalr1.cc  */
-#line 68 "lib/SQLParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
-#   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
+#   include <libintl.h> // FIXME: INFRINGES ON USER NAME SPACE.
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
 #  endif
 # endif
@@ -78,79 +78,78 @@
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
 /* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
    If N is 0, then set CURRENT to the empty location which ends
    the previous symbol: RHS[0] (always defined).  */
 
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
- do                                                                    \
-   if (N)                                                              \
-     {                                                                 \
-       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
-       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
-     }                                                                 \
-   else                                                                \
-     {                                                                 \
-       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
-     }                                                                 \
- while (false)
-#endif
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
 
-/* Suppress unused-variable warnings by "using" E.  */
-#define YYUSE(e) ((void) (e))
 
-/* Enable debugging if requested.  */
+// Suppress unused-variable warnings by "using" E.
+#define YYUSE(E) ((void) (E))
+
+// Enable debugging if requested.
 #if YYDEBUG
 
-/* A pseudo ostream that takes yydebug_ into account.  */
+// A pseudo ostream that takes yydebug_ into account.
 # define YYCDEBUG if (yydebug_) (*yycdebug_)
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
-do {							\
-  if (yydebug_)						\
-    {							\
-      *yycdebug_ << Title << ' ';			\
-      yy_symbol_print_ ((Type), (Value), (Location));	\
-      *yycdebug_ << std::endl;				\
-    }							\
-} while (false)
+# define YY_SYMBOL_PRINT(Title, Symbol)         \
+  do {                                          \
+    if (yydebug_)                               \
+    {                                           \
+      *yycdebug_ << Title << ' ';               \
+      yy_print_ (*yycdebug_, Symbol);           \
+      *yycdebug_ << std::endl;                  \
+    }                                           \
+  } while (false)
 
-# define YY_REDUCE_PRINT(Rule)		\
-do {					\
-  if (yydebug_)				\
-    yy_reduce_print_ (Rule);		\
-} while (false)
+# define YY_REDUCE_PRINT(Rule)          \
+  do {                                  \
+    if (yydebug_)                       \
+      yy_reduce_print_ (Rule);          \
+  } while (false)
 
-# define YY_STACK_PRINT()		\
-do {					\
-  if (yydebug_)				\
-    yystack_print_ ();			\
-} while (false)
+# define YY_STACK_PRINT()               \
+  do {                                  \
+    if (yydebug_)                       \
+      yystack_print_ ();                \
+  } while (false)
 
-#else /* !YYDEBUG */
+#else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_REDUCE_PRINT(Rule)
-# define YY_STACK_PRINT()
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
+# define YY_STACK_PRINT()                static_cast<void>(0)
 
-#endif /* !YYDEBUG */
+#endif // !YYDEBUG
 
-#define yyerrok		(yyerrstatus_ = 0)
-#define yyclearin	(yychar = yyempty_)
+#define yyerrok         (yyerrstatus_ = 0)
+#define yyclearin       (yyempty = true)
 
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrorlab
+#define YYACCEPT        goto yyacceptlab
+#define YYABORT         goto yyabortlab
+#define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
 namespace w3c_sw {
-
-/* Line 382 of lalr1.cc  */
-#line 154 "lib/SQLParser.cpp"
+#line 153 "lib/SQLParser.cpp" // lalr1.cc:474
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -175,7 +174,7 @@ namespace w3c_sw {
             case '\\':
               if (*++yyp != '\\')
                 goto do_not_strip_quotes;
-              /* Fall through.  */
+              // Fall through.
             default:
               yyr += *yyp;
               break;
@@ -198,68 +197,213 @@ namespace w3c_sw {
       yycdebug_ (&std::cerr),
 #endif
       driver (driver_yyarg)
+  {}
+
+  SQLParser::~SQLParser ()
+  {}
+
+
+  /*---------------.
+  | Symbol types.  |
+  `---------------*/
+
+  inline
+  SQLParser::syntax_error::syntax_error (const location_type& l, const std::string& m)
+    : std::runtime_error (m)
+    , location (l)
+  {}
+
+  // basic_symbol.
+  template <typename Base>
+  inline
+  SQLParser::basic_symbol<Base>::basic_symbol ()
+    : value ()
+  {}
+
+  template <typename Base>
+  inline
+  SQLParser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
+    : Base (other)
+    , value ()
+    , location (other.location)
+  {
+    value = other.value;
+  }
+
+
+  template <typename Base>
+  inline
+  SQLParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v, const location_type& l)
+    : Base (t)
+    , value (v)
+    , location (l)
+  {}
+
+
+  /// Constructor for valueless symbols.
+  template <typename Base>
+  inline
+  SQLParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const location_type& l)
+    : Base (t)
+    , value ()
+    , location (l)
+  {}
+
+  template <typename Base>
+  inline
+  SQLParser::basic_symbol<Base>::~basic_symbol ()
   {
   }
 
-  SQLParser::~SQLParser ()
+  template <typename Base>
+  inline
+  void
+  SQLParser::basic_symbol<Base>::move (basic_symbol& s)
   {
+    super_type::move(s);
+    value = s.value;
+    location = s.location;
+  }
+
+  // by_type.
+  inline
+  SQLParser::by_type::by_type ()
+     : type (empty)
+  {}
+
+  inline
+  SQLParser::by_type::by_type (const by_type& other)
+    : type (other.type)
+  {}
+
+  inline
+  SQLParser::by_type::by_type (token_type t)
+    : type (yytranslate_ (t))
+  {}
+
+  inline
+  void
+  SQLParser::by_type::move (by_type& that)
+  {
+    type = that.type;
+    that.type = empty;
+  }
+
+  inline
+  int
+  SQLParser::by_type::type_get () const
+  {
+    return type;
+  }
+
+
+  // by_state.
+  inline
+  SQLParser::by_state::by_state ()
+    : state (empty)
+  {}
+
+  inline
+  SQLParser::by_state::by_state (const by_state& other)
+    : state (other.state)
+  {}
+
+  inline
+  void
+  SQLParser::by_state::move (by_state& that)
+  {
+    state = that.state;
+    that.state = empty;
+  }
+
+  inline
+  SQLParser::by_state::by_state (state_type s)
+    : state (s)
+  {}
+
+  inline
+  SQLParser::symbol_number_type
+  SQLParser::by_state::type_get () const
+  {
+    return state == empty ? 0 : yystos_[state];
+  }
+
+  inline
+  SQLParser::stack_symbol_type::stack_symbol_type ()
+  {}
+
+
+  inline
+  SQLParser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
+    : super_type (s, that.location)
+  {
+    value = that.value;
+    // that is emptied.
+    that.type = empty;
+  }
+
+  inline
+  SQLParser::stack_symbol_type&
+  SQLParser::stack_symbol_type::operator= (const stack_symbol_type& that)
+  {
+    state = that.state;
+    value = that.value;
+    location = that.location;
+    return *this;
+  }
+
+
+  template <typename Base>
+  inline
+  void
+  SQLParser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  {
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yysym);
+
+    // User destructor.
+    YYUSE (yysym.type_get ());
   }
 
 #if YYDEBUG
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  inline void
-  SQLParser::yy_symbol_value_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
-  {
-    YYUSE (yylocationp);
-    YYUSE (yyvaluep);
-    switch (yytype)
-      {
-         default:
-	  break;
-      }
-  }
-
-
+  template <typename Base>
   void
-  SQLParser::yy_symbol_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
+  SQLParser::yy_print_ (std::ostream& yyo,
+                                     const basic_symbol<Base>& yysym) const
   {
-    *yycdebug_ << (yytype < yyntokens_ ? "token" : "nterm")
-	       << ' ' << yytname_[yytype] << " ("
-	       << *yylocationp << ": ";
-    yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
-    *yycdebug_ << ')';
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
+    symbol_number_type yytype = yysym.type_get ();
+    yyo << (yytype < yyntokens_ ? "token" : "nterm")
+        << ' ' << yytname_[yytype] << " ("
+        << yysym.location << ": ";
+    YYUSE (yytype);
+    yyo << ')';
   }
 #endif
 
+  inline
   void
-  SQLParser::yydestruct_ (const char* yymsg,
-			   int yytype, semantic_type* yyvaluep, location_type* yylocationp)
+  SQLParser::yypush_ (const char* m, state_type s, symbol_type& sym)
   {
-    YYUSE (yylocationp);
-    YYUSE (yymsg);
-    YYUSE (yyvaluep);
-
-    YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
-
-    switch (yytype)
-      {
-  
-	default:
-	  break;
-      }
+    stack_symbol_type t (s, sym);
+    yypush_ (m, t);
   }
 
+  inline
+  void
+  SQLParser::yypush_ (const char* m, stack_symbol_type& s)
+  {
+    if (m)
+      YY_SYMBOL_PRINT (m, s);
+    yystack_.push (s);
+  }
+
+  inline
   void
   SQLParser::yypop_ (unsigned int n)
   {
-    yystate_stack_.pop (n);
-    yysemantic_stack_.pop (n);
-    yylocation_stack_.pop (n);
+    yystack_.pop (n);
   }
 
 #if YYDEBUG
@@ -287,7 +431,17 @@ namespace w3c_sw {
   {
     yydebug_ = l;
   }
-#endif
+#endif // YYDEBUG
+
+  inline SQLParser::state_type
+  SQLParser::yy_lr_goto_state_ (state_type yystate, int yysym)
+  {
+    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
+      return yytable_[yyr];
+    else
+      return yydefgoto_[yysym - yyntokens_];
+  }
 
   inline bool
   SQLParser::yy_pact_value_is_default_ (int yyvalue)
@@ -304,135 +458,117 @@ namespace w3c_sw {
   int
   SQLParser::parse ()
   {
-    /// Lookahead and lookahead in internal form.
-    int yychar = yyempty_;
-    int yytoken = 0;
+    /// Whether yyla contains a lookahead.
+    bool yyempty = true;
 
-    /* State.  */
+    // State.
     int yyn;
+    /// Length of the RHS of the rule being reduced.
     int yylen = 0;
-    int yystate = 0;
 
-    /* Error handling.  */
+    // Error handling.
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the lookahead.
-    semantic_type yylval;
-    /// Location of the lookahead.
-    location_type yylloc;
+    /// The lookahead symbol.
+    symbol_type yyla;
+
     /// The locations where the error started and ended.
-    location_type yyerror_range[3];
+    stack_symbol_type yyerror_range[3];
 
-    /// $$.
-    semantic_type yyval;
-    /// @$.
-    location_type yyloc;
-
+    /// The return value of parse ().
     int yyresult;
 
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
+    try
+      {
     YYCDEBUG << "Starting parse" << std::endl;
 
 
-    /* User initialization code.  */
-    
-/* Line 565 of lalr1.cc  */
-#line 32 "lib/SQLParser.ypp"
+    // User initialization code.
+    #line 32 "lib/SQLParser.ypp" // lalr1.cc:725
 {
     // initialize the initial location object
-    yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
+    yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
 }
 
-/* Line 565 of lalr1.cc  */
-#line 348 "lib/SQLParser.cpp"
+#line 497 "lib/SQLParser.cpp" // lalr1.cc:725
 
-    /* Initialize the stacks.  The initial state will be pushed in
+    /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
        stacks with a primary value.  */
-    yystate_stack_ = state_stack_type (0);
-    yysemantic_stack_ = semantic_stack_type (0);
-    yylocation_stack_ = location_stack_type (0);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
+    yystack_.clear ();
+    yypush_ (YY_NULLPTR, 0, yyla);
 
-    /* New state.  */
+    // A new symbol was pushed on the stack.
   yynewstate:
-    yystate_stack_.push (yystate);
-    YYCDEBUG << "Entering state " << yystate << std::endl;
+    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
 
-    /* Accept?  */
-    if (yystate == yyfinal_)
+    // Accept?
+    if (yystack_[0].state == yyfinal_)
       goto yyacceptlab;
 
     goto yybackup;
 
-    /* Backup.  */
+    // Backup.
   yybackup:
 
-    /* Try to take a decision without lookahead.  */
-    yyn = yypact_[yystate];
+    // Try to take a decision without lookahead.
+    yyn = yypact_[yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
-    /* Read a lookahead token.  */
-    if (yychar == yyempty_)
+    // Read a lookahead token.
+    if (yyempty)
       {
-	YYCDEBUG << "Reading a token: ";
-	yychar = yylex (&yylval, &yylloc);
+        YYCDEBUG << "Reading a token: ";
+        try
+          {
+            yyla.type = yytranslate_ (yylex (&yyla.value, &yyla.location));
+          }
+        catch (const syntax_error& yyexc)
+          {
+            error (yyexc);
+            goto yyerrlab1;
+          }
+        yyempty = false;
       }
+    YY_SYMBOL_PRINT ("Next token is", yyla);
 
-
-    /* Convert token to internal form.  */
-    if (yychar <= yyeof_)
-      {
-	yychar = yytoken = yyeof_;
-	YYCDEBUG << "Now at end of input." << std::endl;
-      }
-    else
-      {
-	yytoken = yytranslate_ (yychar);
-	YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
-      }
-
-    /* If the proper action on seeing token YYTOKEN is to reduce or to
-       detect an error, take that action.  */
-    yyn += yytoken;
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yytoken)
+    /* If the proper action on seeing token YYLA.TYPE is to reduce or
+       to detect an error, take that action.  */
+    yyn += yyla.type_get ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
       goto yydefault;
 
-    /* Reduce or error.  */
+    // Reduce or error.
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yy_table_value_is_error_ (yyn))
-	  goto yyerrlab;
-	yyn = -yyn;
-	goto yyreduce;
+        if (yy_table_value_is_error_ (yyn))
+          goto yyerrlab;
+        yyn = -yyn;
+        goto yyreduce;
       }
 
-    /* Shift the lookahead token.  */
-    YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
+    // Discard the token being shifted.
+    yyempty = true;
 
-    /* Discard the token being shifted.  */
-    yychar = yyempty_;
-
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
-
-    /* Count tokens shifted since error; after three, turn off error
-       status.  */
+    // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
       --yyerrstatus_;
 
-    yystate = yyn;
+    // Shift the lookahead token.
+    yypush_ ("Shifting", yyn, yyla);
     goto yynewstate;
 
   /*-----------------------------------------------------------.
   | yydefault -- do the default action for the current state.  |
   `-----------------------------------------------------------*/
   yydefault:
-    yyn = yydefact_[yystate];
+    yyn = yydefact_[yystack_[0].state];
     if (yyn == 0)
       goto yyerrlab;
     goto yyreduce;
@@ -442,1531 +578,1372 @@ namespace w3c_sw {
   `-----------------------------*/
   yyreduce:
     yylen = yyr2_[yyn];
-    /* If YYLEN is nonzero, implement the default value of the action:
-       `$$ = $1'.  Otherwise, use the top of the stack.
-
-       Otherwise, the following line sets YYVAL to garbage.
-       This behavior is undocumented and Bison
-       users should not rely upon it.  */
-    if (yylen)
-      yyval = yysemantic_stack_[yylen - 1];
-    else
-      yyval = yysemantic_stack_[0];
-
     {
-      slice<location_type, location_stack_type> slice (yylocation_stack_, yylen);
-      YYLLOC_DEFAULT (yyloc, slice, yylen);
-    }
-    YY_REDUCE_PRINT (yyn);
-    switch (yyn)
+      stack_symbol_type yylhs;
+      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
+      /* If YYLEN is nonzero, implement the default value of the
+         action: '$$ = $1'.  Otherwise, use the top of the stack.
+
+         Otherwise, the following line sets YYLHS.VALUE to garbage.
+         This behavior is undocumented and Bison users should not rely
+         upon it.  */
+      if (yylen)
+        yylhs.value = yystack_[yylen - 1].value;
+      else
+        yylhs.value = yystack_[0].value;
+
+      // Compute the default @$.
       {
-	  case 2:
+        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+      }
 
-/* Line 690 of lalr1.cc  */
-#line 336 "lib/SQLParser.ypp"
+      // Perform the reduction.
+      YY_REDUCE_PRINT (yyn);
+      try
+        {
+          switch (yyn)
+            {
+  case 2:
+#line 336 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.root = (yysemantic_stack_[(2) - (1)].p_Select);
+	driver.root = (yystack_[1].value.p_Select);
     }
+#line 613 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 14:
-
-/* Line 690 of lalr1.cc  */
-#line 365 "lib/SQLParser.ypp"
+#line 365 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curCreate = driver.tables[*(yysemantic_stack_[(3) - (3)].p_NAME)];
-	delete (yysemantic_stack_[(3) - (3)].p_NAME);
+	driver.curCreate = driver.tables[*(yystack_[0].value.p_NAME)];
+	delete (yystack_[0].value.p_NAME);
       }
+#line 622 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 15:
-
-/* Line 690 of lalr1.cc  */
-#line 368 "lib/SQLParser.ypp"
+#line 368 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	  driver.curCreate = NULL;
     }
+#line 630 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 26:
-
-/* Line 690 of lalr1.cc  */
-#line 402 "lib/SQLParser.ypp"
+#line 402 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curCreate = new sql::schema::Relation(*(yysemantic_stack_[(3) - (3)].p_NAME));
+	driver.curCreate = new sql::schema::Relation(*(yystack_[0].value.p_NAME));
       }
+#line 638 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 27:
-
-/* Line 690 of lalr1.cc  */
-#line 404 "lib/SQLParser.ypp"
+#line 404 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	  driver.tables[*(yysemantic_stack_[(9) - (3)].p_NAME)] = driver.curCreate;
-	  delete (yysemantic_stack_[(9) - (3)].p_NAME);
+	  driver.tables[*(yystack_[6].value.p_NAME)] = driver.curCreate;
+	  delete (yystack_[6].value.p_NAME);
 	  driver.curCreate = NULL;
       }
+#line 648 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 33:
-
-/* Line 690 of lalr1.cc  */
-#line 426 "lib/SQLParser.ypp"
+#line 426 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curCreate = new sql::schema::Relation(*(yysemantic_stack_[(5) - (3)].p_NAME));
-	driver.inserts.push_back(new sql::Insert(*(yysemantic_stack_[(5) - (3)].p_NAME), (yysemantic_stack_[(5) - (4)].p_Attributes), (yysemantic_stack_[(5) - (5)].p_RValue)));
-	delete (yysemantic_stack_[(5) - (3)].p_NAME);
+	driver.curCreate = new sql::schema::Relation(*(yystack_[2].value.p_NAME));
+	driver.inserts.push_back(new sql::Insert(*(yystack_[2].value.p_NAME), (yystack_[1].value.p_Attributes), (yystack_[0].value.p_RValue)));
+	delete (yystack_[2].value.p_NAME);
     }
+#line 658 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 34:
-
-/* Line 690 of lalr1.cc  */
-#line 434 "lib/SQLParser.ypp"
+#line 434 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Attributes) = NULL;
+	(yylhs.value.p_Attributes) = NULL;
     }
+#line 666 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 36:
-
-/* Line 690 of lalr1.cc  */
-#line 441 "lib/SQLParser.ypp"
+#line 441 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_LINEN << "ignoring non-standard inserts\n";
     }
+#line 674 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 39:
-
-/* Line 690 of lalr1.cc  */
-#line 452 "lib/SQLParser.ypp"
+#line 452 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RValue) = new sql::RConstants((yysemantic_stack_[(3) - (2)].p_Expressions));
+	(yylhs.value.p_RValue) = new sql::RConstants((yystack_[1].value.p_Expressions));
     }
+#line 682 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 40:
-
-/* Line 690 of lalr1.cc  */
-#line 455 "lib/SQLParser.ypp"
+#line 455 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RValue) = new sql::RSelection((yysemantic_stack_[(1) - (1)].p_Select));
+	(yylhs.value.p_RValue) = new sql::RSelection((yystack_[0].value.p_Select));
     }
+#line 690 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 41:
-
-/* Line 690 of lalr1.cc  */
-#line 461 "lib/SQLParser.ypp"
+#line 461 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_LINEN << "ignoring parameters\n";
     }
+#line 698 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 47:
-
-/* Line 690 of lalr1.cc  */
-#line 481 "lib/SQLParser.ypp"
+#line 481 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curAttributeName = (yysemantic_stack_[(1) - (1)].p_NAME);
+	driver.curAttributeName = (yystack_[0].value.p_NAME);
     }
+#line 706 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 48:
-
-/* Line 690 of lalr1.cc  */
-#line 483 "lib/SQLParser.ypp"
+#line 483 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	sql::schema::Field* f = new sql::schema::Field(*(yysemantic_stack_[(3) - (1)].p_NAME), parser::DataTypeProxy((yysemantic_stack_[(3) - (3)].p_TypeSize).type), (yysemantic_stack_[(3) - (3)].p_TypeSize).size);
+	sql::schema::Field* f = new sql::schema::Field(*(yystack_[2].value.p_NAME), parser::DataTypeProxy((yystack_[0].value.p_TypeSize).type), (yystack_[0].value.p_TypeSize).size);
 	driver.curCreate->addField(f);
     }
+#line 715 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 49:
-
-/* Line 690 of lalr1.cc  */
-#line 486 "lib/SQLParser.ypp"
+#line 486 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	driver.curAttributeName = NULL;
-	delete (yysemantic_stack_[(5) - (1)].p_NAME);
+	delete (yystack_[4].value.p_NAME);
     }
+#line 724 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 51:
-
-/* Line 690 of lalr1.cc  */
-#line 491 "lib/SQLParser.ypp"
+#line 491 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey((yysemantic_stack_[(3) - (3)].p_Attributes)));
+	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey((yystack_[0].value.p_Attributes)));
     }
+#line 732 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 52:
-
-/* Line 690 of lalr1.cc  */
-#line 494 "lib/SQLParser.ypp"
+#line 494 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curCreate->addUniqueKey(new sql::schema::Key((yysemantic_stack_[(4) - (4)].p_Attributes)));
+	driver.curCreate->addUniqueKey(new sql::schema::Key((yystack_[0].value.p_Attributes)));
     }
+#line 740 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 59:
-
-/* Line 690 of lalr1.cc  */
-#line 515 "lib/SQLParser.ypp"
+#line 515 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.curCreate->addForeignKey(new sql::schema::ForeignKey((yysemantic_stack_[(7) - (4)].p_Attributes), *(yysemantic_stack_[(7) - (6)].p_NAME), new sql::schema::Key((yysemantic_stack_[(7) - (7)].p_Attributes))));
-	delete (yysemantic_stack_[(7) - (6)].p_NAME);
+	driver.curCreate->addForeignKey(new sql::schema::ForeignKey((yystack_[3].value.p_Attributes), *(yystack_[1].value.p_NAME), new sql::schema::Key((yystack_[0].value.p_Attributes))));
+	delete (yystack_[1].value.p_NAME);
     }
+#line 749 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 60:
-
-/* Line 690 of lalr1.cc  */
-#line 521 "lib/SQLParser.ypp"
+#line 521 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_LINEN << "ignoring constraint name\n";
     }
+#line 757 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 63:
-
-/* Line 690 of lalr1.cc  */
-#line 532 "lib/SQLParser.ypp"
+#line 532 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TypeSize).type = (yysemantic_stack_[(2) - (1)].p_SchemaDatatype);
-	(yyval.p_TypeSize).size = (yysemantic_stack_[(2) - (2)].p_int);
+	(yylhs.value.p_TypeSize).type = (yystack_[1].value.p_SchemaDatatype);
+	(yylhs.value.p_TypeSize).size = (yystack_[0].value.p_int);
     }
+#line 766 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 64:
-
-/* Line 690 of lalr1.cc  */
-#line 539 "lib/SQLParser.ypp"
+#line 539 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(3) - (2)].p_Expression));
-	(yyval.p_int) = i->getValue();
-	delete (yysemantic_stack_[(3) - (2)].p_Expression);
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yystack_[1].value.p_Expression));
+	(yylhs.value.p_int) = i->getValue();
+	delete (yystack_[1].value.p_Expression);
     }
+#line 776 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 65:
-
-/* Line 690 of lalr1.cc  */
-#line 547 "lib/SQLParser.ypp"
+#line 547 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = SQL_PRECISION_unspecified;
+	(yylhs.value.p_int) = SQL_PRECISION_unspecified;
     }
+#line 784 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 67:
-
-/* Line 690 of lalr1.cc  */
-#line 554 "lib/SQLParser.ypp"
+#line 554 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_char, (yysemantic_stack_[(3) - (1)].p_Nationality), (yysemantic_stack_[(3) - (3)].p_Variability));
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_char, (yystack_[2].value.p_Nationality), (yystack_[0].value.p_Variability));
     }
+#line 792 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 557 "lib/SQLParser.ypp"
+#line 557 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_char, sql::DataType::VARIABILITY_varying);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_char, sql::DataType::VARIABILITY_varying);
     }
+#line 800 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 560 "lib/SQLParser.ypp"
+#line 560 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_binary, (yysemantic_stack_[(2) - (2)].p_Variability));
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_binary, (yystack_[0].value.p_Variability));
     }
+#line 808 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 563 "lib/SQLParser.ypp"
+#line 563 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_binary, sql::DataType::VARIABILITY_varying);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_binary, sql::DataType::VARIABILITY_varying);
     }
+#line 816 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 71:
-
-/* Line 690 of lalr1.cc  */
-#line 566 "lib/SQLParser.ypp"
+#line 566 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
     }
+#line 824 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 72:
-
-/* Line 690 of lalr1.cc  */
-#line 569 "lib/SQLParser.ypp"
+#line 569 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
     }
+#line 832 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 73:
-
-/* Line 690 of lalr1.cc  */
-#line 572 "lib/SQLParser.ypp"
+#line 572 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
     }
+#line 840 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 74:
-
-/* Line 690 of lalr1.cc  */
-#line 575 "lib/SQLParser.ypp"
+#line 575 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
     }
+#line 848 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 75:
-
-/* Line 690 of lalr1.cc  */
-#line 578 "lib/SQLParser.ypp"
+#line 578 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_int);
     }
+#line 856 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 76:
-
-/* Line 690 of lalr1.cc  */
-#line 581 "lib/SQLParser.ypp"
+#line 581 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_float);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_float);
     }
+#line 864 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 77:
-
-/* Line 690 of lalr1.cc  */
-#line 584 "lib/SQLParser.ypp"
+#line 584 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_real);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_real);
     }
+#line 872 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 78:
-
-/* Line 690 of lalr1.cc  */
-#line 587 "lib/SQLParser.ypp"
+#line 587 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_double);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_double);
     }
+#line 880 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 79:
-
-/* Line 690 of lalr1.cc  */
-#line 590 "lib/SQLParser.ypp"
+#line 590 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_boolean);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_boolean);
     }
+#line 888 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 80:
-
-/* Line 690 of lalr1.cc  */
-#line 593 "lib/SQLParser.ypp"
+#line 593 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_date);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_date);
     }
+#line 896 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 81:
-
-/* Line 690 of lalr1.cc  */
-#line 596 "lib/SQLParser.ypp"
+#line 596 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_time);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_time);
     }
+#line 904 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 82:
-
-/* Line 690 of lalr1.cc  */
-#line 599 "lib/SQLParser.ypp"
+#line 599 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_timestamp);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_timestamp);
     }
+#line 912 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 83:
-
-/* Line 690 of lalr1.cc  */
-#line 602 "lib/SQLParser.ypp"
+#line 602 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_datetime);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_datetime);
     }
+#line 920 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 84:
-
-/* Line 690 of lalr1.cc  */
-#line 605 "lib/SQLParser.ypp"
+#line 605 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_interval);
+	(yylhs.value.p_SchemaDatatype).parser::NoCtorDataType::make(sql::DataType::TYPENAME_interval);
     }
+#line 928 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 85:
-
-/* Line 690 of lalr1.cc  */
-#line 611 "lib/SQLParser.ypp"
+#line 611 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Nationality) = sql::DataType::NATIONALITY_domestic;
+	(yylhs.value.p_Nationality) = sql::DataType::NATIONALITY_domestic;
     }
+#line 936 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 86:
-
-/* Line 690 of lalr1.cc  */
-#line 614 "lib/SQLParser.ypp"
+#line 614 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Nationality) = sql::DataType::NATIONALITY_national;
+	(yylhs.value.p_Nationality) = sql::DataType::NATIONALITY_national;
     }
+#line 944 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 89:
-
-/* Line 690 of lalr1.cc  */
-#line 625 "lib/SQLParser.ypp"
+#line 625 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variability) = sql::DataType::VARIABILITY_varying;
+	(yylhs.value.p_Variability) = sql::DataType::VARIABILITY_varying;
     }
+#line 952 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 90:
-
-/* Line 690 of lalr1.cc  */
-#line 628 "lib/SQLParser.ypp"
+#line 628 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variability) = sql::DataType::VARIABILITY_blob;
+	(yylhs.value.p_Variability) = sql::DataType::VARIABILITY_blob;
     }
+#line 960 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 91:
-
-/* Line 690 of lalr1.cc  */
-#line 634 "lib/SQLParser.ypp"
+#line 634 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variability) = sql::DataType::VARIABILITY_fixed;
+	(yylhs.value.p_Variability) = sql::DataType::VARIABILITY_fixed;
     }
+#line 968 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 646 "lib/SQLParser.ypp"
+#line 646 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	attrs->push_back(*driver.curAttributeName);
 	driver.curCreate->setPrimaryKey(new sql::schema::PrimaryKey(attrs));
     }
+#line 978 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 651 "lib/SQLParser.ypp"
+#line 651 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_LINEN << "ignoring DEFAULT\n";
     }
+#line 986 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 654 "lib/SQLParser.ypp"
+#line 654 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_LINEN << "ignoring NOT NULL\n";
     }
+#line 994 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 657 "lib/SQLParser.ypp"
+#line 657 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	attrs->push_back(*driver.curAttributeName);
 	driver.curCreate->addUniqueKey(new sql::schema::Key(attrs));
     }
+#line 1004 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 99:
-
-/* Line 690 of lalr1.cc  */
-#line 662 "lib/SQLParser.ypp"
+#line 662 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	std::vector<sql::Attribute>* attrs = new std::vector<sql::Attribute>();
 	attrs->push_back(sql::Attribute(*driver.curAttributeName));
-	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *(yysemantic_stack_[(3) - (2)].p_NAME), new sql::schema::Key((yysemantic_stack_[(3) - (3)].p_Attributes)));
+	sql::schema::ForeignKey* fk = new sql::schema::ForeignKey(attrs, *(yystack_[1].value.p_NAME), new sql::schema::Key((yystack_[0].value.p_Attributes)));
 	driver.curCreate->addForeignKey(fk);
-	delete (yysemantic_stack_[(3) - (2)].p_NAME);
+	delete (yystack_[1].value.p_NAME);
     }
+#line 1016 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 100:
-
-/* Line 690 of lalr1.cc  */
-#line 672 "lib/SQLParser.ypp"
+#line 672 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::IsNullConstraint();
+	(yylhs.value.p_Expression) = new sql::IsNullConstraint();
     }
+#line 1024 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 105:
-
-/* Line 690 of lalr1.cc  */
-#line 679 "lib/SQLParser.ypp"
+#line 679 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::CastConstraint((yysemantic_stack_[(6) - (3)].p_Expression), parser::DataTypeProxy((yysemantic_stack_[(6) - (5)].p_TypeSize).type), (yysemantic_stack_[(6) - (5)].p_TypeSize).size);
+	(yylhs.value.p_Expression) = new sql::CastConstraint((yystack_[3].value.p_Expression), parser::DataTypeProxy((yystack_[1].value.p_TypeSize).type), (yystack_[1].value.p_TypeSize).size);
     }
+#line 1032 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 106:
-
-/* Line 690 of lalr1.cc  */
-#line 685 "lib/SQLParser.ypp"
+#line 685 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(4) - (3)].p_Attributes)->insert((yysemantic_stack_[(4) - (3)].p_Attributes)->begin(), *(yysemantic_stack_[(4) - (2)].p_NAME));
-	delete (yysemantic_stack_[(4) - (2)].p_NAME);
-	(yyval.p_Attributes) = (yysemantic_stack_[(4) - (3)].p_Attributes);
+	(yystack_[1].value.p_Attributes)->insert((yystack_[1].value.p_Attributes)->begin(), *(yystack_[2].value.p_NAME));
+	delete (yystack_[2].value.p_NAME);
+	(yylhs.value.p_Attributes) = (yystack_[1].value.p_Attributes);
 }
+#line 1042 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 107:
-
-/* Line 690 of lalr1.cc  */
-#line 693 "lib/SQLParser.ypp"
+#line 693 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
+	(yylhs.value.p_NAME) = (yystack_[0].value.p_NAME);
 }
+#line 1050 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 108:
-
-/* Line 690 of lalr1.cc  */
-#line 699 "lib/SQLParser.ypp"
+#line 699 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Attributes) = new std::vector<sql::Attribute>();
+	(yylhs.value.p_Attributes) = new std::vector<sql::Attribute>();
     }
+#line 1058 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 109:
-
-/* Line 690 of lalr1.cc  */
-#line 702 "lib/SQLParser.ypp"
+#line 702 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Attributes)->push_back(*(yysemantic_stack_[(2) - (2)].p_NAME));
-	delete (yysemantic_stack_[(2) - (2)].p_NAME);
-	(yyval.p_Attributes) = (yysemantic_stack_[(2) - (1)].p_Attributes);
+	(yystack_[1].value.p_Attributes)->push_back(*(yystack_[0].value.p_NAME));
+	delete (yystack_[0].value.p_NAME);
+	(yylhs.value.p_Attributes) = (yystack_[1].value.p_Attributes);
     }
+#line 1068 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 110:
-
-/* Line 690 of lalr1.cc  */
-#line 710 "lib/SQLParser.ypp"
+#line 710 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(4) - (3)].p_Expressions)->insert((yysemantic_stack_[(4) - (3)].p_Expressions)->begin(), (yysemantic_stack_[(4) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(4) - (3)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->insert((yystack_[1].value.p_Expressions)->begin(), (yystack_[2].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
 }
+#line 1077 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 111:
-
-/* Line 690 of lalr1.cc  */
-#line 717 "lib/SQLParser.ypp"
+#line 717 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1085 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 112:
-
-/* Line 690 of lalr1.cc  */
-#line 723 "lib/SQLParser.ypp"
+#line 723 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1093 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 113:
-
-/* Line 690 of lalr1.cc  */
-#line 726 "lib/SQLParser.ypp"
+#line 726 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1102 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 114:
-
-/* Line 690 of lalr1.cc  */
-#line 733 "lib/SQLParser.ypp"
+#line 733 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Selects)->size() > 0) {
-	    (yysemantic_stack_[(2) - (2)].p_Selects)->insert((yysemantic_stack_[(2) - (2)].p_Selects)->begin(), (yysemantic_stack_[(2) - (1)].p_Select));
-	    sql::SQLUnion* u = new sql::SQLUnion((yysemantic_stack_[(2) - (2)].p_Selects)->begin(), (yysemantic_stack_[(2) - (2)].p_Selects)->end());
-	    (yyval.p_Select) = driver.root = u;
+	if ((yystack_[0].value.p_Selects)->size() > 0) {
+	    (yystack_[0].value.p_Selects)->insert((yystack_[0].value.p_Selects)->begin(), (yystack_[1].value.p_Select));
+	    sql::SQLUnion* u = new sql::SQLUnion((yystack_[0].value.p_Selects)->begin(), (yystack_[0].value.p_Selects)->end());
+	    (yylhs.value.p_Select) = driver.root = u;
 	} else
-	    (yyval.p_Select) = driver.root = (yysemantic_stack_[(2) - (1)].p_Select);
-	delete (yysemantic_stack_[(2) - (2)].p_Selects);
+	    (yylhs.value.p_Select) = driver.root = (yystack_[1].value.p_Select);
+	delete (yystack_[0].value.p_Selects);
 }
+#line 1116 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 115:
-
-/* Line 690 of lalr1.cc  */
-#line 745 "lib/SQLParser.ypp"
+#line 745 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-    (yyval.p_Select) = (yysemantic_stack_[(2) - (2)].p_Select);
+    (yylhs.value.p_Select) = (yystack_[0].value.p_Select);
 }
+#line 1124 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 116:
-
-/* Line 690 of lalr1.cc  */
-#line 751 "lib/SQLParser.ypp"
+#line 751 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Selects) = new std::vector<sql::SQLQuery*>();
+	(yylhs.value.p_Selects) = new std::vector<sql::SQLQuery*>();
     }
+#line 1132 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 117:
-
-/* Line 690 of lalr1.cc  */
-#line 754 "lib/SQLParser.ypp"
+#line 754 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Selects)->push_back((yysemantic_stack_[(2) - (2)].p_Select));
-	(yyval.p_Selects) = (yysemantic_stack_[(2) - (1)].p_Selects);
+	(yystack_[1].value.p_Selects)->push_back((yystack_[0].value.p_Select));
+	(yylhs.value.p_Selects) = (yystack_[1].value.p_Selects);
     }
+#line 1141 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 118:
-
-/* Line 690 of lalr1.cc  */
-#line 761 "lib/SQLParser.ypp"
+#line 761 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	driver.root = (yyval.p_Select) = new sql::SQLQuery((yysemantic_stack_[(5) - (3)].p_TableList).joins);
-	delete (yysemantic_stack_[(5) - (3)].p_TableList).joins;
-	for (std::vector<sql::AliasedSelect*>::const_iterator it = (yysemantic_stack_[(5) - (2)].p_AttributeList)->begin(); it != (yysemantic_stack_[(5) - (2)].p_AttributeList)->end(); ++it)
+	driver.root = (yylhs.value.p_Select) = new sql::SQLQuery((yystack_[2].value.p_TableList).joins);
+	delete (yystack_[2].value.p_TableList).joins;
+	for (std::vector<sql::AliasedSelect*>::const_iterator it = (yystack_[3].value.p_AttributeList)->begin(); it != (yystack_[3].value.p_AttributeList)->end(); ++it)
 	    driver.root->selects.push_back(*it);
-	delete (yysemantic_stack_[(5) - (2)].p_AttributeList);
-	for (std::vector<const w3c_sw::sql::Expression*>::const_iterator it = (yysemantic_stack_[(5) - (3)].p_TableList).exprs->begin();
-	     it != (yysemantic_stack_[(5) - (3)].p_TableList).exprs->end(); ++it)
+	delete (yystack_[3].value.p_AttributeList);
+	for (std::vector<const w3c_sw::sql::Expression*>::const_iterator it = (yystack_[2].value.p_TableList).exprs->begin();
+	     it != (yystack_[2].value.p_TableList).exprs->end(); ++it)
 	    driver.root->constraints.push_back(*it);
 	    // LINE << "exprs: " << (*it)->toString();
-	delete (yysemantic_stack_[(5) - (3)].p_TableList).exprs;
-	driver.root->limit = (yysemantic_stack_[(5) - (4)].p_int);
-	driver.root->offset = (yysemantic_stack_[(5) - (5)].p_int);
+	delete (yystack_[2].value.p_TableList).exprs;
+	driver.root->limit = (yystack_[1].value.p_int);
+	driver.root->offset = (yystack_[0].value.p_int);
 }
+#line 1160 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 119:
-
-/* Line 690 of lalr1.cc  */
-#line 778 "lib/SQLParser.ypp"
+#line 778 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    (yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
 }
+#line 1168 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 120:
-
-/* Line 690 of lalr1.cc  */
-#line 784 "lib/SQLParser.ypp"
+#line 784 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 1176 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 122:
-
-/* Line 690 of lalr1.cc  */
-#line 791 "lib/SQLParser.ypp"
+#line 791 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableList).joins = (yysemantic_stack_[(3) - (2)].p_TableList).joins;
-	(yyval.p_TableList).exprs = (yysemantic_stack_[(3) - (2)].p_TableList).exprs;
-	if ((yysemantic_stack_[(3) - (3)].p_Expression) != NULL)
-	    (yyval.p_TableList).exprs->push_back((yysemantic_stack_[(3) - (3)].p_Expression));
+	(yylhs.value.p_TableList).joins = (yystack_[1].value.p_TableList).joins;
+	(yylhs.value.p_TableList).exprs = (yystack_[1].value.p_TableList).exprs;
+	if ((yystack_[0].value.p_Expression) != NULL)
+	    (yylhs.value.p_TableList).exprs->push_back((yystack_[0].value.p_Expression));
 }
+#line 1187 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 123:
-
-/* Line 690 of lalr1.cc  */
-#line 800 "lib/SQLParser.ypp"
+#line 800 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableList).joins = new std::vector<sql::Join*>();;
-	(yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();;
+	(yylhs.value.p_TableList).joins = new std::vector<sql::Join*>();;
+	(yylhs.value.p_TableList).exprs = new std::vector<const sql::Expression*>();;
     }
+#line 1196 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 125:
-
-/* Line 690 of lalr1.cc  */
-#line 808 "lib/SQLParser.ypp"
+#line 808 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_int) = i->getValue();
-	delete (yysemantic_stack_[(2) - (2)].p_Expression);
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yystack_[0].value.p_Expression));
+	(yylhs.value.p_int) = i->getValue();
+	delete (yystack_[0].value.p_Expression);
     }
+#line 1206 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 126:
-
-/* Line 690 of lalr1.cc  */
-#line 813 "lib/SQLParser.ypp"
+#line 813 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(3) - (3)].p_Expression));
-	(yyval.p_int) = i->getValue();
-	delete (yysemantic_stack_[(3) - (3)].p_Expression);
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yystack_[0].value.p_Expression));
+	(yylhs.value.p_int) = i->getValue();
+	delete (yystack_[0].value.p_Expression);
     }
+#line 1216 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 127:
-
-/* Line 690 of lalr1.cc  */
-#line 821 "lib/SQLParser.ypp"
+#line 821 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = -1;
+	(yylhs.value.p_int) = -1;
     }
+#line 1224 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 129:
-
-/* Line 690 of lalr1.cc  */
-#line 828 "lib/SQLParser.ypp"
+#line 828 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_int) = i->getValue();
-	delete (yysemantic_stack_[(2) - (2)].p_Expression);
+	const sql::IntConstraint* i = dynamic_cast<const sql::IntConstraint*>((yystack_[0].value.p_Expression));
+	(yylhs.value.p_int) = i->getValue();
+	delete (yystack_[0].value.p_Expression);
 }
+#line 1234 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 130:
-
-/* Line 690 of lalr1.cc  */
-#line 836 "lib/SQLParser.ypp"
+#line 836 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = -1;
+	(yylhs.value.p_int) = -1;
     }
+#line 1242 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 132:
-
-/* Line 690 of lalr1.cc  */
-#line 843 "lib/SQLParser.ypp"
+#line 843 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (2)].p_AttributeList)->insert((yysemantic_stack_[(2) - (2)].p_AttributeList)->begin(), (yysemantic_stack_[(2) - (1)].p_AliasedSelect));
-	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>((yysemantic_stack_[(2) - (2)].p_AttributeList)->begin(), (yysemantic_stack_[(2) - (2)].p_AttributeList)->end());
-	delete (yysemantic_stack_[(2) - (2)].p_AttributeList);
+	(yystack_[0].value.p_AttributeList)->insert((yystack_[0].value.p_AttributeList)->begin(), (yystack_[1].value.p_AliasedSelect));
+	(yylhs.value.p_AttributeList) = new std::vector<sql::AliasedSelect*>((yystack_[0].value.p_AttributeList)->begin(), (yystack_[0].value.p_AttributeList)->end());
+	delete (yystack_[0].value.p_AttributeList);
     }
+#line 1252 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 133:
-
-/* Line 690 of lalr1.cc  */
-#line 848 "lib/SQLParser.ypp"
+#line 848 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
+	(yylhs.value.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
       }
+#line 1260 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 134:
-
-/* Line 690 of lalr1.cc  */
-#line 854 "lib/SQLParser.ypp"
+#line 854 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_AliasedSelect) = (yysemantic_stack_[(2) - (2)].p_AliasedSelect);
+	(yylhs.value.p_AliasedSelect) = (yystack_[0].value.p_AliasedSelect);
     }
+#line 1268 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 135:
-
-/* Line 690 of lalr1.cc  */
-#line 860 "lib/SQLParser.ypp"
+#line 860 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
+	(yylhs.value.p_AttributeList) = new std::vector<sql::AliasedSelect*>();
     }
+#line 1276 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 136:
-
-/* Line 690 of lalr1.cc  */
-#line 863 "lib/SQLParser.ypp"
+#line 863 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_AttributeList)->push_back((yysemantic_stack_[(2) - (2)].p_AliasedSelect));
-	(yyval.p_AttributeList) = (yysemantic_stack_[(2) - (1)].p_AttributeList);
+	(yystack_[1].value.p_AttributeList)->push_back((yystack_[0].value.p_AliasedSelect));
+	(yylhs.value.p_AttributeList) = (yystack_[1].value.p_AttributeList);
     }
+#line 1285 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 137:
-
-/* Line 690 of lalr1.cc  */
-#line 870 "lib/SQLParser.ypp"
+#line 870 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_NAME) == NULL) {
+	if ((yystack_[0].value.p_NAME) == NULL) {
 	    // "SELECT a.dname FROM DEPT AS a" yields a field calld `dname` (i.e. elides the alias).
-	    const sql::AliasAttrConstraint* a = dynamic_cast<const sql::AliasAttrConstraint*>((yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_AliasedSelect) = new sql::AliasedSelect((yysemantic_stack_[(2) - (1)].p_Expression), a ? a->getAliasAttr().attr : (yysemantic_stack_[(2) - (1)].p_Expression)->toString());
+	    const sql::AliasAttrConstraint* a = dynamic_cast<const sql::AliasAttrConstraint*>((yystack_[1].value.p_Expression));
+	    (yylhs.value.p_AliasedSelect) = new sql::AliasedSelect((yystack_[1].value.p_Expression), a ? a->getAliasAttr().attr : (yystack_[1].value.p_Expression)->toString());
 	} else {
-	    (yyval.p_AliasedSelect) = new sql::AliasedSelect((yysemantic_stack_[(2) - (1)].p_Expression), *(yysemantic_stack_[(2) - (2)].p_NAME));
-	    delete (yysemantic_stack_[(2) - (2)].p_NAME);
+	    (yylhs.value.p_AliasedSelect) = new sql::AliasedSelect((yystack_[1].value.p_Expression), *(yystack_[0].value.p_NAME));
+	    delete (yystack_[0].value.p_NAME);
 	}
     }
+#line 1300 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 140:
-
-/* Line 690 of lalr1.cc  */
-#line 888 "lib/SQLParser.ypp"
+#line 888 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
+	(yylhs.value.p_NAME) = (yystack_[0].value.p_NAME);
     }
+#line 1308 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 141:
-
-/* Line 690 of lalr1.cc  */
-#line 894 "lib/SQLParser.ypp"
+#line 894 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NAME) = NULL;
+	(yylhs.value.p_NAME) = NULL;
     }
+#line 1316 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 142:
-
-/* Line 690 of lalr1.cc  */
-#line 897 "lib/SQLParser.ypp"
+#line 897 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
+	(yylhs.value.p_NAME) = (yystack_[0].value.p_NAME);
       }
+#line 1324 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 143:
-
-/* Line 690 of lalr1.cc  */
-#line 903 "lib/SQLParser.ypp"
+#line 903 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(*(yysemantic_stack_[(3) - (1)].p_NAME)), sql::Attribute(*(yysemantic_stack_[(3) - (3)].p_NAME))));
-	delete (yysemantic_stack_[(3) - (1)].p_NAME);
-	delete (yysemantic_stack_[(3) - (3)].p_NAME);
+	(yylhs.value.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(*(yystack_[2].value.p_NAME)), sql::Attribute(*(yystack_[0].value.p_NAME))));
+	delete (yystack_[2].value.p_NAME);
+	delete (yystack_[0].value.p_NAME);
     }
+#line 1334 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 144:
-
-/* Line 690 of lalr1.cc  */
-#line 908 "lib/SQLParser.ypp"
+#line 908 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(""), sql::Attribute(*(yysemantic_stack_[(1) - (1)].p_NAME))));
-	delete (yysemantic_stack_[(1) - (1)].p_NAME);
+      (yylhs.value.p_Expression) = new sql::AliasAttrConstraint(sql::AliasAttr(sql::RelVar(""), sql::Attribute(*(yystack_[0].value.p_NAME))));
+	delete (yystack_[0].value.p_NAME);
     }
+#line 1343 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 149:
-
-/* Line 690 of lalr1.cc  */
-#line 925 "lib/SQLParser.ypp"
+#line 925 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (2)].p_TableList).joins->insert((yysemantic_stack_[(2) - (2)].p_TableList).joins->begin(), (yysemantic_stack_[(2) - (1)].p_tableAlias).relation != NULL
-		   ? (sql::Join*)new sql::TableJoin(*(yysemantic_stack_[(2) - (1)].p_tableAlias).relation, *(yysemantic_stack_[(2) - (1)].p_tableAlias).alias, false)
-		   : (sql::Join*)new sql::SubqueryJoin((yysemantic_stack_[(2) - (1)].p_tableAlias).subselect, *(yysemantic_stack_[(2) - (1)].p_tableAlias).alias, false));
-	delete (yysemantic_stack_[(2) - (1)].p_tableAlias).relation;
-	delete (yysemantic_stack_[(2) - (1)].p_tableAlias).alias;
-	(yyval.p_TableList).joins = new std::vector<sql::Join*>((yysemantic_stack_[(2) - (2)].p_TableList).joins->begin(), (yysemantic_stack_[(2) - (2)].p_TableList).joins->end());
-	(yyval.p_TableList).exprs = (yysemantic_stack_[(2) - (2)].p_TableList).exprs;
-	delete (yysemantic_stack_[(2) - (2)].p_TableList).joins;
+	(yystack_[0].value.p_TableList).joins->insert((yystack_[0].value.p_TableList).joins->begin(), (yystack_[1].value.p_tableAlias).relation != NULL
+		   ? (sql::Join*)new sql::TableJoin(*(yystack_[1].value.p_tableAlias).relation, *(yystack_[1].value.p_tableAlias).alias, false)
+		   : (sql::Join*)new sql::SubqueryJoin((yystack_[1].value.p_tableAlias).subselect, *(yystack_[1].value.p_tableAlias).alias, false));
+	delete (yystack_[1].value.p_tableAlias).relation;
+	delete (yystack_[1].value.p_tableAlias).alias;
+	(yylhs.value.p_TableList).joins = new std::vector<sql::Join*>((yystack_[0].value.p_TableList).joins->begin(), (yystack_[0].value.p_TableList).joins->end());
+	(yylhs.value.p_TableList).exprs = (yystack_[0].value.p_TableList).exprs;
+	delete (yystack_[0].value.p_TableList).joins;
 }
+#line 1358 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 150:
-
-/* Line 690 of lalr1.cc  */
-#line 938 "lib/SQLParser.ypp"
+#line 938 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = false;
+	(yylhs.value.p_bool) = false;
     }
+#line 1366 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 151:
-
-/* Line 690 of lalr1.cc  */
-#line 941 "lib/SQLParser.ypp"
+#line 941 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = false;
+	(yylhs.value.p_bool) = false;
       }
+#line 1374 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 152:
-
-/* Line 690 of lalr1.cc  */
-#line 944 "lib/SQLParser.ypp"
+#line 944 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = true;
+	(yylhs.value.p_bool) = true;
     }
+#line 1382 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 153:
-
-/* Line 690 of lalr1.cc  */
-#line 950 "lib/SQLParser.ypp"
+#line 950 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    (yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
 }
+#line 1390 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 154:
-
-/* Line 690 of lalr1.cc  */
-#line 956 "lib/SQLParser.ypp"
+#line 956 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 1398 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 155:
-
-/* Line 690 of lalr1.cc  */
-#line 959 "lib/SQLParser.ypp"
+#line 959 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(1) - (1)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
       }
+#line 1406 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 156:
-
-/* Line 690 of lalr1.cc  */
-#line 965 "lib/SQLParser.ypp"
+#line 965 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(4) - (3)].p_tableAlias).relation != NULL) {
-	    (yyval.p_JoinExpression).join = new sql::TableJoin(*(yysemantic_stack_[(4) - (3)].p_tableAlias).relation, *(yysemantic_stack_[(4) - (3)].p_tableAlias).alias, (yysemantic_stack_[(4) - (1)].p_bool));
-	    delete (yysemantic_stack_[(4) - (3)].p_tableAlias).relation;
+	if ((yystack_[1].value.p_tableAlias).relation != NULL) {
+	    (yylhs.value.p_JoinExpression).join = new sql::TableJoin(*(yystack_[1].value.p_tableAlias).relation, *(yystack_[1].value.p_tableAlias).alias, (yystack_[3].value.p_bool));
+	    delete (yystack_[1].value.p_tableAlias).relation;
 	} else {
-	    (yyval.p_JoinExpression).join = new sql::SubqueryJoin((yysemantic_stack_[(4) - (3)].p_tableAlias).subselect, *(yysemantic_stack_[(4) - (3)].p_tableAlias).alias, (yysemantic_stack_[(4) - (1)].p_bool));
+	    (yylhs.value.p_JoinExpression).join = new sql::SubqueryJoin((yystack_[1].value.p_tableAlias).subselect, *(yystack_[1].value.p_tableAlias).alias, (yystack_[3].value.p_bool));
 	}
-	delete (yysemantic_stack_[(4) - (3)].p_tableAlias).alias;
-	(yyval.p_JoinExpression).expr = (yysemantic_stack_[(4) - (4)].p_Expression);
+	delete (yystack_[1].value.p_tableAlias).alias;
+	(yylhs.value.p_JoinExpression).expr = (yystack_[0].value.p_Expression);
 }
+#line 1421 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 157:
-
-/* Line 690 of lalr1.cc  */
-#line 978 "lib/SQLParser.ypp"
+#line 978 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableList).joins = new std::vector<sql::Join*>();
-	(yyval.p_TableList).exprs = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_TableList).joins = new std::vector<sql::Join*>();
+	(yylhs.value.p_TableList).exprs = new std::vector<const sql::Expression*>();
     }
+#line 1430 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 158:
-
-/* Line 690 of lalr1.cc  */
-#line 982 "lib/SQLParser.ypp"
+#line 982 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_TableList).joins->push_back((yysemantic_stack_[(2) - (2)].p_JoinExpression).join);
-	if ((yysemantic_stack_[(2) - (2)].p_JoinExpression).expr != NULL)
-	    (yysemantic_stack_[(2) - (1)].p_TableList).exprs->push_back((yysemantic_stack_[(2) - (2)].p_JoinExpression).expr);
-	(yyval.p_TableList) = (yysemantic_stack_[(2) - (1)].p_TableList);
+	(yystack_[1].value.p_TableList).joins->push_back((yystack_[0].value.p_JoinExpression).join);
+	if ((yystack_[0].value.p_JoinExpression).expr != NULL)
+	    (yystack_[1].value.p_TableList).exprs->push_back((yystack_[0].value.p_JoinExpression).expr);
+	(yylhs.value.p_TableList) = (yystack_[1].value.p_TableList);
     }
+#line 1441 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 159:
-
-/* Line 690 of lalr1.cc  */
-#line 991 "lib/SQLParser.ypp"
+#line 991 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_tableAlias).relation = new sql::RelationName(*(yysemantic_stack_[(2) - (1)].p_NAME));
-	(yyval.p_tableAlias).subselect = NULL;
-	if ((yysemantic_stack_[(2) - (2)].p_NAME)) {
-	    (yyval.p_tableAlias).alias = new sql::RelVar(*(yysemantic_stack_[(2) - (2)].p_NAME));
-	    delete (yysemantic_stack_[(2) - (2)].p_NAME);
+	(yylhs.value.p_tableAlias).relation = new sql::RelationName(*(yystack_[1].value.p_NAME));
+	(yylhs.value.p_tableAlias).subselect = NULL;
+	if ((yystack_[0].value.p_NAME)) {
+	    (yylhs.value.p_tableAlias).alias = new sql::RelVar(*(yystack_[0].value.p_NAME));
+	    delete (yystack_[0].value.p_NAME);
 	} else {
-	    (yyval.p_tableAlias).alias = new sql::RelVar(*(yysemantic_stack_[(2) - (1)].p_NAME));
+	    (yylhs.value.p_tableAlias).alias = new sql::RelVar(*(yystack_[1].value.p_NAME));
 	}
-	delete (yysemantic_stack_[(2) - (1)].p_NAME);
+	delete (yystack_[1].value.p_NAME);
     }
+#line 1457 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 160:
-
-/* Line 690 of lalr1.cc  */
-#line 1002 "lib/SQLParser.ypp"
+#line 1002 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_tableAlias).relation = NULL;
-	(yyval.p_tableAlias).subselect = (yysemantic_stack_[(5) - (2)].p_Select);
-	(yyval.p_tableAlias).alias = new sql::RelVar(*(yysemantic_stack_[(5) - (5)].p_NAME));
-	delete (yysemantic_stack_[(5) - (5)].p_NAME);
+	(yylhs.value.p_tableAlias).relation = NULL;
+	(yylhs.value.p_tableAlias).subselect = (yystack_[3].value.p_Select);
+	(yylhs.value.p_tableAlias).alias = new sql::RelVar(*(yystack_[0].value.p_NAME));
+	delete (yystack_[0].value.p_NAME);
     }
+#line 1468 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 161:
-
-/* Line 690 of lalr1.cc  */
-#line 1011 "lib/SQLParser.ypp"
+#line 1011 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NAME) = (yysemantic_stack_[(2) - (2)].p_NAME);
+	(yylhs.value.p_NAME) = (yystack_[0].value.p_NAME);
     }
+#line 1476 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 162:
-
-/* Line 690 of lalr1.cc  */
-#line 1017 "lib/SQLParser.ypp"
+#line 1017 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-    (yyval.p_NAME) = NULL;
+    (yylhs.value.p_NAME) = NULL;
     }
+#line 1484 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 163:
-
-/* Line 690 of lalr1.cc  */
-#line 1020 "lib/SQLParser.ypp"
+#line 1020 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_NAME) = (yysemantic_stack_[(1) - (1)].p_NAME);
+	(yylhs.value.p_NAME) = (yystack_[0].value.p_NAME);
     }
+#line 1492 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 164:
-
-/* Line 690 of lalr1.cc  */
-#line 1026 "lib/SQLParser.ypp"
+#line 1026 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
-	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new sql::HomologConstraint("CONCAT", (yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (2)].p_Expressions)->end());
+	if ((yystack_[0].value.p_Expressions)->size() > 0) {
+	    (yystack_[0].value.p_Expressions)->insert((yystack_[0].value.p_Expressions)->begin(), (yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new sql::HomologConstraint("CONCAT", (yystack_[0].value.p_Expressions)->begin(), (yystack_[0].value.p_Expressions)->end());
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 1505 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 165:
-
-/* Line 690 of lalr1.cc  */
-#line 1037 "lib/SQLParser.ypp"
+#line 1037 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1513 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 166:
-
-/* Line 690 of lalr1.cc  */
-#line 1043 "lib/SQLParser.ypp"
+#line 1043 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1521 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 167:
-
-/* Line 690 of lalr1.cc  */
-#line 1046 "lib/SQLParser.ypp"
+#line 1046 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1530 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 168:
-
-/* Line 690 of lalr1.cc  */
-#line 1054 "lib/SQLParser.ypp"
+#line 1054 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
-	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new sql::DisjunctionConstraint((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (2)].p_Expressions)->end());
+	if ((yystack_[0].value.p_Expressions)->size() > 0) {
+	    (yystack_[0].value.p_Expressions)->insert((yystack_[0].value.p_Expressions)->begin(), (yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new sql::DisjunctionConstraint((yystack_[0].value.p_Expressions)->begin(), (yystack_[0].value.p_Expressions)->end());
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 1543 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 169:
-
-/* Line 690 of lalr1.cc  */
-#line 1066 "lib/SQLParser.ypp"
+#line 1066 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1551 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 170:
-
-/* Line 690 of lalr1.cc  */
-#line 1073 "lib/SQLParser.ypp"
+#line 1073 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1559 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 171:
-
-/* Line 690 of lalr1.cc  */
-#line 1076 "lib/SQLParser.ypp"
+#line 1076 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1568 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 172:
-
-/* Line 690 of lalr1.cc  */
-#line 1084 "lib/SQLParser.ypp"
+#line 1084 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
-	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new sql::ConjunctionConstraint((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (2)].p_Expressions)->end());
+	if ((yystack_[0].value.p_Expressions)->size() > 0) {
+	    (yystack_[0].value.p_Expressions)->insert((yystack_[0].value.p_Expressions)->begin(), (yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new sql::ConjunctionConstraint((yystack_[0].value.p_Expressions)->begin(), (yystack_[0].value.p_Expressions)->end());
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 1581 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 173:
-
-/* Line 690 of lalr1.cc  */
-#line 1096 "lib/SQLParser.ypp"
+#line 1096 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1589 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 174:
-
-/* Line 690 of lalr1.cc  */
-#line 1103 "lib/SQLParser.ypp"
+#line 1103 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1597 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 175:
-
-/* Line 690 of lalr1.cc  */
-#line 1106 "lib/SQLParser.ypp"
+#line 1106 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1606 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 177:
-
-/* Line 690 of lalr1.cc  */
-#line 1118 "lib/SQLParser.ypp"
+#line 1118 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) {
-	    if (dynamic_cast<parser::IsNotNullProxy*>((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) != NULL) {
-		delete (yysemantic_stack_[(2) - (2)].p_BooleanComparator);
-		(yyval.p_Expression) = new sql::NegationConstraint(new sql::NotNullConstraint(dynamic_cast<const sql::Expression*>((yysemantic_stack_[(2) - (1)].p_Expression)))); // new sql::IsNullConstraint();
-	    } else if (dynamic_cast<parser::IsNullProxy*>((yysemantic_stack_[(2) - (2)].p_BooleanComparator)) != NULL) {
-		delete (yysemantic_stack_[(2) - (2)].p_BooleanComparator);
-		(yyval.p_Expression) = new sql::NotNullConstraint(dynamic_cast<const sql::Expression*>((yysemantic_stack_[(2) - (1)].p_Expression)));
+	if ((yystack_[0].value.p_BooleanComparator)) {
+	    if (dynamic_cast<parser::IsNotNullProxy*>((yystack_[0].value.p_BooleanComparator)) != NULL) {
+		delete (yystack_[0].value.p_BooleanComparator);
+		(yylhs.value.p_Expression) = new sql::NegationConstraint(new sql::NotNullConstraint(dynamic_cast<const sql::Expression*>((yystack_[1].value.p_Expression)))); // new sql::IsNullConstraint();
+	    } else if (dynamic_cast<parser::IsNullProxy*>((yystack_[0].value.p_BooleanComparator)) != NULL) {
+		delete (yystack_[0].value.p_BooleanComparator);
+		(yylhs.value.p_Expression) = new sql::NotNullConstraint(dynamic_cast<const sql::Expression*>((yystack_[1].value.p_Expression)));
 	    } else {
-		(yysemantic_stack_[(2) - (2)].p_BooleanComparator)->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
-		(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_BooleanComparator); // !!!
+		(yystack_[0].value.p_BooleanComparator)->setLeftParm((yystack_[1].value.p_Expression));
+		(yylhs.value.p_Expression) = (yystack_[0].value.p_BooleanComparator); // !!!
 	    }
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 1626 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 178:
-
-/* Line 690 of lalr1.cc  */
-#line 1137 "lib/SQLParser.ypp"
+#line 1137 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BooleanComparator) = NULL;
+	(yylhs.value.p_BooleanComparator) = NULL;
     }
+#line 1634 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 180:
-
-/* Line 690 of lalr1.cc  */
-#line 1145 "lib/SQLParser.ypp"
+#line 1145 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_BooleanComparator) = new sql::BooleanEQ((yystack_[0].value.p_Expression));
     }
+#line 1642 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 181:
-
-/* Line 690 of lalr1.cc  */
-#line 1148 "lib/SQLParser.ypp"
+#line 1148 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_BooleanComparator) = new sql::BooleanNE((yystack_[0].value.p_Expression));
     }
+#line 1650 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 182:
-
-/* Line 690 of lalr1.cc  */
-#line 1151 "lib/SQLParser.ypp"
+#line 1151 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_BooleanComparator) = new sql::BooleanLT((yystack_[0].value.p_Expression));
     }
+#line 1658 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 183:
-
-/* Line 690 of lalr1.cc  */
-#line 1154 "lib/SQLParser.ypp"
+#line 1154 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_BooleanComparator) = new sql::BooleanGT((yystack_[0].value.p_Expression));
     }
+#line 1666 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 184:
-
-/* Line 690 of lalr1.cc  */
-#line 1157 "lib/SQLParser.ypp"
+#line 1157 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-        (yyval.p_BooleanComparator) = new sql::BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
+        (yylhs.value.p_BooleanComparator) = new sql::BooleanLE((yystack_[0].value.p_Expression));
     }
+#line 1674 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 185:
-
-/* Line 690 of lalr1.cc  */
-#line 1160 "lib/SQLParser.ypp"
+#line 1160 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_BooleanComparator) = new sql::BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_BooleanComparator) = new sql::BooleanGE((yystack_[0].value.p_Expression));
     }
+#line 1682 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 186:
-
-/* Line 690 of lalr1.cc  */
-#line 1163 "lib/SQLParser.ypp"
+#line 1163 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_BooleanComparator) = new parser::IsNullProxy;
+      (yylhs.value.p_BooleanComparator) = new parser::IsNullProxy;
     }
+#line 1690 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 187:
-
-/* Line 690 of lalr1.cc  */
-#line 1166 "lib/SQLParser.ypp"
+#line 1166 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_BooleanComparator) = new parser::IsNotNullProxy;
+      (yylhs.value.p_BooleanComparator) = new parser::IsNotNullProxy;
 }
+#line 1698 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 189:
-
-/* Line 690 of lalr1.cc  */
-#line 1177 "lib/SQLParser.ypp"
+#line 1177 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
-	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new sql::ArithmeticSum((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (2)].p_Expressions)->end());
+	if ((yystack_[0].value.p_Expressions)->size() > 0) {
+	    (yystack_[0].value.p_Expressions)->insert((yystack_[0].value.p_Expressions)->begin(), (yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new sql::ArithmeticSum((yystack_[0].value.p_Expressions)->begin(), (yystack_[0].value.p_Expressions)->end());
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 1711 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 190:
-
-/* Line 690 of lalr1.cc  */
-#line 1189 "lib/SQLParser.ypp"
+#line 1189 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1719 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 191:
-
-/* Line 690 of lalr1.cc  */
-#line 1192 "lib/SQLParser.ypp"
+#line 1192 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new sql::ArithmeticNegation((yystack_[0].value.p_Expression));
     }
+#line 1727 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 194:
-
-/* Line 690 of lalr1.cc  */
-#line 1201 "lib/SQLParser.ypp"
+#line 1201 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1735 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 195:
-
-/* Line 690 of lalr1.cc  */
-#line 1204 "lib/SQLParser.ypp"
+#line 1204 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1744 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 196:
-
-/* Line 690 of lalr1.cc  */
-#line 1212 "lib/SQLParser.ypp"
+#line 1212 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0) {
-	    (yysemantic_stack_[(2) - (2)].p_Expressions)->insert((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new sql::ArithmeticProduct((yysemantic_stack_[(2) - (2)].p_Expressions)->begin(), (yysemantic_stack_[(2) - (2)].p_Expressions)->end());
+	if ((yystack_[0].value.p_Expressions)->size() > 0) {
+	    (yystack_[0].value.p_Expressions)->insert((yystack_[0].value.p_Expressions)->begin(), (yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new sql::ArithmeticProduct((yystack_[0].value.p_Expressions)->begin(), (yystack_[0].value.p_Expressions)->end());
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 1757 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 197:
-
-/* Line 690 of lalr1.cc  */
-#line 1224 "lib/SQLParser.ypp"
+#line 1224 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1765 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 198:
-
-/* Line 690 of lalr1.cc  */
-#line 1227 "lib/SQLParser.ypp"
+#line 1227 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new sql::ArithmeticInverse((yystack_[0].value.p_Expression));
     }
+#line 1773 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 199:
-
-/* Line 690 of lalr1.cc  */
-#line 1234 "lib/SQLParser.ypp"
+#line 1234 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1781 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 200:
-
-/* Line 690 of lalr1.cc  */
-#line 1237 "lib/SQLParser.ypp"
+#line 1237 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1790 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 201:
-
-/* Line 690 of lalr1.cc  */
-#line 1244 "lib/SQLParser.ypp"
+#line 1244 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new sql::BooleanNegation((yystack_[0].value.p_Expression));
     }
+#line 1798 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 202:
-
-/* Line 690 of lalr1.cc  */
-#line 1247 "lib/SQLParser.ypp"
+#line 1247 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1806 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 203:
-
-/* Line 690 of lalr1.cc  */
-#line 1250 "lib/SQLParser.ypp"
+#line 1250 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new sql::ArithmeticNegation((yystack_[0].value.p_Expression));
     }
+#line 1814 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 209:
-
-/* Line 690 of lalr1.cc  */
-#line 1264 "lib/SQLParser.ypp"
+#line 1264 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 1822 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 210:
-
-/* Line 690 of lalr1.cc  */
-#line 1270 "lib/SQLParser.ypp"
+#line 1270 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(5) - (4)].p_Expressions)->insert((yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (3)].p_Expression));
-	(yyval.p_Expression) = new sql::HomologConstraint("CONCAT", (yysemantic_stack_[(5) - (4)].p_Expressions)->begin(), (yysemantic_stack_[(5) - (4)].p_Expressions)->end());
-	delete (yysemantic_stack_[(5) - (4)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->insert((yystack_[1].value.p_Expressions)->begin(), (yystack_[2].value.p_Expression));
+	(yylhs.value.p_Expression) = new sql::HomologConstraint("CONCAT", (yystack_[1].value.p_Expressions)->begin(), (yystack_[1].value.p_Expressions)->end());
+	delete (yystack_[1].value.p_Expressions);
     }
+#line 1832 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 211:
-
-/* Line 690 of lalr1.cc  */
-#line 1275 "lib/SQLParser.ypp"
+#line 1275 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	std::vector<const sql::Expression*> v;
-	v.push_back((yysemantic_stack_[(4) - (3)].p_Expression));
-	(yyval.p_Expression) = new sql::HomologConstraint("LCASE", v.begin(), v.end());
+	v.push_back((yystack_[1].value.p_Expression));
+	(yylhs.value.p_Expression) = new sql::HomologConstraint("LCASE", v.begin(), v.end());
     }
+#line 1842 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 212:
-
-/* Line 690 of lalr1.cc  */
-#line 1280 "lib/SQLParser.ypp"
+#line 1280 "lib/SQLParser.ypp" // lalr1.cc:847
     {
 	std::vector<const sql::Expression*> v;
-	v.push_back((yysemantic_stack_[(4) - (3)].p_Expression));
-	(yyval.p_Expression) = new sql::HomologConstraint("UCASE", v.begin(), v.end());
+	v.push_back((yystack_[1].value.p_Expression));
+	(yylhs.value.p_Expression) = new sql::HomologConstraint("UCASE", v.begin(), v.end());
     }
+#line 1852 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 213:
-
-/* Line 690 of lalr1.cc  */
-#line 1285 "lib/SQLParser.ypp"
+#line 1285 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::RegexConstraint((yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression));
+	(yylhs.value.p_Expression) = new sql::RegexConstraint((yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression));
     }
+#line 1860 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 214:
-
-/* Line 690 of lalr1.cc  */
-#line 1291 "lib/SQLParser.ypp"
+#line 1291 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-    (yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+    (yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
 }
+#line 1868 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 215:
-
-/* Line 690 of lalr1.cc  */
-#line 1297 "lib/SQLParser.ypp"
+#line 1297 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new std::vector<const sql::Expression*>();
+	(yylhs.value.p_Expressions) = new std::vector<const sql::Expression*>();
     }
+#line 1876 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 216:
-
-/* Line 690 of lalr1.cc  */
-#line 1300 "lib/SQLParser.ypp"
+#line 1300 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1885 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
   case 231:
-
-/* Line 690 of lalr1.cc  */
-#line 1336 "lib/SQLParser.ypp"
+#line 1336 "lib/SQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new sql::LiteralConstraint(*(yysemantic_stack_[(1) - (1)].p_NAME));
-	delete (yysemantic_stack_[(1) - (1)].p_NAME);
+	(yylhs.value.p_Expression) = new sql::LiteralConstraint(*(yystack_[0].value.p_NAME));
+	delete (yystack_[0].value.p_NAME);
     }
+#line 1894 "lib/SQLParser.cpp" // lalr1.cc:847
     break;
 
 
+#line 1898 "lib/SQLParser.cpp" // lalr1.cc:847
+            default:
+              break;
+            }
+        }
+      catch (const syntax_error& yyexc)
+        {
+          error (yyexc);
+          YYERROR;
+        }
+      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      yypop_ (yylen);
+      yylen = 0;
+      YY_STACK_PRINT ();
 
-/* Line 690 of lalr1.cc  */
-#line 1899 "lib/SQLParser.cpp"
-	default:
-          break;
-      }
-    /* User semantic actions sometimes alter yychar, and that requires
-       that yytoken be updated with the new translation.  We take the
-       approach of translating immediately before every use of yytoken.
-       One alternative is translating here after every semantic action,
-       but that translation would be missed if the semantic action
-       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
-       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
-       destructor might then be invoked immediately.  In the case of
-       YYERROR, subsequent parser actions might lead to an incorrect
-       destructor call or verbose syntax error message before the
-       lookahead is translated.  */
-    YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
-
-    yypop_ (yylen);
-    yylen = 0;
-    YY_STACK_PRINT ();
-
-    yysemantic_stack_.push (yyval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the result of the reduction.  */
-    yyn = yyr1_[yyn];
-    yystate = yypgoto_[yyn - yyntokens_] + yystate_stack_[0];
-    if (0 <= yystate && yystate <= yylast_
-	&& yycheck_[yystate] == yystate_stack_[0])
-      yystate = yytable_[yystate];
-    else
-      yystate = yydefgoto_[yyn - yyntokens_];
+      // Shift the result of the reduction.
+      yypush_ (YY_NULLPTR, yylhs);
+    }
     goto yynewstate;
 
-  /*------------------------------------.
-  | yyerrlab -- here on detecting error |
-  `------------------------------------*/
+  /*--------------------------------------.
+  | yyerrlab -- here on detecting error.  |
+  `--------------------------------------*/
   yyerrlab:
-    /* Make sure we have latest lookahead translation.  See comments at
-       user semantic actions for why this is necessary.  */
-    yytoken = yytranslate_ (yychar);
-
-    /* If not already recovering from an error, report this error.  */
+    // If not already recovering from an error, report this error.
     if (!yyerrstatus_)
       {
-	++yynerrs_;
-	if (yychar == yyempty_)
-	  yytoken = yyempty_;
-	error (yylloc, yysyntax_error_ (yystate, yytoken));
+        ++yynerrs_;
+        error (yyla.location, yysyntax_error_ (yystack_[0].state,
+                                           yyempty ? yyempty_ : yyla.type_get ()));
       }
 
-    yyerror_range[1] = yylloc;
+
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
 
-	if (yychar <= yyeof_)
-	  {
-	  /* Return failure if at end of input.  */
-	  if (yychar == yyeof_)
-	    YYABORT;
-	  }
-	else
-	  {
-	    yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
-	    yychar = yyempty_;
-	  }
+        // Return failure if at end of input.
+        if (yyla.type_get () == yyeof_)
+          YYABORT;
+        else if (!yyempty)
+          {
+            yy_destroy_ ("Error: discarding", yyla);
+            yyempty = true;
+          }
       }
 
-    /* Else will try to reuse lookahead token after shifting the error
-       token.  */
+    // Else will try to reuse lookahead token after shifting the error token.
     goto yyerrlab1;
 
 
@@ -1980,100 +1957,105 @@ namespace w3c_sw {
        code.  */
     if (false)
       goto yyerrorlab;
-
-    yyerror_range[1] = yylocation_stack_[yylen - 1];
-    /* Do not reclaim the symbols of the rule which action triggered
+    yyerror_range[1].location = yystack_[yylen - 1].location;
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
-    yystate = yystate_stack_[0];
     goto yyerrlab1;
 
   /*-------------------------------------------------------------.
   | yyerrlab1 -- common code for both syntax error and YYERROR.  |
   `-------------------------------------------------------------*/
   yyerrlab1:
-    yyerrstatus_ = 3;	/* Each real token shifted decrements this.  */
+    yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    {
+      stack_symbol_type error_token;
+      for (;;)
+        {
+          yyn = yypact_[yystack_[0].state];
+          if (!yy_pact_value_is_default_ (yyn))
+            {
+              yyn += yyterror_;
+              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
+                {
+                  yyn = yytable_[yyn];
+                  if (0 < yyn)
+                    break;
+                }
+            }
 
-    for (;;)
-      {
-	yyn = yypact_[yystate];
-	if (!yy_pact_value_is_default_ (yyn))
-	{
-	  yyn += yyterror_;
-	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
-	    {
-	      yyn = yytable_[yyn];
-	      if (0 < yyn)
-		break;
-	    }
-	}
+          // Pop the current state because it cannot handle the error token.
+          if (yystack_.size () == 1)
+            YYABORT;
 
-	/* Pop the current state because it cannot handle the error token.  */
-	if (yystate_stack_.height () == 1)
-	YYABORT;
+          yyerror_range[1].location = yystack_[0].location;
+          yy_destroy_ ("Error: popping", yystack_[0]);
+          yypop_ ();
+          YY_STACK_PRINT ();
+        }
 
-	yyerror_range[1] = yylocation_stack_[0];
-	yydestruct_ ("Error: popping",
-		     yystos_[yystate],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-	yypop_ ();
-	yystate = yystate_stack_[0];
-	YY_STACK_PRINT ();
-      }
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
-    yyerror_range[2] = yylloc;
-    // Using YYLLOC is tempting, but would change the location of
-    // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the error token.  */
-    YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-
-    yystate = yyn;
+      // Shift the error token.
+      error_token.state = yyn;
+      yypush_ ("Shifting", error_token);
+    }
     goto yynewstate;
 
-    /* Accept.  */
+    // Accept.
   yyacceptlab:
     yyresult = 0;
     goto yyreturn;
 
-    /* Abort.  */
+    // Abort.
   yyabortlab:
     yyresult = 1;
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyempty_)
-      {
-        /* Make sure we have latest lookahead translation.  See comments
-           at user semantic actions for why this is necessary.  */
-        yytoken = yytranslate_ (yychar);
-        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
-                     &yylloc);
-      }
+    if (!yyempty)
+      yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
-    /* Do not reclaim the symbols of the rule which action triggered
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
-    while (yystate_stack_.height () != 1)
+    while (1 < yystack_.size ())
       {
-	yydestruct_ ("Cleanup: popping",
-		   yystos_[yystate_stack_[0]],
-		   &yysemantic_stack_[0],
-		   &yylocation_stack_[0]);
-	yypop_ ();
+        yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        yypop_ ();
       }
 
     return yyresult;
   }
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printer might throw an exception.
+        if (!yyempty)
+          yy_destroy_ (YY_NULLPTR, yyla);
+
+        while (1 < yystack_.size ())
+          {
+            yy_destroy_ (YY_NULLPTR, yystack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
+  }
+
+  void
+  SQLParser::error (const syntax_error& yyexc)
+  {
+    error (yyexc.location, yyexc.what());
+  }
 
   // Generate an error message.
   std::string
-  SQLParser::yysyntax_error_ (int yystate, int yytoken)
+  SQLParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
   {
     std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
@@ -2098,7 +2080,7 @@ namespace w3c_sw {
          a consistent state with a default action.  There might have
          been a previous inconsistent state, consistent state with a
          non-default action, or user semantic action that manipulated
-         yychar.
+         yyla.  (However, yyla is currently not documented for users.)
        - Of course, the expected token list depends on states to have
          correct lookahead information, and it depends on the parser not
          to perform extra reductions after fetching a lookahead from the
@@ -2119,7 +2101,7 @@ namespace w3c_sw {
                YYCHECK.  In other words, skip the first -YYN actions for
                this state because they are default actions.  */
             int yyxbegin = yyn < 0 ? -yyn : 0;
-            /* Stay within bounds of both yycheck and yytname.  */
+            // Stay within bounds of both yycheck and yytname.
             int yychecklim = yylast_ - yyn + 1;
             int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
             for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
@@ -2137,7 +2119,7 @@ namespace w3c_sw {
           }
       }
 
-    char const* yyformat = 0;
+    char const* yyformat = YY_NULLPTR;
     switch (yycount)
       {
 #define YYCASE_(N, S)                         \
@@ -2167,13 +2149,14 @@ namespace w3c_sw {
   }
 
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
   const short int SQLParser::yypact_ninf_ = -260;
+
+  const short int SQLParser::yytable_ninf_ = -149;
+
   const short int
   SQLParser::yypact_[] =
   {
-        29,     0,   -55,   -18,   -27,   -25,    21,    40,   105,  -260,
+      29,     0,   -55,   -18,   -27,   -25,    21,    40,   105,  -260,
     -260,  -260,  -260,  -260,  -260,    63,  -260,  -260,  -260,   227,
      227,   227,    65,    67,    74,    76,   141,    81,   118,  -260,
      136,  -260,  -260,  -260,  -260,  -260,  -260,  -260,  -260,  -260,
@@ -2210,13 +2193,10 @@ namespace w3c_sw {
     -260,  -260,   143,  -260,  -260
   };
 
-  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
-     YYTABLE doesn't specify something else to do.  Zero means the
-     default is an error.  */
   const unsigned char
   SQLParser::yydefact_[] =
   {
-         0,     0,     0,     0,     0,     0,     0,     0,     0,     7,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     7,
       13,    11,    12,     9,    10,     4,   116,   133,   100,     0,
        0,     0,     0,     0,     0,     0,     0,     0,   145,   231,
      146,   220,   223,   226,   221,   224,   227,   222,   225,   228,
@@ -2253,11 +2233,10 @@ namespace w3c_sw {
       97,    96,     0,    95,    99
   };
 
-  /* YYPGOTO[NTERM-NUM].  */
   const short int
   SQLParser::yypgoto_[] =
   {
-      -260,  -260,   184,  -260,  -260,   140,  -260,  -260,  -260,  -260,
+    -260,  -260,   184,  -260,  -260,   140,  -260,  -260,  -260,  -260,
     -260,  -260,  -260,  -260,  -260,  -260,  -260,  -260,  -260,  -260,
     -260,  -260,  -260,  -260,  -260,  -260,  -260,  -260,   -47,  -260,
     -260,  -260,  -260,  -260,    46,  -260,  -260,   -24,  -260,  -260,
@@ -2271,11 +2250,10 @@ namespace w3c_sw {
     -260,  -260,  -260,   186,   188,  -260,  -260
   };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   SQLParser::yydefgoto_[] =
   {
-        -1,     8,    76,   121,    74,     9,    10,   174,    11,   117,
+      -1,     8,    76,   121,    74,     9,    10,   174,    11,   117,
      118,    12,   172,   173,    13,   169,   304,   287,   316,    14,
      167,   298,   282,   208,   324,   325,   329,   330,   255,   289,
      319,   327,   284,   299,   256,   257,   258,   235,   270,   271,
@@ -2289,14 +2267,10 @@ namespace w3c_sw {
      179,    61,    62,    63,    64,    65,    66
   };
 
-  /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const short int SQLParser::yytable_ninf_ = -149;
   const short int
   SQLParser::yytable_[] =
   {
-        85,   112,   113,   129,   114,   115,   142,    17,   143,   158,
+      85,   112,   113,   129,   114,   115,   142,    17,   143,   158,
      159,    67,   322,   252,   242,   243,   253,     1,   272,   130,
      163,   131,   110,    18,   111,    92,   254,   301,   184,    68,
       19,    20,     1,    21,    22,    23,    24,    25,   273,   140,
@@ -2332,11 +2306,10 @@ namespace w3c_sw {
       41,    42
   };
 
-  /* YYCHECK.  */
   const short int
   SQLParser::yycheck_[] =
   {
-        26,    67,    68,    86,    70,    71,    91,     7,    93,    30,
+      26,    67,    68,    86,    70,    71,    91,     7,    93,    30,
       31,    66,    43,    41,    10,    11,    44,     3,    62,    48,
        7,    87,    90,    23,    92,     8,    54,   286,   130,    47,
       30,    31,     3,    33,    34,    35,    36,    37,    82,    90,
@@ -2372,12 +2345,10 @@ namespace w3c_sw {
      103,   104
   };
 
-  /* STOS_[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
   const unsigned char
   SQLParser::yystos_[] =
   {
-         0,     3,    42,    46,    77,    81,    85,    87,   106,   110,
+       0,     3,    42,    46,    77,    81,    85,    87,   106,   110,
      111,   113,   116,   119,   124,   159,   162,     7,    23,    30,
       31,    33,    34,    35,    36,    37,    48,    89,    90,    91,
       92,    93,    94,    95,    96,    97,    98,    99,   100,   101,
@@ -2414,31 +2385,10 @@ namespace w3c_sw {
       23,   152,   180,    52,   153
   };
 
-#if YYDEBUG
-  /* TOKEN_NUMBER_[YYLEX-NUM] -- Internal symbol number corresponding
-     to YYLEX-NUM.  */
-  const unsigned short int
-  SQLParser::yytoken_number_[] =
-  {
-         0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359
-  };
-#endif
-
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
   const unsigned char
   SQLParser::yyr1_[] =
   {
-         0,   105,   106,   106,   107,   107,   108,   109,   109,   110,
+       0,   105,   106,   106,   107,   107,   108,   109,   109,   110,
      110,   110,   110,   110,   112,   111,   113,   114,   115,   115,
      116,   116,   117,   117,   118,   118,   120,   119,   121,   122,
      122,   123,   123,   124,   125,   125,   126,   127,   127,   128,
@@ -2464,11 +2414,10 @@ namespace w3c_sw {
      220,   221
   };
 
-  /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
   SQLParser::yyr2_[] =
   {
-         0,     2,     2,     3,     0,     1,     2,     0,     2,     1,
+       0,     2,     2,     3,     0,     1,     2,     0,     2,     1,
        1,     1,     1,     1,     0,     6,     4,     2,     0,     1,
        4,     2,     1,     1,     0,     1,     0,     9,     2,     0,
        2,     0,     2,     5,     0,     1,     2,     0,     2,     3,
@@ -2494,13 +2443,14 @@ namespace w3c_sw {
        1,     1
   };
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
-  /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-     First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
+
+
+  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
   const char*
   const SQLParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_SELECT", "IT_UNION",
+  "\"end of file\"", "error", "$undefined", "IT_SELECT", "IT_UNION",
   "IT_WHERE", "IT_FROM", "GT_TIMES", "IT_AS", "GT_DOT", "IT_INNER",
   "IT_LEFT", "IT_OUTER", "IT_ON", "IT_JOIN", "GT_OR", "IT_OR", "IT_AND",
   "IT_ROWNUM", "IT_LIMIT", "IT_OFFSET", "IT_IS", "IT_NOT", "IT_NULL",
@@ -2582,112 +2532,14 @@ namespace w3c_sw {
   "BuiltInCall", "_O_QGT_COMMA_E_S_QExpression_E_C",
   "_Q_O_QGT_COMMA_E_S_QExpression_E_C_E_Star", "NumericLiteral",
   "NumericLiteralUnsigned", "NumericLiteralPositive",
-  "NumericLiteralNegative", "BooleanLiteral", "String", 0
+  "NumericLiteralNegative", "BooleanLiteral", "String", YY_NULLPTR
   };
-#endif
 
 #if YYDEBUG
-  /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
-  const SQLParser::rhs_number_type
-  SQLParser::yyrhs_[] =
-  {
-       106,     0,    -1,   159,   107,    -1,   110,   109,   107,    -1,
-      -1,    45,    -1,    45,   110,    -1,    -1,   109,   108,    -1,
-     119,    -1,   124,    -1,   113,    -1,   116,    -1,   111,    -1,
-      -1,    85,    47,   180,   112,    86,   139,    -1,    87,    47,
-     115,   180,    -1,    84,    76,    -1,    -1,   114,    -1,    81,
-      69,   180,   118,    -1,    77,    69,    -1,    70,    -1,    68,
-      -1,    -1,   117,    -1,    -1,    46,    47,   180,   120,    48,
-     133,   122,    49,   123,    -1,    50,   133,    -1,    -1,   122,
-     121,    -1,    -1,   123,   129,    -1,    42,    66,   180,   125,
-     128,    -1,    -1,   153,    -1,    50,   156,    -1,    -1,   127,
-     126,    -1,    39,   156,   127,    -1,   159,    -1,   130,   132,
-      -1,    90,    -1,    43,    -1,    24,    90,    -1,    -1,   131,
-      -1,    -1,    -1,   179,   134,   142,   135,   136,    -1,   139,
-      -1,    54,    52,   153,    -1,    41,   137,   138,   153,    -1,
-      -1,   136,   151,    -1,    -1,    52,    -1,    -1,   179,    -1,
-     141,    51,    52,   153,    53,   180,   153,    -1,    44,   179,
-      -1,    -1,   140,    -1,   145,   144,    -1,    48,    93,    49,
-      -1,    -1,   143,    -1,   146,   147,   149,    -1,    40,    -1,
-      64,   149,    -1,    65,    -1,    80,    -1,    79,    -1,    72,
-      -1,   150,    -1,    74,    -1,    57,    -1,    58,    -1,    56,
-      83,    -1,    63,    -1,    59,    -1,    73,    -1,    61,    -1,
-      60,    -1,    67,    -1,    -1,    78,    -1,    82,    -1,    62,
-      -1,    75,    -1,    71,    88,    -1,    -1,   148,    -1,    38,
-      -1,    55,    -1,    54,    52,    -1,    43,   152,    -1,    22,
-      23,    -1,    41,    -1,    53,   180,   153,    -1,    23,    -1,
-     221,    -1,   102,    -1,   216,    -1,   220,    -1,    89,    48,
-     152,     8,   142,    49,    -1,    48,   179,   155,    49,    -1,
-      50,   179,    -1,    -1,   155,   154,    -1,    48,   152,   158,
-      49,    -1,    50,   152,    -1,    -1,   158,   157,    -1,   162,
-     161,    -1,     4,   162,    -1,    -1,   161,   160,    -1,     3,
-     171,   166,   168,   170,    -1,     5,   190,    -1,    -1,   163,
-      -1,     6,   181,   164,    -1,    -1,   165,    -1,    19,    93,
-      -1,    18,    28,    93,    -1,    -1,   167,    -1,    20,    93,
-      -1,    -1,   169,    -1,   174,   173,    -1,     7,    -1,    50,
-     174,    -1,    -1,   173,   172,    -1,   190,   177,    -1,    -1,
-       8,    -1,   175,   179,    -1,    -1,   176,    -1,   180,     9,
-     179,    -1,   179,    -1,    90,    -1,    92,    -1,    90,    -1,
-      92,    -1,   187,   186,    -1,    10,    -1,    50,    -1,    11,
-      12,    -1,    13,   190,    -1,    -1,   183,    -1,   182,    14,
-     187,   184,    -1,    -1,   186,   185,    -1,   180,   189,    -1,
-      48,   159,    49,     8,   180,    -1,   175,   180,    -1,    -1,
-     188,    -1,   193,   192,    -1,    15,   193,    -1,    -1,   192,
-     191,    -1,   196,   195,    -1,    16,   196,    -1,    -1,   195,
-     194,    -1,   199,   198,    -1,    17,   199,    -1,    -1,   198,
-     197,    -1,   200,    -1,   203,   201,    -1,    -1,   202,    -1,
-      24,   203,    -1,    25,   203,    -1,    26,   203,    -1,    27,
-     203,    -1,    28,   203,    -1,    29,   203,    -1,    21,    23,
-      -1,    21,    22,    23,    -1,   204,    -1,   207,   206,    -1,
-      30,   207,    -1,    31,   207,    -1,   218,    -1,   219,    -1,
-      -1,   206,   205,    -1,   210,   209,    -1,     7,   210,    -1,
-      32,   210,    -1,    -1,   209,   208,    -1,    33,   211,    -1,
-      30,   211,    -1,    31,   211,    -1,   211,    -1,   212,    -1,
-     213,    -1,   178,    -1,   152,    -1,    48,   190,    49,    -1,
-      34,    48,   190,   215,    49,    -1,    35,    48,   190,    49,
-      -1,    36,    48,   190,    49,    -1,    37,    48,   190,    50,
-     190,    49,    -1,    50,   190,    -1,    -1,   215,   214,    -1,
-     217,    -1,   218,    -1,   219,    -1,    93,    -1,    96,    -1,
-      99,    -1,    94,    -1,    97,    -1,   100,    -1,    95,    -1,
-      98,    -1,   101,    -1,   103,    -1,   104,    -1,    91,    -1
-  };
-
-  /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
-     YYRHS.  */
-  const unsigned short int
-  SQLParser::yyprhs_[] =
-  {
-         0,     0,     3,     6,    10,    11,    13,    16,    17,    20,
-      22,    24,    26,    28,    30,    31,    38,    43,    46,    47,
-      49,    54,    57,    59,    61,    62,    64,    65,    75,    78,
-      79,    82,    83,    86,    92,    93,    95,    98,    99,   102,
-     106,   108,   111,   113,   115,   118,   119,   121,   122,   123,
-     129,   131,   135,   140,   141,   144,   145,   147,   148,   150,
-     158,   161,   162,   164,   167,   171,   172,   174,   178,   180,
-     183,   185,   187,   189,   191,   193,   195,   197,   199,   202,
-     204,   206,   208,   210,   212,   214,   215,   217,   219,   221,
-     223,   226,   227,   229,   231,   233,   236,   239,   242,   244,
-     248,   250,   252,   254,   256,   258,   265,   270,   273,   274,
-     277,   282,   285,   286,   289,   292,   295,   296,   299,   305,
-     308,   309,   311,   315,   316,   318,   321,   325,   326,   328,
-     331,   332,   334,   337,   339,   342,   343,   346,   349,   350,
-     352,   355,   356,   358,   362,   364,   366,   368,   370,   372,
-     375,   377,   379,   382,   385,   386,   388,   393,   394,   397,
-     400,   406,   409,   410,   412,   415,   418,   419,   422,   425,
-     428,   429,   432,   435,   438,   439,   442,   444,   447,   448,
-     450,   453,   456,   459,   462,   465,   468,   471,   475,   477,
-     480,   483,   486,   488,   490,   491,   494,   497,   500,   503,
-     504,   507,   510,   513,   516,   518,   520,   522,   524,   526,
-     530,   536,   541,   546,   553,   556,   557,   560,   562,   564,
-     566,   568,   570,   572,   574,   576,   578,   580,   582,   584,
-     586,   588
-  };
-
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   SQLParser::yyrline_[] =
   {
-         0,   336,   336,   339,   342,   344,   348,   351,   353,   357,
+       0,   336,   336,   339,   342,   344,   348,   351,   353,   357,
      358,   359,   360,   361,   365,   365,   374,   378,   381,   383,
      387,   388,   392,   393,   396,   398,   402,   402,   412,   415,
      417,   420,   422,   426,   434,   437,   441,   446,   448,   452,
@@ -2718,9 +2570,11 @@ namespace w3c_sw {
   SQLParser::yystack_print_ ()
   {
     *yycdebug_ << "Stack now";
-    for (state_stack_type::const_iterator i = yystate_stack_.begin ();
-	 i != yystate_stack_.end (); ++i)
-      *yycdebug_ << ' ' << *i;
+    for (stack_type::const_iterator
+           i = yystack_.begin (),
+           i_end = yystack_.end ();
+         i != i_end; ++i)
+      *yycdebug_ << ' ' << i->state;
     *yycdebug_ << std::endl;
   }
 
@@ -2730,19 +2584,18 @@ namespace w3c_sw {
   {
     unsigned int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
-    /* Print the symbols being reduced, and their result.  */
+    // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "):" << std::endl;
-    /* The symbols being reduced.  */
+               << " (line " << yylno << "):" << std::endl;
+    // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
-		       yyrhs_[yyprhs_[yyrule] + yyi],
-		       &(yysemantic_stack_[(yynrhs) - (yyi + 1)]),
-		       &(yylocation_stack_[(yynrhs) - (yyi + 1)]));
+                       yystack_[(yynrhs) - (yyi + 1)]);
   }
 #endif // YYDEBUG
 
-  /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
+  // Symbol number corresponding to token number t.
+  inline
   SQLParser::token_number_type
   SQLParser::yytranslate_ (int t)
   {
@@ -2750,7 +2603,7 @@ namespace w3c_sw {
     const token_number_type
     translate_table[] =
     {
-           0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -2787,33 +2640,21 @@ namespace w3c_sw {
       85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
       95,    96,    97,    98,    99,   100,   101,   102,   103,   104
     };
-    if ((unsigned int) t <= yyuser_token_number_max_)
+    const unsigned int user_token_number_max_ = 359;
+    const token_number_type undef_token_ = 2;
+
+    if (static_cast<int>(t) <= yyeof_)
+      return yyeof_;
+    else if (static_cast<unsigned int> (t) <= user_token_number_max_)
       return translate_table[t];
     else
-      return yyundef_token_;
+      return undef_token_;
   }
-
-  const int SQLParser::yyeof_ = 0;
-  const int SQLParser::yylast_ = 331;
-  const int SQLParser::yynnts_ = 117;
-  const int SQLParser::yyempty_ = -2;
-  const int SQLParser::yyfinal_ = 73;
-  const int SQLParser::yyterror_ = 1;
-  const int SQLParser::yyerrcode_ = 256;
-  const int SQLParser::yyntokens_ = 105;
-
-  const unsigned int SQLParser::yyuser_token_number_max_ = 359;
-  const SQLParser::token_number_type SQLParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
-
-/* Line 1136 of lalr1.cc  */
-#line 2813 "lib/SQLParser.cpp"
-
-
-/* Line 1138 of lalr1.cc  */
-#line 1356 "lib/SQLParser.ypp"
+#line 2657 "lib/SQLParser.cpp" // lalr1.cc:1155
+#line 1356 "lib/SQLParser.ypp" // lalr1.cc:1156
  /*** Additional Code ***/
 
 void w3c_sw::SQLParser::error(const SQLParser::location_type& l,
@@ -2901,4 +2742,3 @@ void SQLDriver::error (const std::string& m)
 } // namespace w3c_sw
 
 /* END SQLDriver */
-
