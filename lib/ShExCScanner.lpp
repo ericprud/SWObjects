@@ -1,5 +1,5 @@
-/* $Id: SWSexScanner.lpp,v 1.3 2008-10-03 07:06:04 eric Exp $ -*- mode: c++ -*- */
-/** \file SWSexScanner.ll Define the Flex lexical scanner */
+/* $Id: ShExScanner.lpp,v 1.3 2008-10-03 07:06:04 eric Exp $ -*- mode: c++ -*- */
+/** \file ShExScanner.ll Define the Flex lexical scanner */
 
 %{ /*** C/C++ Declarations ***/
 
@@ -8,8 +8,8 @@
 #include <cassert>
 
 /* import the parser's token type into a local typedef */
-typedef w3c_sw::SWSexParser::token token;
-typedef w3c_sw::SWSexParser::token_type token_type;
+typedef w3c_sw::ShExParser::token token;
+typedef w3c_sw::ShExParser::token_type token_type;
 
 /* Work around an incompatibility in flex (at least versions 2.5.31 through
  * 2.5.33): it generates code that does not conform to C89.  See Debian bug
@@ -32,8 +32,8 @@ typedef w3c_sw::SWSexParser::token_type token_type;
 /* enable c++ scanner class generation */
 %option c++
 
-/* change the name of the scanner class. results in "SWSexFlexLexer" */
-%option prefix="SWSex"
+/* change the name of the scanner class. results in "ShExFlexLexer" */
+%option prefix="ShEx"
 
 /* the manual says "somewhat more optimized" */
 %option batch
@@ -325,19 +325,19 @@ ERR_PNAME_LN		{PNAME_NS}{ERR_PN_LOCAL}
 }
 
 %%
-/* END semantic actions for SWSex terminals */
+/* END semantic actions for ShEx terminals */
 
-/* This implementation of SWSexFlexLexer::yylex() is required to fill the
- * vtable of the class SWSexFlexLexer. We define the scanner's main yylex
- * function via YY_DECL to reside in the SWSexScanner class instead. */
+/* This implementation of ShExFlexLexer::yylex() is required to fill the
+ * vtable of the class ShExFlexLexer. We define the scanner's main yylex
+ * function via YY_DECL to reside in the ShExScanner class instead. */
 
 #ifdef yylex
 #undef yylex
 #endif
 
-int SWSexFlexLexer::yylex()
+int ShExFlexLexer::yylex()
 {
-    std::cerr << "in SWSexFlexLexer::yylex() !" << std::endl;
+    std::cerr << "in ShExFlexLexer::yylex() !" << std::endl;
     return 0;
 }
 
