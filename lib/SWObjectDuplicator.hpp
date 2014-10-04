@@ -596,7 +596,7 @@ namespace w3c_sw {
 	virtual void naryIn (const NaryIn* const, const Expression* p_left, const ProductionVector<const Expression*>* p_right) {
 	    ProductionVector<const Expression*>* v = _Expressions(p_right);
 	    NaryIn* ret = new NaryIn(v);
-	    v->clear();
+	    // don't clear v; it's owned by ret.
 	    p_left->express(this);
 	    ret->setLeftParm(last.expression);
 	    last.expression = ret;
