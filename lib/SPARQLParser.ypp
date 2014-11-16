@@ -32,7 +32,8 @@
 %define "parser_class_name" "SPARQLParser"
 
 /* keep track of the current position within the input */
-%locations
+%define api.location.type {w3c_sw::location}
+ //%locations
 %initial-action
 {
     // initialize the initial location object
@@ -832,7 +833,7 @@ SelectQuery:
 	    if (e) {
 		std::set<const TTerm*> errorSet = $2.varSet->getNonProjectableVars(e, driver.atomFactory);
 		if (errorSet.size() != 0)
-		    error(yylloc, "can't select " + comma_str(errorSet) + " because "
+		    error(*driver.yylloc, "can't select " + comma_str(errorSet) + " because "
 			  + (errorSet.size() == 1 ? "it's" : "they're") + "not in a GROUP BY.");
 	    }
 	}
@@ -856,7 +857,7 @@ SelectQuery:
 	    std::set<const TTerm*> errorSet;
 	    std::set_intersection(cv.vars.begin(), cv.vars.end(), known.begin(), known.end(), std::inserter(errorSet, errorSet.begin()));
 	    if (errorSet.size() != 0)
-		error(yylloc, "select can't bind " + comma_str(errorSet) + " because "
+		error(*driver.yylloc, "select can't bind " + comma_str(errorSet) + " because "
 		      + (errorSet.size() == 1 ? "it's" : "they're") + " bound in the WHERE clause.");
 	}
 	driver.lastWhereClause = $4;
@@ -951,12 +952,12 @@ _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt:
 _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     GT_LPAREN Expression _Q_O_QIT_AS_E_S_QVar_E_C_E_Opt GT_RPAREN	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection && $3 == NULL)
-	    error(yylloc, $2->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $2->str() + " must be selected AS some variable");
 	$$ = $3 ? new ExpressionAlias($2, $3) : new ExpressionAlias($2);
     }
  // |  GT_LPAREN Expression error GT_RPAREN	{
  // 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
- // 	    error(yylloc, $2->str() + " must be selected AS some variable");
+ // 	    error(*driver.yylloc, $2->str() + " must be selected AS some variable");
  // 	$$ = new ExpressionAlias($2);
  //    }
 ;
@@ -965,22 +966,22 @@ _O_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
 _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_QVar_E_Or_QAggregate_E_Or_QFunctionCall_E_Or_QGT_LPAREN_E_S_QExpression_E_S_QIT_AS_E_S_QVar_E_Opt_S_QGT_RPAREN_E_C:
     BuiltInCall	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, $1->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | RDFLiteral	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, $1->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | NumericLiteral	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, $1->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | BooleanLiteral	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, $1->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias(new TTermExpression($1));
     }
   | Var	{
@@ -988,12 +989,12 @@ _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_
     }
   | Aggregate	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, $1->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | FunctionCall	{
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, $1->str() + " must be selected AS some variable");
+	    error(*driver.yylloc, $1->str() + " must be selected AS some variable");
 	$$ = new ExpressionAlias($1);
     }
   | // "(" Expression ( "AS" Var )? ")"
@@ -1020,7 +1021,7 @@ _O_QBuiltInCall_E_Or_QRDFLiteral_E_Or_QNumericLiteral_E_Or_QBooleanLiteral_E_Or_
 		 it != $1->end(); ++it) {
 		const TTerm* label = (*it)->getLabel(driver.atomFactory);
 		if (labels.find(label) != labels.end())
-		    error(yylloc, label->str() + " duplicated in select list.");
+		    error(*driver.yylloc, label->str() + " duplicated in select list.");
 		labels.insert(label);
 	    }
 	}
@@ -1041,7 +1042,7 @@ _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E
     QuadPattern _QDatasetClause_E_Star WhereClause SolutionModifier	{
 	if (driver.validate & SPARQLDriver::VALIDATE_constructNoQuads &&
 	    dynamic_cast<const DefaultGraphPattern*>($1) == NULL) {
-	    error(yylloc, "can't CONSTRUCT quad pattern " + $1->str() + ".");
+	    error(*driver.yylloc, "can't CONSTRUCT quad pattern " + $1->str() + ".");
 	}
 	driver.lastWhereClause = $3;
 	/* $1 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
@@ -1050,7 +1051,7 @@ _O_QQuadPattern_E_S_QDatasetClause_E_Star_S_QWhereClause_E_S_QSolutionModifier_E
   | _QDatasetClause_E_Star IT_WHERE QuadPattern SolutionModifier	{
 	if (driver.validate & SPARQLDriver::VALIDATE_constructNoQuads &&
 	    dynamic_cast<const DefaultGraphPattern*>($3) == NULL) {
-	    error(yylloc, "can't re-CONSTRUCT quad pattern " + $3->str() + ".");
+	    error(*driver.yylloc, "can't re-CONSTRUCT quad pattern " + $3->str() + ".");
 	}
 	SWObjectDuplicator dup(driver.atomFactory);
 	$3->express(&dup);
@@ -1720,7 +1721,7 @@ GroupGraphPattern:
   | RSREF	{
 	BindingsMap::const_iterator rs = driver.bindingsMap.find($1->name);
 	if (rs == driver.bindingsMap.end() || rs->second == NULL) {
-	    error(yylloc, std::string("") + "unknown named result set " + $1->name);
+	    error(*driver.yylloc, std::string("") + "unknown named result set " + $1->name);
 	    driver.curOp = new DefaultGraphPattern();
 	} else {
 	    SWObjectDuplicator dup(driver.atomFactory);
@@ -1901,7 +1902,7 @@ Bind:
 	if (driver.validate & SPARQLDriver::VALIDATE_noReassign &&
 	    (op->getBindingState().binds   .find($5) != op->getBindingState().binds   .end() ||
 	     op->getBindingState().optional.find($5) != op->getBindingState().optional.end()))
-	    error(yylloc, "Can't bind " + $5->str() + " to " + $3->str() + " because it's already bound");
+	    error(*driver.yylloc, "Can't bind " + $5->str() + " to " + $3->str() + " because it's already bound");
 	driver.curOp = new Bind(op, $3, $5);
 	// no more triples go into the current BGP, per
 	//   http://www.w3.org/TR/sparql11-query/#sparqlTranslateGraphPatterns

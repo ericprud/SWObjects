@@ -1,56 +1,57 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+// A Bison parser, made by GNU Bison 3.0.2.
 
-/* Skeleton implementation for Bison LALR(1) parsers in C++
-   
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+// Skeleton implementation for Bison LALR(1) parsers in C++
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
-   
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
+// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// As a special exception, you may create a larger work that contains
+// part or all of the Bison parser skeleton and distribute that work
+// under terms of your choice, so long as that work isn't itself a
+// parser generator using the skeleton or a modified version thereof
+// as a parser skeleton.  Alternatively, if you modify or redistribute
+// the parser skeleton itself, you may (at your option) remove this
+// special exception, which will cause the skeleton and the resulting
+// Bison output files to be licensed under the GNU General Public
+// License without this special exception.
+
+// This special exception was added by the Free Software Foundation in
+// version 2.2 of Bison.
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
-/* First part of user declarations.  */
+// First part of user declarations.
 
+#line 39 "lib/ShExCParser.cpp" // lalr1.cc:399
 
-/* Line 293 of lalr1.cc  */
-#line 41 "lib/ShExCParser.cpp"
-
+# ifndef YY_NULLPTR
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULLPTR nullptr
+#  else
+#   define YY_NULLPTR 0
+#  endif
+# endif
 
 #include "ShExCParser.hpp"
 
-/* User implementation prologue.  */
-
-/* Line 299 of lalr1.cc  */
-#line 138 "lib/ShExCParser.ypp"
+// User implementation prologue.
+#line 138 "lib/ShExCParser.ypp" // lalr1.cc:407
 
 #include "ShExCScanner.hpp"
-
-/* Line 299 of lalr1.cc  */
-#line 187 "lib/ShExCParser.ypp"
+#line 187 "lib/ShExCParser.ypp" // lalr1.cc:407
 
 #include "ShExCScanner.hpp"
 
@@ -60,14 +61,13 @@
 #undef yylex
 #define yylex driver.lexer->lexWrapper
 
+#line 65 "lib/ShExCParser.cpp" // lalr1.cc:407
 
-/* Line 299 of lalr1.cc  */
-#line 66 "lib/ShExCParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
-#   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
+#   include <libintl.h> // FIXME: INFRINGES ON USER NAME SPACE.
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
 #  endif
 # endif
@@ -76,79 +76,78 @@
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
 /* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
    If N is 0, then set CURRENT to the empty location which ends
    the previous symbol: RHS[0] (always defined).  */
 
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
- do                                                                    \
-   if (N)                                                              \
-     {                                                                 \
-       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
-       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
-     }                                                                 \
-   else                                                                \
-     {                                                                 \
-       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
-     }                                                                 \
- while (false)
-#endif
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
 
-/* Suppress unused-variable warnings by "using" E.  */
-#define YYUSE(e) ((void) (e))
 
-/* Enable debugging if requested.  */
+// Suppress unused-variable warnings by "using" E.
+#define YYUSE(E) ((void) (E))
+
+// Enable debugging if requested.
 #if YYDEBUG
 
-/* A pseudo ostream that takes yydebug_ into account.  */
+// A pseudo ostream that takes yydebug_ into account.
 # define YYCDEBUG if (yydebug_) (*yycdebug_)
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
-do {							\
-  if (yydebug_)						\
-    {							\
-      *yycdebug_ << Title << ' ';			\
-      yy_symbol_print_ ((Type), (Value), (Location));	\
-      *yycdebug_ << std::endl;				\
-    }							\
-} while (false)
+# define YY_SYMBOL_PRINT(Title, Symbol)         \
+  do {                                          \
+    if (yydebug_)                               \
+    {                                           \
+      *yycdebug_ << Title << ' ';               \
+      yy_print_ (*yycdebug_, Symbol);           \
+      *yycdebug_ << std::endl;                  \
+    }                                           \
+  } while (false)
 
-# define YY_REDUCE_PRINT(Rule)		\
-do {					\
-  if (yydebug_)				\
-    yy_reduce_print_ (Rule);		\
-} while (false)
+# define YY_REDUCE_PRINT(Rule)          \
+  do {                                  \
+    if (yydebug_)                       \
+      yy_reduce_print_ (Rule);          \
+  } while (false)
 
-# define YY_STACK_PRINT()		\
-do {					\
-  if (yydebug_)				\
-    yystack_print_ ();			\
-} while (false)
+# define YY_STACK_PRINT()               \
+  do {                                  \
+    if (yydebug_)                       \
+      yystack_print_ ();                \
+  } while (false)
 
-#else /* !YYDEBUG */
+#else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_REDUCE_PRINT(Rule)
-# define YY_STACK_PRINT()
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
+# define YY_STACK_PRINT()                static_cast<void>(0)
 
-#endif /* !YYDEBUG */
+#endif // !YYDEBUG
 
-#define yyerrok		(yyerrstatus_ = 0)
-#define yyclearin	(yychar = yyempty_)
+#define yyerrok         (yyerrstatus_ = 0)
+#define yyclearin       (yyempty = true)
 
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrorlab
+#define YYACCEPT        goto yyacceptlab
+#define YYABORT         goto yyabortlab
+#define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
 namespace w3c_sw {
-
-/* Line 382 of lalr1.cc  */
-#line 152 "lib/ShExCParser.cpp"
+#line 151 "lib/ShExCParser.cpp" // lalr1.cc:474
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -156,7 +155,7 @@ namespace w3c_sw {
      apostrophe, a comma, or backslash (other than backslash-backslash).
      YYSTR is taken from yytname.  */
   std::string
-  SWSexParser::yytnamerr_ (const char *yystr)
+  ShExParser::yytnamerr_ (const char *yystr)
   {
     if (*yystr == '"')
       {
@@ -173,7 +172,7 @@ namespace w3c_sw {
             case '\\':
               if (*++yyp != '\\')
                 goto do_not_strip_quotes;
-              /* Fall through.  */
+              // Fall through.
             default:
               yyr += *yyp;
               break;
@@ -189,249 +188,386 @@ namespace w3c_sw {
 
 
   /// Build a parser object.
-  SWSexParser::SWSexParser (class SWSexDriver& driver_yyarg)
+  ShExParser::ShExParser (class ShExDriver& driver_yyarg)
     :
 #if YYDEBUG
       yydebug_ (false),
       yycdebug_ (&std::cerr),
 #endif
       driver (driver_yyarg)
+  {}
+
+  ShExParser::~ShExParser ()
+  {}
+
+
+  /*---------------.
+  | Symbol types.  |
+  `---------------*/
+
+  inline
+  ShExParser::syntax_error::syntax_error (const location_type& l, const std::string& m)
+    : std::runtime_error (m)
+    , location (l)
+  {}
+
+  // basic_symbol.
+  template <typename Base>
+  inline
+  ShExParser::basic_symbol<Base>::basic_symbol ()
+    : value ()
+  {}
+
+  template <typename Base>
+  inline
+  ShExParser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
+    : Base (other)
+    , value ()
+    , location (other.location)
+  {
+    value = other.value;
+  }
+
+
+  template <typename Base>
+  inline
+  ShExParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v, const location_type& l)
+    : Base (t)
+    , value (v)
+    , location (l)
+  {}
+
+
+  /// Constructor for valueless symbols.
+  template <typename Base>
+  inline
+  ShExParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const location_type& l)
+    : Base (t)
+    , value ()
+    , location (l)
+  {}
+
+  template <typename Base>
+  inline
+  ShExParser::basic_symbol<Base>::~basic_symbol ()
   {
   }
 
-  SWSexParser::~SWSexParser ()
+  template <typename Base>
+  inline
+  void
+  ShExParser::basic_symbol<Base>::move (basic_symbol& s)
   {
+    super_type::move(s);
+    value = s.value;
+    location = s.location;
+  }
+
+  // by_type.
+  inline
+  ShExParser::by_type::by_type ()
+     : type (empty)
+  {}
+
+  inline
+  ShExParser::by_type::by_type (const by_type& other)
+    : type (other.type)
+  {}
+
+  inline
+  ShExParser::by_type::by_type (token_type t)
+    : type (yytranslate_ (t))
+  {}
+
+  inline
+  void
+  ShExParser::by_type::move (by_type& that)
+  {
+    type = that.type;
+    that.type = empty;
+  }
+
+  inline
+  int
+  ShExParser::by_type::type_get () const
+  {
+    return type;
+  }
+
+
+  // by_state.
+  inline
+  ShExParser::by_state::by_state ()
+    : state (empty)
+  {}
+
+  inline
+  ShExParser::by_state::by_state (const by_state& other)
+    : state (other.state)
+  {}
+
+  inline
+  void
+  ShExParser::by_state::move (by_state& that)
+  {
+    state = that.state;
+    that.state = empty;
+  }
+
+  inline
+  ShExParser::by_state::by_state (state_type s)
+    : state (s)
+  {}
+
+  inline
+  ShExParser::symbol_number_type
+  ShExParser::by_state::type_get () const
+  {
+    return state == empty ? 0 : yystos_[state];
+  }
+
+  inline
+  ShExParser::stack_symbol_type::stack_symbol_type ()
+  {}
+
+
+  inline
+  ShExParser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
+    : super_type (s, that.location)
+  {
+    value = that.value;
+    // that is emptied.
+    that.type = empty;
+  }
+
+  inline
+  ShExParser::stack_symbol_type&
+  ShExParser::stack_symbol_type::operator= (const stack_symbol_type& that)
+  {
+    state = that.state;
+    value = that.value;
+    location = that.location;
+    return *this;
+  }
+
+
+  template <typename Base>
+  inline
+  void
+  ShExParser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  {
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yysym);
+
+    // User destructor.
+    YYUSE (yysym.type_get ());
   }
 
 #if YYDEBUG
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  inline void
-  SWSexParser::yy_symbol_value_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
-  {
-    YYUSE (yylocationp);
-    YYUSE (yyvaluep);
-    switch (yytype)
-      {
-         default:
-	  break;
-      }
-  }
-
-
+  template <typename Base>
   void
-  SWSexParser::yy_symbol_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
+  ShExParser::yy_print_ (std::ostream& yyo,
+                                     const basic_symbol<Base>& yysym) const
   {
-    *yycdebug_ << (yytype < yyntokens_ ? "token" : "nterm")
-	       << ' ' << yytname_[yytype] << " ("
-	       << *yylocationp << ": ";
-    yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
-    *yycdebug_ << ')';
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
+    symbol_number_type yytype = yysym.type_get ();
+    yyo << (yytype < yyntokens_ ? "token" : "nterm")
+        << ' ' << yytname_[yytype] << " ("
+        << yysym.location << ": ";
+    YYUSE (yytype);
+    yyo << ')';
   }
 #endif
 
+  inline
   void
-  SWSexParser::yydestruct_ (const char* yymsg,
-			   int yytype, semantic_type* yyvaluep, location_type* yylocationp)
+  ShExParser::yypush_ (const char* m, state_type s, symbol_type& sym)
   {
-    YYUSE (yylocationp);
-    YYUSE (yymsg);
-    YYUSE (yyvaluep);
-
-    YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
-
-    switch (yytype)
-      {
-  
-	default:
-	  break;
-      }
+    stack_symbol_type t (s, sym);
+    yypush_ (m, t);
   }
 
+  inline
   void
-  SWSexParser::yypop_ (unsigned int n)
+  ShExParser::yypush_ (const char* m, stack_symbol_type& s)
   {
-    yystate_stack_.pop (n);
-    yysemantic_stack_.pop (n);
-    yylocation_stack_.pop (n);
+    if (m)
+      YY_SYMBOL_PRINT (m, s);
+    yystack_.push (s);
+  }
+
+  inline
+  void
+  ShExParser::yypop_ (unsigned int n)
+  {
+    yystack_.pop (n);
   }
 
 #if YYDEBUG
   std::ostream&
-  SWSexParser::debug_stream () const
+  ShExParser::debug_stream () const
   {
     return *yycdebug_;
   }
 
   void
-  SWSexParser::set_debug_stream (std::ostream& o)
+  ShExParser::set_debug_stream (std::ostream& o)
   {
     yycdebug_ = &o;
   }
 
 
-  SWSexParser::debug_level_type
-  SWSexParser::debug_level () const
+  ShExParser::debug_level_type
+  ShExParser::debug_level () const
   {
     return yydebug_;
   }
 
   void
-  SWSexParser::set_debug_level (debug_level_type l)
+  ShExParser::set_debug_level (debug_level_type l)
   {
     yydebug_ = l;
   }
-#endif
+#endif // YYDEBUG
+
+  inline ShExParser::state_type
+  ShExParser::yy_lr_goto_state_ (state_type yystate, int yysym)
+  {
+    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
+      return yytable_[yyr];
+    else
+      return yydefgoto_[yysym - yyntokens_];
+  }
 
   inline bool
-  SWSexParser::yy_pact_value_is_default_ (int yyvalue)
+  ShExParser::yy_pact_value_is_default_ (int yyvalue)
   {
     return yyvalue == yypact_ninf_;
   }
 
   inline bool
-  SWSexParser::yy_table_value_is_error_ (int yyvalue)
+  ShExParser::yy_table_value_is_error_ (int yyvalue)
   {
     return yyvalue == yytable_ninf_;
   }
 
   int
-  SWSexParser::parse ()
+  ShExParser::parse ()
   {
-    /// Lookahead and lookahead in internal form.
-    int yychar = yyempty_;
-    int yytoken = 0;
+    /// Whether yyla contains a lookahead.
+    bool yyempty = true;
 
-    /* State.  */
+    // State.
     int yyn;
+    /// Length of the RHS of the rule being reduced.
     int yylen = 0;
-    int yystate = 0;
 
-    /* Error handling.  */
+    // Error handling.
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the lookahead.
-    semantic_type yylval;
-    /// Location of the lookahead.
-    location_type yylloc;
+    /// The lookahead symbol.
+    symbol_type yyla;
+
     /// The locations where the error started and ended.
-    location_type yyerror_range[3];
+    stack_symbol_type yyerror_range[3];
 
-    /// $$.
-    semantic_type yyval;
-    /// @$.
-    location_type yyloc;
-
+    /// The return value of parse ().
     int yyresult;
 
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
+    try
+      {
     YYCDEBUG << "Starting parse" << std::endl;
 
 
-    /* User initialization code.  */
-    
-/* Line 565 of lalr1.cc  */
-#line 31 "lib/ShExCParser.ypp"
+    // User initialization code.
+    #line 31 "lib/ShExCParser.ypp" // lalr1.cc:725
 {
     // initialize the initial location object
-    yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
-    driver.yylloc = &yylloc;
+    yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
+    driver.yylloc = &yyla.location;
 }
 
-/* Line 565 of lalr1.cc  */
-#line 347 "lib/ShExCParser.cpp"
+#line 496 "lib/ShExCParser.cpp" // lalr1.cc:725
 
-    /* Initialize the stacks.  The initial state will be pushed in
+    /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
        stacks with a primary value.  */
-    yystate_stack_ = state_stack_type (0);
-    yysemantic_stack_ = semantic_stack_type (0);
-    yylocation_stack_ = location_stack_type (0);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
+    yystack_.clear ();
+    yypush_ (YY_NULLPTR, 0, yyla);
 
-    /* New state.  */
+    // A new symbol was pushed on the stack.
   yynewstate:
-    yystate_stack_.push (yystate);
-    YYCDEBUG << "Entering state " << yystate << std::endl;
+    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
 
-    /* Accept?  */
-    if (yystate == yyfinal_)
+    // Accept?
+    if (yystack_[0].state == yyfinal_)
       goto yyacceptlab;
 
     goto yybackup;
 
-    /* Backup.  */
+    // Backup.
   yybackup:
 
-    /* Try to take a decision without lookahead.  */
-    yyn = yypact_[yystate];
+    // Try to take a decision without lookahead.
+    yyn = yypact_[yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
-    /* Read a lookahead token.  */
-    if (yychar == yyempty_)
+    // Read a lookahead token.
+    if (yyempty)
       {
-	YYCDEBUG << "Reading a token: ";
-	yychar = yylex (&yylval, &yylloc);
+        YYCDEBUG << "Reading a token: ";
+        try
+          {
+            yyla.type = yytranslate_ (yylex (&yyla.value, &yyla.location));
+          }
+        catch (const syntax_error& yyexc)
+          {
+            error (yyexc);
+            goto yyerrlab1;
+          }
+        yyempty = false;
       }
+    YY_SYMBOL_PRINT ("Next token is", yyla);
 
-
-    /* Convert token to internal form.  */
-    if (yychar <= yyeof_)
-      {
-	yychar = yytoken = yyeof_;
-	YYCDEBUG << "Now at end of input." << std::endl;
-      }
-    else
-      {
-	yytoken = yytranslate_ (yychar);
-	YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
-      }
-
-    /* If the proper action on seeing token YYTOKEN is to reduce or to
-       detect an error, take that action.  */
-    yyn += yytoken;
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yytoken)
+    /* If the proper action on seeing token YYLA.TYPE is to reduce or
+       to detect an error, take that action.  */
+    yyn += yyla.type_get ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
       goto yydefault;
 
-    /* Reduce or error.  */
+    // Reduce or error.
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yy_table_value_is_error_ (yyn))
-	  goto yyerrlab;
-	yyn = -yyn;
-	goto yyreduce;
+        if (yy_table_value_is_error_ (yyn))
+          goto yyerrlab;
+        yyn = -yyn;
+        goto yyreduce;
       }
 
-    /* Shift the lookahead token.  */
-    YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
+    // Discard the token being shifted.
+    yyempty = true;
 
-    /* Discard the token being shifted.  */
-    yychar = yyempty_;
-
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
-
-    /* Count tokens shifted since error; after three, turn off error
-       status.  */
+    // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
       --yyerrstatus_;
 
-    yystate = yyn;
+    // Shift the lookahead token.
+    yypush_ ("Shifting", yyn, yyla);
     goto yynewstate;
 
   /*-----------------------------------------------------------.
   | yydefault -- do the default action for the current state.  |
   `-----------------------------------------------------------*/
   yydefault:
-    yyn = yydefact_[yystate];
+    yyn = yydefact_[yystack_[0].state];
     if (yyn == 0)
       goto yyerrlab;
     goto yyreduce;
@@ -441,675 +577,617 @@ namespace w3c_sw {
   `-----------------------------*/
   yyreduce:
     yylen = yyr2_[yyn];
-    /* If YYLEN is nonzero, implement the default value of the action:
-       `$$ = $1'.  Otherwise, use the top of the stack.
-
-       Otherwise, the following line sets YYVAL to garbage.
-       This behavior is undocumented and Bison
-       users should not rely upon it.  */
-    if (yylen)
-      yyval = yysemantic_stack_[yylen - 1];
-    else
-      yyval = yysemantic_stack_[0];
-
     {
-      slice<location_type, location_stack_type> slice (yylocation_stack_, yylen);
-      YYLLOC_DEFAULT (yyloc, slice, yylen);
-    }
-    YY_REDUCE_PRINT (yyn);
-    switch (yyn)
+      stack_symbol_type yylhs;
+      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
+      /* If YYLEN is nonzero, implement the default value of the
+         action: '$$ = $1'.  Otherwise, use the top of the stack.
+
+         Otherwise, the following line sets YYLHS.VALUE to garbage.
+         This behavior is undocumented and Bison users should not rely
+         upon it.  */
+      if (yylen)
+        yylhs.value = yystack_[yylen - 1].value;
+      else
+        yylhs.value = yystack_[0].value;
+
+      // Compute the default @$.
       {
-	  case 9:
+        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+      }
 
-/* Line 690 of lalr1.cc  */
-#line 218 "lib/ShExCParser.ypp"
+      // Perform the reduction.
+      YY_REDUCE_PRINT (yyn);
+      try
+        {
+          switch (yyn)
+            {
+  case 9:
+#line 218 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curSchema->start = (yysemantic_stack_[(3) - (3)].p_TTerm);
+	driver.curSchema->start = (yystack_[0].value.p_TTerm);
     }
+#line 612 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 10:
-
-/* Line 690 of lalr1.cc  */
-#line 224 "lib/ShExCParser.ypp"
+#line 224 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ruleActions) = NULL;
+	(yylhs.value.p_ruleActions) = NULL;
     }
+#line 620 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 11:
-
-/* Line 690 of lalr1.cc  */
-#line 227 "lib/ShExCParser.ypp"
+#line 227 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ruleActions) = ((yysemantic_stack_[(2) - (1)].p_ruleActions) == NULL)
-	    ? new SWSexSchema::RuleActions(driver.curRulePattern)
-	    : (yysemantic_stack_[(2) - (1)].p_ruleActions);
-	(yyval.p_ruleActions)->codeMap.insert(std::make_pair(*(yysemantic_stack_[(2) - (2)].p_CODE).label, *(yysemantic_stack_[(2) - (2)].p_CODE).text));
-	delete (yysemantic_stack_[(2) - (2)].p_CODE).label;
-	delete (yysemantic_stack_[(2) - (2)].p_CODE).text;
+	(yylhs.value.p_ruleActions) = ((yystack_[1].value.p_ruleActions) == NULL)
+	    ? new ShExSchema::RuleActions(driver.curRulePattern)
+	    : (yystack_[1].value.p_ruleActions);
+	(yylhs.value.p_ruleActions)->codeMap.insert(std::make_pair(*(yystack_[0].value.p_CODE).label, *(yystack_[0].value.p_CODE).text));
+	delete (yystack_[0].value.p_CODE).label;
+	delete (yystack_[0].value.p_CODE).text;
     }
+#line 633 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 13:
-
-/* Line 690 of lalr1.cc  */
-#line 239 "lib/ShExCParser.ypp"
+#line 239 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curRulePattern = (yysemantic_stack_[(1) - (1)].p_rulePattern);
+	driver.curRulePattern = (yystack_[0].value.p_rulePattern);
       }
+#line 641 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 14:
-
-/* Line 690 of lalr1.cc  */
-#line 241 "lib/ShExCParser.ypp"
+#line 241 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	  driver.curRulePattern = NULL;
-	  (yyval.p_TTerm) = driver.createBNode();
-	  driver.curSchema->ruleMap.insert(std::make_pair((yyval.p_TTerm), (yysemantic_stack_[(3) - (3)].p_ruleActions) == NULL ? (yysemantic_stack_[(3) - (1)].p_rulePattern) : (yysemantic_stack_[(3) - (3)].p_ruleActions)));
+	  (yylhs.value.p_TTerm) = driver.createBNode();
+	  driver.curSchema->ruleMap.insert(std::make_pair((yylhs.value.p_TTerm), (yystack_[0].value.p_ruleActions) == NULL ? (yystack_[2].value.p_rulePattern) : (yystack_[0].value.p_ruleActions)));
       }
+#line 651 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 15:
-
-/* Line 690 of lalr1.cc  */
-#line 249 "lib/ShExCParser.ypp"
+#line 249 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
+	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
+#line 659 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 16:
-
-/* Line 690 of lalr1.cc  */
-#line 255 "lib/ShExCParser.ypp"
+#line 255 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	driver.ignorePrefix(true);
       }
+#line 667 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 17:
-
-/* Line 690 of lalr1.cc  */
-#line 257 "lib/ShExCParser.ypp"
+#line 257 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	  driver.ignorePrefix(false);
       }
+#line 675 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 18:
-
-/* Line 690 of lalr1.cc  */
-#line 259 "lib/ShExCParser.ypp"
+#line 259 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
+#line 684 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 19:
-
-/* Line 690 of lalr1.cc  */
-#line 266 "lib/ShExCParser.ypp"
+#line 266 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curRulePattern = (yysemantic_stack_[(2) - (2)].p_rulePattern);
+	driver.curRulePattern = (yystack_[0].value.p_rulePattern);
       }
+#line 692 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 20:
-
-/* Line 690 of lalr1.cc  */
-#line 268 "lib/ShExCParser.ypp"
+#line 268 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	  driver.curRulePattern = NULL;
-	  driver.curSchema->ruleMap.insert(std::make_pair((yysemantic_stack_[(4) - (1)].p_TTerm), (yysemantic_stack_[(4) - (4)].p_ruleActions) == NULL ? (yysemantic_stack_[(4) - (2)].p_rulePattern) : (yysemantic_stack_[(4) - (4)].p_ruleActions)));
+	  driver.curSchema->ruleMap.insert(std::make_pair((yystack_[3].value.p_TTerm), (yystack_[0].value.p_ruleActions) == NULL ? (yystack_[2].value.p_rulePattern) : (yystack_[0].value.p_ruleActions)));
       }
+#line 701 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 21:
-
-/* Line 690 of lalr1.cc  */
-#line 275 "lib/ShExCParser.ypp"
+#line 275 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_nameClass) = driver.curNameClass;
+	(yylhs.value.p_nameClass) = driver.curNameClass;
 	driver.curNameClass = NULL;
       }
+#line 710 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 22:
-
-/* Line 690 of lalr1.cc  */
-#line 278 "lib/ShExCParser.ypp"
+#line 278 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_rulePattern) = driver.curRulePattern;
+	  (yylhs.value.p_rulePattern) = driver.curRulePattern;
 	  driver.curRulePattern = NULL;
       }
+#line 719 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 23:
-
-/* Line 690 of lalr1.cc  */
-#line 281 "lib/ShExCParser.ypp"
+#line 281 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  driver.curRulePattern = (yysemantic_stack_[(5) - (3)].p_rulePattern);
-	  driver.curNameClass = (yysemantic_stack_[(5) - (2)].p_nameClass);
-	  (yyval.p_rulePattern) = (yysemantic_stack_[(5) - (4)].p_rulePattern);
+	  driver.curRulePattern = (yystack_[2].value.p_rulePattern);
+	  driver.curNameClass = (yystack_[3].value.p_nameClass);
+	  (yylhs.value.p_rulePattern) = (yystack_[1].value.p_rulePattern);
       }
+#line 729 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 24:
-
-/* Line 690 of lalr1.cc  */
-#line 289 "lib/ShExCParser.ypp"
+#line 289 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_setRule) = driver.curSetRule;
+	(yylhs.value.p_setRule) = driver.curSetRule;
 	driver.curSetRule = NULL;
     }
+#line 738 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 25:
-
-/* Line 690 of lalr1.cc  */
-#line 292 "lib/ShExCParser.ypp"
+#line 292 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	if (driver.curSetRule == NULL)
-	    (yyval.p_rulePattern) = (yysemantic_stack_[(3) - (2)].p_rulePattern);
+	    (yylhs.value.p_rulePattern) = (yystack_[1].value.p_rulePattern);
 	else {
-	    driver.curSetRule->rules.insert(driver.curSetRule->rules.begin(), (yysemantic_stack_[(3) - (2)].p_rulePattern));
-	    (yyval.p_rulePattern) = driver.curSetRule;
+	    driver.curSetRule->rules.insert(driver.curSetRule->rules.begin(), (yystack_[1].value.p_rulePattern));
+	    (yylhs.value.p_rulePattern) = driver.curSetRule;
 	}
-	driver.curSetRule = (yysemantic_stack_[(3) - (1)].p_setRule);
+	driver.curSetRule = (yystack_[2].value.p_setRule);
     }
+#line 752 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 26:
-
-/* Line 690 of lalr1.cc  */
-#line 304 "lib/ShExCParser.ypp"
+#line 304 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_rulePattern) = (yysemantic_stack_[(2) - (2)].p_rulePattern);
+	(yylhs.value.p_rulePattern) = (yystack_[0].value.p_rulePattern);
     }
+#line 760 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 28:
-
-/* Line 690 of lalr1.cc  */
-#line 311 "lib/ShExCParser.ypp"
+#line 311 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	if (driver.curSetRule == NULL)
-	    driver.curSetRule = new SWSexSchema::OrRule();
-	driver.curSetRule->rules.push_back((yysemantic_stack_[(2) - (2)].p_rulePattern));
+	    driver.curSetRule = new ShExSchema::OrRule();
+	driver.curSetRule->rules.push_back((yystack_[0].value.p_rulePattern));
     }
+#line 770 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 29:
-
-/* Line 690 of lalr1.cc  */
-#line 319 "lib/ShExCParser.ypp"
+#line 319 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_setRule) = driver.curSetRule;
+	(yylhs.value.p_setRule) = driver.curSetRule;
 	driver.curSetRule = NULL;
     }
+#line 779 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 30:
-
-/* Line 690 of lalr1.cc  */
-#line 322 "lib/ShExCParser.ypp"
+#line 322 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	if (driver.curSetRule == NULL)
-	    (yyval.p_rulePattern) = (yysemantic_stack_[(3) - (2)].p_rulePattern);
+	    (yylhs.value.p_rulePattern) = (yystack_[1].value.p_rulePattern);
 	else {
-	    driver.curSetRule->rules.insert(driver.curSetRule->rules.begin(), (yysemantic_stack_[(3) - (2)].p_rulePattern));
-	    (yyval.p_rulePattern) = driver.curSetRule;
+	    driver.curSetRule->rules.insert(driver.curSetRule->rules.begin(), (yystack_[1].value.p_rulePattern));
+	    (yylhs.value.p_rulePattern) = driver.curSetRule;
 	}
-	driver.curSetRule = (yysemantic_stack_[(3) - (1)].p_setRule);
+	driver.curSetRule = (yystack_[2].value.p_setRule);
     }
+#line 793 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 31:
-
-/* Line 690 of lalr1.cc  */
-#line 334 "lib/ShExCParser.ypp"
+#line 334 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_rulePattern) = (yysemantic_stack_[(2) - (2)].p_rulePattern);
+	(yylhs.value.p_rulePattern) = (yystack_[0].value.p_rulePattern);
     }
+#line 801 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 33:
-
-/* Line 690 of lalr1.cc  */
-#line 341 "lib/ShExCParser.ypp"
+#line 341 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	if (driver.curSetRule == NULL)
-	    driver.curSetRule = new SWSexSchema::AndRule();
-	driver.curSetRule->rules.push_back((yysemantic_stack_[(2) - (2)].p_rulePattern));
+	    driver.curSetRule = new ShExSchema::AndRule();
+	driver.curSetRule->rules.push_back((yystack_[0].value.p_rulePattern));
     }
+#line 811 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 34:
-
-/* Line 690 of lalr1.cc  */
-#line 349 "lib/ShExCParser.ypp"
+#line 349 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	// $$ = $1 ? new SWSexSchema::NegatedRule($2) : $2;
+	// $$ = $1 ? new ShExSchema::NegatedRule($2) : $2;
 	// @@ $1 is a label
-	(yyval.p_rulePattern) = (yysemantic_stack_[(2) - (2)].p_rulePattern);
+	(yylhs.value.p_rulePattern) = (yystack_[0].value.p_rulePattern);
     }
+#line 821 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 38:
-
-/* Line 690 of lalr1.cc  */
-#line 367 "lib/ShExCParser.ypp"
+#line 367 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = false;
+	(yylhs.value.p_bool) = false;
     }
+#line 829 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 39:
-
-/* Line 690 of lalr1.cc  */
-#line 370 "lib/ShExCParser.ypp"
+#line 370 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-        (yyval.p_bool) = true;
+        (yylhs.value.p_bool) = true;
     }
+#line 837 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 41:
-
-/* Line 690 of lalr1.cc  */
-#line 379 "lib/ShExCParser.ypp"
+#line 379 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curRulePattern = (yysemantic_stack_[(3) - (2)].p_rulePattern);
+	driver.curRulePattern = (yystack_[1].value.p_rulePattern);
       }
+#line 845 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 42:
-
-/* Line 690 of lalr1.cc  */
-#line 381 "lib/ShExCParser.ypp"
+#line 381 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	  // @@ set flag from $5
 	  driver.curRulePattern = NULL;
-	  (yyval.p_rulePattern) = (yysemantic_stack_[(6) - (6)].p_ruleActions) == NULL ? (yysemantic_stack_[(6) - (2)].p_rulePattern) : (yysemantic_stack_[(6) - (6)].p_ruleActions);
+	  (yylhs.value.p_rulePattern) = (yystack_[0].value.p_ruleActions) == NULL ? (yystack_[4].value.p_rulePattern) : (yystack_[0].value.p_ruleActions);
       }
+#line 855 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 43:
-
-/* Line 690 of lalr1.cc  */
-#line 389 "lib/ShExCParser.ypp"
+#line 389 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 863 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 44:
-
-/* Line 690 of lalr1.cc  */
-#line 392 "lib/ShExCParser.ypp"
+#line 392 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
+#line 871 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 45:
-
-/* Line 690 of lalr1.cc  */
-#line 398 "lib/ShExCParser.ypp"
+#line 398 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	// pass down the nameClass 'cause we need valueSpec's CODE* to be able
 	// to make a AtomicRule and potentially wrap it with RuleActions.
-	driver.curNameClass = (yysemantic_stack_[(2) - (2)].p_nameClass);
-	(yysemantic_stack_[(2) - (2)].p_nameClass)->reverse = (yysemantic_stack_[(2) - (1)].p_bool);
+	driver.curNameClass = (yystack_[0].value.p_nameClass);
+	(yystack_[0].value.p_nameClass)->reverse = (yystack_[1].value.p_bool);
       }
+#line 882 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 46:
-
-/* Line 690 of lalr1.cc  */
-#line 403 "lib/ShExCParser.ypp"
+#line 403 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  if ((yysemantic_stack_[(6) - (5)].p_TTerm))
-	      w3c_sw_NEED_IMPL("SWSex parser support for default");
-	  driver.curRulePattern = new SWSexSchema::AtomicRule(driver.curNameClass, (yysemantic_stack_[(6) - (4)].p_value), (yysemantic_stack_[(6) - (6)].p_RepeatRange).min, (yysemantic_stack_[(6) - (6)].p_RepeatRange).max);
+	  if ((yystack_[1].value.p_TTerm))
+	      w3c_sw_NEED_IMPL("ShEx parser support for default");
+	  driver.curRulePattern = new ShExSchema::AtomicRule(driver.curNameClass, (yystack_[2].value.p_value), (yystack_[0].value.p_RepeatRange).min, (yystack_[0].value.p_RepeatRange).max);
       }
+#line 892 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 47:
-
-/* Line 690 of lalr1.cc  */
-#line 407 "lib/ShExCParser.ypp"
+#line 407 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_rulePattern) = (yysemantic_stack_[(9) - (9)].p_ruleActions) == NULL ? driver.curRulePattern : (yysemantic_stack_[(9) - (9)].p_ruleActions);
+	  (yylhs.value.p_rulePattern) = (yystack_[0].value.p_ruleActions) == NULL ? driver.curRulePattern : (yystack_[0].value.p_ruleActions);
 	  driver.curRulePattern = NULL;
 	  driver.curNameClass = NULL;
 	}
+#line 902 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 48:
-
-/* Line 690 of lalr1.cc  */
-#line 424 "lib/ShExCParser.ypp"
+#line 424 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = false;
+	(yylhs.value.p_bool) = false;
     }
+#line 910 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 49:
-
-/* Line 690 of lalr1.cc  */
-#line 427 "lib/ShExCParser.ypp"
+#line 427 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = true;
+	(yylhs.value.p_bool) = true;
     }
+#line 918 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 50:
-
-/* Line 690 of lalr1.cc  */
-#line 433 "lib/ShExCParser.ypp"
+#line 433 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = NULL;
+	(yylhs.value.p_TTerm) = NULL;
     }
+#line 926 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 52:
-
-/* Line 690 of lalr1.cc  */
-#line 440 "lib/ShExCParser.ypp"
+#line 440 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 1;
-	(yyval.p_RepeatRange).max = 1;
+	(yylhs.value.p_RepeatRange).min = 1;
+	(yylhs.value.p_RepeatRange).max = 1;
     }
+#line 935 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 56:
-
-/* Line 690 of lalr1.cc  */
-#line 455 "lib/ShExCParser.ypp"
+#line 455 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(1) - (1)].p_URIstem).opt)
-	    (yyval.p_nameClass) = new SWSexSchema::AtomicRule::NamePattern((yysemantic_stack_[(1) - (1)].p_URIstem).uri);
+	if ((yystack_[0].value.p_URIstem).opt)
+	    (yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NamePattern((yystack_[0].value.p_URIstem).uri);
 	else
-	    (yyval.p_nameClass) = new SWSexSchema::AtomicRule::NameTerm((yysemantic_stack_[(1) - (1)].p_URIstem).uri);
+	    (yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NameTerm((yystack_[0].value.p_URIstem).uri);
     }
+#line 946 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 57:
-
-/* Line 690 of lalr1.cc  */
-#line 461 "lib/ShExCParser.ypp"
+#line 461 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_nameClass) = new SWSexSchema::AtomicRule::NameAll((yysemantic_stack_[(2) - (2)].p_URIstems));
+	(yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NameAll((yystack_[0].value.p_URIstems));
     }
+#line 954 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 58:
-
-/* Line 690 of lalr1.cc  */
-#line 464 "lib/ShExCParser.ypp"
+#line 464 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_nameClass) = new SWSexSchema::AtomicRule::NameTerm(TTerm::RDF_type);
+	(yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NameTerm(TTerm::RDF_type);
     }
+#line 962 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 59:
-
-/* Line 690 of lalr1.cc  */
-#line 470 "lib/ShExCParser.ypp"
+#line 470 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_value) = new SWSexSchema::AtomicRule::ValueReference((yysemantic_stack_[(2) - (2)].p_TTerm));
+	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueReference((yystack_[0].value.p_TTerm));
     }
+#line 970 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 60:
-
-/* Line 690 of lalr1.cc  */
-#line 473 "lib/ShExCParser.ypp"
+#line 473 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	const TTerm* b = driver.createBNode();
-	driver.curSchema->ruleMap.insert(std::make_pair(b, (yysemantic_stack_[(1) - (1)].p_rulePattern)));
-	(yyval.p_value) = new SWSexSchema::AtomicRule::ValueReference(b);
+	driver.curSchema->ruleMap.insert(std::make_pair(b, (yystack_[0].value.p_rulePattern)));
+	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueReference(b);
     }
+#line 980 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 61:
-
-/* Line 690 of lalr1.cc  */
-#line 478 "lib/ShExCParser.ypp"
+#line 478 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_value) = new SWSexSchema::AtomicRule::ValueType((yysemantic_stack_[(1) - (1)].p_URI));
+	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueType((yystack_[0].value.p_URI));
     }
+#line 988 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 62:
-
-/* Line 690 of lalr1.cc  */
-#line 481 "lib/ShExCParser.ypp"
+#line 481 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	SWSexSchema::AtomicRule::ValueSet* t = new SWSexSchema::AtomicRule::ValueSet();
-	(yyval.p_valueSet)  = t;
+	ShExSchema::AtomicRule::ValueSet* t = new ShExSchema::AtomicRule::ValueSet();
+	(yylhs.value.p_valueSet)  = t;
 	driver.curTTerms = &t->tterms;
       }
+#line 998 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 63:
-
-/* Line 690 of lalr1.cc  */
-#line 485 "lib/ShExCParser.ypp"
+#line 485 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_value) = (yysemantic_stack_[(2) - (1)].p_valueSet);
+	  (yylhs.value.p_value) = (yystack_[1].value.p_valueSet);
       }
+#line 1006 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 64:
-
-/* Line 690 of lalr1.cc  */
-#line 488 "lib/ShExCParser.ypp"
+#line 488 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_value) = new SWSexSchema::AtomicRule::ValueAny((yysemantic_stack_[(2) - (2)].p_URIstems));
+	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueAny((yystack_[0].value.p_URIstems));
     }
+#line 1014 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 65:
-
-/* Line 690 of lalr1.cc  */
-#line 491 "lib/ShExCParser.ypp"
+#line 491 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
         w3c_sw_NEED_IMPL("SPARQL Results Format callout");
     }
+#line 1022 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 66:
-
-/* Line 690 of lalr1.cc  */
-#line 497 "lib/ShExCParser.ypp"
+#line 497 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URIstem).uri = (yysemantic_stack_[(2) - (1)].p_URI);
-	(yyval.p_URIstem).opt = (yysemantic_stack_[(2) - (2)].p_bool);
+	(yylhs.value.p_URIstem).uri = (yystack_[1].value.p_URI);
+	(yylhs.value.p_URIstem).opt = (yystack_[0].value.p_bool);
     }
+#line 1031 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 67:
-
-/* Line 690 of lalr1.cc  */
-#line 504 "lib/ShExCParser.ypp"
+#line 504 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_bool) = false;
+	(yylhs.value.p_bool) = false;
     }
+#line 1039 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 507 "lib/ShExCParser.ypp"
+#line 507 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-        (yyval.p_bool) = true;
+        (yylhs.value.p_bool) = true;
     }
+#line 1047 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 513 "lib/ShExCParser.ypp"
+#line 513 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
+#line 1055 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 519 "lib/ShExCParser.ypp"
+#line 519 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1063 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 83:
-
-/* Line 690 of lalr1.cc  */
-#line 570 "lib/ShExCParser.ypp"
+#line 570 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-	driver.curPredicate = (yyval.p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
+	driver.curPredicate = (yylhs.value.p_TTerm);
     }
+#line 1072 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 84:
-
-/* Line 690 of lalr1.cc  */
-#line 574 "lib/ShExCParser.ypp"
+#line 574 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_TTerm) = TTerm::RDF_type;
-	driver.curPredicate = (yyval.p_TTerm);
+      (yylhs.value.p_TTerm) = TTerm::RDF_type;
+	driver.curPredicate = (yylhs.value.p_TTerm);
     }
+#line 1081 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 85:
-
-/* Line 690 of lalr1.cc  */
-#line 581 "lib/ShExCParser.ypp"
+#line 581 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1089 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 86:
-
-/* Line 690 of lalr1.cc  */
-#line 587 "lib/ShExCParser.ypp"
+#line 587 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_URI)));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_URI)));
     }
+#line 1097 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 87:
-
-/* Line 690 of lalr1.cc  */
-#line 590 "lib/ShExCParser.ypp"
+#line 590 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
+#line 1105 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 88:
-
-/* Line 690 of lalr1.cc  */
-#line 593 "lib/ShExCParser.ypp"
+#line 593 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
+#line 1113 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 89:
-
-/* Line 690 of lalr1.cc  */
-#line 596 "lib/ShExCParser.ypp"
+#line 596 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
+#line 1121 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 90:
-
-/* Line 690 of lalr1.cc  */
-#line 599 "lib/ShExCParser.ypp"
+#line 599 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)));
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
+#line 1129 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 94:
-
-/* Line 690 of lalr1.cc  */
-#line 611 "lib/ShExCParser.ypp"
+#line 611 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
-	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
+	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
+	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
+#line 1139 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 615 "lib/ShExCParser.ypp"
+#line 615 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
-	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
-	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
+	  (yylhs.value.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
+	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
+	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
+#line 1149 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 624 "lib/ShExCParser.ypp"
+#line 624 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
-	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
+	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
+	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
       }
+#line 1158 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 627 "lib/ShExCParser.ypp"
+#line 627 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  if ((yysemantic_stack_[(4) - (3)].p_TTerm) == NULL) {
-	      (yyval.p_TTerm) = TTerm::RDF_nil;
+	  if ((yystack_[1].value.p_TTerm) == NULL) {
+	      (yylhs.value.p_TTerm) = TTerm::RDF_nil;
 	  } else {
-	      (yyval.p_TTerm) = (yysemantic_stack_[(4) - (3)].p_TTerm);
+	      (yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
 	      driver.curBGP->addTriplePattern
 		  (driver.atomFactory->getTriple
 		   (driver.curSubject, TTerm::RDF_rest, TTerm::RDF_nil));
 	  }
-	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
-	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
+	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
+	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
+#line 1175 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 642 "lib/ShExCParser.ypp"
+#line 642 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = NULL;
+	(yylhs.value.p_TTerm) = NULL;
     }
+#line 1183 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 99:
-
-/* Line 690 of lalr1.cc  */
-#line 645 "lib/ShExCParser.ypp"
+#line 645 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
 	const TTerm* nextTail = driver.createBNode();
-	if ((yysemantic_stack_[(1) - (1)].p_TTerm) == NULL) // on first element
-	    (yyval.p_TTerm) = nextTail;
+	if ((yystack_[0].value.p_TTerm) == NULL) // on first element
+	    (yylhs.value.p_TTerm) = nextTail;
 	else		// on later elements
 	    driver.curBGP->addTriplePattern
 		(driver.atomFactory->getTriple
@@ -1117,294 +1195,249 @@ namespace w3c_sw {
 	driver.curSubject = nextTail;
 	driver.curPredicate = TTerm::RDF_first;
       }
+#line 1199 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 100:
-
-/* Line 690 of lalr1.cc  */
-#line 655 "lib/ShExCParser.ypp"
+#line 655 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = (yysemantic_stack_[(3) - (2)].p_TTerm);
+	  (yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
       }
+#line 1207 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 102:
-
-/* Line 690 of lalr1.cc  */
-#line 665 "lib/ShExCParser.ypp"
+#line 665 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URIstem) = (yysemantic_stack_[(2) - (2)].p_URIstem);
+	(yylhs.value.p_URIstem) = (yystack_[0].value.p_URIstem);
     }
+#line 1215 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 103:
-
-/* Line 690 of lalr1.cc  */
-#line 671 "lib/ShExCParser.ypp"
+#line 671 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URIstems) = NULL;
+	(yylhs.value.p_URIstems) = NULL;
     }
+#line 1223 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 104:
-
-/* Line 690 of lalr1.cc  */
-#line 674 "lib/ShExCParser.ypp"
+#line 674 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (1)].p_URIstems) == NULL)
-	    (yysemantic_stack_[(2) - (1)].p_URIstems) = new std::vector<SWSexSchema::URIstem>();
-	(yysemantic_stack_[(2) - (1)].p_URIstems)->push_back((yysemantic_stack_[(2) - (2)].p_URIstem));
-	(yyval.p_URIstems) = (yysemantic_stack_[(2) - (1)].p_URIstems);
+	if ((yystack_[1].value.p_URIstems) == NULL)
+	    (yystack_[1].value.p_URIstems) = new std::vector<ShExSchema::URIstem>();
+	(yystack_[1].value.p_URIstems)->push_back((yystack_[0].value.p_URIstem));
+	(yylhs.value.p_URIstems) = (yystack_[1].value.p_URIstems);
     }
+#line 1234 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 105:
-
-/* Line 690 of lalr1.cc  */
-#line 685 "lib/ShExCParser.ypp"
+#line 685 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 0;
-	(yyval.p_RepeatRange).max = SWSexSchema::AtomicRule::Unlimited;
+	(yylhs.value.p_RepeatRange).min = 0;
+	(yylhs.value.p_RepeatRange).max = ShExSchema::AtomicRule::Unlimited;
     }
+#line 1243 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 106:
-
-/* Line 690 of lalr1.cc  */
-#line 689 "lib/ShExCParser.ypp"
+#line 689 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 1;
-	(yyval.p_RepeatRange).max = SWSexSchema::AtomicRule::Unlimited;
+	(yylhs.value.p_RepeatRange).min = 1;
+	(yylhs.value.p_RepeatRange).max = ShExSchema::AtomicRule::Unlimited;
     }
+#line 1252 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 107:
-
-/* Line 690 of lalr1.cc  */
-#line 693 "lib/ShExCParser.ypp"
+#line 693 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 0;
-	(yyval.p_RepeatRange).max = 1;
+	(yylhs.value.p_RepeatRange).min = 0;
+	(yylhs.value.p_RepeatRange).max = 1;
     }
+#line 1261 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 108:
-
-/* Line 690 of lalr1.cc  */
-#line 697 "lib/ShExCParser.ypp"
+#line 697 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = (yysemantic_stack_[(4) - (2)].p_NumericRDFLiteral)->getInt();
-	(yyval.p_RepeatRange).max = (yysemantic_stack_[(4) - (3)].p_int);
+	(yylhs.value.p_RepeatRange).min = (yystack_[2].value.p_NumericRDFLiteral)->getInt();
+	(yylhs.value.p_RepeatRange).max = (yystack_[1].value.p_int);
     }
+#line 1270 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 109:
-
-/* Line 690 of lalr1.cc  */
-#line 704 "lib/ShExCParser.ypp"
+#line 704 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = SWSexSchema::AtomicRule::Unlimited;
+	(yylhs.value.p_int) = ShExSchema::AtomicRule::Unlimited;
     }
+#line 1278 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 110:
-
-/* Line 690 of lalr1.cc  */
-#line 707 "lib/ShExCParser.ypp"
+#line 707 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)->getInt();
+	(yylhs.value.p_int) = (yystack_[0].value.p_NumericRDFLiteral)->getInt();
     }
+#line 1286 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 111:
-
-/* Line 690 of lalr1.cc  */
-#line 713 "lib/ShExCParser.ypp"
+#line 713 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = (yysemantic_stack_[(2) - (2)].p_int);
+	(yylhs.value.p_int) = (yystack_[0].value.p_int);
     }
+#line 1294 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 112:
-
-/* Line 690 of lalr1.cc  */
-#line 719 "lib/ShExCParser.ypp"
+#line 719 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_int) = SWSexSchema::AtomicRule::Unlimited;
+	(yylhs.value.p_int) = ShExSchema::AtomicRule::Unlimited;
     }
+#line 1302 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 115:
-
-/* Line 690 of lalr1.cc  */
-#line 730 "lib/ShExCParser.ypp"
+#line 730 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curTTerms->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
+	driver.curTTerms->push_back((yystack_[0].value.p_TTerm));
     }
+#line 1310 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 116:
-
-/* Line 690 of lalr1.cc  */
-#line 733 "lib/ShExCParser.ypp"
+#line 733 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	driver.curTTerms->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
+	driver.curTTerms->push_back((yystack_[0].value.p_TTerm));
     }
+#line 1318 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 117:
-
-/* Line 690 of lalr1.cc  */
-#line 739 "lib/ShExCParser.ypp"
+#line 739 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(1) - (1)].p_URIstem).opt)
-	    w3c_sw_NEED_IMPL("SWSex parser support for URIstems in value sets");
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URIstem).uri;
+	if ((yystack_[0].value.p_URIstem).opt)
+	    w3c_sw_NEED_IMPL("ShEx parser support for URIstems in value sets");
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URIstem).uri;
     }
+#line 1328 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 120:
-
-/* Line 690 of lalr1.cc  */
-#line 749 "lib/ShExCParser.ypp"
+#line 749 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 1336 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 121:
-
-/* Line 690 of lalr1.cc  */
-#line 752 "lib/ShExCParser.ypp"
+#line 752 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 1344 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 122:
-
-/* Line 690 of lalr1.cc  */
-#line 755 "lib/ShExCParser.ypp"
+#line 755 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 1352 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 123:
-
-/* Line 690 of lalr1.cc  */
-#line 762 "lib/ShExCParser.ypp"
+#line 762 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
-	delete (yysemantic_stack_[(2) - (1)].p_string);
+	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
+	delete (yystack_[1].value.p_string);
     }
+#line 1361 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 124:
-
-/* Line 690 of lalr1.cc  */
-#line 770 "lib/ShExCParser.ypp"
+#line 770 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
+#line 1370 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 125:
-
-/* Line 690 of lalr1.cc  */
-#line 775 "lib/ShExCParser.ypp"
+#line 775 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(2) - (2)].p_URI);
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 1379 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
   case 126:
-
-/* Line 690 of lalr1.cc  */
-#line 783 "lib/ShExCParser.ypp"
+#line 783 "lib/ShExCParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 1388 "lib/ShExCParser.cpp" // lalr1.cc:847
     break;
 
 
+#line 1392 "lib/ShExCParser.cpp" // lalr1.cc:847
+            default:
+              break;
+            }
+        }
+      catch (const syntax_error& yyexc)
+        {
+          error (yyexc);
+          YYERROR;
+        }
+      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      yypop_ (yylen);
+      yylen = 0;
+      YY_STACK_PRINT ();
 
-/* Line 690 of lalr1.cc  */
-#line 1337 "lib/ShExCParser.cpp"
-	default:
-          break;
-      }
-    /* User semantic actions sometimes alter yychar, and that requires
-       that yytoken be updated with the new translation.  We take the
-       approach of translating immediately before every use of yytoken.
-       One alternative is translating here after every semantic action,
-       but that translation would be missed if the semantic action
-       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
-       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
-       destructor might then be invoked immediately.  In the case of
-       YYERROR, subsequent parser actions might lead to an incorrect
-       destructor call or verbose syntax error message before the
-       lookahead is translated.  */
-    YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
-
-    yypop_ (yylen);
-    yylen = 0;
-    YY_STACK_PRINT ();
-
-    yysemantic_stack_.push (yyval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the result of the reduction.  */
-    yyn = yyr1_[yyn];
-    yystate = yypgoto_[yyn - yyntokens_] + yystate_stack_[0];
-    if (0 <= yystate && yystate <= yylast_
-	&& yycheck_[yystate] == yystate_stack_[0])
-      yystate = yytable_[yystate];
-    else
-      yystate = yydefgoto_[yyn - yyntokens_];
+      // Shift the result of the reduction.
+      yypush_ (YY_NULLPTR, yylhs);
+    }
     goto yynewstate;
 
-  /*------------------------------------.
-  | yyerrlab -- here on detecting error |
-  `------------------------------------*/
+  /*--------------------------------------.
+  | yyerrlab -- here on detecting error.  |
+  `--------------------------------------*/
   yyerrlab:
-    /* Make sure we have latest lookahead translation.  See comments at
-       user semantic actions for why this is necessary.  */
-    yytoken = yytranslate_ (yychar);
-
-    /* If not already recovering from an error, report this error.  */
+    // If not already recovering from an error, report this error.
     if (!yyerrstatus_)
       {
-	++yynerrs_;
-	if (yychar == yyempty_)
-	  yytoken = yyempty_;
-	error (yylloc, yysyntax_error_ (yystate, yytoken));
+        ++yynerrs_;
+        error (yyla.location, yysyntax_error_ (yystack_[0].state,
+                                           yyempty ? yyempty_ : yyla.type_get ()));
       }
 
-    yyerror_range[1] = yylloc;
+
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
 
-	if (yychar <= yyeof_)
-	  {
-	  /* Return failure if at end of input.  */
-	  if (yychar == yyeof_)
-	    YYABORT;
-	  }
-	else
-	  {
-	    yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
-	    yychar = yyempty_;
-	  }
+        // Return failure if at end of input.
+        if (yyla.type_get () == yyeof_)
+          YYABORT;
+        else if (!yyempty)
+          {
+            yy_destroy_ ("Error: discarding", yyla);
+            yyempty = true;
+          }
       }
 
-    /* Else will try to reuse lookahead token after shifting the error
-       token.  */
+    // Else will try to reuse lookahead token after shifting the error token.
     goto yyerrlab1;
 
 
@@ -1418,100 +1451,105 @@ namespace w3c_sw {
        code.  */
     if (false)
       goto yyerrorlab;
-
-    yyerror_range[1] = yylocation_stack_[yylen - 1];
-    /* Do not reclaim the symbols of the rule which action triggered
+    yyerror_range[1].location = yystack_[yylen - 1].location;
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
-    yystate = yystate_stack_[0];
     goto yyerrlab1;
 
   /*-------------------------------------------------------------.
   | yyerrlab1 -- common code for both syntax error and YYERROR.  |
   `-------------------------------------------------------------*/
   yyerrlab1:
-    yyerrstatus_ = 3;	/* Each real token shifted decrements this.  */
+    yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    {
+      stack_symbol_type error_token;
+      for (;;)
+        {
+          yyn = yypact_[yystack_[0].state];
+          if (!yy_pact_value_is_default_ (yyn))
+            {
+              yyn += yyterror_;
+              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
+                {
+                  yyn = yytable_[yyn];
+                  if (0 < yyn)
+                    break;
+                }
+            }
 
-    for (;;)
-      {
-	yyn = yypact_[yystate];
-	if (!yy_pact_value_is_default_ (yyn))
-	{
-	  yyn += yyterror_;
-	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
-	    {
-	      yyn = yytable_[yyn];
-	      if (0 < yyn)
-		break;
-	    }
-	}
+          // Pop the current state because it cannot handle the error token.
+          if (yystack_.size () == 1)
+            YYABORT;
 
-	/* Pop the current state because it cannot handle the error token.  */
-	if (yystate_stack_.height () == 1)
-	YYABORT;
+          yyerror_range[1].location = yystack_[0].location;
+          yy_destroy_ ("Error: popping", yystack_[0]);
+          yypop_ ();
+          YY_STACK_PRINT ();
+        }
 
-	yyerror_range[1] = yylocation_stack_[0];
-	yydestruct_ ("Error: popping",
-		     yystos_[yystate],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-	yypop_ ();
-	yystate = yystate_stack_[0];
-	YY_STACK_PRINT ();
-      }
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
-    yyerror_range[2] = yylloc;
-    // Using YYLLOC is tempting, but would change the location of
-    // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the error token.  */
-    YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-
-    yystate = yyn;
+      // Shift the error token.
+      error_token.state = yyn;
+      yypush_ ("Shifting", error_token);
+    }
     goto yynewstate;
 
-    /* Accept.  */
+    // Accept.
   yyacceptlab:
     yyresult = 0;
     goto yyreturn;
 
-    /* Abort.  */
+    // Abort.
   yyabortlab:
     yyresult = 1;
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyempty_)
-      {
-        /* Make sure we have latest lookahead translation.  See comments
-           at user semantic actions for why this is necessary.  */
-        yytoken = yytranslate_ (yychar);
-        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
-                     &yylloc);
-      }
+    if (!yyempty)
+      yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
-    /* Do not reclaim the symbols of the rule which action triggered
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
-    while (yystate_stack_.height () != 1)
+    while (1 < yystack_.size ())
       {
-	yydestruct_ ("Cleanup: popping",
-		   yystos_[yystate_stack_[0]],
-		   &yysemantic_stack_[0],
-		   &yylocation_stack_[0]);
-	yypop_ ();
+        yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        yypop_ ();
       }
 
     return yyresult;
   }
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printer might throw an exception.
+        if (!yyempty)
+          yy_destroy_ (YY_NULLPTR, yyla);
+
+        while (1 < yystack_.size ())
+          {
+            yy_destroy_ (YY_NULLPTR, yystack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
+  }
+
+  void
+  ShExParser::error (const syntax_error& yyexc)
+  {
+    error (yyexc.location, yyexc.what());
+  }
 
   // Generate an error message.
   std::string
-  SWSexParser::yysyntax_error_ (int yystate, int yytoken)
+  ShExParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
   {
     std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
@@ -1536,7 +1574,7 @@ namespace w3c_sw {
          a consistent state with a default action.  There might have
          been a previous inconsistent state, consistent state with a
          non-default action, or user semantic action that manipulated
-         yychar.
+         yyla.  (However, yyla is currently not documented for users.)
        - Of course, the expected token list depends on states to have
          correct lookahead information, and it depends on the parser not
          to perform extra reductions after fetching a lookahead from the
@@ -1557,7 +1595,7 @@ namespace w3c_sw {
                YYCHECK.  In other words, skip the first -YYN actions for
                this state because they are default actions.  */
             int yyxbegin = yyn < 0 ? -yyn : 0;
-            /* Stay within bounds of both yycheck and yytname.  */
+            // Stay within bounds of both yycheck and yytname.
             int yychecklim = yylast_ - yyn + 1;
             int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
             for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
@@ -1575,7 +1613,7 @@ namespace w3c_sw {
           }
       }
 
-    char const* yyformat = 0;
+    char const* yyformat = YY_NULLPTR;
     switch (yycount)
       {
 #define YYCASE_(N, S)                         \
@@ -1605,13 +1643,14 @@ namespace w3c_sw {
   }
 
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
-  const short int SWSexParser::yypact_ninf_ = -142;
+  const short int ShExParser::yypact_ninf_ = -142;
+
+  const signed char ShExParser::yytable_ninf_ = -1;
+
   const short int
-  SWSexParser::yypact_[] =
+  ShExParser::yypact_[] =
   {
-      -142,    27,     4,  -142,    44,    -8,  -142,  -142,  -142,  -142,
+    -142,    27,     4,  -142,    44,    -8,  -142,  -142,  -142,  -142,
     -142,  -142,  -142,  -142,  -142,  -142,  -142,    45,  -142,  -142,
     -142,     9,  -142,    19,  -142,  -142,  -142,  -142,  -142,  -142,
     -142,  -142,  -142,    21,  -142,    36,    36,  -142,    57,  -142,
@@ -1631,13 +1670,10 @@ namespace w3c_sw {
     -142,  -142,  -142
   };
 
-  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
-     YYTABLE doesn't specify something else to do.  Zero means the
-     default is an error.  */
   const unsigned char
-  SWSexParser::yydefact_[] =
+  ShExParser::yydefact_[] =
   {
-         3,     0,     2,     1,     0,     0,    16,   138,   139,   137,
+       3,     0,     2,     1,     0,     0,    16,   138,   139,   137,
      136,   134,     4,     5,     7,     8,     6,     0,    43,   135,
       44,     0,    15,     0,    21,    19,     9,    13,    12,    17,
       22,    10,    10,     0,    24,    20,    14,    18,     0,    29,
@@ -1657,11 +1693,10 @@ namespace w3c_sw {
       80,   100,    73
   };
 
-  /* YYPGOTO[NTERM-NUM].  */
   const short int
-  SWSexParser::yypgoto_[] =
+  ShExParser::yypgoto_[] =
   {
-      -142,  -142,  -142,  -142,  -142,   -31,  -142,  -142,  -142,  -142,
+    -142,  -142,  -142,  -142,  -142,   -31,  -142,  -142,  -142,  -142,
     -142,  -142,  -142,  -142,   -16,  -142,  -142,    46,  -142,  -142,
     -142,    48,  -142,  -142,  -142,    41,  -142,  -142,  -142,  -142,
     -142,   -18,  -142,  -142,  -142,  -142,  -142,  -142,  -142,  -142,
@@ -1672,11 +1707,10 @@ namespace w3c_sw {
       -2,  -142,     0
   };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
   const short int
-  SWSexParser::yydefgoto_[] =
+  ShExParser::yydefgoto_[] =
   {
-        -1,     1,     2,    12,    13,    35,    26,    32,    14,    15,
+      -1,     1,     2,    12,    13,    35,    26,    32,    14,    15,
       23,    33,    16,    31,    25,    30,    34,    38,    39,    50,
       44,    42,    43,    60,    52,    46,    47,    48,    85,    55,
       74,    17,    56,    71,   128,    57,    91,   116,   136,    64,
@@ -1687,14 +1721,10 @@ namespace w3c_sw {
       66,    19,   156
   };
 
-  /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const signed char SWSexParser::yytable_ninf_ = -1;
   const unsigned char
-  SWSexParser::yytable_[] =
+  ShExParser::yytable_[] =
   {
-        18,    36,    20,    28,    24,    27,   112,     4,    65,     5,
+      18,    36,    20,    28,    24,    27,   112,     4,    65,     5,
        6,   113,   123,    77,    78,    79,    24,   106,   143,    18,
      119,    20,   170,   114,   115,   171,    86,     3,    53,   124,
       54,     9,    10,    11,    22,     7,     8,     9,    10,    11,
@@ -1716,11 +1746,10 @@ namespace w3c_sw {
      102,   103,   104,     9,    10,    11
   };
 
-  /* YYCHECK.  */
   const short int
-  SWSexParser::yycheck_[] =
+  ShExParser::yycheck_[] =
   {
-         2,    32,     2,    21,     7,    21,     7,     3,    57,     5,
+       2,    32,     2,    21,     7,    21,     7,     3,    57,     5,
        6,    12,    26,    16,    17,    18,     7,    90,    27,    21,
       93,    21,   163,    24,    25,   166,    75,     0,    13,    43,
       15,    40,    41,    42,    42,    31,    32,    40,    41,    42,
@@ -1742,12 +1771,10 @@ namespace w3c_sw {
       37,    38,    39,    40,    41,    42
   };
 
-  /* STOS_[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
   const unsigned char
-  SWSexParser::yystos_[] =
+  ShExParser::yystos_[] =
   {
-         0,    45,    46,     0,     3,     5,     6,    31,    32,    40,
+       0,    45,    46,     0,     3,     5,     6,    31,    32,    40,
       41,    42,    47,    48,    52,    53,    56,    75,   124,   125,
      126,     4,    42,    54,     7,    58,    50,    58,    75,    40,
       59,    57,    51,    55,    60,    49,    49,    42,    61,    62,
@@ -1767,25 +1794,10 @@ namespace w3c_sw {
      100,   100,    95
   };
 
-#if YYDEBUG
-  /* TOKEN_NUMBER_[YYLEX-NUM] -- Internal symbol number corresponding
-     to YYLEX-NUM.  */
-  const unsigned short int
-  SWSexParser::yytoken_number_[] =
-  {
-         0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298
-  };
-#endif
-
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
   const unsigned char
-  SWSexParser::yyr1_[] =
+  ShExParser::yyr1_[] =
   {
-         0,    44,    45,    46,    46,    47,    47,    48,    48,    48,
+       0,    44,    45,    46,    46,    47,    47,    48,    48,    48,
       49,    49,    50,    51,    50,    52,    54,    55,    53,    57,
       56,    59,    60,    58,    62,    61,    63,    64,    64,    66,
       65,    67,    68,    68,    69,    70,    71,    71,    72,    72,
@@ -1801,11 +1813,10 @@ namespace w3c_sw {
      123,   123,   123,   123,   124,   124,   125,   125,   126,   126
   };
 
-  /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
-  SWSexParser::yyr2_[] =
+  ShExParser::yyr2_[] =
   {
-         0,     2,     1,     0,     2,     1,     1,     1,     1,     3,
+       0,     2,     1,     0,     2,     1,     1,     1,     1,     3,
        0,     2,     1,     0,     3,     2,     0,     0,     5,     0,
        4,     0,     0,     5,     0,     3,     2,     0,     2,     0,
        3,     2,     0,     2,     2,     2,     0,     1,     0,     1,
@@ -1821,13 +1832,14 @@ namespace w3c_sw {
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1
   };
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
-  /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-     First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
+
+
+  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
   const char*
-  const SWSexParser::yytname_[] =
+  const ShExParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_start", "GT_EQUAL",
+  "\"end of file\"", "error", "$undefined", "IT_start", "GT_EQUAL",
   "IT_BASE", "IT_PREFIX", "GT_LCURLEY", "GT_RCURLEY", "GT_PIPE",
   "GT_COMMA", "GT_DOLLAR", "GT_OPT", "GT_LPAREN", "GT_RPAREN", "GT_CARROT",
   "GT_DOT", "GT_AT", "IT_SPARQL_SRX", "GT_KINDA", "GT_SEMI", "GT_LBRACKET",
@@ -1835,7 +1847,7 @@ namespace w3c_sw {
   "CODE", "IT_true", "IT_false", "BLANK_NODE_LABEL", "ANON", "INTEGER",
   "DECIMAL", "DOUBLE", "STRING_LITERAL1", "STRING_LITERAL2",
   "STRING_LITERAL_LONG1", "STRING_LITERAL_LONG2", "PNAME_NS", "PNAME_LN",
-  "IRIREF", "LANGTAG", "$accept", "SWSexDoc", "_Qstatement_E_Star",
+  "IRIREF", "LANGTAG", "$accept", "ShExDoc", "_Qstatement_E_Star",
   "statement", "directive", "_QCODE_E_Star",
   "_O_Qlabel_E_Or_QtypeSpec_E_S_QCODE_E_Star_C", "$@1", "BaseDecl",
   "PrefixDecl", "$@2", "$@3", "shape", "$@4", "typeSpec", "@5", "@6",
@@ -1864,75 +1876,14 @@ namespace w3c_sw {
   "_Qvalue_E_Plus", "valueChoice", "NumericLiteral", "RDFLiteral",
   "_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C",
   "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt", "BooleanLiteral",
-  "String", "iri", "PrefixedName", "BlankNode", 0
+  "String", "iri", "PrefixedName", "BlankNode", YY_NULLPTR
   };
-#endif
 
 #if YYDEBUG
-  /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
-  const SWSexParser::rhs_number_type
-  SWSexParser::yyrhs_[] =
-  {
-        45,     0,    -1,    46,    -1,    -1,    46,    47,    -1,    48,
-      -1,    56,    -1,    52,    -1,    53,    -1,     3,     4,    50,
-      -1,    -1,    49,    28,    -1,    75,    -1,    -1,    58,    51,
-      49,    -1,     5,    42,    -1,    -1,    -1,     6,    54,    40,
-      55,    42,    -1,    -1,    75,    58,    57,    49,    -1,    -1,
-      -1,     7,    59,    60,    61,     8,    -1,    -1,    62,    65,
-      64,    -1,     9,    65,    -1,    -1,    64,    63,    -1,    -1,
-      66,    69,    68,    -1,    10,    69,    -1,    -1,    68,    67,
-      -1,    71,    73,    -1,    11,   124,    -1,    -1,    70,    -1,
-      -1,    12,    -1,    76,    -1,    -1,    13,    61,    14,    74,
-      72,    49,    -1,   124,    -1,   126,    -1,    -1,    -1,    79,
-      83,    77,    84,    80,    81,    78,    82,    49,    -1,    -1,
-      15,    -1,    -1,    88,    -1,    -1,   111,    -1,    -1,   102,
-      -1,    86,    -1,    16,   108,    -1,    27,    -1,    17,    75,
-      -1,    58,    -1,   124,    -1,    -1,    85,   115,    -1,    16,
-     108,    -1,    18,   124,    -1,   124,    87,    -1,    -1,    19,
-      -1,     4,    89,    -1,   124,    -1,   101,    -1,    98,    95,
-      94,    -1,    98,    95,    -1,    -1,    91,    -1,    20,    92,
-      -1,    -1,    94,    93,    -1,   100,    97,    -1,    10,   100,
-      -1,    -1,    97,    96,    -1,    99,    -1,    27,    -1,   124,
-      -1,   124,    -1,   126,    -1,   104,    -1,   102,    -1,   101,
-      -1,   119,    -1,   118,    -1,   122,    -1,    -1,    21,   103,
-      90,    22,    -1,    -1,    13,   105,   106,    14,    -1,    -1,
-      -1,   106,   107,   100,    -1,   110,    -1,    23,    86,    -1,
-      -1,   110,   109,    -1,    24,    -1,    25,    -1,    12,    -1,
-       7,    33,   114,     8,    -1,    -1,    33,    -1,    10,   112,
-      -1,    -1,   113,    -1,    13,   116,    14,    -1,   117,    -1,
-     116,   117,    -1,    86,    -1,   126,    -1,   101,    -1,    33,
-      -1,    34,    -1,    35,    -1,   123,   121,    -1,    43,    -1,
-      26,   124,    -1,    -1,   120,    -1,    29,    -1,    30,    -1,
-      36,    -1,    37,    -1,    38,    -1,    39,    -1,    42,    -1,
-     125,    -1,    41,    -1,    40,    -1,    31,    -1,    32,    -1
-  };
-
-  /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
-     YYRHS.  */
   const unsigned short int
-  SWSexParser::yyprhs_[] =
+  ShExParser::yyrline_[] =
   {
-         0,     0,     3,     5,     6,     9,    11,    13,    15,    17,
-      21,    22,    25,    27,    28,    32,    35,    36,    37,    43,
-      44,    49,    50,    51,    57,    58,    62,    65,    66,    69,
-      70,    74,    77,    78,    81,    84,    87,    88,    90,    91,
-      93,    95,    96,   103,   105,   107,   108,   109,   119,   120,
-     122,   123,   125,   126,   128,   129,   131,   133,   136,   138,
-     141,   143,   145,   146,   149,   152,   155,   158,   159,   161,
-     164,   166,   168,   172,   175,   176,   178,   181,   182,   185,
-     188,   191,   192,   195,   197,   199,   201,   203,   205,   207,
-     209,   211,   213,   215,   217,   218,   223,   224,   229,   230,
-     231,   235,   237,   240,   241,   244,   246,   248,   250,   255,
-     256,   258,   261,   262,   264,   268,   270,   273,   275,   277,
-     279,   281,   283,   285,   288,   290,   293,   294,   296,   298,
-     300,   302,   304,   306,   308,   310,   312,   314,   316,   318
-  };
-
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-  const unsigned short int
-  SWSexParser::yyrline_[] =
-  {
-         0,   202,   202,   205,   207,   211,   212,   216,   217,   218,
+       0,   202,   202,   205,   207,   211,   212,   216,   217,   218,
      224,   227,   238,   239,   239,   249,   255,   257,   255,   266,
      266,   275,   278,   275,   289,   289,   304,   309,   311,   319,
      319,   334,   339,   341,   349,   358,   361,   363,   367,   370,
@@ -1950,42 +1901,43 @@ namespace w3c_sw {
 
   // Print the state stack on the debug stream.
   void
-  SWSexParser::yystack_print_ ()
+  ShExParser::yystack_print_ ()
   {
     *yycdebug_ << "Stack now";
-    for (state_stack_type::const_iterator i = yystate_stack_.begin ();
-	 i != yystate_stack_.end (); ++i)
-      *yycdebug_ << ' ' << *i;
+    for (stack_type::const_iterator
+           i = yystack_.begin (),
+           i_end = yystack_.end ();
+         i != i_end; ++i)
+      *yycdebug_ << ' ' << i->state;
     *yycdebug_ << std::endl;
   }
 
   // Report on the debug stream that the rule \a yyrule is going to be reduced.
   void
-  SWSexParser::yy_reduce_print_ (int yyrule)
+  ShExParser::yy_reduce_print_ (int yyrule)
   {
     unsigned int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
-    /* Print the symbols being reduced, and their result.  */
+    // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "):" << std::endl;
-    /* The symbols being reduced.  */
+               << " (line " << yylno << "):" << std::endl;
+    // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
-		       yyrhs_[yyprhs_[yyrule] + yyi],
-		       &(yysemantic_stack_[(yynrhs) - (yyi + 1)]),
-		       &(yylocation_stack_[(yynrhs) - (yyi + 1)]));
+                       yystack_[(yynrhs) - (yyi + 1)]);
   }
 #endif // YYDEBUG
 
-  /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
-  SWSexParser::token_number_type
-  SWSexParser::yytranslate_ (int t)
+  // Symbol number corresponding to token number t.
+  inline
+  ShExParser::token_number_type
+  ShExParser::yytranslate_ (int t)
   {
     static
     const token_number_type
     translate_table[] =
     {
-           0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -2016,36 +1968,24 @@ namespace w3c_sw {
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43
     };
-    if ((unsigned int) t <= yyuser_token_number_max_)
+    const unsigned int user_token_number_max_ = 298;
+    const token_number_type undef_token_ = 2;
+
+    if (static_cast<int>(t) <= yyeof_)
+      return yyeof_;
+    else if (static_cast<unsigned int> (t) <= user_token_number_max_)
       return translate_table[t];
     else
-      return yyundef_token_;
+      return undef_token_;
   }
-
-  const int SWSexParser::yyeof_ = 0;
-  const int SWSexParser::yylast_ = 195;
-  const int SWSexParser::yynnts_ = 83;
-  const int SWSexParser::yyempty_ = -2;
-  const int SWSexParser::yyfinal_ = 3;
-  const int SWSexParser::yyterror_ = 1;
-  const int SWSexParser::yyerrcode_ = 256;
-  const int SWSexParser::yyntokens_ = 44;
-
-  const unsigned int SWSexParser::yyuser_token_number_max_ = 298;
-  const SWSexParser::token_number_type SWSexParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
-
-/* Line 1136 of lalr1.cc  */
-#line 2042 "lib/ShExCParser.cpp"
-
-
-/* Line 1138 of lalr1.cc  */
-#line 819 "lib/ShExCParser.ypp"
+#line 1985 "lib/ShExCParser.cpp" // lalr1.cc:1155
+#line 819 "lib/ShExCParser.ypp" // lalr1.cc:1156
  /*** Additional Code ***/
 
-void w3c_sw::SWSexParser::error(const SWSexParser::location_type& l,
+void w3c_sw::ShExParser::error(const ShExParser::location_type& l,
 			    const std::string& m)
 {
     std::string s = m;
@@ -2083,31 +2023,31 @@ void w3c_sw::SWSexParser::error(const SWSexParser::location_type& l,
 
 namespace w3c_sw {
 
-size_t SWSexDriver::DefaultAbortErrorCount = 100;
+size_t ShExDriver::DefaultAbortErrorCount = 100;
 
-SWSexSchema* SWSexDriver::parse (IStreamContext& in) {
+ShExSchema* ShExDriver::parse (IStreamContext& in) {
     reset();
     streamname = in.nameStr;
     // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
 
-    SWSexScanner scanner(this, in.p);
+    ShExScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
     this->lexer = &scanner;
 
-    SWSexParser parser(*this);
+    ShExParser parser(*this);
     parser.set_debug_level(trace_parsing);
     parser.parse();
     checkErrors();
     return curSchema;
 }
 
-SWSexSchema* SWSexDriver::parse (IStreamContext& in, SWSexSchema* schema) {
+ShExSchema* ShExDriver::parse (IStreamContext& in, ShExSchema* schema) {
     setSchema(schema);
     return parse(in);
 }
 
-SWSexSchema* SWSexDriver::parse (std::string swsexStr, SWSexSchema* schema) {
+ShExSchema* ShExDriver::parse (std::string swsexStr, ShExSchema* schema) {
     IStreamContext in(swsexStr.c_str(), IStreamContext::STRING);
     setSchema(schema);
     return parse(in);
@@ -2116,5 +2056,4 @@ SWSexSchema* SWSexDriver::parse (std::string swsexStr, SWSexSchema* schema) {
 } // namespace w3c_sw
 
 /* END Driver */
-
 

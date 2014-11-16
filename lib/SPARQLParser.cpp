@@ -1,56 +1,57 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+// A Bison parser, made by GNU Bison 3.0.2.
 
-/* Skeleton implementation for Bison LALR(1) parsers in C++
-   
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+// Skeleton implementation for Bison LALR(1) parsers in C++
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
-   
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
+// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// As a special exception, you may create a larger work that contains
+// part or all of the Bison parser skeleton and distribute that work
+// under terms of your choice, so long as that work isn't itself a
+// parser generator using the skeleton or a modified version thereof
+// as a parser skeleton.  Alternatively, if you modify or redistribute
+// the parser skeleton itself, you may (at your option) remove this
+// special exception, which will cause the skeleton and the resulting
+// Bison output files to be licensed under the GNU General Public
+// License without this special exception.
+
+// This special exception was added by the Free Software Foundation in
+// version 2.2 of Bison.
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
-/* First part of user declarations.  */
+// First part of user declarations.
 
+#line 39 "lib/SPARQLParser.cpp" // lalr1.cc:399
 
-/* Line 293 of lalr1.cc  */
-#line 41 "lib/SPARQLParser.cpp"
-
+# ifndef YY_NULLPTR
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULLPTR nullptr
+#  else
+#   define YY_NULLPTR 0
+#  endif
+# endif
 
 #include "SPARQLParser.hpp"
 
-/* User implementation prologue.  */
-
-/* Line 299 of lalr1.cc  */
-#line 370 "lib/SPARQLParser.ypp"
+// User implementation prologue.
+#line 371 "lib/SPARQLParser.ypp" // lalr1.cc:407
 
 #include "SPARQLScanner.hpp"
-
-/* Line 299 of lalr1.cc  */
-#line 537 "lib/SPARQLParser.ypp"
+#line 538 "lib/SPARQLParser.ypp" // lalr1.cc:407
 
 #include "SPARQLScanner.hpp"
 
@@ -71,14 +72,13 @@ std::string comma_str (const T c) {
     return ss.str();
 }
 
+#line 76 "lib/SPARQLParser.cpp" // lalr1.cc:407
 
-/* Line 299 of lalr1.cc  */
-#line 77 "lib/SPARQLParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
-#   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
+#   include <libintl.h> // FIXME: INFRINGES ON USER NAME SPACE.
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
 #  endif
 # endif
@@ -87,79 +87,78 @@ std::string comma_str (const T c) {
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
 /* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
    If N is 0, then set CURRENT to the empty location which ends
    the previous symbol: RHS[0] (always defined).  */
 
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
- do                                                                    \
-   if (N)                                                              \
-     {                                                                 \
-       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
-       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
-     }                                                                 \
-   else                                                                \
-     {                                                                 \
-       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
-     }                                                                 \
- while (false)
-#endif
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
 
-/* Suppress unused-variable warnings by "using" E.  */
-#define YYUSE(e) ((void) (e))
 
-/* Enable debugging if requested.  */
+// Suppress unused-variable warnings by "using" E.
+#define YYUSE(E) ((void) (E))
+
+// Enable debugging if requested.
 #if YYDEBUG
 
-/* A pseudo ostream that takes yydebug_ into account.  */
+// A pseudo ostream that takes yydebug_ into account.
 # define YYCDEBUG if (yydebug_) (*yycdebug_)
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
-do {							\
-  if (yydebug_)						\
-    {							\
-      *yycdebug_ << Title << ' ';			\
-      yy_symbol_print_ ((Type), (Value), (Location));	\
-      *yycdebug_ << std::endl;				\
-    }							\
-} while (false)
+# define YY_SYMBOL_PRINT(Title, Symbol)         \
+  do {                                          \
+    if (yydebug_)                               \
+    {                                           \
+      *yycdebug_ << Title << ' ';               \
+      yy_print_ (*yycdebug_, Symbol);           \
+      *yycdebug_ << std::endl;                  \
+    }                                           \
+  } while (false)
 
-# define YY_REDUCE_PRINT(Rule)		\
-do {					\
-  if (yydebug_)				\
-    yy_reduce_print_ (Rule);		\
-} while (false)
+# define YY_REDUCE_PRINT(Rule)          \
+  do {                                  \
+    if (yydebug_)                       \
+      yy_reduce_print_ (Rule);          \
+  } while (false)
 
-# define YY_STACK_PRINT()		\
-do {					\
-  if (yydebug_)				\
-    yystack_print_ ();			\
-} while (false)
+# define YY_STACK_PRINT()               \
+  do {                                  \
+    if (yydebug_)                       \
+      yystack_print_ ();                \
+  } while (false)
 
-#else /* !YYDEBUG */
+#else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_REDUCE_PRINT(Rule)
-# define YY_STACK_PRINT()
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
+# define YY_STACK_PRINT()                static_cast<void>(0)
 
-#endif /* !YYDEBUG */
+#endif // !YYDEBUG
 
-#define yyerrok		(yyerrstatus_ = 0)
-#define yyclearin	(yychar = yyempty_)
+#define yyerrok         (yyerrstatus_ = 0)
+#define yyclearin       (yyempty = true)
 
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrorlab
+#define YYACCEPT        goto yyacceptlab
+#define YYABORT         goto yyabortlab
+#define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
 namespace w3c_sw {
-
-/* Line 382 of lalr1.cc  */
-#line 163 "lib/SPARQLParser.cpp"
+#line 162 "lib/SPARQLParser.cpp" // lalr1.cc:474
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -184,7 +183,7 @@ namespace w3c_sw {
             case '\\':
               if (*++yyp != '\\')
                 goto do_not_strip_quotes;
-              /* Fall through.  */
+              // Fall through.
             default:
               yyr += *yyp;
               break;
@@ -207,68 +206,213 @@ namespace w3c_sw {
       yycdebug_ (&std::cerr),
 #endif
       driver (driver_yyarg)
+  {}
+
+  SPARQLParser::~SPARQLParser ()
+  {}
+
+
+  /*---------------.
+  | Symbol types.  |
+  `---------------*/
+
+  inline
+  SPARQLParser::syntax_error::syntax_error (const location_type& l, const std::string& m)
+    : std::runtime_error (m)
+    , location (l)
+  {}
+
+  // basic_symbol.
+  template <typename Base>
+  inline
+  SPARQLParser::basic_symbol<Base>::basic_symbol ()
+    : value ()
+  {}
+
+  template <typename Base>
+  inline
+  SPARQLParser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
+    : Base (other)
+    , value ()
+    , location (other.location)
+  {
+    value = other.value;
+  }
+
+
+  template <typename Base>
+  inline
+  SPARQLParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v, const location_type& l)
+    : Base (t)
+    , value (v)
+    , location (l)
+  {}
+
+
+  /// Constructor for valueless symbols.
+  template <typename Base>
+  inline
+  SPARQLParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const location_type& l)
+    : Base (t)
+    , value ()
+    , location (l)
+  {}
+
+  template <typename Base>
+  inline
+  SPARQLParser::basic_symbol<Base>::~basic_symbol ()
   {
   }
 
-  SPARQLParser::~SPARQLParser ()
+  template <typename Base>
+  inline
+  void
+  SPARQLParser::basic_symbol<Base>::move (basic_symbol& s)
   {
+    super_type::move(s);
+    value = s.value;
+    location = s.location;
+  }
+
+  // by_type.
+  inline
+  SPARQLParser::by_type::by_type ()
+     : type (empty)
+  {}
+
+  inline
+  SPARQLParser::by_type::by_type (const by_type& other)
+    : type (other.type)
+  {}
+
+  inline
+  SPARQLParser::by_type::by_type (token_type t)
+    : type (yytranslate_ (t))
+  {}
+
+  inline
+  void
+  SPARQLParser::by_type::move (by_type& that)
+  {
+    type = that.type;
+    that.type = empty;
+  }
+
+  inline
+  int
+  SPARQLParser::by_type::type_get () const
+  {
+    return type;
+  }
+
+
+  // by_state.
+  inline
+  SPARQLParser::by_state::by_state ()
+    : state (empty)
+  {}
+
+  inline
+  SPARQLParser::by_state::by_state (const by_state& other)
+    : state (other.state)
+  {}
+
+  inline
+  void
+  SPARQLParser::by_state::move (by_state& that)
+  {
+    state = that.state;
+    that.state = empty;
+  }
+
+  inline
+  SPARQLParser::by_state::by_state (state_type s)
+    : state (s)
+  {}
+
+  inline
+  SPARQLParser::symbol_number_type
+  SPARQLParser::by_state::type_get () const
+  {
+    return state == empty ? 0 : yystos_[state];
+  }
+
+  inline
+  SPARQLParser::stack_symbol_type::stack_symbol_type ()
+  {}
+
+
+  inline
+  SPARQLParser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
+    : super_type (s, that.location)
+  {
+    value = that.value;
+    // that is emptied.
+    that.type = empty;
+  }
+
+  inline
+  SPARQLParser::stack_symbol_type&
+  SPARQLParser::stack_symbol_type::operator= (const stack_symbol_type& that)
+  {
+    state = that.state;
+    value = that.value;
+    location = that.location;
+    return *this;
+  }
+
+
+  template <typename Base>
+  inline
+  void
+  SPARQLParser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  {
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yysym);
+
+    // User destructor.
+    YYUSE (yysym.type_get ());
   }
 
 #if YYDEBUG
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  inline void
-  SPARQLParser::yy_symbol_value_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
-  {
-    YYUSE (yylocationp);
-    YYUSE (yyvaluep);
-    switch (yytype)
-      {
-         default:
-	  break;
-      }
-  }
-
-
+  template <typename Base>
   void
-  SPARQLParser::yy_symbol_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
+  SPARQLParser::yy_print_ (std::ostream& yyo,
+                                     const basic_symbol<Base>& yysym) const
   {
-    *yycdebug_ << (yytype < yyntokens_ ? "token" : "nterm")
-	       << ' ' << yytname_[yytype] << " ("
-	       << *yylocationp << ": ";
-    yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
-    *yycdebug_ << ')';
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
+    symbol_number_type yytype = yysym.type_get ();
+    yyo << (yytype < yyntokens_ ? "token" : "nterm")
+        << ' ' << yytname_[yytype] << " ("
+        << yysym.location << ": ";
+    YYUSE (yytype);
+    yyo << ')';
   }
 #endif
 
+  inline
   void
-  SPARQLParser::yydestruct_ (const char* yymsg,
-			   int yytype, semantic_type* yyvaluep, location_type* yylocationp)
+  SPARQLParser::yypush_ (const char* m, state_type s, symbol_type& sym)
   {
-    YYUSE (yylocationp);
-    YYUSE (yymsg);
-    YYUSE (yyvaluep);
-
-    YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
-
-    switch (yytype)
-      {
-  
-	default:
-	  break;
-      }
+    stack_symbol_type t (s, sym);
+    yypush_ (m, t);
   }
 
+  inline
+  void
+  SPARQLParser::yypush_ (const char* m, stack_symbol_type& s)
+  {
+    if (m)
+      YY_SYMBOL_PRINT (m, s);
+    yystack_.push (s);
+  }
+
+  inline
   void
   SPARQLParser::yypop_ (unsigned int n)
   {
-    yystate_stack_.pop (n);
-    yysemantic_stack_.pop (n);
-    yylocation_stack_.pop (n);
+    yystack_.pop (n);
   }
 
 #if YYDEBUG
@@ -296,7 +440,17 @@ namespace w3c_sw {
   {
     yydebug_ = l;
   }
-#endif
+#endif // YYDEBUG
+
+  inline SPARQLParser::state_type
+  SPARQLParser::yy_lr_goto_state_ (state_type yystate, int yysym)
+  {
+    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
+      return yytable_[yyr];
+    else
+      return yydefgoto_[yysym - yyntokens_];
+  }
 
   inline bool
   SPARQLParser::yy_pact_value_is_default_ (int yyvalue)
@@ -313,136 +467,118 @@ namespace w3c_sw {
   int
   SPARQLParser::parse ()
   {
-    /// Lookahead and lookahead in internal form.
-    int yychar = yyempty_;
-    int yytoken = 0;
+    /// Whether yyla contains a lookahead.
+    bool yyempty = true;
 
-    /* State.  */
+    // State.
     int yyn;
+    /// Length of the RHS of the rule being reduced.
     int yylen = 0;
-    int yystate = 0;
 
-    /* Error handling.  */
+    // Error handling.
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the lookahead.
-    semantic_type yylval;
-    /// Location of the lookahead.
-    location_type yylloc;
+    /// The lookahead symbol.
+    symbol_type yyla;
+
     /// The locations where the error started and ended.
-    location_type yyerror_range[3];
+    stack_symbol_type yyerror_range[3];
 
-    /// $$.
-    semantic_type yyval;
-    /// @$.
-    location_type yyloc;
-
+    /// The return value of parse ().
     int yyresult;
 
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
+    try
+      {
     YYCDEBUG << "Starting parse" << std::endl;
 
 
-    /* User initialization code.  */
-    
-/* Line 565 of lalr1.cc  */
-#line 37 "lib/SPARQLParser.ypp"
+    // User initialization code.
+    #line 38 "lib/SPARQLParser.ypp" // lalr1.cc:725
 {
     // initialize the initial location object
-    yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
-    driver.yylloc = &yylloc;
+    yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
+    driver.yylloc = &yyla.location;
 }
 
-/* Line 565 of lalr1.cc  */
-#line 358 "lib/SPARQLParser.cpp"
+#line 507 "lib/SPARQLParser.cpp" // lalr1.cc:725
 
-    /* Initialize the stacks.  The initial state will be pushed in
+    /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
        stacks with a primary value.  */
-    yystate_stack_ = state_stack_type (0);
-    yysemantic_stack_ = semantic_stack_type (0);
-    yylocation_stack_ = location_stack_type (0);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
+    yystack_.clear ();
+    yypush_ (YY_NULLPTR, 0, yyla);
 
-    /* New state.  */
+    // A new symbol was pushed on the stack.
   yynewstate:
-    yystate_stack_.push (yystate);
-    YYCDEBUG << "Entering state " << yystate << std::endl;
+    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
 
-    /* Accept?  */
-    if (yystate == yyfinal_)
+    // Accept?
+    if (yystack_[0].state == yyfinal_)
       goto yyacceptlab;
 
     goto yybackup;
 
-    /* Backup.  */
+    // Backup.
   yybackup:
 
-    /* Try to take a decision without lookahead.  */
-    yyn = yypact_[yystate];
+    // Try to take a decision without lookahead.
+    yyn = yypact_[yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
-    /* Read a lookahead token.  */
-    if (yychar == yyempty_)
+    // Read a lookahead token.
+    if (yyempty)
       {
-	YYCDEBUG << "Reading a token: ";
-	yychar = yylex (&yylval, &yylloc);
+        YYCDEBUG << "Reading a token: ";
+        try
+          {
+            yyla.type = yytranslate_ (yylex (&yyla.value, &yyla.location));
+          }
+        catch (const syntax_error& yyexc)
+          {
+            error (yyexc);
+            goto yyerrlab1;
+          }
+        yyempty = false;
       }
+    YY_SYMBOL_PRINT ("Next token is", yyla);
 
-
-    /* Convert token to internal form.  */
-    if (yychar <= yyeof_)
-      {
-	yychar = yytoken = yyeof_;
-	YYCDEBUG << "Now at end of input." << std::endl;
-      }
-    else
-      {
-	yytoken = yytranslate_ (yychar);
-	YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
-      }
-
-    /* If the proper action on seeing token YYTOKEN is to reduce or to
-       detect an error, take that action.  */
-    yyn += yytoken;
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yytoken)
+    /* If the proper action on seeing token YYLA.TYPE is to reduce or
+       to detect an error, take that action.  */
+    yyn += yyla.type_get ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
       goto yydefault;
 
-    /* Reduce or error.  */
+    // Reduce or error.
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yy_table_value_is_error_ (yyn))
-	  goto yyerrlab;
-	yyn = -yyn;
-	goto yyreduce;
+        if (yy_table_value_is_error_ (yyn))
+          goto yyerrlab;
+        yyn = -yyn;
+        goto yyreduce;
       }
 
-    /* Shift the lookahead token.  */
-    YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
+    // Discard the token being shifted.
+    yyempty = true;
 
-    /* Discard the token being shifted.  */
-    yychar = yyempty_;
-
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
-
-    /* Count tokens shifted since error; after three, turn off error
-       status.  */
+    // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
       --yyerrstatus_;
 
-    yystate = yyn;
+    // Shift the lookahead token.
+    yypush_ ("Shifting", yyn, yyla);
     goto yynewstate;
 
   /*-----------------------------------------------------------.
   | yydefault -- do the default action for the current state.  |
   `-----------------------------------------------------------*/
   yydefault:
-    yyn = yydefact_[yystate];
+    yyn = yydefact_[yystack_[0].state];
     if (yyn == 0)
       goto yyerrlab;
     goto yyreduce;
@@ -452,305 +588,283 @@ namespace w3c_sw {
   `-----------------------------*/
   yyreduce:
     yylen = yyr2_[yyn];
-    /* If YYLEN is nonzero, implement the default value of the action:
-       `$$ = $1'.  Otherwise, use the top of the stack.
-
-       Otherwise, the following line sets YYVAL to garbage.
-       This behavior is undocumented and Bison
-       users should not rely upon it.  */
-    if (yylen)
-      yyval = yysemantic_stack_[yylen - 1];
-    else
-      yyval = yysemantic_stack_[0];
-
     {
-      slice<location_type, location_stack_type> slice (yylocation_stack_, yylen);
-      YYLLOC_DEFAULT (yyloc, slice, yylen);
-    }
-    YY_REDUCE_PRINT (yyn);
-    switch (yyn)
+      stack_symbol_type yylhs;
+      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
+      /* If YYLEN is nonzero, implement the default value of the
+         action: '$$ = $1'.  Otherwise, use the top of the stack.
+
+         Otherwise, the following line sets YYLHS.VALUE to garbage.
+         This behavior is undocumented and Bison users should not rely
+         upon it.  */
+      if (yylen)
+        yylhs.value = yystack_[yylen - 1].value;
+      else
+        yylhs.value = yystack_[0].value;
+
+      // Compute the default @$.
       {
-	  case 2:
+        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+      }
 
-/* Line 690 of lalr1.cc  */
-#line 562 "lib/SPARQLParser.ypp"
+      // Perform the reduction.
+      YY_REDUCE_PRINT (yyn);
+      try
+        {
+          switch (yyn)
+            {
+  case 2:
+#line 563 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
+	driver.root = (yylhs.value.p_Operation) = (yystack_[0].value.p_Operation);
     }
+#line 623 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 3:
-
-/* Line 690 of lalr1.cc  */
-#line 565 "lib/SPARQLParser.ypp"
+#line 566 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.root = (yyval.p_Operation) = (yysemantic_stack_[(1) - (1)].p_Operation);
+	driver.root = (yylhs.value.p_Operation) = (yystack_[0].value.p_Operation);
     }
+#line 631 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 5:
-
-/* Line 690 of lalr1.cc  */
-#line 576 "lib/SPARQLParser.ypp"
+#line 577 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	assert(driver.lastWhereClause != NULL);
-	if ((yysemantic_stack_[(3) - (3)].p_ValuesClause) != NULL) // got a bindings clause
+	if ((yystack_[0].value.p_ValuesClause) != NULL) // got a bindings clause
 	    driver.lastWhereClause->m_GroupGraphPattern = 
-		driver.makeConjunction(driver.lastWhereClause->m_GroupGraphPattern, (yysemantic_stack_[(3) - (3)].p_ValuesClause));
-	(yyval.p_Operation) = (yysemantic_stack_[(3) - (2)].p_Operation);
+		driver.makeConjunction(driver.lastWhereClause->m_GroupGraphPattern, (yystack_[0].value.p_ValuesClause));
+	(yylhs.value.p_Operation) = (yystack_[1].value.p_Operation);
     }
+#line 643 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 18:
-
-/* Line 690 of lalr1.cc  */
-#line 620 "lib/SPARQLParser.ypp"
+#line 621 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.startBindingSet();
       }
+#line 652 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 19:
-
-/* Line 690 of lalr1.cc  */
-#line 623 "lib/SPARQLParser.ypp"
+#line 624 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  if ((yysemantic_stack_[(3) - (1)].p_RSName) != NULL) {
-	      std::string s = (yysemantic_stack_[(3) - (1)].p_RSName)->name;
-	      delete (yysemantic_stack_[(3) - (1)].p_RSName);
-	      driver.bindingsMap[s] = (yysemantic_stack_[(3) - (3)].p_TableOperation);
-	      driver.curOp = (yysemantic_stack_[(3) - (2)].p_TableOperation);
+	  if ((yystack_[2].value.p_RSName) != NULL) {
+	      std::string s = (yystack_[2].value.p_RSName)->name;
+	      delete (yystack_[2].value.p_RSName);
+	      driver.bindingsMap[s] = (yystack_[0].value.p_TableOperation);
+	      driver.curOp = (yystack_[1].value.p_TableOperation);
 	  } else {
 	      // if ($<p_TableOperation>2 != NULL)
-	      driver.curOp = driver.makeConjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), (yysemantic_stack_[(3) - (3)].p_TableOperation));
+	      driver.curOp = driver.makeConjunction((yystack_[1].value.p_TableOperation), (yystack_[0].value.p_TableOperation));
 	  }
       }
+#line 668 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 20:
-
-/* Line 690 of lalr1.cc  */
-#line 637 "lib/SPARQLParser.ypp"
+#line 638 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RSName) = (yysemantic_stack_[(2) - (1)].p_RSName);
+	(yylhs.value.p_RSName) = (yystack_[1].value.p_RSName);
     }
+#line 676 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 21:
-
-/* Line 690 of lalr1.cc  */
-#line 643 "lib/SPARQLParser.ypp"
+#line 644 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RSName) = NULL;
+	(yylhs.value.p_RSName) = NULL;
     }
+#line 684 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 23:
-
-/* Line 690 of lalr1.cc  */
-#line 650 "lib/SPARQLParser.ypp"
+#line 651 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = new ValuesClause(driver.endBindingSet());
+	(yylhs.value.p_TableOperation) = new ValuesClause(driver.endBindingSet());
     }
+#line 692 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 24:
-
-/* Line 690 of lalr1.cc  */
-#line 653 "lib/SPARQLParser.ypp"
+#line 654 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = new ValuesClause(driver.endBindingSet());
+	(yylhs.value.p_TableOperation) = new ValuesClause(driver.endBindingSet());
     }
+#line 700 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 25:
-
-/* Line 690 of lalr1.cc  */
-#line 656 "lib/SPARQLParser.ypp"
+#line 657 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = new ValuesClause(driver.endBindingSet());
+	(yylhs.value.p_TableOperation) = new ValuesClause(driver.endBindingSet());
     }
+#line 708 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 26:
-
-/* Line 690 of lalr1.cc  */
-#line 659 "lib/SPARQLParser.ypp"
+#line 660 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	throw std::runtime_error("need to partition out results set part of SimpleEngine::loadDataOrResults");
     }
+#line 716 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 27:
-
-/* Line 690 of lalr1.cc  */
-#line 662 "lib/SPARQLParser.ypp"
+#line 663 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.ensureGraphPattern();
+	(yylhs.value.p_TableOperation) = driver.ensureGraphPattern();
 	driver.curOp = NULL;
 	//throw std::runtime_error("IMPL");
     }
+#line 727 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 39:
-
-/* Line 690 of lalr1.cc  */
-#line 700 "lib/SPARQLParser.ypp"
+#line 701 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
       }
+#line 735 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 40:
-
-/* Line 690 of lalr1.cc  */
-#line 702 "lib/SPARQLParser.ypp"
+#line 703 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.endBindingRow();
       }
+#line 743 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 41:
-
-/* Line 690 of lalr1.cc  */
-#line 708 "lib/SPARQLParser.ypp"
+#line 709 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBindingVarOrValue((yysemantic_stack_[(2) - (1)].p_TTerm));
+	driver.addBindingVarOrValue((yystack_[1].value.p_TTerm));
     }
+#line 751 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 54:
-
-/* Line 690 of lalr1.cc  */
-#line 747 "lib/SPARQLParser.ypp"
+#line 748 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
       }
+#line 759 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 55:
-
-/* Line 690 of lalr1.cc  */
-#line 749 "lib/SPARQLParser.ypp"
+#line 750 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.endBindingRow();
       }
+#line 767 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 56:
-
-/* Line 690 of lalr1.cc  */
-#line 755 "lib/SPARQLParser.ypp"
+#line 756 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBindingVarOrValue((yysemantic_stack_[(2) - (1)].p_TTerm));
+	driver.addBindingVarOrValue((yystack_[1].value.p_TTerm));
     }
+#line 775 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 61:
-
-/* Line 690 of lalr1.cc  */
-#line 774 "lib/SPARQLParser.ypp"
+#line 775 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow(false);
       }
+#line 783 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 62:
-
-/* Line 690 of lalr1.cc  */
-#line 776 "lib/SPARQLParser.ypp"
+#line 777 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.endBindingRow();
       }
+#line 791 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 796 "lib/SPARQLParser.ypp"
+#line 797 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBinding((yysemantic_stack_[(3) - (1)].p_TTerm), (yysemantic_stack_[(3) - (3)].p_TTerm)); 
+	driver.addBinding((yystack_[2].value.p_TTerm), (yystack_[0].value.p_TTerm)); 
     }
+#line 799 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 799 "lib/SPARQLParser.ypp"
+#line 800 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBinding((yysemantic_stack_[(3) - (1)].p_TTerm), (yysemantic_stack_[(3) - (3)].p_TTerm)); 
+	driver.addBinding((yystack_[2].value.p_TTerm), (yystack_[0].value.p_TTerm)); 
     }
+#line 807 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 802 "lib/SPARQLParser.ypp"
+#line 803 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBinding((yysemantic_stack_[(3) - (1)].p_TTerm), (yysemantic_stack_[(3) - (3)].p_TTerm)); 
+	driver.addBinding((yystack_[2].value.p_TTerm), (yystack_[0].value.p_TTerm)); 
     }
+#line 815 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 71:
-
-/* Line 690 of lalr1.cc  */
-#line 808 "lib/SPARQLParser.ypp"
+#line 809 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
+	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
+#line 823 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 72:
-
-/* Line 690 of lalr1.cc  */
-#line 814 "lib/SPARQLParser.ypp"
+#line 815 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.ignorePrefix(true);
       }
+#line 831 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 73:
-
-/* Line 690 of lalr1.cc  */
-#line 816 "lib/SPARQLParser.ypp"
+#line 817 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.ignorePrefix(false);
       }
+#line 839 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 74:
-
-/* Line 690 of lalr1.cc  */
-#line 818 "lib/SPARQLParser.ypp"
+#line 819 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
+#line 848 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 75:
-
-/* Line 690 of lalr1.cc  */
-#line 826 "lib/SPARQLParser.ypp"
+#line 827 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
     }
+#line 857 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 76:
-
-/* Line 690 of lalr1.cc  */
-#line 829 "lib/SPARQLParser.ypp"
+#line 830 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_selectGrouped) {
-	    const ExpressionAliasList* e = (yysemantic_stack_[(5) - (5)].p_SolutionModifier)->getGroupedBy();
+	    const ExpressionAliasList* e = (yystack_[0].value.p_SolutionModifier)->getGroupedBy();
 	    if (e) {
-		std::set<const TTerm*> errorSet = (yysemantic_stack_[(5) - (2)].p_Project).varSet->getNonProjectableVars(e, driver.atomFactory);
+		std::set<const TTerm*> errorSet = (yystack_[3].value.p_Project).varSet->getNonProjectableVars(e, driver.atomFactory);
 		if (errorSet.size() != 0)
-		    error(yylloc, "can't select " + comma_str(errorSet) + " because "
+		    error(*driver.yylloc, "can't select " + comma_str(errorSet) + " because "
 			  + (errorSet.size() == 1 ? "it's" : "they're") + "not in a GROUP BY.");
 	    }
 	}
@@ -764,9 +878,9 @@ namespace w3c_sw {
 		{ if (label != NULL) label->express(this); }
 	    };
 	    CreatedVars cv;
-	    (yysemantic_stack_[(5) - (2)].p_Project).varSet->express(&cv);
+	    (yystack_[3].value.p_Project).varSet->express(&cv);
 
-	    const BindingState& nested = (yysemantic_stack_[(5) - (4)].p_WhereClause)->m_GroupGraphPattern->getBindingState();
+	    const BindingState& nested = (yystack_[1].value.p_WhereClause)->m_GroupGraphPattern->getBindingState();
 	    std::set<const TTerm*> known;
 	    std::copy(nested.binds   .begin(), nested.binds   .end(), std::inserter(known, known.begin()));
 	    std::copy(nested.optional.begin(), nested.optional.end(), std::inserter(known, known.begin()));
@@ -774,1211 +888,1089 @@ namespace w3c_sw {
 	    std::set<const TTerm*> errorSet;
 	    std::set_intersection(cv.vars.begin(), cv.vars.end(), known.begin(), known.end(), std::inserter(errorSet, errorSet.begin()));
 	    if (errorSet.size() != 0)
-		error(yylloc, "select can't bind " + comma_str(errorSet) + " because "
+		error(*driver.yylloc, "select can't bind " + comma_str(errorSet) + " because "
 		      + (errorSet.size() == 1 ? "it's" : "they're") + " bound in the WHERE clause.");
 	}
-	driver.lastWhereClause = (yysemantic_stack_[(5) - (4)].p_WhereClause);
-	(yyval.p_Operation) = new Select((yysemantic_stack_[(5) - (2)].p_Project).distinctness, (yysemantic_stack_[(5) - (2)].p_Project).varSet, (yysemantic_stack_[(5) - (3)].p_DatasetClauses), (yysemantic_stack_[(5) - (4)].p_WhereClause), (yysemantic_stack_[(5) - (5)].p_SolutionModifier));
-	driver.countStar = (yysemantic_stack_[(5) - (1)].p_parentCountStar);
+	driver.lastWhereClause = (yystack_[1].value.p_WhereClause);
+	(yylhs.value.p_Operation) = new Select((yystack_[3].value.p_Project).distinctness, (yystack_[3].value.p_Project).varSet, (yystack_[2].value.p_DatasetClauses), (yystack_[1].value.p_WhereClause), (yystack_[0].value.p_SolutionModifier));
+	driver.countStar = (yystack_[4].value.p_parentCountStar);
     }
+#line 899 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 77:
-
-/* Line 690 of lalr1.cc  */
-#line 870 "lib/SPARQLParser.ypp"
+#line 871 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
+	(yylhs.value.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
     }
+#line 907 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 78:
-
-/* Line 690 of lalr1.cc  */
-#line 873 "lib/SPARQLParser.ypp"
+#line 874 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
-	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
+	(yystack_[1].value.p_DatasetClauses)->push_back((yystack_[0].value.p_DatasetClause));
+	(yylhs.value.p_DatasetClauses) = (yystack_[1].value.p_DatasetClauses);
     }
+#line 916 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 79:
-
-/* Line 690 of lalr1.cc  */
-#line 881 "lib/SPARQLParser.ypp"
+#line 882 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
       }
+#line 925 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 80:
-
-/* Line 690 of lalr1.cc  */
-#line 884 "lib/SPARQLParser.ypp"
+#line 885 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  (yyval.p_TableOperation) = driver.curOp;
+	  (yylhs.value.p_TableOperation) = driver.curOp;
 	  driver.curOp = NULL;
       }
+#line 935 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 81:
-
-/* Line 690 of lalr1.cc  */
-#line 888 "lib/SPARQLParser.ypp"
+#line 889 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  if (!driver.curGraphName || (yysemantic_stack_[(3) - (2)].p_Project).varSet->includes(driver.curGraphName)) {
-	      (yyval.p_GraphName) = NULL;
+	  if (!driver.curGraphName || (yystack_[1].value.p_Project).varSet->includes(driver.curGraphName)) {
+	      (yylhs.value.p_GraphName) = NULL;
 	  } else {
-	      (yyval.p_GraphName) = driver.curGraphName;
+	      (yylhs.value.p_GraphName) = driver.curGraphName;
 	      driver.curGraphName = driver.createBNode();
 	  }
       }
+#line 948 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 82:
-
-/* Line 690 of lalr1.cc  */
-#line 895 "lib/SPARQLParser.ypp"
+#line 896 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  if ((yysemantic_stack_[(7) - (4)].p_GraphName) != NULL)
-	      driver.curGraphName = (yysemantic_stack_[(7) - (4)].p_GraphName);
-	  if ((yysemantic_stack_[(7) - (7)].p_ValuesClause) != NULL)
-	      (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern, (yysemantic_stack_[(7) - (7)].p_ValuesClause));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(7) - (3)].p_TableOperation), new SubSelect(new Select((yysemantic_stack_[(7) - (2)].p_Project).distinctness, (yysemantic_stack_[(7) - (2)].p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(7) - (5)].p_WhereClause), (yysemantic_stack_[(7) - (6)].p_SolutionModifier))));
-	  driver.countStar = (yysemantic_stack_[(7) - (1)].p_parentCountStar);
+	  if ((yystack_[3].value.p_GraphName) != NULL)
+	      driver.curGraphName = (yystack_[3].value.p_GraphName);
+	  if ((yystack_[0].value.p_ValuesClause) != NULL)
+	      (yystack_[2].value.p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yystack_[2].value.p_WhereClause)->m_GroupGraphPattern, (yystack_[0].value.p_ValuesClause));
+	  driver.curOp = driver.makeConjunction((yystack_[4].value.p_TableOperation), new SubSelect(new Select((yystack_[5].value.p_Project).distinctness, (yystack_[5].value.p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yystack_[2].value.p_WhereClause), (yystack_[1].value.p_SolutionModifier))));
+	  driver.countStar = (yystack_[6].value.p_parentCountStar);
       }
+#line 961 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 83:
-
-/* Line 690 of lalr1.cc  */
-#line 907 "lib/SPARQLParser.ypp"
+#line 908 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Project).distinctness = (yysemantic_stack_[(3) - (2)].p_distinctness);
-	(yyval.p_Project).varSet = (yysemantic_stack_[(3) - (3)].p_VarSet);
+	(yylhs.value.p_Project).distinctness = (yystack_[1].value.p_distinctness);
+	(yylhs.value.p_Project).varSet = (yystack_[0].value.p_VarSet);
     }
+#line 970 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 84:
-
-/* Line 690 of lalr1.cc  */
-#line 919 "lib/SPARQLParser.ypp"
+#line 920 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_distinct;
+	(yylhs.value.p_distinctness) = DIST_distinct;
     }
+#line 978 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 85:
-
-/* Line 690 of lalr1.cc  */
-#line 922 "lib/SPARQLParser.ypp"
+#line 923 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_reduced;
+	(yylhs.value.p_distinctness) = DIST_reduced;
     }
+#line 986 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 86:
-
-/* Line 690 of lalr1.cc  */
-#line 929 "lib/SPARQLParser.ypp"
+#line 930 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yylhs.value.p_distinctness) = DIST_all;
     }
+#line 994 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 88:
-
-/* Line 690 of lalr1.cc  */
-#line 937 "lib/SPARQLParser.ypp"
+#line 938 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variable) = (yysemantic_stack_[(2) - (2)].p_Variable);
+	(yylhs.value.p_Variable) = (yystack_[0].value.p_Variable);
     }
+#line 1002 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 89:
-
-/* Line 690 of lalr1.cc  */
-#line 944 "lib/SPARQLParser.ypp"
+#line 945 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variable) = NULL;
+	(yylhs.value.p_Variable) = NULL;
     }
+#line 1010 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 91:
-
-/* Line 690 of lalr1.cc  */
-#line 952 "lib/SPARQLParser.ypp"
+#line 953 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection && (yysemantic_stack_[(4) - (3)].p_Variable) == NULL)
-	    error(yylloc, (yysemantic_stack_[(4) - (2)].p_Expression)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
+	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection && (yystack_[1].value.p_Variable) == NULL)
+	    error(*driver.yylloc, (yystack_[2].value.p_Expression)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = (yystack_[1].value.p_Variable) ? new ExpressionAlias((yystack_[2].value.p_Expression), (yystack_[1].value.p_Variable)) : new ExpressionAlias((yystack_[2].value.p_Expression));
     }
+#line 1020 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 92:
-
-/* Line 690 of lalr1.cc  */
-#line 966 "lib/SPARQLParser.ypp"
+#line 967 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_Expression)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	    error(*driver.yylloc, (yystack_[0].value.p_Expression)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1030 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 93:
-
-/* Line 690 of lalr1.cc  */
-#line 971 "lib/SPARQLParser.ypp"
+#line 972 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_RDFLiteral)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral)));
+	    error(*driver.yylloc, (yystack_[0].value.p_RDFLiteral)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_RDFLiteral)));
     }
+#line 1040 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 94:
-
-/* Line 690 of lalr1.cc  */
-#line 976 "lib/SPARQLParser.ypp"
+#line 977 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)));
+	    error(*driver.yylloc, (yystack_[0].value.p_NumericRDFLiteral)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_NumericRDFLiteral)));
     }
+#line 1050 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 981 "lib/SPARQLParser.ypp"
+#line 982 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)));
+	    error(*driver.yylloc, (yystack_[0].value.p_BooleanRDFLiteral)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_BooleanRDFLiteral)));
     }
+#line 1060 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 986 "lib/SPARQLParser.ypp"
+#line 987 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_Variable)));
     }
+#line 1068 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 989 "lib/SPARQLParser.ypp"
+#line 990 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_Expression)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	    error(*driver.yylloc, (yystack_[0].value.p_Expression)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1078 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 994 "lib/SPARQLParser.ypp"
+#line 995 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_namedProjection)
-	    error(yylloc, (yysemantic_stack_[(1) - (1)].p_Expression)->str() + " must be selected AS some variable");
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	    error(*driver.yylloc, (yystack_[0].value.p_Expression)->str() + " must be selected AS some variable");
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1088 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 100:
-
-/* Line 690 of lalr1.cc  */
-#line 1005 "lib/SPARQLParser.ypp"
+#line 1006 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+	(yylhs.value.p_ExpressionAliaseList) = new ExpressionAliasList((yystack_[0].value.p_ExpressionAlias));
     }
+#line 1096 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 101:
-
-/* Line 690 of lalr1.cc  */
-#line 1008 "lib/SPARQLParser.ypp"
+#line 1009 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-    (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
-    (yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+    (yystack_[1].value.p_ExpressionAliaseList)->push_back((yystack_[0].value.p_ExpressionAlias));
+    (yylhs.value.p_ExpressionAliaseList) = (yystack_[1].value.p_ExpressionAliaseList);
 }
+#line 1105 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 102:
-
-/* Line 690 of lalr1.cc  */
-#line 1016 "lib/SPARQLParser.ypp"
+#line 1017 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_uniqueProjection) {
 	    std::set<const TTerm*> labels;
-	    for (std::vector<const ExpressionAlias*>::const_iterator it = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList)->begin();
-		 it != (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList)->end(); ++it) {
+	    for (std::vector<const ExpressionAlias*>::const_iterator it = (yystack_[0].value.p_ExpressionAliaseList)->begin();
+		 it != (yystack_[0].value.p_ExpressionAliaseList)->end(); ++it) {
 		const TTerm* label = (*it)->getLabel(driver.atomFactory);
 		if (labels.find(label) != labels.end())
-		    error(yylloc, label->str() + " duplicated in select list.");
+		    error(*driver.yylloc, label->str() + " duplicated in select list.");
 		labels.insert(label);
 	    }
 	}
-	(yyval.p_VarSet) = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList); // Grammar action needed for implicit upcast.
+	(yylhs.value.p_VarSet) = (yystack_[0].value.p_ExpressionAliaseList); // Grammar action needed for implicit upcast.
     }
+#line 1123 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 103:
-
-/* Line 690 of lalr1.cc  */
-#line 1029 "lib/SPARQLParser.ypp"
+#line 1030 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_VarSet) = new StarVarSet();
+	(yylhs.value.p_VarSet) = new StarVarSet();
     }
+#line 1131 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 104:
-
-/* Line 690 of lalr1.cc  */
-#line 1035 "lib/SPARQLParser.ypp"
+#line 1036 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = (yysemantic_stack_[(2) - (2)].p_Operation);
+	(yylhs.value.p_Operation) = (yystack_[0].value.p_Operation);
     }
+#line 1139 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 105:
-
-/* Line 690 of lalr1.cc  */
-#line 1041 "lib/SPARQLParser.ypp"
+#line 1042 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_constructNoQuads &&
-	    dynamic_cast<const DefaultGraphPattern*>((yysemantic_stack_[(4) - (1)].p_TableOperation)) == NULL) {
-	    error(yylloc, "can't CONSTRUCT quad pattern " + (yysemantic_stack_[(4) - (1)].p_TableOperation)->str() + ".");
+	    dynamic_cast<const DefaultGraphPattern*>((yystack_[3].value.p_TableOperation)) == NULL) {
+	    error(*driver.yylloc, "can't CONSTRUCT quad pattern " + (yystack_[3].value.p_TableOperation)->str() + ".");
 	}
-	driver.lastWhereClause = (yysemantic_stack_[(4) - (3)].p_WhereClause);
+	driver.lastWhereClause = (yystack_[1].value.p_WhereClause);
 	/* $1 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
-	(yyval.p_Operation) = new Construct((yysemantic_stack_[(4) - (1)].p_TableOperation), (yysemantic_stack_[(4) - (2)].p_DatasetClauses), (yysemantic_stack_[(4) - (3)].p_WhereClause), (yysemantic_stack_[(4) - (4)].p_SolutionModifier));
+	(yylhs.value.p_Operation) = new Construct((yystack_[3].value.p_TableOperation), (yystack_[2].value.p_DatasetClauses), (yystack_[1].value.p_WhereClause), (yystack_[0].value.p_SolutionModifier));
     }
+#line 1153 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 106:
-
-/* Line 690 of lalr1.cc  */
-#line 1050 "lib/SPARQLParser.ypp"
+#line 1051 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_constructNoQuads &&
-	    dynamic_cast<const DefaultGraphPattern*>((yysemantic_stack_[(4) - (3)].p_TableOperation)) == NULL) {
-	    error(yylloc, "can't re-CONSTRUCT quad pattern " + (yysemantic_stack_[(4) - (3)].p_TableOperation)->str() + ".");
+	    dynamic_cast<const DefaultGraphPattern*>((yystack_[1].value.p_TableOperation)) == NULL) {
+	    error(*driver.yylloc, "can't re-CONSTRUCT quad pattern " + (yystack_[1].value.p_TableOperation)->str() + ".");
 	}
 	SWObjectDuplicator dup(driver.atomFactory);
-	(yysemantic_stack_[(4) - (3)].p_TableOperation)->express(&dup);
-	driver.lastWhereClause = new WhereClause((yysemantic_stack_[(4) - (3)].p_TableOperation));
-	(yyval.p_Operation) = new Construct(dup.last.tableOperation, (yysemantic_stack_[(4) - (1)].p_DatasetClauses), driver.lastWhereClause, (yysemantic_stack_[(4) - (4)].p_SolutionModifier));
+	(yystack_[1].value.p_TableOperation)->express(&dup);
+	driver.lastWhereClause = new WhereClause((yystack_[1].value.p_TableOperation));
+	(yylhs.value.p_Operation) = new Construct(dup.last.tableOperation, (yystack_[3].value.p_DatasetClauses), driver.lastWhereClause, (yystack_[0].value.p_SolutionModifier));
     }
+#line 1168 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 107:
-
-/* Line 690 of lalr1.cc  */
-#line 1064 "lib/SPARQLParser.ypp"
+#line 1065 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	driver.lastWhereClause = (yysemantic_stack_[(5) - (4)].p_WhereClause) ? (yysemantic_stack_[(5) - (4)].p_WhereClause) : new WhereClause(new DefaultGraphPattern());
-	(yyval.p_Operation) = new Describe((yysemantic_stack_[(5) - (2)].p_VarSet), (yysemantic_stack_[(5) - (3)].p_DatasetClauses), (yysemantic_stack_[(5) - (4)].p_WhereClause), (yysemantic_stack_[(5) - (5)].p_SolutionModifier));
+	driver.lastWhereClause = (yystack_[1].value.p_WhereClause) ? (yystack_[1].value.p_WhereClause) : new WhereClause(new DefaultGraphPattern());
+	(yylhs.value.p_Operation) = new Describe((yystack_[3].value.p_VarSet), (yystack_[2].value.p_DatasetClauses), (yystack_[1].value.p_WhereClause), (yystack_[0].value.p_SolutionModifier));
     }
+#line 1178 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 108:
-
-/* Line 690 of lalr1.cc  */
-#line 1073 "lib/SPARQLParser.ypp"
+#line 1074 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_TTerm))));
+	(yylhs.value.p_ExpressionAliaseList) = new ExpressionAliasList(new ExpressionAlias(new TTermExpression((yystack_[0].value.p_TTerm))));
     }
+#line 1186 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 109:
-
-/* Line 690 of lalr1.cc  */
-#line 1076 "lib/SPARQLParser.ypp"
+#line 1077 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yysemantic_stack_[(2) - (2)].p_TTerm))));
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+	(yystack_[1].value.p_ExpressionAliaseList)->push_back(new ExpressionAlias(new TTermExpression((yystack_[0].value.p_TTerm))));
+	(yylhs.value.p_ExpressionAliaseList) = (yystack_[1].value.p_ExpressionAliaseList);
     }
+#line 1195 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 110:
-
-/* Line 690 of lalr1.cc  */
-#line 1084 "lib/SPARQLParser.ypp"
+#line 1085 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_VarSet) = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList);
+	(yylhs.value.p_VarSet) = (yystack_[0].value.p_ExpressionAliaseList);
     }
+#line 1203 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 111:
-
-/* Line 690 of lalr1.cc  */
-#line 1087 "lib/SPARQLParser.ypp"
+#line 1088 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_VarSet) = new StarVarSet();
+	(yylhs.value.p_VarSet) = new StarVarSet();
     }
+#line 1211 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 112:
-
-/* Line 690 of lalr1.cc  */
-#line 1094 "lib/SPARQLParser.ypp"
+#line 1095 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_WhereClause) = NULL;
+	(yylhs.value.p_WhereClause) = NULL;
     }
+#line 1219 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 114:
-
-/* Line 690 of lalr1.cc  */
-#line 1102 "lib/SPARQLParser.ypp"
+#line 1103 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.lastWhereClause = (yysemantic_stack_[(4) - (3)].p_WhereClause);
-	(yyval.p_Operation) = new Ask((yysemantic_stack_[(4) - (2)].p_DatasetClauses), (yysemantic_stack_[(4) - (3)].p_WhereClause), (yysemantic_stack_[(4) - (4)].p_SolutionModifier));
+	driver.lastWhereClause = (yystack_[1].value.p_WhereClause);
+	(yylhs.value.p_Operation) = new Ask((yystack_[2].value.p_DatasetClauses), (yystack_[1].value.p_WhereClause), (yystack_[0].value.p_SolutionModifier));
     }
+#line 1228 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 115:
-
-/* Line 690 of lalr1.cc  */
-#line 1110 "lib/SPARQLParser.ypp"
+#line 1111 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = (yysemantic_stack_[(2) - (2)].p_DatasetClause);
+	(yylhs.value.p_DatasetClause) = (yystack_[0].value.p_DatasetClause);
     }
+#line 1236 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 118:
-
-/* Line 690 of lalr1.cc  */
-#line 1122 "lib/SPARQLParser.ypp"
+#line 1123 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_TTerm), driver.atomFactory);
+	(yylhs.value.p_DatasetClause) = new DefaultGraphClause((yystack_[0].value.p_TTerm), driver.atomFactory);
     }
+#line 1244 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 119:
-
-/* Line 690 of lalr1.cc  */
-#line 1128 "lib/SPARQLParser.ypp"
+#line 1129 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_TTerm), driver.atomFactory);
+	(yylhs.value.p_DatasetClause) = new NamedGraphClause((yystack_[0].value.p_TTerm), driver.atomFactory);
     }
+#line 1252 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 120:
-
-/* Line 690 of lalr1.cc  */
-#line 1134 "lib/SPARQLParser.ypp"
+#line 1135 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1260 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 121:
-
-/* Line 690 of lalr1.cc  */
-#line 1141 "lib/SPARQLParser.ypp"
+#line 1142 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_WhereClause) = new WhereClause(driver.ensureGraphPattern());
+	(yylhs.value.p_WhereClause) = new WhereClause(driver.ensureGraphPattern());
 	driver.curOp = NULL;
     }
+#line 1270 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 124:
-
-/* Line 690 of lalr1.cc  */
-#line 1155 "lib/SPARQLParser.ypp"
+#line 1156 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SolutionModifier) = new SolutionModifier((yysemantic_stack_[(4) - (1)].p_ExpressionAliaseList), (yysemantic_stack_[(4) - (2)].p_Expressions), (yysemantic_stack_[(4) - (3)].p_OrderConditions), (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).limit, (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).offset); // !!!
+	(yylhs.value.p_SolutionModifier) = new SolutionModifier((yystack_[3].value.p_ExpressionAliaseList), (yystack_[2].value.p_Expressions), (yystack_[1].value.p_OrderConditions), (yystack_[0].value.p_LimitOffsetPair).limit, (yystack_[0].value.p_LimitOffsetPair).offset); // !!!
     }
+#line 1278 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 125:
-
-/* Line 690 of lalr1.cc  */
-#line 1162 "lib/SPARQLParser.ypp"
+#line 1163 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = driver.countStar ? new ExpressionAliasList() : NULL;
+	(yylhs.value.p_ExpressionAliaseList) = driver.countStar ? new ExpressionAliasList() : NULL;
     }
+#line 1286 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 127:
-
-/* Line 690 of lalr1.cc  */
-#line 1170 "lib/SPARQLParser.ypp"
+#line 1171 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = NULL;
+	(yylhs.value.p_Expressions) = NULL;
     }
+#line 1294 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 129:
-
-/* Line 690 of lalr1.cc  */
-#line 1178 "lib/SPARQLParser.ypp"
+#line 1179 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = NULL;
+	(yylhs.value.p_OrderConditions) = NULL;
     }
+#line 1302 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 131:
-
-/* Line 690 of lalr1.cc  */
-#line 1186 "lib/SPARQLParser.ypp"
+#line 1187 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
-	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
+	(yylhs.value.p_LimitOffsetPair).limit = LIMIT_None;
+	(yylhs.value.p_LimitOffsetPair).offset = OFFSET_None;
     }
+#line 1311 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 133:
-
-/* Line 690 of lalr1.cc  */
-#line 1194 "lib/SPARQLParser.ypp"
+#line 1195 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(3) - (3)].p_ExpressionAliaseList);
+	(yylhs.value.p_ExpressionAliaseList) = (yystack_[0].value.p_ExpressionAliaseList);
     }
+#line 1319 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 134:
-
-/* Line 690 of lalr1.cc  */
-#line 1201 "lib/SPARQLParser.ypp"
+#line 1202 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+	(yylhs.value.p_ExpressionAliaseList) = new ExpressionAliasList((yystack_[0].value.p_ExpressionAlias));
     }
+#line 1327 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 135:
-
-/* Line 690 of lalr1.cc  */
-#line 1204 "lib/SPARQLParser.ypp"
+#line 1205 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+	(yystack_[1].value.p_ExpressionAliaseList)->push_back((yystack_[0].value.p_ExpressionAlias));
+	(yylhs.value.p_ExpressionAliaseList) = (yystack_[1].value.p_ExpressionAliaseList);
     }
+#line 1336 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 136:
-
-/* Line 690 of lalr1.cc  */
-#line 1211 "lib/SPARQLParser.ypp"
+#line 1212 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1344 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 137:
-
-/* Line 690 of lalr1.cc  */
-#line 1214 "lib/SPARQLParser.ypp"
+#line 1215 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1352 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 138:
-
-/* Line 690 of lalr1.cc  */
-#line 1217 "lib/SPARQLParser.ypp"
+#line 1218 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = (yystack_[1].value.p_Variable) ? new ExpressionAlias((yystack_[2].value.p_Expression), (yystack_[1].value.p_Variable)) : new ExpressionAlias((yystack_[2].value.p_Expression));
     }
+#line 1360 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 139:
-
-/* Line 690 of lalr1.cc  */
-#line 1226 "lib/SPARQLParser.ypp"
+#line 1227 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_Variable)));
     }
+#line 1368 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 140:
-
-/* Line 690 of lalr1.cc  */
-#line 1232 "lib/SPARQLParser.ypp"
+#line 1233 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expressions) = (yystack_[0].value.p_Expressions);
 }
+#line 1376 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 141:
-
-/* Line 690 of lalr1.cc  */
-#line 1238 "lib/SPARQLParser.ypp"
+#line 1239 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
     }
+#line 1384 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 142:
-
-/* Line 690 of lalr1.cc  */
-#line 1241 "lib/SPARQLParser.ypp"
+#line 1242 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1393 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 144:
-
-/* Line 690 of lalr1.cc  */
-#line 1253 "lib/SPARQLParser.ypp"
+#line 1254 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = (yysemantic_stack_[(3) - (3)].p_OrderConditions);
+	(yylhs.value.p_OrderConditions) = (yystack_[0].value.p_OrderConditions);
     }
+#line 1401 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 145:
-
-/* Line 690 of lalr1.cc  */
-#line 1260 "lib/SPARQLParser.ypp"
+#line 1261 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
-	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
+	(yylhs.value.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
+	(yylhs.value.p_OrderConditions)->push_back((yystack_[0].value.p_OrderConditionPair));
     }
+#line 1410 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 146:
-
-/* Line 690 of lalr1.cc  */
-#line 1264 "lib/SPARQLParser.ypp"
+#line 1265 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_OrderConditions)->push_back((yysemantic_stack_[(2) - (2)].p_OrderConditionPair));
-	(yyval.p_OrderConditions) = (yysemantic_stack_[(2) - (1)].p_OrderConditions);
+	(yystack_[1].value.p_OrderConditions)->push_back((yystack_[0].value.p_OrderConditionPair));
+	(yylhs.value.p_OrderConditions) = (yystack_[1].value.p_OrderConditions);
     }
+#line 1419 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 148:
-
-/* Line 690 of lalr1.cc  */
-#line 1274 "lib/SPARQLParser.ypp"
+#line 1275 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
-	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(1) - (1)].p_Expression);
+	(yylhs.value.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
+	(yylhs.value.p_OrderConditionPair).expression = (yystack_[0].value.p_Expression);
     }
+#line 1428 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 149:
-
-/* Line 690 of lalr1.cc  */
-#line 1282 "lib/SPARQLParser.ypp"
+#line 1283 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Asc;
+	(yylhs.value.p_e_ASCorDESC) = ORDER_Asc;
     }
+#line 1436 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 150:
-
-/* Line 690 of lalr1.cc  */
-#line 1285 "lib/SPARQLParser.ypp"
+#line 1286 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Desc;
+	(yylhs.value.p_e_ASCorDESC) = ORDER_Desc;
     }
+#line 1444 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 151:
-
-/* Line 690 of lalr1.cc  */
-#line 1293 "lib/SPARQLParser.ypp"
+#line 1294 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditionPair).ascOrDesc = (yysemantic_stack_[(2) - (1)].p_e_ASCorDESC);
-	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_OrderConditionPair).ascOrDesc = (yystack_[1].value.p_e_ASCorDESC);
+	(yylhs.value.p_OrderConditionPair).expression = (yystack_[0].value.p_Expression);
     }
+#line 1453 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 153:
-
-/* Line 690 of lalr1.cc  */
-#line 1302 "lib/SPARQLParser.ypp"
+#line 1303 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_Variable));
     }
+#line 1461 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 154:
-
-/* Line 690 of lalr1.cc  */
-#line 1309 "lib/SPARQLParser.ypp"
+#line 1310 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).limit;
-	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).offset;
+	(yylhs.value.p_LimitOffsetPair).limit = (yystack_[1].value.p_LimitOffsetPair).limit;
+	(yylhs.value.p_LimitOffsetPair).offset = (yystack_[0].value.p_LimitOffsetPair).offset;
     }
+#line 1470 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 155:
-
-/* Line 690 of lalr1.cc  */
-#line 1313 "lib/SPARQLParser.ypp"
+#line 1314 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).limit;
-	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).offset;
+	(yylhs.value.p_LimitOffsetPair).limit = (yystack_[0].value.p_LimitOffsetPair).limit;
+	(yylhs.value.p_LimitOffsetPair).offset = (yystack_[1].value.p_LimitOffsetPair).offset;
     }
+#line 1479 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 156:
-
-/* Line 690 of lalr1.cc  */
-#line 1321 "lib/SPARQLParser.ypp"
+#line 1322 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
+	(yylhs.value.p_LimitOffsetPair).offset = OFFSET_None;
     }
+#line 1487 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 158:
-
-/* Line 690 of lalr1.cc  */
-#line 1329 "lib/SPARQLParser.ypp"
+#line 1330 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
+	(yylhs.value.p_LimitOffsetPair).limit = LIMIT_None;
     }
+#line 1495 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 160:
-
-/* Line 690 of lalr1.cc  */
-#line 1336 "lib/SPARQLParser.ypp"
+#line 1337 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
+	(yylhs.value.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yystack_[0].value.p_NumericRDFLiteral))->getValue();
     }
+#line 1503 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 161:
-
-/* Line 690 of lalr1.cc  */
-#line 1342 "lib/SPARQLParser.ypp"
+#line 1343 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
+	(yylhs.value.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yystack_[0].value.p_NumericRDFLiteral))->getValue();
     }
+#line 1511 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 163:
-
-/* Line 690 of lalr1.cc  */
-#line 1352 "lib/SPARQLParser.ypp"
+#line 1353 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
+	(yylhs.value.p_ValuesClause) = (yystack_[0].value.p_ValuesClause);
     }
+#line 1519 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 164:
-
-/* Line 690 of lalr1.cc  */
-#line 1358 "lib/SPARQLParser.ypp"
+#line 1359 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ValuesClause) = NULL;
+	(yylhs.value.p_ValuesClause) = NULL;
     }
+#line 1527 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 166:
-
-/* Line 690 of lalr1.cc  */
-#line 1365 "lib/SPARQLParser.ypp"
+#line 1366 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_Operation) = driver.root;
+	  (yylhs.value.p_Operation) = driver.root;
       }
+#line 1535 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 170:
-
-/* Line 690 of lalr1.cc  */
-#line 1380 "lib/SPARQLParser.ypp"
+#line 1381 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	OperationSet* ret = driver.root ? dynamic_cast<OperationSet*>(driver.root) : new OperationSet();
-	ret->push_back((yysemantic_stack_[(1) - (1)].p_Operation));
+	ret->push_back((yystack_[0].value.p_Operation));
 	driver.root = ret;
 	std::copy(driver.bnodesInThisOpperation.begin(), driver.bnodesInThisOpperation.end(),
 		  std::inserter(driver.bnodesInOldOpperations, driver.bnodesInOldOpperations.begin()));
       }
+#line 1547 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 185:
-
-/* Line 690 of lalr1.cc  */
-#line 1409 "lib/SPARQLParser.ypp"
+#line 1410 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Load((yysemantic_stack_[(4) - (2)].p_Silence), (yysemantic_stack_[(4) - (3)].p_URI), (yysemantic_stack_[(4) - (4)].p_URI));
+	(yylhs.value.p_Operation) = new Load((yystack_[2].value.p_Silence), (yystack_[1].value.p_URI), (yystack_[0].value.p_URI));
     }
+#line 1555 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 186:
-
-/* Line 690 of lalr1.cc  */
-#line 1415 "lib/SPARQLParser.ypp"
+#line 1416 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Silence) = SILENT_No;
+	(yylhs.value.p_Silence) = SILENT_No;
     }
+#line 1563 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 187:
-
-/* Line 690 of lalr1.cc  */
-#line 1418 "lib/SPARQLParser.ypp"
+#line 1419 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Silence) = SILENT_Yes;
+	(yylhs.value.p_Silence) = SILENT_Yes;
 }
+#line 1571 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 188:
-
-/* Line 690 of lalr1.cc  */
-#line 1425 "lib/SPARQLParser.ypp"
+#line 1426 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 1579 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 189:
-
-/* Line 690 of lalr1.cc  */
-#line 1432 "lib/SPARQLParser.ypp"
+#line 1433 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = NULL;
+	(yylhs.value.p_URI) = NULL;
     }
+#line 1587 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 191:
-
-/* Line 690 of lalr1.cc  */
-#line 1439 "lib/SPARQLParser.ypp"
+#line 1440 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Clear((yysemantic_stack_[(3) - (2)].p_Silence), (yysemantic_stack_[(3) - (3)].p_URI));
+	(yylhs.value.p_Operation) = new Clear((yystack_[1].value.p_Silence), (yystack_[0].value.p_URI));
     }
+#line 1595 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 192:
-
-/* Line 690 of lalr1.cc  */
-#line 1445 "lib/SPARQLParser.ypp"
+#line 1446 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Drop((yysemantic_stack_[(3) - (2)].p_Silence), (yysemantic_stack_[(3) - (3)].p_URI));
+	(yylhs.value.p_Operation) = new Drop((yystack_[1].value.p_Silence), (yystack_[0].value.p_URI));
 }
+#line 1603 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 193:
-
-/* Line 690 of lalr1.cc  */
-#line 1451 "lib/SPARQLParser.ypp"
+#line 1452 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Create((yysemantic_stack_[(3) - (2)].p_Silence), (yysemantic_stack_[(3) - (3)].p_URI));
+	(yylhs.value.p_Operation) = new Create((yystack_[1].value.p_Silence), (yystack_[0].value.p_URI));
     }
+#line 1611 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 194:
-
-/* Line 690 of lalr1.cc  */
-#line 1457 "lib/SPARQLParser.ypp"
+#line 1458 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Add((yysemantic_stack_[(5) - (2)].p_Silence), (yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Add((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[0].value.p_URI));
 }
+#line 1619 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 195:
-
-/* Line 690 of lalr1.cc  */
-#line 1463 "lib/SPARQLParser.ypp"
+#line 1464 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Move((yysemantic_stack_[(5) - (2)].p_Silence), (yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Move((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[0].value.p_URI));
 }
+#line 1627 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 196:
-
-/* Line 690 of lalr1.cc  */
-#line 1469 "lib/SPARQLParser.ypp"
+#line 1470 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Operation) = new Copy((yysemantic_stack_[(5) - (2)].p_Silence), (yysemantic_stack_[(5) - (3)].p_URI), (yysemantic_stack_[(5) - (5)].p_URI));
+	(yylhs.value.p_Operation) = new Copy((yystack_[3].value.p_Silence), (yystack_[2].value.p_URI), (yystack_[0].value.p_URI));
 }
+#line 1635 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 197:
-
-/* Line 690 of lalr1.cc  */
-#line 1475 "lib/SPARQLParser.ypp"
+#line 1476 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.inINSERTDATA = true;
       }
+#line 1643 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 198:
-
-/* Line 690 of lalr1.cc  */
-#line 1477 "lib/SPARQLParser.ypp"
+#line 1478 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.inINSERTDATA = false;
-	  (yyval.p_Operation) = new Insert((yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
+	  (yylhs.value.p_Operation) = new Insert((yystack_[0].value.p_TableOperation), NULL);
 	  driver.curOp = NULL;
 	  driver.curBGP = NULL;
 	}
+#line 1654 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 199:
-
-/* Line 690 of lalr1.cc  */
-#line 1486 "lib/SPARQLParser.ypp"
+#line 1487 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.inDELETEDATA = true;
       }
+#line 1662 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 200:
-
-/* Line 690 of lalr1.cc  */
-#line 1488 "lib/SPARQLParser.ypp"
+#line 1489 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.inDELETEDATA = false;
-	  (yyval.p_Operation) = new Delete(true, (yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
+	  (yylhs.value.p_Operation) = new Delete(true, (yystack_[0].value.p_TableOperation), NULL);
 	  driver.curOp = NULL;
 	  driver.curBGP = NULL;
 	}
+#line 1673 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 201:
-
-/* Line 690 of lalr1.cc  */
-#line 1497 "lib/SPARQLParser.ypp"
+#line 1498 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.inDELETEWHERE = true;
       }
+#line 1681 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 202:
-
-/* Line 690 of lalr1.cc  */
-#line 1499 "lib/SPARQLParser.ypp"
+#line 1500 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.inDELETEWHERE = false;
-	  (yyval.p_Operation) = new Delete(true, (yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
+	  (yylhs.value.p_Operation) = new Delete(true, (yystack_[0].value.p_TableOperation), NULL);
     }
+#line 1690 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 203:
-
-/* Line 690 of lalr1.cc  */
-#line 1508 "lib/SPARQLParser.ypp"
+#line 1509 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_Operation) = new Modify((yysemantic_stack_[(6) - (2)].p_DeleteInsert).del, (yysemantic_stack_[(6) - (2)].p_DeleteInsert).ins, new WhereClause(driver.ensureGraphPattern()), (yysemantic_stack_[(6) - (4)].p_TableOperation), (yysemantic_stack_[(6) - (1)].p_URI), (yysemantic_stack_[(6) - (3)].p_UsingPairs));
+	(yylhs.value.p_Operation) = new Modify((yystack_[4].value.p_DeleteInsert).del, (yystack_[4].value.p_DeleteInsert).ins, new WhereClause(driver.ensureGraphPattern()), (yystack_[2].value.p_TableOperation), (yystack_[5].value.p_URI), (yystack_[3].value.p_UsingPairs));
 	driver.curOp = NULL;
     }
+#line 1700 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 204:
-
-/* Line 690 of lalr1.cc  */
-#line 1516 "lib/SPARQLParser.ypp"
+#line 1517 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 1708 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 205:
-
-/* Line 690 of lalr1.cc  */
-#line 1522 "lib/SPARQLParser.ypp"
+#line 1523 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = NULL;
+	(yylhs.value.p_URI) = NULL;
     }
+#line 1716 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 207:
-
-/* Line 690 of lalr1.cc  */
-#line 1529 "lib/SPARQLParser.ypp"
+#line 1530 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Insert) = NULL;
+	(yylhs.value.p_Insert) = NULL;
     }
+#line 1724 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 209:
-
-/* Line 690 of lalr1.cc  */
-#line 1536 "lib/SPARQLParser.ypp"
+#line 1537 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DeleteInsert).del = (yysemantic_stack_[(2) - (1)].p_Delete);
-	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(2) - (2)].p_Insert);
+	(yylhs.value.p_DeleteInsert).del = (yystack_[1].value.p_Delete);
+	(yylhs.value.p_DeleteInsert).ins = (yystack_[0].value.p_Insert);
     }
+#line 1733 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 210:
-
-/* Line 690 of lalr1.cc  */
-#line 1540 "lib/SPARQLParser.ypp"
+#line 1541 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DeleteInsert).del = NULL;
-	(yyval.p_DeleteInsert).ins = (yysemantic_stack_[(1) - (1)].p_Insert);
+	(yylhs.value.p_DeleteInsert).del = NULL;
+	(yylhs.value.p_DeleteInsert).ins = (yystack_[0].value.p_Insert);
     }
+#line 1742 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 211:
-
-/* Line 690 of lalr1.cc  */
-#line 1547 "lib/SPARQLParser.ypp"
+#line 1548 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_UsingPairs) = NULL;
+	(yylhs.value.p_UsingPairs) = NULL;
     }
+#line 1750 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 212:
-
-/* Line 690 of lalr1.cc  */
-#line 1550 "lib/SPARQLParser.ypp"
+#line 1551 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (1)].p_UsingPairs) == NULL)
-	    (yysemantic_stack_[(2) - (1)].p_UsingPairs) = new std::vector<s_UsingPair>();
-	(yysemantic_stack_[(2) - (1)].p_UsingPairs)->push_back((yysemantic_stack_[(2) - (2)].p_UsingPair));
-	(yyval.p_UsingPairs) = (yysemantic_stack_[(2) - (1)].p_UsingPairs);
+	if ((yystack_[1].value.p_UsingPairs) == NULL)
+	    (yystack_[1].value.p_UsingPairs) = new std::vector<s_UsingPair>();
+	(yystack_[1].value.p_UsingPairs)->push_back((yystack_[0].value.p_UsingPair));
+	(yylhs.value.p_UsingPairs) = (yystack_[1].value.p_UsingPairs);
     }
+#line 1761 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 213:
-
-/* Line 690 of lalr1.cc  */
-#line 1559 "lib/SPARQLParser.ypp"
+#line 1560 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = (yysemantic_stack_[(2) - (2)].p_TableOperation);
+	(yylhs.value.p_TableOperation) = (yystack_[0].value.p_TableOperation);
     }
+#line 1769 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 214:
-
-/* Line 690 of lalr1.cc  */
-#line 1565 "lib/SPARQLParser.ypp"
+#line 1566 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = NULL;
+	(yylhs.value.p_TableOperation) = NULL;
     }
+#line 1777 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 216:
-
-/* Line 690 of lalr1.cc  */
-#line 1572 "lib/SPARQLParser.ypp"
+#line 1573 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.inDELETECLAUSE = true;
       }
+#line 1785 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 217:
-
-/* Line 690 of lalr1.cc  */
-#line 1574 "lib/SPARQLParser.ypp"
+#line 1575 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.inDELETECLAUSE = false;
-	  (yyval.p_Delete) = new Delete(false, (yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
+	  (yylhs.value.p_Delete) = new Delete(false, (yystack_[0].value.p_TableOperation), NULL);
       }
+#line 1794 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 218:
-
-/* Line 690 of lalr1.cc  */
-#line 1581 "lib/SPARQLParser.ypp"
+#line 1582 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.inINSERTQUAD = true;
       }
+#line 1802 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 219:
-
-/* Line 690 of lalr1.cc  */
-#line 1583 "lib/SPARQLParser.ypp"
+#line 1584 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.inINSERTQUAD = false;
-	  (yyval.p_Insert) = new Insert((yysemantic_stack_[(3) - (3)].p_TableOperation), NULL);
+	  (yylhs.value.p_Insert) = new Insert((yystack_[0].value.p_TableOperation), NULL);
       }
+#line 1811 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 220:
-
-/* Line 690 of lalr1.cc  */
-#line 1590 "lib/SPARQLParser.ypp"
+#line 1591 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_UsingPair) = (yysemantic_stack_[(2) - (2)].p_UsingPair);
+	(yylhs.value.p_UsingPair) = (yystack_[0].value.p_UsingPair);
     }
+#line 1819 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 221:
-
-/* Line 690 of lalr1.cc  */
-#line 1596 "lib/SPARQLParser.ypp"
+#line 1597 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_UsingPair).named = false;
-	(yyval.p_UsingPair).name = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_UsingPair).named = false;
+	(yylhs.value.p_UsingPair).name = (yystack_[0].value.p_URI);
     }
+#line 1828 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 222:
-
-/* Line 690 of lalr1.cc  */
-#line 1600 "lib/SPARQLParser.ypp"
+#line 1601 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_UsingPair).named = true;
-	(yyval.p_UsingPair).name = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_UsingPair).named = true;
+	(yylhs.value.p_UsingPair).name = (yystack_[0].value.p_URI);
     }
+#line 1837 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 223:
-
-/* Line 690 of lalr1.cc  */
-#line 1607 "lib/SPARQLParser.ypp"
+#line 1608 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = NULL;
+	(yylhs.value.p_URI) = NULL;
     }
+#line 1845 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 224:
-
-/* Line 690 of lalr1.cc  */
-#line 1610 "lib/SPARQLParser.ypp"
+#line 1611 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 1853 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 227:
-
-/* Line 690 of lalr1.cc  */
-#line 1621 "lib/SPARQLParser.ypp"
+#line 1622 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 1861 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 228:
-
-/* Line 690 of lalr1.cc  */
-#line 1627 "lib/SPARQLParser.ypp"
+#line 1628 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 1869 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 229:
-
-/* Line 690 of lalr1.cc  */
-#line 1630 "lib/SPARQLParser.ypp"
+#line 1631 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/DEFAULT");
+	(yylhs.value.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/DEFAULT");
     }
+#line 1877 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 230:
-
-/* Line 690 of lalr1.cc  */
-#line 1633 "lib/SPARQLParser.ypp"
+#line 1634 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/NAMED");
+	(yylhs.value.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/NAMED");
     }
+#line 1885 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 231:
-
-/* Line 690 of lalr1.cc  */
-#line 1636 "lib/SPARQLParser.ypp"
+#line 1637 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/ALL");
+	(yylhs.value.p_URI) = driver.atomFactory->getURI("tag:eric@w3.org,2012-swobjparm/ALL");
     }
+#line 1893 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 232:
-
-/* Line 690 of lalr1.cc  */
-#line 1643 "lib/SPARQLParser.ypp"
+#line 1644 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = (yysemantic_stack_[(3) - (2)].p_TableOperation);
+	(yylhs.value.p_TableOperation) = (yystack_[1].value.p_TableOperation);
 	driver.curOp = NULL;
     }
+#line 1902 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 233:
-
-/* Line 690 of lalr1.cc  */
-#line 1650 "lib/SPARQLParser.ypp"
+#line 1651 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = (yysemantic_stack_[(3) - (2)].p_TableOperation);
+	(yylhs.value.p_TableOperation) = (yystack_[1].value.p_TableOperation);
     }
+#line 1910 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 234:
-
-/* Line 690 of lalr1.cc  */
-#line 1656 "lib/SPARQLParser.ypp"
+#line 1657 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.curBGP = NULL;
       }
+#line 1918 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 235:
-
-/* Line 690 of lalr1.cc  */
-#line 1658 "lib/SPARQLParser.ypp"
+#line 1659 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TableOperation) = driver.ensureGraphPattern();
+	  (yylhs.value.p_TableOperation) = driver.ensureGraphPattern();
 	  driver.curOp = NULL;
       }
+#line 1927 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 244:
-
-/* Line 690 of lalr1.cc  */
-#line 1687 "lib/SPARQLParser.ypp"
+#line 1688 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
 	driver.curFilter = NULL;
       }
+#line 1938 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 245:
-
-/* Line 690 of lalr1.cc  */
-#line 1692 "lib/SPARQLParser.ypp"
+#line 1693 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_TTerm);
+	  (yylhs.value.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yystack_[0].value.p_TTerm);
       }
+#line 1947 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 246:
-
-/* Line 690 of lalr1.cc  */
-#line 1695 "lib/SPARQLParser.ypp"
+#line 1696 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.curBGP = NULL;
 	driver.curOp = NULL;
       }
+#line 1956 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 247:
-
-/* Line 690 of lalr1.cc  */
-#line 1698 "lib/SPARQLParser.ypp"
+#line 1699 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.curBGP = NULL;
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(8) - (1)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(8) - (3)].p_TTerm), driver.ensureGraphPattern()));
-	  driver.curGraphName = (yysemantic_stack_[(8) - (4)].p_TTerm);
+	  driver.curOp = driver.makeConjunction((yystack_[7].value.p_TableOperation), new GraphGraphPattern((yystack_[5].value.p_TTerm), driver.ensureGraphPattern()));
+	  driver.curGraphName = (yystack_[4].value.p_TTerm);
       }
+#line 1966 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 253:
-
-/* Line 690 of lalr1.cc  */
-#line 1720 "lib/SPARQLParser.ypp"
+#line 1721 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	BindingsMap::const_iterator rs = driver.bindingsMap.find((yysemantic_stack_[(1) - (1)].p_RSName)->name);
+	BindingsMap::const_iterator rs = driver.bindingsMap.find((yystack_[0].value.p_RSName)->name);
 	if (rs == driver.bindingsMap.end() || rs->second == NULL) {
-	    error(yylloc, std::string("") + "unknown named result set " + (yysemantic_stack_[(1) - (1)].p_RSName)->name);
+	    error(*driver.yylloc, std::string("") + "unknown named result set " + (yystack_[0].value.p_RSName)->name);
 	    driver.curOp = new DefaultGraphPattern();
 	} else {
 	    SWObjectDuplicator dup(driver.atomFactory);
@@ -1987,61 +1979,55 @@ namespace w3c_sw {
 	    driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, b) : b;
 	}
       }
+#line 1983 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 257:
-
-/* Line 690 of lalr1.cc  */
-#line 1743 "lib/SPARQLParser.ypp"
+#line 1744 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.curBGP = NULL;
       }
+#line 1991 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 258:
-
-/* Line 690 of lalr1.cc  */
-#line 1745 "lib/SPARQLParser.ypp"
+#line 1746 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
 	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
 	  driver.curBGP = NULL;
       }
+#line 2001 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 279:
-
-/* Line 690 of lalr1.cc  */
-#line 1819 "lib/SPARQLParser.ypp"
+#line 1820 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yysemantic_stack_[(1) - (1)].p_ValuesClause)) : (yysemantic_stack_[(1) - (1)].p_ValuesClause);
+	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yystack_[0].value.p_ValuesClause)) : (yystack_[0].value.p_ValuesClause);
     }
+#line 2009 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 281:
-
-/* Line 690 of lalr1.cc  */
-#line 1826 "lib/SPARQLParser.ypp"
+#line 1827 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.curOp = new Print(driver.ensureGraphPattern());
     }
+#line 2017 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 282:
-
-/* Line 690 of lalr1.cc  */
-#line 1832 "lib/SPARQLParser.ypp"
+#line 1833 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2027 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 283:
-
-/* Line 690 of lalr1.cc  */
-#line 1836 "lib/SPARQLParser.ypp"
+#line 1837 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.ensureGraphPattern());
 	  if (driver.curFilter) {
@@ -2049,105 +2035,95 @@ namespace w3c_sw {
 	      delete driver.curFilter;
 	      driver.curFilter = NULL;
 	  }
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), ret);
+	  driver.curOp = driver.makeConjunction((yystack_[1].value.p_TableOperation), ret);
       }
+#line 2041 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 284:
-
-/* Line 690 of lalr1.cc  */
-#line 1848 "lib/SPARQLParser.ypp"
+#line 1849 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2051 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 285:
-
-/* Line 690 of lalr1.cc  */
-#line 1852 "lib/SPARQLParser.ypp"
+#line 1853 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 2059 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 286:
-
-/* Line 690 of lalr1.cc  */
-#line 1854 "lib/SPARQLParser.ypp"
+#line 1855 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_TTerm);
+	  (yylhs.value.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yystack_[0].value.p_TTerm);
       }
+#line 2068 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 287:
-
-/* Line 690 of lalr1.cc  */
-#line 1857 "lib/SPARQLParser.ypp"
+#line 1858 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), driver.ensureGraphPattern()));
-	  driver.curGraphName = (yysemantic_stack_[(6) - (5)].p_TTerm);
+	  driver.restoreFilter((yystack_[3].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[4].value.p_TableOperation), new GraphGraphPattern((yystack_[2].value.p_TTerm), driver.ensureGraphPattern()));
+	  driver.curGraphName = (yystack_[1].value.p_TTerm);
       }
+#line 2078 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 288:
-
-/* Line 690 of lalr1.cc  */
-#line 1865 "lib/SPARQLParser.ypp"
+#line 1866 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2088 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 289:
-
-/* Line 690 of lalr1.cc  */
-#line 1869 "lib/SPARQLParser.ypp"
+#line 1870 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 2096 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 290:
-
-/* Line 690 of lalr1.cc  */
-#line 1871 "lib/SPARQLParser.ypp"
+#line 1872 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(6) - (5)].p_TTerm), driver.ensureGraphPattern(), (yysemantic_stack_[(6) - (4)].p_Silence), driver.atomFactory, false));
+	  driver.restoreFilter((yystack_[3].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[4].value.p_TableOperation), new ServiceGraphPattern((yystack_[1].value.p_TTerm), driver.ensureGraphPattern(), (yystack_[2].value.p_Silence), driver.atomFactory, false));
       }
+#line 2105 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 291:
-
-/* Line 690 of lalr1.cc  */
-#line 1878 "lib/SPARQLParser.ypp"
+#line 1879 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2115 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 292:
-
-/* Line 690 of lalr1.cc  */
-#line 1882 "lib/SPARQLParser.ypp"
+#line 1883 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 2123 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 293:
-
-/* Line 690 of lalr1.cc  */
-#line 1884 "lib/SPARQLParser.ypp"
+#line 1885 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  /*
 	    serviceID,
@@ -2155,844 +2131,757 @@ namespace w3c_sw {
 	    e_Silence
 	    where
 	   */
-	  driver.lastWhereClause = (yysemantic_stack_[(8) - (8)].p_WhereClause);
-	  driver.restoreFilter((yysemantic_stack_[(8) - (3)].p_FilterExpressions));
+	  driver.lastWhereClause = (yystack_[0].value.p_WhereClause);
+	  driver.restoreFilter((yystack_[5].value.p_FilterExpressions));
 	  driver.curOp = driver.makeConjunction
-	      ((yysemantic_stack_[(8) - (2)].p_TableOperation), new SADIGraphPattern((yysemantic_stack_[(8) - (5)].p_TTerm), (yysemantic_stack_[(8) - (4)].p_Silence), (yysemantic_stack_[(8) - (7)].p_TableOperation), (yysemantic_stack_[(8) - (8)].p_WhereClause)));
+	      ((yystack_[6].value.p_TableOperation), new SADIGraphPattern((yystack_[3].value.p_TTerm), (yystack_[4].value.p_Silence), (yystack_[1].value.p_TableOperation), (yystack_[0].value.p_WhereClause)));
     }
+#line 2140 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 294:
-
-/* Line 690 of lalr1.cc  */
-#line 1899 "lib/SPARQLParser.ypp"
+#line 1900 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	const TableOperation* op = driver.ensureGraphPattern();
 	if (driver.validate & SPARQLDriver::VALIDATE_noReassign &&
-	    (op->getBindingState().binds   .find((yysemantic_stack_[(6) - (5)].p_Variable)) != op->getBindingState().binds   .end() ||
-	     op->getBindingState().optional.find((yysemantic_stack_[(6) - (5)].p_Variable)) != op->getBindingState().optional.end()))
-	    error(yylloc, "Can't bind " + (yysemantic_stack_[(6) - (5)].p_Variable)->str() + " to " + (yysemantic_stack_[(6) - (3)].p_Expression)->str() + " because it's already bound");
-	driver.curOp = new Bind(op, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Variable));
+	    (op->getBindingState().binds   .find((yystack_[1].value.p_Variable)) != op->getBindingState().binds   .end() ||
+	     op->getBindingState().optional.find((yystack_[1].value.p_Variable)) != op->getBindingState().optional.end()))
+	    error(*driver.yylloc, "Can't bind " + (yystack_[1].value.p_Variable)->str() + " to " + (yystack_[3].value.p_Expression)->str() + " because it's already bound");
+	driver.curOp = new Bind(op, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Variable));
 	// no more triples go into the current BGP, per
 	//   http://www.w3.org/TR/sparql11-query/#sparqlTranslateGraphPatterns
 	// test reference:
 	//   http://www.sparql.org/query-validator?query=ASK+{+%3Fs+%3Fp+%3Fo+FILTER+%281%29+BIND+%282+AS+%3Fb%29+%3Fs2+%3Fp2+%3Fo2+FILTER+%283%29+BIND+%284+AS+%3Fd%29}&languageSyntax=SPARQL&outputFormat=algebra&linenumbers=false
 	driver.curBGP = NULL;
     }
+#line 2158 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 295:
-
-/* Line 690 of lalr1.cc  */
-#line 1915 "lib/SPARQLParser.ypp"
+#line 1916 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
+	(yylhs.value.p_ValuesClause) = (yystack_[0].value.p_ValuesClause);
     }
+#line 2166 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 298:
-
-/* Line 690 of lalr1.cc  */
-#line 1926 "lib/SPARQLParser.ypp"
+#line 1927 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingSet();
       }
+#line 2174 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 299:
-
-/* Line 690 of lalr1.cc  */
-#line 1928 "lib/SPARQLParser.ypp"
+#line 1929 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
+	  driver.addBindingVar((yystack_[0].value.p_Variable));
       }
+#line 2182 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 300:
-
-/* Line 690 of lalr1.cc  */
-#line 1930 "lib/SPARQLParser.ypp"
+#line 1931 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
+	  (yylhs.value.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
+#line 2190 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 303:
-
-/* Line 690 of lalr1.cc  */
-#line 1941 "lib/SPARQLParser.ypp"
+#line 1942 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
-	driver.addBindingValue((yysemantic_stack_[(1) - (1)].p_TTerm));
+	driver.addBindingValue((yystack_[0].value.p_TTerm));
 	driver.endBindingRow();
     }
+#line 2200 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 304:
-
-/* Line 690 of lalr1.cc  */
-#line 1949 "lib/SPARQLParser.ypp"
+#line 1950 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingSet();
     }
+#line 2208 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 305:
-
-/* Line 690 of lalr1.cc  */
-#line 1951 "lib/SPARQLParser.ypp"
+#line 1952 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
+	  (yylhs.value.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
+#line 2216 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 307:
-
-/* Line 690 of lalr1.cc  */
-#line 1958 "lib/SPARQLParser.ypp"
+#line 1959 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
+	driver.addBindingVar((yystack_[0].value.p_Variable));
     }
+#line 2224 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 311:
-
-/* Line 690 of lalr1.cc  */
-#line 1970 "lib/SPARQLParser.ypp"
+#line 1971 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.addBindingValue((yysemantic_stack_[(2) - (2)].p_TTerm));
+	driver.addBindingValue((yystack_[0].value.p_TTerm));
     }
+#line 2232 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 312:
-
-/* Line 690 of lalr1.cc  */
-#line 1976 "lib/SPARQLParser.ypp"
+#line 1977 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
       }
+#line 2240 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 313:
-
-/* Line 690 of lalr1.cc  */
-#line 1978 "lib/SPARQLParser.ypp"
+#line 1979 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.endBindingRow();
       }
+#line 2248 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 314:
-
-/* Line 690 of lalr1.cc  */
-#line 1981 "lib/SPARQLParser.ypp"
+#line 1982 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
 	driver.endBindingRow();
     }
+#line 2257 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 317:
-
-/* Line 690 of lalr1.cc  */
-#line 1993 "lib/SPARQLParser.ypp"
+#line 1994 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 2265 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 318:
-
-/* Line 690 of lalr1.cc  */
-#line 1996 "lib/SPARQLParser.ypp"
+#line 1997 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_RDFLiteral);
     }
+#line 2273 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 319:
-
-/* Line 690 of lalr1.cc  */
-#line 1999 "lib/SPARQLParser.ypp"
+#line 2000 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 2281 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 320:
-
-/* Line 690 of lalr1.cc  */
-#line 2002 "lib/SPARQLParser.ypp"
+#line 2003 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_BooleanRDFLiteral);
     }
+#line 2289 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 321:
-
-/* Line 690 of lalr1.cc  */
-#line 2005 "lib/SPARQLParser.ypp"
+#line 2006 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = TTerm::Unbound;
+	(yylhs.value.p_TTerm) = TTerm::Unbound;
     }
+#line 2297 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 322:
-
-/* Line 690 of lalr1.cc  */
-#line 2008 "lib/SPARQLParser.ypp"
+#line 2009 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = TTerm::Unbound;
+	(yylhs.value.p_TTerm) = TTerm::Unbound;
     }
+#line 2305 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 323:
-
-/* Line 690 of lalr1.cc  */
-#line 2011 "lib/SPARQLParser.ypp"
+#line 2012 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 2313 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 324:
-
-/* Line 690 of lalr1.cc  */
-#line 2017 "lib/SPARQLParser.ypp"
+#line 2018 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2323 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 325:
-
-/* Line 690 of lalr1.cc  */
-#line 2021 "lib/SPARQLParser.ypp"
+#line 2022 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 2331 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 326:
-
-/* Line 690 of lalr1.cc  */
-#line 2023 "lib/SPARQLParser.ypp"
+#line 2024 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(4) - (3)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (2)].p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
+	  driver.restoreFilter((yystack_[1].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[2].value.p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
       }
+#line 2340 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 327:
-
-/* Line 690 of lalr1.cc  */
-#line 2031 "lib/SPARQLParser.ypp"
+#line 2032 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2350 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 328:
-
-/* Line 690 of lalr1.cc  */
-#line 2035 "lib/SPARQLParser.ypp"
+#line 2036 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 2358 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 329:
-
-/* Line 690 of lalr1.cc  */
-#line 2037 "lib/SPARQLParser.ypp"
+#line 2038 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(4) - (2)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (1)].p_TableOperation), driver.curOp);
+	  driver.restoreFilter((yystack_[2].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[3].value.p_TableOperation), driver.curOp);
       }
+#line 2367 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 330:
-
-/* Line 690 of lalr1.cc  */
-#line 2045 "lib/SPARQLParser.ypp"
+#line 2046 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.ensureGraphPattern();
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 2378 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 331:
-
-/* Line 690 of lalr1.cc  */
-#line 2050 "lib/SPARQLParser.ypp"
+#line 2051 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  driver.curOp = driver.makeDisjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), driver.ensureGraphPattern());
+	  driver.curOp = driver.makeDisjunction((yystack_[1].value.p_TableOperation), driver.ensureGraphPattern());
       }
+#line 2387 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 334:
-
-/* Line 690 of lalr1.cc  */
-#line 2063 "lib/SPARQLParser.ypp"
+#line 2064 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.curFilter == NULL) {
 	    driver.ensureGraphPattern();
 	    driver.curFilter = new FilterExpressions();
 	}
-	driver.curFilter->addExpression((yysemantic_stack_[(2) - (2)].p_Expression));
+	driver.curFilter->addExpression((yystack_[0].value.p_Expression));
     }
+#line 2399 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 338:
-
-/* Line 690 of lalr1.cc  */
-#line 2079 "lib/SPARQLParser.ypp"
+#line 2080 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall((yystack_[1].value.p_URI), (yystack_[0].value.p_ArgList)));
     }
+#line 2407 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 339:
-
-/* Line 690 of lalr1.cc  */
-#line 2087 "lib/SPARQLParser.ypp"
+#line 2088 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ArgList) = NULL;
+	(yylhs.value.p_ArgList) = NULL;
     }
+#line 2415 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 340:
-
-/* Line 690 of lalr1.cc  */
-#line 2091 "lib/SPARQLParser.ypp"
+#line 2092 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = driver.curExprList;
-	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(3) - (3)].p_Expression));
+	(yylhs.value.p_Expressions) = driver.curExprList;
+	driver.curExprList = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
       }
+#line 2424 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 341:
-
-/* Line 690 of lalr1.cc  */
-#line 2094 "lib/SPARQLParser.ypp"
+#line 2095 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
-	  driver.curExprList = (yysemantic_stack_[(6) - (4)].p_Expressions);
+	  (yylhs.value.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
+	  driver.curExprList = (yystack_[2].value.p_Expressions);
       }
+#line 2433 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 342:
-
-/* Line 690 of lalr1.cc  */
-#line 2101 "lib/SPARQLParser.ypp"
+#line 2102 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yylhs.value.p_distinctness) = DIST_all;
     }
+#line 2441 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 343:
-
-/* Line 690 of lalr1.cc  */
-#line 2104 "lib/SPARQLParser.ypp"
+#line 2105 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_distinct;
+	(yylhs.value.p_distinctness) = DIST_distinct;
     }
+#line 2449 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 344:
-
-/* Line 690 of lalr1.cc  */
-#line 2111 "lib/SPARQLParser.ypp"
+#line 2112 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 2457 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 346:
-
-/* Line 690 of lalr1.cc  */
-#line 2119 "lib/SPARQLParser.ypp"
+#line 2120 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curExprList->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	driver.curExprList->push_back((yystack_[0].value.p_Expression));
     }
+#line 2465 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 347:
-
-/* Line 690 of lalr1.cc  */
-#line 2134 "lib/SPARQLParser.ypp"
+#line 2135 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 2473 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 348:
-
-/* Line 690 of lalr1.cc  */
-#line 2137 "lib/SPARQLParser.ypp"
+#line 2138 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = driver.curExprList;
-	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expressions) = driver.curExprList;
+	driver.curExprList = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
       }
+#line 2482 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 349:
-
-/* Line 690 of lalr1.cc  */
-#line 2140 "lib/SPARQLParser.ypp"
+#line 2141 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_Expressions) = driver.curExprList;
-	  driver.curExprList = (yysemantic_stack_[(5) - (3)].p_Expressions);
+	  (yylhs.value.p_Expressions) = driver.curExprList;
+	  driver.curExprList = (yystack_[2].value.p_Expressions);
       }
+#line 2491 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 350:
-
-/* Line 690 of lalr1.cc  */
-#line 2147 "lib/SPARQLParser.ypp"
+#line 2148 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
+#line 2499 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 352:
-
-/* Line 690 of lalr1.cc  */
-#line 2150 "lib/SPARQLParser.ypp"
+#line 2151 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
+#line 2507 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 364:
-
-/* Line 690 of lalr1.cc  */
-#line 2192 "lib/SPARQLParser.ypp"
+#line 2193 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-	driver.curPredicate = (yyval.p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
+	driver.curPredicate = (yylhs.value.p_TTerm);
     }
+#line 2516 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 365:
-
-/* Line 690 of lalr1.cc  */
-#line 2196 "lib/SPARQLParser.ypp"
+#line 2197 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = TTerm::RDF_type;
-	driver.curPredicate = (yyval.p_TTerm);
+	(yylhs.value.p_TTerm) = TTerm::RDF_type;
+	driver.curPredicate = (yylhs.value.p_TTerm);
     }
+#line 2525 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 370:
-
-/* Line 690 of lalr1.cc  */
-#line 2219 "lib/SPARQLParser.ypp"
+#line 2220 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)), true);
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)), true);
     }
+#line 2534 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 371:
-
-/* Line 690 of lalr1.cc  */
-#line 2227 "lib/SPARQLParser.ypp"
+#line 2228 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
       }
+#line 2542 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 373:
-
-/* Line 690 of lalr1.cc  */
-#line 2230 "lib/SPARQLParser.ypp"
+#line 2231 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	  driver.curSubject = (yystack_[0].value.p_TTerm);
         }
+#line 2550 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 378:
-
-/* Line 690 of lalr1.cc  */
-#line 2245 "lib/SPARQLParser.ypp"
+#line 2246 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yystack_[0].value.p_TTerm);
       }
+#line 2558 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 382:
-
-/* Line 690 of lalr1.cc  */
-#line 2256 "lib/SPARQLParser.ypp"
+#line 2257 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yystack_[0].value.p_TTerm);
       }
+#line 2566 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 389:
-
-/* Line 690 of lalr1.cc  */
-#line 2276 "lib/SPARQLParser.ypp"
+#line 2277 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	const URI* t = (yysemantic_stack_[(1) - (1)].p_PropertyPath)->release();
+	const URI* t = (yystack_[0].value.p_PropertyPath)->release();
 	// if (!t)
 	//     w3c_sw_LINEN << "property path: " << $1->str() << "\n";
-	(yyval.p_TTerm) = t ? t : (const TTerm*)new PropertyPath((yysemantic_stack_[(1) - (1)].p_PropertyPath));
+	(yylhs.value.p_TTerm) = t ? t : (const TTerm*)new PropertyPath((yystack_[0].value.p_PropertyPath));
     }
+#line 2577 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 390:
-
-/* Line 690 of lalr1.cc  */
-#line 2285 "lib/SPARQLParser.ypp"
+#line 2286 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 2585 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 395:
-
-/* Line 690 of lalr1.cc  */
-#line 2304 "lib/SPARQLParser.ypp"
+#line 2305 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)), true);
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)), true);
     }
+#line 2594 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 397:
-
-/* Line 690 of lalr1.cc  */
-#line 2315 "lib/SPARQLParser.ypp"
+#line 2316 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = driver.lastPropertyPathAlternative;
-	driver.lastPropertyPathAlternative = (yysemantic_stack_[(1) - (1)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = driver.lastPropertyPathAlternative;
+	driver.lastPropertyPathAlternative = (yystack_[0].value.p_PropertyPath);
       }
+#line 2603 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 398:
-
-/* Line 690 of lalr1.cc  */
-#line 2318 "lib/SPARQLParser.ypp"
+#line 2319 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (3)].p_PropertyPath) ? (yysemantic_stack_[(3) - (3)].p_PropertyPath) : (yysemantic_stack_[(3) - (1)].p_PropertyPath);
-	  driver.lastPropertyPathAlternative = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
+	  (yylhs.value.p_PropertyPath) = (yystack_[0].value.p_PropertyPath) ? (yystack_[0].value.p_PropertyPath) : (yystack_[2].value.p_PropertyPath);
+	  driver.lastPropertyPathAlternative = (yystack_[1].value.p_PropertyPath);
       }
+#line 2612 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 399:
-
-/* Line 690 of lalr1.cc  */
-#line 2325 "lib/SPARQLParser.ypp"
+#line 2326 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = (yystack_[0].value.p_PropertyPath);
     }
+#line 2620 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 400:
-
-/* Line 690 of lalr1.cc  */
-#line 2331 "lib/SPARQLParser.ypp"
+#line 2332 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = NULL;
+	(yylhs.value.p_PropertyPath) = NULL;
     }
+#line 2628 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 401:
-
-/* Line 690 of lalr1.cc  */
-#line 2334 "lib/SPARQLParser.ypp"
+#line 2335 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Alternative((yysemantic_stack_[(2) - (1)].p_PropertyPath) ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : driver.lastPropertyPathAlternative, (yysemantic_stack_[(2) - (2)].p_PropertyPath));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Alternative((yystack_[1].value.p_PropertyPath) ? (yystack_[1].value.p_PropertyPath) : driver.lastPropertyPathAlternative, (yystack_[0].value.p_PropertyPath));
     }
+#line 2636 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 402:
-
-/* Line 690 of lalr1.cc  */
-#line 2340 "lib/SPARQLParser.ypp"
+#line 2341 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = driver.lastPropertyPathSequence;
-	driver.lastPropertyPathSequence = (yysemantic_stack_[(1) - (1)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = driver.lastPropertyPathSequence;
+	driver.lastPropertyPathSequence = (yystack_[0].value.p_PropertyPath);
       }
+#line 2645 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 403:
-
-/* Line 690 of lalr1.cc  */
-#line 2343 "lib/SPARQLParser.ypp"
+#line 2344 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {	
-	  (yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (3)].p_PropertyPath) ? (yysemantic_stack_[(3) - (3)].p_PropertyPath) : (yysemantic_stack_[(3) - (1)].p_PropertyPath);
-	  driver.lastPropertyPathSequence = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
+	  (yylhs.value.p_PropertyPath) = (yystack_[0].value.p_PropertyPath) ? (yystack_[0].value.p_PropertyPath) : (yystack_[2].value.p_PropertyPath);
+	  driver.lastPropertyPathSequence = (yystack_[1].value.p_PropertyPath);
       }
+#line 2654 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 404:
-
-/* Line 690 of lalr1.cc  */
-#line 2350 "lib/SPARQLParser.ypp"
+#line 2351 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = (yystack_[0].value.p_PropertyPath);
     }
+#line 2662 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 405:
-
-/* Line 690 of lalr1.cc  */
-#line 2356 "lib/SPARQLParser.ypp"
+#line 2357 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = NULL;
+	(yylhs.value.p_PropertyPath) = NULL;
     }
+#line 2670 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 406:
-
-/* Line 690 of lalr1.cc  */
-#line 2359 "lib/SPARQLParser.ypp"
+#line 2360 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Sequence((yysemantic_stack_[(2) - (1)].p_PropertyPath) ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : driver.lastPropertyPathSequence, (yysemantic_stack_[(2) - (2)].p_PropertyPath));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Sequence((yystack_[1].value.p_PropertyPath) ? (yystack_[1].value.p_PropertyPath) : driver.lastPropertyPathSequence, (yystack_[0].value.p_PropertyPath));
     }
+#line 2678 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 407:
-
-/* Line 690 of lalr1.cc  */
-#line 2365 "lib/SPARQLParser.ypp"
+#line 2366 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_RepeatRange).min == 1 && (yysemantic_stack_[(2) - (2)].p_RepeatRange).max == 1 ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : new PropertyPath::Repeated((yysemantic_stack_[(2) - (1)].p_PropertyPath), (yysemantic_stack_[(2) - (2)].p_RepeatRange).min, (yysemantic_stack_[(2) - (2)].p_RepeatRange).max);
+	(yylhs.value.p_PropertyPath) = (yystack_[0].value.p_RepeatRange).min == 1 && (yystack_[0].value.p_RepeatRange).max == 1 ? (yystack_[1].value.p_PropertyPath) : new PropertyPath::Repeated((yystack_[1].value.p_PropertyPath), (yystack_[0].value.p_RepeatRange).min, (yystack_[0].value.p_RepeatRange).max);
     }
+#line 2686 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 408:
-
-/* Line 690 of lalr1.cc  */
-#line 2371 "lib/SPARQLParser.ypp"
+#line 2372 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 1; (yyval.p_RepeatRange).max = 1;
+	(yylhs.value.p_RepeatRange).min = 1; (yylhs.value.p_RepeatRange).max = 1;
     }
+#line 2694 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 411:
-
-/* Line 690 of lalr1.cc  */
-#line 2379 "lib/SPARQLParser.ypp"
+#line 2380 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Inverse((yysemantic_stack_[(2) - (2)].p_PropertyPath));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Inverse((yystack_[0].value.p_PropertyPath));
     }
+#line 2702 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 412:
-
-/* Line 690 of lalr1.cc  */
-#line 2385 "lib/SPARQLParser.ypp"
+#line 2386 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 0; (yyval.p_RepeatRange).max = 1;
+	(yylhs.value.p_RepeatRange).min = 0; (yylhs.value.p_RepeatRange).max = 1;
     }
+#line 2710 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 413:
-
-/* Line 690 of lalr1.cc  */
-#line 2388 "lib/SPARQLParser.ypp"
+#line 2389 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 0; (yyval.p_RepeatRange).max = PropertyPath::Repeated::Unlimited;
+	(yylhs.value.p_RepeatRange).min = 0; (yylhs.value.p_RepeatRange).max = PropertyPath::Repeated::Unlimited;
     }
+#line 2718 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 414:
-
-/* Line 690 of lalr1.cc  */
-#line 2391 "lib/SPARQLParser.ypp"
+#line 2392 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RepeatRange).min = 1; (yyval.p_RepeatRange).max = PropertyPath::Repeated::Unlimited;
+	(yylhs.value.p_RepeatRange).min = 1; (yylhs.value.p_RepeatRange).max = PropertyPath::Repeated::Unlimited;
     }
+#line 2726 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 415:
-
-/* Line 690 of lalr1.cc  */
-#line 2397 "lib/SPARQLParser.ypp"
+#line 2398 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Predicate((yysemantic_stack_[(1) - (1)].p_URI));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Predicate((yystack_[0].value.p_URI));
     }
+#line 2734 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 416:
-
-/* Line 690 of lalr1.cc  */
-#line 2400 "lib/SPARQLParser.ypp"
+#line 2401 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
     }
+#line 2742 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 417:
-
-/* Line 690 of lalr1.cc  */
-#line 2403 "lib/SPARQLParser.ypp"
+#line 2404 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Negated((yysemantic_stack_[(2) - (2)].p_PropertyPath));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Negated((yystack_[0].value.p_PropertyPath));
     }
+#line 2750 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 418:
-
-/* Line 690 of lalr1.cc  */
-#line 2406 "lib/SPARQLParser.ypp"
+#line 2407 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = (yystack_[1].value.p_PropertyPath);
     }
+#line 2758 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 420:
-
-/* Line 690 of lalr1.cc  */
-#line 2416 "lib/SPARQLParser.ypp"
+#line 2417 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = (yystack_[1].value.p_PropertyPath);
     }
+#line 2766 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 421:
-
-/* Line 690 of lalr1.cc  */
-#line 2425 "lib/SPARQLParser.ypp"
+#line 2426 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = (yysemantic_stack_[(2) - (2)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = (yystack_[0].value.p_PropertyPath);
     }
+#line 2774 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 422:
-
-/* Line 690 of lalr1.cc  */
-#line 2431 "lib/SPARQLParser.ypp"
+#line 2432 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = NULL;
+	(yylhs.value.p_PropertyPath) = NULL;
     }
+#line 2782 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 423:
-
-/* Line 690 of lalr1.cc  */
-#line 2434 "lib/SPARQLParser.ypp"
+#line 2435 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Alternative((yysemantic_stack_[(2) - (1)].p_PropertyPath) ? (yysemantic_stack_[(2) - (1)].p_PropertyPath) : driver.lastPropertyPathSetAlternative, (yysemantic_stack_[(2) - (2)].p_PropertyPath));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Alternative((yystack_[1].value.p_PropertyPath) ? (yystack_[1].value.p_PropertyPath) : driver.lastPropertyPathSetAlternative, (yystack_[0].value.p_PropertyPath));
     }
+#line 2790 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 424:
-
-/* Line 690 of lalr1.cc  */
-#line 2440 "lib/SPARQLParser.ypp"
+#line 2441 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = driver.lastPropertyPathSetAlternative;
-	driver.lastPropertyPathSetAlternative = (yysemantic_stack_[(1) - (1)].p_PropertyPath);
+	(yylhs.value.p_PropertyPath) = driver.lastPropertyPathSetAlternative;
+	driver.lastPropertyPathSetAlternative = (yystack_[0].value.p_PropertyPath);
       }
+#line 2799 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 425:
-
-/* Line 690 of lalr1.cc  */
-#line 2443 "lib/SPARQLParser.ypp"
+#line 2444 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  driver.lastPropertyPathSetAlternative = (yysemantic_stack_[(3) - (2)].p_PropertyPath);
-	  (yyval.p_PropertyPath) = (yysemantic_stack_[(3) - (3)].p_PropertyPath);
+	  driver.lastPropertyPathSetAlternative = (yystack_[1].value.p_PropertyPath);
+	  (yylhs.value.p_PropertyPath) = (yystack_[0].value.p_PropertyPath);
       }
+#line 2808 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 426:
-
-/* Line 690 of lalr1.cc  */
-#line 2450 "lib/SPARQLParser.ypp"
+#line 2451 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = NULL;
+	(yylhs.value.p_PropertyPath) = NULL;
     }
+#line 2816 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 428:
-
-/* Line 690 of lalr1.cc  */
-#line 2457 "lib/SPARQLParser.ypp"
+#line 2458 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Predicate((yysemantic_stack_[(1) - (1)].p_URI));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Predicate((yystack_[0].value.p_URI));
     }
+#line 2824 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 429:
-
-/* Line 690 of lalr1.cc  */
-#line 2460 "lib/SPARQLParser.ypp"
+#line 2461 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
     }
+#line 2832 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 430:
-
-/* Line 690 of lalr1.cc  */
-#line 2463 "lib/SPARQLParser.ypp"
+#line 2464 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Inverse((yysemantic_stack_[(2) - (2)].p_PropertyPath));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Inverse((yystack_[0].value.p_PropertyPath));
     }
+#line 2840 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 431:
-
-/* Line 690 of lalr1.cc  */
-#line 2469 "lib/SPARQLParser.ypp"
+#line 2470 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Predicate((yysemantic_stack_[(1) - (1)].p_URI));
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Predicate((yystack_[0].value.p_URI));
     }
+#line 2848 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 432:
-
-/* Line 690 of lalr1.cc  */
-#line 2472 "lib/SPARQLParser.ypp"
+#line 2473 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
+	(yylhs.value.p_PropertyPath) = new PropertyPath::Predicate(TTerm::RDF_type);
     }
+#line 2856 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 435:
-
-/* Line 690 of lalr1.cc  */
-#line 2485 "lib/SPARQLParser.ypp"
+#line 2486 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
-	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
+	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
+	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
+#line 2866 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 436:
-
-/* Line 690 of lalr1.cc  */
-#line 2489 "lib/SPARQLParser.ypp"
+#line 2490 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
-	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
-	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
+	  (yylhs.value.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
+	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
+	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
+#line 2876 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 437:
-
-/* Line 690 of lalr1.cc  */
-#line 2498 "lib/SPARQLParser.ypp"
+#line 2499 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
-	    (yyval.p_TTerm) = driver.createBNode();
-	    const TTerm* tail = (yyval.p_TTerm);
-	    ProductionVector<const TTerm*>* members = (yysemantic_stack_[(4) - (3)].p_TTerms);
+	if ((yystack_[3].value.p_listModifier) == LIST_exact) {
+	    (yylhs.value.p_TTerm) = driver.createBNode();
+	    const TTerm* tail = (yylhs.value.p_TTerm);
+	    ProductionVector<const TTerm*>* members = (yystack_[1].value.p_TTerms);
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		// driver.curBGP->addTriplePattern
@@ -3006,119 +2895,108 @@ namespace w3c_sw {
 	    }
 	    members->clear();
 	    delete members;
-	} else if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_members) {
-	    (yyval.p_TTerm) = new Members((yysemantic_stack_[(4) - (3)].p_TTerms));
+	} else if ((yystack_[3].value.p_listModifier) == LIST_members) {
+	    (yylhs.value.p_TTerm) = new Members((yystack_[1].value.p_TTerms));
 	} else {
-	    error((yyloc), "unsupported function");
+	    error(yylhs.location, "unsupported function");
 	}
     }
+#line 2905 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 438:
-
-/* Line 690 of lalr1.cc  */
-#line 2526 "lib/SPARQLParser.ypp"
+#line 2527 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_members;
+	(yylhs.value.p_listModifier) = LIST_members;
     }
+#line 2913 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 439:
-
-/* Line 690 of lalr1.cc  */
-#line 2529 "lib/SPARQLParser.ypp"
+#line 2530 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_starts;
+	(yylhs.value.p_listModifier) = LIST_starts;
     }
+#line 2921 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 440:
-
-/* Line 690 of lalr1.cc  */
-#line 2532 "lib/SPARQLParser.ypp"
+#line 2533 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_ends;
+	(yylhs.value.p_listModifier) = LIST_ends;
     }
+#line 2929 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 441:
-
-/* Line 690 of lalr1.cc  */
-#line 2535 "lib/SPARQLParser.ypp"
+#line 2536 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_any;
+	(yylhs.value.p_listModifier) = LIST_any;
     }
+#line 2937 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 442:
-
-/* Line 690 of lalr1.cc  */
-#line 2538 "lib/SPARQLParser.ypp"
+#line 2539 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_unordered;
+	(yylhs.value.p_listModifier) = LIST_unordered;
     }
+#line 2945 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 443:
-
-/* Line 690 of lalr1.cc  */
-#line 2545 "lib/SPARQLParser.ypp"
+#line 2546 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_exact;
+	(yylhs.value.p_listModifier) = LIST_exact;
     }
+#line 2953 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 445:
-
-/* Line 690 of lalr1.cc  */
-#line 2553 "lib/SPARQLParser.ypp"
+#line 2554 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
-	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
+	(yylhs.value.p_TTerms) = new ProductionVector<const TTerm*>();
+	(yylhs.value.p_TTerms)->push_back((yystack_[0].value.p_TTerm));
     }
+#line 2962 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 446:
-
-/* Line 690 of lalr1.cc  */
-#line 2557 "lib/SPARQLParser.ypp"
+#line 2558 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
-	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
+	(yystack_[1].value.p_TTerms)->push_back((yystack_[0].value.p_TTerm));
+	(yylhs.value.p_TTerms) = (yystack_[1].value.p_TTerms);
     }
+#line 2971 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 449:
-
-/* Line 690 of lalr1.cc  */
-#line 2569 "lib/SPARQLParser.ypp"
+#line 2570 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
-	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
+	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
+	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
+#line 2981 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 450:
-
-/* Line 690 of lalr1.cc  */
-#line 2573 "lib/SPARQLParser.ypp"
+#line 2574 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curSubject;
-	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
-	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
+	  (yylhs.value.p_TTerm) = driver.curSubject;
+	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
+	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
+#line 2991 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 451:
-
-/* Line 690 of lalr1.cc  */
-#line 2581 "lib/SPARQLParser.ypp"
+#line 2582 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
-	    (yyval.p_TTerm) = driver.createBNode();
-	    const TTerm* tail = (yyval.p_TTerm);
-	    ProductionVector<const TTerm*>* members = (yysemantic_stack_[(4) - (3)].p_TTerms);
+	if ((yystack_[3].value.p_listModifier) == LIST_exact) {
+	    (yylhs.value.p_TTerm) = driver.createBNode();
+	    const TTerm* tail = (yylhs.value.p_TTerm);
+	    ProductionVector<const TTerm*>* members = (yystack_[1].value.p_TTerms);
 	    driver.ensureBasicGraphPattern();
 	    for (unsigned i = 0; i < members->size(); i++) {
 		// driver.curBGP->addTriplePattern
@@ -3132,1238 +3010,1108 @@ namespace w3c_sw {
 	    }
 	    members->clear();
 	    delete members;
-	} else if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_members) {
-	    (yyval.p_TTerm) = new Members((yysemantic_stack_[(4) - (3)].p_TTerms));
+	} else if ((yystack_[3].value.p_listModifier) == LIST_members) {
+	    (yylhs.value.p_TTerm) = new Members((yystack_[1].value.p_TTerms));
 	} else {
-	    error((yyloc), "unsupported function");
+	    error(yylhs.location, "unsupported function");
 	}
     }
+#line 3020 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 452:
-
-/* Line 690 of lalr1.cc  */
-#line 2608 "lib/SPARQLParser.ypp"
+#line 2609 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
-	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
+	(yylhs.value.p_TTerms) = new ProductionVector<const TTerm*>();
+	(yylhs.value.p_TTerms)->push_back((yystack_[0].value.p_TTerm));
     }
+#line 3029 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 453:
-
-/* Line 690 of lalr1.cc  */
-#line 2612 "lib/SPARQLParser.ypp"
+#line 2613 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
-	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
+	(yystack_[1].value.p_TTerms)->push_back((yystack_[0].value.p_TTerm));
+	(yylhs.value.p_TTerms) = (yystack_[1].value.p_TTerms);
     }
+#line 3038 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 458:
-
-/* Line 690 of lalr1.cc  */
-#line 2629 "lib/SPARQLParser.ypp"
+#line 2630 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 3046 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 460:
-
-/* Line 690 of lalr1.cc  */
-#line 2636 "lib/SPARQLParser.ypp"
+#line 2637 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 3054 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 461:
-
-/* Line 690 of lalr1.cc  */
-#line 2639 "lib/SPARQLParser.ypp"
+#line 2640 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 3062 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 464:
-
-/* Line 690 of lalr1.cc  */
-#line 2650 "lib/SPARQLParser.ypp"
+#line 2651 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 3070 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 465:
-
-/* Line 690 of lalr1.cc  */
-#line 2653 "lib/SPARQLParser.ypp"
+#line 2654 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_RDFLiteral);
     }
+#line 3078 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 466:
-
-/* Line 690 of lalr1.cc  */
-#line 2656 "lib/SPARQLParser.ypp"
+#line 2657 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 3086 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 467:
-
-/* Line 690 of lalr1.cc  */
-#line 2659 "lib/SPARQLParser.ypp"
+#line 2660 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_BooleanRDFLiteral);
     }
+#line 3094 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 469:
-
-/* Line 690 of lalr1.cc  */
-#line 2663 "lib/SPARQLParser.ypp"
+#line 2664 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = TTerm::RDF_nil; // !!! new GraphTerm_rule5($1);
+	(yylhs.value.p_TTerm) = TTerm::RDF_nil; // !!! new GraphTerm_rule5($1);
     }
+#line 3102 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 471:
-
-/* Line 690 of lalr1.cc  */
-#line 2674 "lib/SPARQLParser.ypp"
+#line 2675 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanDisjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new BooleanDisjunction((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 3112 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 472:
-
-/* Line 690 of lalr1.cc  */
-#line 2683 "lib/SPARQLParser.ypp"
+#line 2684 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 3120 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 473:
-
-/* Line 690 of lalr1.cc  */
-#line 2690 "lib/SPARQLParser.ypp"
+#line 2691 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 3128 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 474:
-
-/* Line 690 of lalr1.cc  */
-#line 2693 "lib/SPARQLParser.ypp"
+#line 2694 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 3137 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 475:
-
-/* Line 690 of lalr1.cc  */
-#line 2701 "lib/SPARQLParser.ypp"
+#line 2702 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanConjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new BooleanConjunction((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 3147 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 476:
-
-/* Line 690 of lalr1.cc  */
-#line 2710 "lib/SPARQLParser.ypp"
+#line 2711 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 3155 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 477:
-
-/* Line 690 of lalr1.cc  */
-#line 2717 "lib/SPARQLParser.ypp"
+#line 2718 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 3163 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 478:
-
-/* Line 690 of lalr1.cc  */
-#line 2720 "lib/SPARQLParser.ypp"
+#line 2721 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 3172 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 480:
-
-/* Line 690 of lalr1.cc  */
-#line 2732 "lib/SPARQLParser.ypp"
+#line 2733 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp) {
-	    (yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new ComparatorExpression((yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp); // !!!
-	    if ((yysemantic_stack_[(2) - (2)].p_ComparatorSense).neg)
-		(yyval.p_Expression) = new BooleanNegation((yyval.p_Expression));
+	if ((yystack_[0].value.p_ComparatorSense).comp) {
+	    (yystack_[0].value.p_ComparatorSense).comp->setLeftParm((yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new ComparatorExpression((yystack_[0].value.p_ComparatorSense).comp); // !!!
+	    if ((yystack_[0].value.p_ComparatorSense).neg)
+		(yylhs.value.p_Expression) = new BooleanNegation((yylhs.value.p_Expression));
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 3186 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 481:
-
-/* Line 690 of lalr1.cc  */
-#line 2745 "lib/SPARQLParser.ypp"
+#line 2746 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = NULL;
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = NULL;
     }
+#line 3195 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 483:
-
-/* Line 690 of lalr1.cc  */
-#line 2753 "lib/SPARQLParser.ypp"
+#line 2754 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanEQ((yystack_[0].value.p_Expression));
     }
+#line 3204 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 484:
-
-/* Line 690 of lalr1.cc  */
-#line 2757 "lib/SPARQLParser.ypp"
+#line 2758 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanNE((yystack_[0].value.p_Expression));
     }
+#line 3213 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 485:
-
-/* Line 690 of lalr1.cc  */
-#line 2761 "lib/SPARQLParser.ypp"
+#line 2762 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanLT((yystack_[0].value.p_Expression));
     }
+#line 3222 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 486:
-
-/* Line 690 of lalr1.cc  */
-#line 2765 "lib/SPARQLParser.ypp"
+#line 2766 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanGT((yystack_[0].value.p_Expression));
     }
+#line 3231 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 487:
-
-/* Line 690 of lalr1.cc  */
-#line 2769 "lib/SPARQLParser.ypp"
+#line 2770 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanLE((yystack_[0].value.p_Expression));
     }
+#line 3240 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 488:
-
-/* Line 690 of lalr1.cc  */
-#line 2773 "lib/SPARQLParser.ypp"
+#line 2774 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanGE((yystack_[0].value.p_Expression));
     }
+#line 3249 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 489:
-
-/* Line 690 of lalr1.cc  */
-#line 2777 "lib/SPARQLParser.ypp"
+#line 2778 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new NaryIn((yysemantic_stack_[(2) - (2)].p_Expressions));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new NaryIn((yystack_[0].value.p_Expressions));
     }
+#line 3258 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 490:
-
-/* Line 690 of lalr1.cc  */
-#line 2781 "lib/SPARQLParser.ypp"
+#line 2782 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = true;
-	(yyval.p_ComparatorSense).comp = new NaryIn((yysemantic_stack_[(3) - (3)].p_Expressions));
+	(yylhs.value.p_ComparatorSense).neg = true;
+	(yylhs.value.p_ComparatorSense).comp = new NaryIn((yystack_[0].value.p_Expressions));
     }
+#line 3267 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 492:
-
-/* Line 690 of lalr1.cc  */
-#line 2793 "lib/SPARQLParser.ypp"
+#line 2794 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticSum((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new ArithmeticSum((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 3277 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 493:
-
-/* Line 690 of lalr1.cc  */
-#line 2802 "lib/SPARQLParser.ypp"
+#line 2803 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new NumberExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 3285 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 494:
-
-/* Line 690 of lalr1.cc  */
-#line 2805 "lib/SPARQLParser.ypp"
+#line 2806 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new NumberExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 3293 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 495:
-
-/* Line 690 of lalr1.cc  */
-#line 2812 "lib/SPARQLParser.ypp"
+#line 2813 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 3301 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 496:
-
-/* Line 690 of lalr1.cc  */
-#line 2815 "lib/SPARQLParser.ypp"
+#line 2816 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticInverse((yystack_[0].value.p_Expression));
     }
+#line 3309 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 497:
-
-/* Line 690 of lalr1.cc  */
-#line 2822 "lib/SPARQLParser.ypp"
+#line 2823 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 3317 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 499:
-
-/* Line 690 of lalr1.cc  */
-#line 2830 "lib/SPARQLParser.ypp"
+#line 2831 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 3325 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 500:
-
-/* Line 690 of lalr1.cc  */
-#line 2833 "lib/SPARQLParser.ypp"
+#line 2834 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticNegation((yystack_[0].value.p_Expression));
     }
+#line 3333 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 501:
-
-/* Line 690 of lalr1.cc  */
-#line 2837 "lib/SPARQLParser.ypp"
+#line 2838 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expression) == NULL)
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
+	if ((yystack_[0].value.p_Expression) == NULL)
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
 	else {
 	    ProductionVector<const Expression*>* v = new ProductionVector<const Expression*>();
-	    v->push_back((yysemantic_stack_[(2) - (1)].p_Expression));
-	    v->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	    (yyval.p_Expression) = new BooleanConjunction(v);
+	    v->push_back((yystack_[1].value.p_Expression));
+	    v->push_back((yystack_[0].value.p_Expression));
+	    (yylhs.value.p_Expression) = new BooleanConjunction(v);
 	}
     }
+#line 3348 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 502:
-
-/* Line 690 of lalr1.cc  */
-#line 2851 "lib/SPARQLParser.ypp"
+#line 2852 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 3356 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 503:
-
-/* Line 690 of lalr1.cc  */
-#line 2854 "lib/SPARQLParser.ypp"
+#line 2855 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 3365 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 504:
-
-/* Line 690 of lalr1.cc  */
-#line 2862 "lib/SPARQLParser.ypp"
+#line 2863 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticProduct((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new ArithmeticProduct((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 3375 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 505:
-
-/* Line 690 of lalr1.cc  */
-#line 2871 "lib/SPARQLParser.ypp"
+#line 2872 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 3383 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 506:
-
-/* Line 690 of lalr1.cc  */
-#line 2874 "lib/SPARQLParser.ypp"
+#line 2875 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 3392 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 507:
-
-/* Line 690 of lalr1.cc  */
-#line 2881 "lib/SPARQLParser.ypp"
+#line 2882 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanNegation((yystack_[0].value.p_Expression));
     }
+#line 3400 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 508:
-
-/* Line 690 of lalr1.cc  */
-#line 2884 "lib/SPARQLParser.ypp"
+#line 2885 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 3408 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 509:
-
-/* Line 690 of lalr1.cc  */
-#line 2887 "lib/SPARQLParser.ypp"
+#line 2888 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticNegation((yystack_[0].value.p_Expression));
     }
+#line 3416 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 514:
-
-/* Line 690 of lalr1.cc  */
-#line 2897 "lib/SPARQLParser.ypp"
+#line 2898 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_RDFLiteral));
     }
+#line 3424 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 515:
-
-/* Line 690 of lalr1.cc  */
-#line 2900 "lib/SPARQLParser.ypp"
+#line 2901 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 3432 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 516:
-
-/* Line 690 of lalr1.cc  */
-#line 2903 "lib/SPARQLParser.ypp"
+#line 2904 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_BooleanRDFLiteral));
     }
+#line 3440 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 517:
-
-/* Line 690 of lalr1.cc  */
-#line 2906 "lib/SPARQLParser.ypp"
+#line 2907 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_Variable));
     }
+#line 3448 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 519:
-
-/* Line 690 of lalr1.cc  */
-#line 2913 "lib/SPARQLParser.ypp"
+#line 2914 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 3456 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 520:
-
-/* Line 690 of lalr1.cc  */
-#line 2925 "lib/SPARQLParser.ypp"
+#line 2926 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3464 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 521:
-
-/* Line 690 of lalr1.cc  */
-#line 2928 "lib/SPARQLParser.ypp"
+#line 2929 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3472 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 522:
-
-/* Line 690 of lalr1.cc  */
-#line 2931 "lib/SPARQLParser.ypp"
+#line 2932 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3480 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 523:
-
-/* Line 690 of lalr1.cc  */
-#line 2934 "lib/SPARQLParser.ypp"
+#line 2935 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3488 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 524:
-
-/* Line 690 of lalr1.cc  */
-#line 2937 "lib/SPARQLParser.ypp"
+#line 2938 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yystack_[1].value.p_Variable)), NULL, NULL));
     }
+#line 3496 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 525:
-
-/* Line 690 of lalr1.cc  */
-#line 2940 "lib/SPARQLParser.ypp"
+#line 2941 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
+      (yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yystack_[1].value.p_Expression), new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
     }
+#line 3504 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 526:
-
-/* Line 690 of lalr1.cc  */
-#line 2943 "lib/SPARQLParser.ypp"
+#line 2944 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-      (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
+      (yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yystack_[1].value.p_Expression), new TTermExpression(driver.atomFactory->getURI(driver.getBase())), NULL));
     }
+#line 3512 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 527:
-
-/* Line 690 of lalr1.cc  */
-#line 2947 "lib/SPARQLParser.ypp"
+#line 2948 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(2) - (2)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yystack_[0].value.p_Expression), NULL, NULL));
     }
+#line 3520 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 528:
-
-/* Line 690 of lalr1.cc  */
-#line 2950 "lib/SPARQLParser.ypp"
+#line 2951 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
+#line 3528 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 529:
-
-/* Line 690 of lalr1.cc  */
-#line 2953 "lib/SPARQLParser.ypp"
+#line 2954 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3536 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 530:
-
-/* Line 690 of lalr1.cc  */
-#line 2956 "lib/SPARQLParser.ypp"
+#line 2957 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3544 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 531:
-
-/* Line 690 of lalr1.cc  */
-#line 2959 "lib/SPARQLParser.ypp"
+#line 2960 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3552 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 532:
-
-/* Line 690 of lalr1.cc  */
-#line 2962 "lib/SPARQLParser.ypp"
+#line 2963 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3560 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 533:
-
-/* Line 690 of lalr1.cc  */
-#line 2965 "lib/SPARQLParser.ypp"
+#line 2966 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yystack_[0].value.p_Expressions))));
     }
+#line 3568 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 535:
-
-/* Line 690 of lalr1.cc  */
-#line 2969 "lib/SPARQLParser.ypp"
+#line 2970 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3576 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 537:
-
-/* Line 690 of lalr1.cc  */
-#line 2973 "lib/SPARQLParser.ypp"
+#line 2974 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3584 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 538:
-
-/* Line 690 of lalr1.cc  */
-#line 2976 "lib/SPARQLParser.ypp"
+#line 2977 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3592 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 539:
-
-/* Line 690 of lalr1.cc  */
-#line 2979 "lib/SPARQLParser.ypp"
+#line 2980 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3600 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 540:
-
-/* Line 690 of lalr1.cc  */
-#line 2982 "lib/SPARQLParser.ypp"
+#line 2983 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3608 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 541:
-
-/* Line 690 of lalr1.cc  */
-#line 2985 "lib/SPARQLParser.ypp"
+#line 2986 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3616 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 542:
-
-/* Line 690 of lalr1.cc  */
-#line 2988 "lib/SPARQLParser.ypp"
+#line 2989 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3624 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 543:
-
-/* Line 690 of lalr1.cc  */
-#line 2991 "lib/SPARQLParser.ypp"
+#line 2992 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3632 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 544:
-
-/* Line 690 of lalr1.cc  */
-#line 2994 "lib/SPARQLParser.ypp"
+#line 2995 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3640 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 545:
-
-/* Line 690 of lalr1.cc  */
-#line 2997 "lib/SPARQLParser.ypp"
+#line 2998 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3648 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 546:
-
-/* Line 690 of lalr1.cc  */
-#line 3000 "lib/SPARQLParser.ypp"
+#line 3001 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3656 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 547:
-
-/* Line 690 of lalr1.cc  */
-#line 3003 "lib/SPARQLParser.ypp"
+#line 3004 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3664 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 548:
-
-/* Line 690 of lalr1.cc  */
-#line 3006 "lib/SPARQLParser.ypp"
+#line 3007 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3672 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 549:
-
-/* Line 690 of lalr1.cc  */
-#line 3009 "lib/SPARQLParser.ypp"
+#line 3010 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3680 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 550:
-
-/* Line 690 of lalr1.cc  */
-#line 3012 "lib/SPARQLParser.ypp"
+#line 3013 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3688 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 551:
-
-/* Line 690 of lalr1.cc  */
-#line 3015 "lib/SPARQLParser.ypp"
+#line 3016 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3696 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 552:
-
-/* Line 690 of lalr1.cc  */
-#line 3018 "lib/SPARQLParser.ypp"
+#line 3019 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_tz, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_tz, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3704 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 553:
-
-/* Line 690 of lalr1.cc  */
-#line 3021 "lib/SPARQLParser.ypp"
+#line 3022 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
+#line 3712 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 554:
-
-/* Line 690 of lalr1.cc  */
-#line 3024 "lib/SPARQLParser.ypp"
+#line 3025 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
     }
+#line 3720 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 555:
-
-/* Line 690 of lalr1.cc  */
-#line 3027 "lib/SPARQLParser.ypp"
+#line 3028 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
     }
+#line 3728 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 556:
-
-/* Line 690 of lalr1.cc  */
-#line 3030 "lib/SPARQLParser.ypp"
+#line 3031 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3736 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 557:
-
-/* Line 690 of lalr1.cc  */
-#line 3033 "lib/SPARQLParser.ypp"
+#line 3034 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3744 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 558:
-
-/* Line 690 of lalr1.cc  */
-#line 3036 "lib/SPARQLParser.ypp"
+#line 3037 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3752 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 559:
-
-/* Line 690 of lalr1.cc  */
-#line 3039 "lib/SPARQLParser.ypp"
+#line 3040 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3760 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 560:
-
-/* Line 690 of lalr1.cc  */
-#line 3042 "lib/SPARQLParser.ypp"
+#line 3043 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3768 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 561:
-
-/* Line 690 of lalr1.cc  */
-#line 3045 "lib/SPARQLParser.ypp"
+#line 3046 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, new ArgList((yystack_[0].value.p_Expressions))));
     }
+#line 3776 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 562:
-
-/* Line 690 of lalr1.cc  */
-#line 3048 "lib/SPARQLParser.ypp"
+#line 3049 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yystack_[5].value.p_Expression), (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 3784 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 563:
-
-/* Line 690 of lalr1.cc  */
-#line 3051 "lib/SPARQLParser.ypp"
+#line 3052 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3792 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 564:
-
-/* Line 690 of lalr1.cc  */
-#line 3054 "lib/SPARQLParser.ypp"
+#line 3055 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3800 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 565:
-
-/* Line 690 of lalr1.cc  */
-#line 3057 "lib/SPARQLParser.ypp"
+#line 3058 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 3808 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 566:
-
-/* Line 690 of lalr1.cc  */
-#line 3060 "lib/SPARQLParser.ypp"
+#line 3061 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3816 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 567:
-
-/* Line 690 of lalr1.cc  */
-#line 3063 "lib/SPARQLParser.ypp"
+#line 3064 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3824 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 568:
-
-/* Line 690 of lalr1.cc  */
-#line 3066 "lib/SPARQLParser.ypp"
+#line 3067 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3832 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 569:
-
-/* Line 690 of lalr1.cc  */
-#line 3069 "lib/SPARQLParser.ypp"
+#line 3070 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3840 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 570:
-
-/* Line 690 of lalr1.cc  */
-#line 3072 "lib/SPARQLParser.ypp"
+#line 3073 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 3848 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 574:
-
-/* Line 690 of lalr1.cc  */
-#line 3083 "lib/SPARQLParser.ypp"
+#line 3084 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 3856 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 575:
-
-/* Line 690 of lalr1.cc  */
-#line 3092 "lib/SPARQLParser.ypp"
+#line 3093 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 3864 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 576:
-
-/* Line 690 of lalr1.cc  */
-#line 3099 "lib/SPARQLParser.ypp"
+#line 3100 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 3872 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 577:
-
-/* Line 690 of lalr1.cc  */
-#line 3106 "lib/SPARQLParser.ypp"
+#line 3107 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 3880 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 579:
-
-/* Line 690 of lalr1.cc  */
-#line 3113 "lib/SPARQLParser.ypp"
+#line 3114 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 3888 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 580:
-
-/* Line 690 of lalr1.cc  */
-#line 3119 "lib/SPARQLParser.ypp"
+#line 3120 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_replace, (yysemantic_stack_[(9) - (3)].p_Expression), (yysemantic_stack_[(9) - (5)].p_Expression), (yysemantic_stack_[(9) - (7)].p_Expression))); // !! , $8
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_replace, (yystack_[6].value.p_Expression), (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression))); // !! , $8
     }
+#line 3896 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 581:
-
-/* Line 690 of lalr1.cc  */
-#line 3125 "lib/SPARQLParser.ypp"
+#line 3126 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
     }
+#line 3905 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 582:
-
-/* Line 690 of lalr1.cc  */
-#line 3128 "lib/SPARQLParser.ypp"
+#line 3129 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  (yyval.p_TableOperation) = driver.curOp;
+	  (yylhs.value.p_TableOperation) = driver.curOp;
 	  driver.curOp = NULL;
       }
+#line 3915 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 583:
-
-/* Line 690 of lalr1.cc  */
-#line 3132 "lib/SPARQLParser.ypp"
+#line 3133 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_Expression) = new ExistsExpression(driver.ensureGraphPattern());
-	  driver.curOp = (yysemantic_stack_[(4) - (3)].p_TableOperation);
-	  driver.countStar = (yysemantic_stack_[(4) - (2)].p_parentCountStar);
+	  (yylhs.value.p_Expression) = new ExistsExpression(driver.ensureGraphPattern());
+	  driver.curOp = (yystack_[1].value.p_TableOperation);
+	  driver.countStar = (yystack_[2].value.p_parentCountStar);
       }
+#line 3925 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 584:
-
-/* Line 690 of lalr1.cc  */
-#line 3140 "lib/SPARQLParser.ypp"
+#line 3141 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
       }
+#line 3934 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 585:
-
-/* Line 690 of lalr1.cc  */
-#line 3143 "lib/SPARQLParser.ypp"
+#line 3144 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  (yyval.p_TableOperation) = driver.curOp;
+	  (yylhs.value.p_TableOperation) = driver.curOp;
 	  driver.curOp = NULL;
       }
+#line 3944 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 586:
-
-/* Line 690 of lalr1.cc  */
-#line 3147 "lib/SPARQLParser.ypp"
+#line 3148 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  // $$ = new ExistsExpression(false, driver.ensureGraphPattern());
-	  (yyval.p_Expression) = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
-	  driver.curOp = (yysemantic_stack_[(5) - (4)].p_TableOperation);
-	  driver.countStar = (yysemantic_stack_[(5) - (3)].p_parentCountStar);
+	  (yylhs.value.p_Expression) = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
+	  driver.curOp = (yystack_[1].value.p_TableOperation);
+	  driver.countStar = (yystack_[2].value.p_parentCountStar);
       }
+#line 3955 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 587:
-
-/* Line 690 of lalr1.cc  */
-#line 3156 "lib/SPARQLParser.ypp"
+#line 3157 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.countStar = true;
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression), AggregateCall::ScalarVals()));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yystack_[2].value.p_distinctness), (yystack_[1].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 3964 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 588:
-
-/* Line 690 of lalr1.cc  */
-#line 3164 "lib/SPARQLParser.ypp"
+#line 3165 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	driver.countStar = true;
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(5) - (1)].p_URI), (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression), AggregateCall::ScalarVals()));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall((yystack_[4].value.p_URI), (yystack_[2].value.p_distinctness), (yystack_[1].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 3973 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 589:
-
-/* Line 690 of lalr1.cc  */
-#line 3173 "lib/SPARQLParser.ypp"
+#line 3174 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	  AggregateCall::ScalarVals svals;
-	  if ((yysemantic_stack_[(6) - (5)].p_RDFLiteral) != NULL)
-	      svals["separator"] = (yysemantic_stack_[(6) - (5)].p_RDFLiteral)->getLexicalValue();
-	  (yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(6) - (3)].p_distinctness), (yysemantic_stack_[(6) - (4)].p_Expression), svals));
+	  if ((yystack_[1].value.p_RDFLiteral) != NULL)
+	      svals["separator"] = (yystack_[1].value.p_RDFLiteral)->getLexicalValue();
+	  (yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yystack_[3].value.p_distinctness), (yystack_[2].value.p_Expression), svals));
     }
+#line 3984 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 590:
-
-/* Line 690 of lalr1.cc  */
-#line 3189 "lib/SPARQLParser.ypp"
+#line 3190 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 3992 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 592:
-
-/* Line 690 of lalr1.cc  */
-#line 3196 "lib/SPARQLParser.ypp"
+#line 3197 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_sum;
+	(yylhs.value.p_URI) = TTerm::FUNC_sum;
     }
+#line 4000 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 593:
-
-/* Line 690 of lalr1.cc  */
-#line 3199 "lib/SPARQLParser.ypp"
+#line 3200 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_min;
+	(yylhs.value.p_URI) = TTerm::FUNC_min;
     }
+#line 4008 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 594:
-
-/* Line 690 of lalr1.cc  */
-#line 3202 "lib/SPARQLParser.ypp"
+#line 3203 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_max;
+	(yylhs.value.p_URI) = TTerm::FUNC_max;
     }
+#line 4016 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 595:
-
-/* Line 690 of lalr1.cc  */
-#line 3205 "lib/SPARQLParser.ypp"
+#line 3206 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_avg;
+	(yylhs.value.p_URI) = TTerm::FUNC_avg;
     }
+#line 4024 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 596:
-
-/* Line 690 of lalr1.cc  */
-#line 3208 "lib/SPARQLParser.ypp"
+#line 3209 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_sample;
+	(yylhs.value.p_URI) = TTerm::FUNC_sample;
     }
+#line 4032 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 597:
-
-/* Line 690 of lalr1.cc  */
-#line 3214 "lib/SPARQLParser.ypp"
+#line 3215 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_string), NULL, NULL);
+	(yylhs.value.p_RDFLiteral) = driver.getRDFLiteral(*(yystack_[0].value.p_string), NULL, NULL);
     }
+#line 4040 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 598:
-
-/* Line 690 of lalr1.cc  */
-#line 3220 "lib/SPARQLParser.ypp"
+#line 3221 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RDFLiteral) = NULL;
+	(yylhs.value.p_RDFLiteral) = NULL;
     }
+#line 4048 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 600:
-
-/* Line 690 of lalr1.cc  */
-#line 3227 "lib/SPARQLParser.ypp"
+#line 3228 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
-	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
+	if ((yystack_[0].value.p_ArgList))
+	    (yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall((yystack_[1].value.p_URI), (yystack_[0].value.p_ArgList)));
 	else
-	    (yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(2) - (1)].p_URI));
+	    (yylhs.value.p_Expression) = new TTermExpression((yystack_[1].value.p_URI));
     }
+#line 4059 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 601:
-
-/* Line 690 of lalr1.cc  */
-#line 3237 "lib/SPARQLParser.ypp"
+#line 3238 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ArgList) = NULL;
+	(yylhs.value.p_ArgList) = NULL;
     }
+#line 4067 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 603:
-
-/* Line 690 of lalr1.cc  */
-#line 3245 "lib/SPARQLParser.ypp"
+#line 3246 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
-	delete (yysemantic_stack_[(2) - (1)].p_string);
+	(yylhs.value.p_RDFLiteral) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
+	delete (yystack_[1].value.p_string);
     }
+#line 4076 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 604:
-
-/* Line 690 of lalr1.cc  */
-#line 3253 "lib/SPARQLParser.ypp"
+#line 3254 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 4084 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 605:
-
-/* Line 690 of lalr1.cc  */
-#line 3260 "lib/SPARQLParser.ypp"
+#line 3261 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
+#line 4093 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 606:
-
-/* Line 690 of lalr1.cc  */
-#line 3264 "lib/SPARQLParser.ypp"
+#line 3265 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 4102 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 607:
-
-/* Line 690 of lalr1.cc  */
-#line 3272 "lib/SPARQLParser.ypp"
+#line 3273 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 4111 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
   case 631:
-
-/* Line 690 of lalr1.cc  */
-#line 3326 "lib/SPARQLParser.ypp"
+#line 3327 "lib/SPARQLParser.ypp" // lalr1.cc:847
     {
 	if (driver.validate & SPARQLDriver::VALIDATE_bnodeScope) {
 	    driver.ensureBasicGraphPattern();
@@ -4375,106 +4123,83 @@ namespace w3c_sw {
 	    //   INSERT DATA { GRAPH <g1>{_:b :a :b } GRAPH <g2>{ _:b :c :d } }
 	    if (!driver.inINSERTQUAD && !driver.inINSERTDATA) {
 		std::map<const TTerm*, BasicGraphPattern*>::const_iterator lastUse
-		    = driver.bnode2bgp.find((yysemantic_stack_[(1) - (1)].p_TTerm));
+		    = driver.bnode2bgp.find((yystack_[0].value.p_TTerm));
 		if (lastUse != driver.bnode2bgp.end() &&
 		    lastUse->second != driver.curBGP)
-		    error((yyloc), "bnode " + (yysemantic_stack_[(1) - (1)].p_TTerm)->str() +
+		    error(yylhs.location, "bnode " + (yystack_[0].value.p_TTerm)->str() +
 			  " already scoped to " + lastUse->second->str());
 		else
-		    driver.bnode2bgp.insert(std::make_pair((yysemantic_stack_[(1) - (1)].p_TTerm), driver.curBGP));
+		    driver.bnode2bgp.insert(std::make_pair((yystack_[0].value.p_TTerm), driver.curBGP));
 	    }
 
 	    // prohibit INSERT DATA { _:b1 :a :b };INSERT DATA { _:b1 :c :c }
 	    // but not:
 	    //   INSERT { _:b :a :b } WHERE { {_:b :a :b} }; INSERT { _:b :c :d } WHERE { {_:b :a :b} }
 	    if (!driver.inINSERTQUAD) {
-		if (driver.bnodesInOldOpperations.find((yysemantic_stack_[(1) - (1)].p_TTerm))
+		if (driver.bnodesInOldOpperations.find((yystack_[0].value.p_TTerm))
 		    != driver.bnodesInOldOpperations.end())
-		    error((yyloc), "bnode " + (yysemantic_stack_[(1) - (1)].p_TTerm)->str() +
+		    error(yylhs.location, "bnode " + (yystack_[0].value.p_TTerm)->str() +
 			  " already scoped to an earlier opperation");
 		else
-		    driver.bnodesInThisOpperation.insert((yysemantic_stack_[(1) - (1)].p_TTerm));
+		    driver.bnodesInThisOpperation.insert((yystack_[0].value.p_TTerm));
 	    }
 	}
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
+#line 4150 "lib/SPARQLParser.cpp" // lalr1.cc:847
     break;
 
 
+#line 4154 "lib/SPARQLParser.cpp" // lalr1.cc:847
+            default:
+              break;
+            }
+        }
+      catch (const syntax_error& yyexc)
+        {
+          error (yyexc);
+          YYERROR;
+        }
+      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      yypop_ (yylen);
+      yylen = 0;
+      YY_STACK_PRINT ();
 
-/* Line 690 of lalr1.cc  */
-#line 4407 "lib/SPARQLParser.cpp"
-	default:
-          break;
-      }
-    /* User semantic actions sometimes alter yychar, and that requires
-       that yytoken be updated with the new translation.  We take the
-       approach of translating immediately before every use of yytoken.
-       One alternative is translating here after every semantic action,
-       but that translation would be missed if the semantic action
-       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
-       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
-       destructor might then be invoked immediately.  In the case of
-       YYERROR, subsequent parser actions might lead to an incorrect
-       destructor call or verbose syntax error message before the
-       lookahead is translated.  */
-    YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
-
-    yypop_ (yylen);
-    yylen = 0;
-    YY_STACK_PRINT ();
-
-    yysemantic_stack_.push (yyval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the result of the reduction.  */
-    yyn = yyr1_[yyn];
-    yystate = yypgoto_[yyn - yyntokens_] + yystate_stack_[0];
-    if (0 <= yystate && yystate <= yylast_
-	&& yycheck_[yystate] == yystate_stack_[0])
-      yystate = yytable_[yystate];
-    else
-      yystate = yydefgoto_[yyn - yyntokens_];
+      // Shift the result of the reduction.
+      yypush_ (YY_NULLPTR, yylhs);
+    }
     goto yynewstate;
 
-  /*------------------------------------.
-  | yyerrlab -- here on detecting error |
-  `------------------------------------*/
+  /*--------------------------------------.
+  | yyerrlab -- here on detecting error.  |
+  `--------------------------------------*/
   yyerrlab:
-    /* Make sure we have latest lookahead translation.  See comments at
-       user semantic actions for why this is necessary.  */
-    yytoken = yytranslate_ (yychar);
-
-    /* If not already recovering from an error, report this error.  */
+    // If not already recovering from an error, report this error.
     if (!yyerrstatus_)
       {
-	++yynerrs_;
-	if (yychar == yyempty_)
-	  yytoken = yyempty_;
-	error (yylloc, yysyntax_error_ (yystate, yytoken));
+        ++yynerrs_;
+        error (yyla.location, yysyntax_error_ (yystack_[0].state,
+                                           yyempty ? yyempty_ : yyla.type_get ()));
       }
 
-    yyerror_range[1] = yylloc;
+
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
 
-	if (yychar <= yyeof_)
-	  {
-	  /* Return failure if at end of input.  */
-	  if (yychar == yyeof_)
-	    YYABORT;
-	  }
-	else
-	  {
-	    yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
-	    yychar = yyempty_;
-	  }
+        // Return failure if at end of input.
+        if (yyla.type_get () == yyeof_)
+          YYABORT;
+        else if (!yyempty)
+          {
+            yy_destroy_ ("Error: discarding", yyla);
+            yyempty = true;
+          }
       }
 
-    /* Else will try to reuse lookahead token after shifting the error
-       token.  */
+    // Else will try to reuse lookahead token after shifting the error token.
     goto yyerrlab1;
 
 
@@ -4488,100 +4213,105 @@ namespace w3c_sw {
        code.  */
     if (false)
       goto yyerrorlab;
-
-    yyerror_range[1] = yylocation_stack_[yylen - 1];
-    /* Do not reclaim the symbols of the rule which action triggered
+    yyerror_range[1].location = yystack_[yylen - 1].location;
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
-    yystate = yystate_stack_[0];
     goto yyerrlab1;
 
   /*-------------------------------------------------------------.
   | yyerrlab1 -- common code for both syntax error and YYERROR.  |
   `-------------------------------------------------------------*/
   yyerrlab1:
-    yyerrstatus_ = 3;	/* Each real token shifted decrements this.  */
+    yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    {
+      stack_symbol_type error_token;
+      for (;;)
+        {
+          yyn = yypact_[yystack_[0].state];
+          if (!yy_pact_value_is_default_ (yyn))
+            {
+              yyn += yyterror_;
+              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
+                {
+                  yyn = yytable_[yyn];
+                  if (0 < yyn)
+                    break;
+                }
+            }
 
-    for (;;)
-      {
-	yyn = yypact_[yystate];
-	if (!yy_pact_value_is_default_ (yyn))
-	{
-	  yyn += yyterror_;
-	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
-	    {
-	      yyn = yytable_[yyn];
-	      if (0 < yyn)
-		break;
-	    }
-	}
+          // Pop the current state because it cannot handle the error token.
+          if (yystack_.size () == 1)
+            YYABORT;
 
-	/* Pop the current state because it cannot handle the error token.  */
-	if (yystate_stack_.height () == 1)
-	YYABORT;
+          yyerror_range[1].location = yystack_[0].location;
+          yy_destroy_ ("Error: popping", yystack_[0]);
+          yypop_ ();
+          YY_STACK_PRINT ();
+        }
 
-	yyerror_range[1] = yylocation_stack_[0];
-	yydestruct_ ("Error: popping",
-		     yystos_[yystate],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-	yypop_ ();
-	yystate = yystate_stack_[0];
-	YY_STACK_PRINT ();
-      }
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
-    yyerror_range[2] = yylloc;
-    // Using YYLLOC is tempting, but would change the location of
-    // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the error token.  */
-    YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-
-    yystate = yyn;
+      // Shift the error token.
+      error_token.state = yyn;
+      yypush_ ("Shifting", error_token);
+    }
     goto yynewstate;
 
-    /* Accept.  */
+    // Accept.
   yyacceptlab:
     yyresult = 0;
     goto yyreturn;
 
-    /* Abort.  */
+    // Abort.
   yyabortlab:
     yyresult = 1;
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyempty_)
-      {
-        /* Make sure we have latest lookahead translation.  See comments
-           at user semantic actions for why this is necessary.  */
-        yytoken = yytranslate_ (yychar);
-        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
-                     &yylloc);
-      }
+    if (!yyempty)
+      yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
-    /* Do not reclaim the symbols of the rule which action triggered
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
-    while (yystate_stack_.height () != 1)
+    while (1 < yystack_.size ())
       {
-	yydestruct_ ("Cleanup: popping",
-		   yystos_[yystate_stack_[0]],
-		   &yysemantic_stack_[0],
-		   &yylocation_stack_[0]);
-	yypop_ ();
+        yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        yypop_ ();
       }
 
     return yyresult;
   }
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printer might throw an exception.
+        if (!yyempty)
+          yy_destroy_ (YY_NULLPTR, yyla);
+
+        while (1 < yystack_.size ())
+          {
+            yy_destroy_ (YY_NULLPTR, yystack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
+  }
+
+  void
+  SPARQLParser::error (const syntax_error& yyexc)
+  {
+    error (yyexc.location, yyexc.what());
+  }
 
   // Generate an error message.
   std::string
-  SPARQLParser::yysyntax_error_ (int yystate, int yytoken)
+  SPARQLParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
   {
     std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
@@ -4606,7 +4336,7 @@ namespace w3c_sw {
          a consistent state with a default action.  There might have
          been a previous inconsistent state, consistent state with a
          non-default action, or user semantic action that manipulated
-         yychar.
+         yyla.  (However, yyla is currently not documented for users.)
        - Of course, the expected token list depends on states to have
          correct lookahead information, and it depends on the parser not
          to perform extra reductions after fetching a lookahead from the
@@ -4627,7 +4357,7 @@ namespace w3c_sw {
                YYCHECK.  In other words, skip the first -YYN actions for
                this state because they are default actions.  */
             int yyxbegin = yyn < 0 ? -yyn : 0;
-            /* Stay within bounds of both yycheck and yytname.  */
+            // Stay within bounds of both yycheck and yytname.
             int yychecklim = yylast_ - yyn + 1;
             int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
             for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
@@ -4645,7 +4375,7 @@ namespace w3c_sw {
           }
       }
 
-    char const* yyformat = 0;
+    char const* yyformat = YY_NULLPTR;
     switch (yycount)
       {
 #define YYCASE_(N, S)                         \
@@ -4675,13 +4405,14 @@ namespace w3c_sw {
   }
 
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
   const short int SPARQLParser::yypact_ninf_ = -853;
+
+  const short int SPARQLParser::yytable_ninf_ = -444;
+
   const short int
   SPARQLParser::yypact_[] =
   {
-        73,  -116,    91,  -853,  -853,  -853,   683,  -853,  -853,  -853,
+      73,  -116,    91,  -853,  -853,  -853,   683,  -853,  -853,  -853,
     -853,  -853,    98,    98,    98,    98,    60,    20,  -853,    77,
       98,    98,    98,  -853,  -853,  -853,    85,  -853,   108,  -853,
     -853,  -853,  -853,  -853,  -853,  -853,  -853,  -853,  -853,  -853,
@@ -4785,13 +4516,10 @@ namespace w3c_sw {
       60,  -853,    11,  -853,  2121,   609,  -853,  -853,  -853
   };
 
-  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
-     YYTABLE doesn't specify something else to do.  Zero means the
-     default is an error.  */
   const unsigned short int
   SPARQLParser::yydefact_[] =
   {
-        12,     0,     0,     2,     4,     3,   205,    14,    13,    10,
+      12,     0,     0,     2,     4,     3,   205,    14,    13,    10,
       71,     1,   186,   186,   186,   186,    77,     0,    77,     0,
      186,   186,   186,   197,   199,   201,   164,     6,     0,     7,
        8,     9,   173,   166,   170,   174,   175,   176,   180,   177,
@@ -4895,11 +4623,10 @@ namespace w3c_sw {
        0,   294,     0,   421,   443,   122,   331,   383,   293
   };
 
-  /* YYPGOTO[NTERM-NUM].  */
   const short int
   SPARQLParser::yypgoto_[] =
   {
-      -853,  -853,  -853,  -853,  -853,  -853,   542,  -853,  -853,  -853,
+    -853,  -853,  -853,  -853,  -853,  -853,   542,  -853,  -853,  -853,
     -853,  -853,  -853,  -853,  -853,  -853,    69,  -853,   221,  -853,
     -178,  -853,  -853,    86,  -853,  -853,    71,  -853,   227,  -853,
     -173,  -853,  -853,    80,  -853,  -853,  -853,  -853,  -853,  -853,
@@ -4936,11 +4663,10 @@ namespace w3c_sw {
     -853,   195,   200,   230,  -223,   -17,  -853,  -853
   };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   SPARQLParser::yydefgoto_[] =
   {
-        -1,     2,     3,     4,    26,     5,     6,     7,    48,    91,
+      -1,     2,     3,     4,    26,     5,     6,     7,    48,    91,
      143,   315,   144,   145,   447,   448,   606,   449,   450,   591,
      592,   735,   849,   593,   847,   451,   608,   452,   453,   601,
      602,   740,   853,   603,   851,   454,   587,   726,   845,   978,
@@ -4977,14 +4703,10 @@ namespace w3c_sw {
      188,   189,   190,   367,   192,   368,    69,   194
   };
 
-  /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const short int SPARQLParser::yytable_ninf_ = -444;
   const short int
   SPARQLParser::yytable_[] =
   {
-        68,   122,    71,    66,    51,    52,    53,   202,   291,   204,
+      68,   122,    71,    66,    51,    52,    53,   202,   291,   204,
      186,    72,    73,    74,   463,   331,   332,   333,   178,   803,
       67,   289,   483,   183,   584,   604,   586,   754,   802,   201,
      805,   737,   303,    93,   394,   926,   633,   195,   299,   497,
@@ -5280,11 +5002,10 @@ namespace w3c_sw {
        0,     0,     0,     0,     0,    59,    60,    61
   };
 
-  /* YYCHECK.  */
   const short int
   SPARQLParser::yycheck_[] =
   {
-        17,    77,    19,    17,    13,    14,    15,   107,   131,   109,
+      17,    77,    19,    17,    13,    14,    15,   107,   131,   109,
      103,    20,    21,    22,   319,   201,   202,   203,   103,   637,
       17,   131,   335,   103,   439,   446,   441,   622,   634,   105,
      637,     1,   132,    50,   245,   863,     1,    24,   131,   338,
@@ -5580,12 +5301,10 @@ namespace w3c_sw {
       -1,    -1,    -1,    -1,    -1,   178,   179,   180
   };
 
-  /* STOS_[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
   const unsigned short int
   SPARQLParser::yystos_[] =
   {
-         0,    15,   188,   189,   190,   192,   193,   194,   230,   289,
+       0,    15,   188,   189,   190,   192,   193,   194,   230,   289,
      178,     0,     9,    11,    12,    14,    21,    22,    39,   105,
      116,   117,   128,   130,   131,   132,   191,   234,   235,   250,
      252,   256,   292,   294,   295,   296,   300,   301,   302,   303,
@@ -5689,39 +5408,10 @@ namespace w3c_sw {
       23,    42,   394,   460,   430,   330,   345,   417,   262
   };
 
-#if YYDEBUG
-  /* TOKEN_NUMBER_[YYLEX-NUM] -- Internal symbol number corresponding
-     to YYLEX-NUM.  */
-  const unsigned short int
-  SPARQLParser::yytoken_number_[] =
-  {
-         0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,   361,   362,   363,   364,
-     365,   366,   367,   368,   369,   370,   371,   372,   373,   374,
-     375,   376,   377,   378,   379,   380,   381,   382,   383,   384,
-     385,   386,   387,   388,   389,   390,   391,   392,   393,   394,
-     395,   396,   397,   398,   399,   400,   401,   402,   403,   404,
-     405,   406,   407,   408,   409,   410,   411,   412,   413,   414,
-     415,   416,   417,   418,   419,   420,   421,   422,   423,   424,
-     425,   426,   427,   428,   429,   430,   431,   432,   433,   434,
-     435,   436,   437,   438,   439,   440,   441
-  };
-#endif
-
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
   const unsigned short int
   SPARQLParser::yyr1_[] =
   {
-         0,   187,   188,   188,   189,   190,   191,   191,   191,   191,
+       0,   187,   188,   188,   189,   190,   191,   191,   191,   191,
      192,   193,   194,   194,   195,   195,   196,   196,   198,   197,
      199,   200,   200,   201,   201,   201,   201,   201,   202,   202,
      202,   203,   203,   204,   205,   206,   206,   207,   207,   209,
@@ -5787,11 +5477,10 @@ namespace w3c_sw {
      533,   534,   534
   };
 
-  /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
   SPARQLParser::yyr2_[] =
   {
-         0,     2,     1,     1,     1,     3,     1,     1,     1,     1,
+       0,     2,     1,     1,     1,     3,     1,     1,     1,     1,
        1,     3,     0,     1,     0,     2,     0,     2,     0,     3,
        2,     0,     1,     1,     1,     1,     1,     2,     4,     3,
        4,     0,     2,     1,     2,     1,     2,     1,     1,     0,
@@ -5857,13 +5546,14 @@ namespace w3c_sw {
        1,     1,     1
   };
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
-  /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-     First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
+
+
+  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
   const char*
   const SPARQLParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_DELETE", "IT_INSERT",
+  "\"end of file\"", "error", "$undefined", "IT_DELETE", "IT_INSERT",
   "IT_DATA", "IT_GRAPH", "IT_SERVICE", "IT_SADI", "IT_LOAD", "IT_INTO",
   "IT_CLEAR", "IT_CREATE", "IT_SILENT", "IT_DROP", "IT_BASE", "IT_PREFIX",
   "IT_SELECT", "IT_DISTINCT", "IT_REDUCED", "GT_TIMES", "IT_CONSTRUCT",
@@ -6045,326 +5735,77 @@ namespace w3c_sw {
   "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt", "NumericLiteral",
   "NumericLiteralUnsigned", "NumericLiteralPositive",
   "NumericLiteralNegative", "BooleanLiteral", "String", "iri",
-  "PrefixedName", "BlankNode", 0
+  "PrefixedName", "BlankNode", YY_NULLPTR
   };
-#endif
 
 #if YYDEBUG
-  /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
-  const SPARQLParser::rhs_number_type
-  SPARQLParser::yyrhs_[] =
-  {
-       188,     0,    -1,   189,    -1,   192,    -1,   190,    -1,   193,
-     191,   286,    -1,   234,    -1,   250,    -1,   252,    -1,   256,
-      -1,   289,    -1,   194,   195,   196,    -1,    -1,   230,    -1,
-      -1,   195,   231,    -1,    -1,   196,   197,    -1,    -1,   200,
-     198,   201,    -1,   161,    56,    -1,    -1,   199,    -1,   202,
-      -1,   212,    -1,   222,    -1,   261,    -1,    20,   345,    -1,
-     204,   205,   203,   211,    -1,   205,   203,    44,    -1,   205,
-     203,     1,    44,    -1,    -1,   203,   208,    -1,   151,    -1,
-     104,   207,    -1,   210,    -1,   206,   210,    -1,   104,    -1,
-     206,    -1,    -1,   104,   209,   207,    -1,   386,   104,    -1,
-     151,    -1,   214,   215,   213,   221,    -1,   215,   213,    44,
-      -1,   215,   213,     1,    44,    -1,    -1,   213,   218,    -1,
-     152,    -1,   154,   217,    -1,   220,    -1,   216,   220,    -1,
-     154,    -1,   216,    -1,    -1,   154,   219,   217,    -1,   386,
-     154,    -1,   153,    -1,    37,   223,    38,    -1,    -1,   223,
-     224,    -1,    -1,    41,   225,   228,    42,    -1,    -1,    49,
-      -1,   229,   226,    -1,    -1,   228,   227,    -1,   386,   150,
-     386,    -1,   386,   149,   386,    -1,   386,    56,   386,    -1,
-      15,   178,    -1,    -1,    -1,    16,   232,   179,   233,   178,
-      -1,    -1,   235,   241,   236,   262,   264,    -1,    -1,   236,
-     257,    -1,    -1,    -1,    -1,   238,   241,   239,   240,   262,
-     264,   286,    -1,    17,   243,   249,    -1,    18,    -1,    19,
-      -1,    -1,   242,    -1,    91,   478,    -1,    -1,   244,    -1,
-      41,   480,   245,    42,    -1,   503,    -1,   522,    -1,   526,
-      -1,   530,    -1,   478,    -1,   515,    -1,   398,    -1,   246,
-      -1,   247,    -1,   248,   247,    -1,   248,    -1,    20,    -1,
-      21,   251,    -1,   330,   236,   262,   264,    -1,   236,    40,
-     330,   264,    -1,    22,   254,   236,   255,   264,    -1,   477,
-      -1,   253,   477,    -1,   253,    -1,    20,    -1,    -1,   262,
-      -1,    39,   236,   262,   264,    -1,    23,   258,    -1,   259,
-      -1,   260,    -1,   261,    -1,    24,   261,    -1,   532,    -1,
-     263,   345,    -1,    -1,    40,    -1,   265,   266,   267,   268,
-      -1,    -1,   269,    -1,    -1,   272,    -1,    -1,   275,    -1,
-      -1,   281,    -1,    92,    26,   270,    -1,   271,    -1,   270,
-     271,    -1,   503,    -1,   398,    -1,    41,   480,   245,    42,
-      -1,   478,    -1,    93,   273,    -1,   274,    -1,   273,   274,
-      -1,   397,    -1,    25,    26,   276,    -1,   277,    -1,   276,
-     277,    -1,   279,    -1,   280,    -1,    27,    -1,    28,    -1,
-     278,   502,    -1,   397,    -1,   478,    -1,   284,   282,    -1,
-     285,   283,    -1,    -1,   285,    -1,    -1,   284,    -1,    29,
-     165,    -1,    30,   165,    -1,   288,    -1,    31,   372,    -1,
-      -1,   287,    -1,   193,   294,    -1,    50,   289,    -1,    -1,
-     290,    -1,    -1,   295,   293,   291,    -1,    -1,   292,    -1,
-     296,    -1,   300,    -1,   301,    -1,   303,    -1,   304,    -1,
-     305,    -1,   302,    -1,   306,    -1,   308,    -1,   310,    -1,
-     312,    -1,     9,   297,   532,   299,    -1,    -1,    13,    -1,
-      10,   328,    -1,    -1,   298,    -1,    11,   297,   329,    -1,
-      14,   297,   329,    -1,    12,   297,   328,    -1,   116,   297,
-     326,   112,   326,    -1,   128,   297,   326,   112,   326,    -1,
-     117,   297,   326,   112,   326,    -1,    -1,   130,   307,   331,
-      -1,    -1,   131,   309,   331,    -1,    -1,   132,   311,   330,
-      -1,   314,   316,   317,   319,    40,   345,    -1,   105,   532,
-      -1,    -1,   313,    -1,    -1,   322,    -1,   320,   315,    -1,
-     322,    -1,    -1,   317,   324,    -1,    21,   330,    -1,    -1,
-     318,    -1,    -1,     3,   321,   330,    -1,    -1,     4,   323,
-     330,    -1,   108,   325,    -1,   532,    -1,    24,   532,    -1,
-     106,    -1,   327,   532,    -1,    -1,     6,    -1,     6,   532,
-      -1,   328,    -1,   106,    -1,    24,    -1,   107,    -1,    37,
-     332,    38,    -1,    37,   332,    38,    -1,    -1,   333,   334,
-     337,    -1,    -1,   342,    -1,    -1,    44,    -1,     1,    44,
-      -1,   338,   335,   334,    -1,    -1,   337,   336,    -1,    -1,
-      -1,    -1,   339,     6,   477,   340,    37,   341,   334,    38,
-      -1,   406,   344,    -1,    44,   334,    -1,    -1,   343,    -1,
-     347,    -1,   161,    -1,   237,    -1,   349,    -1,     1,    -1,
-      -1,    37,   348,   346,    38,    -1,   350,   352,    -1,    -1,
-     353,    -1,   356,   335,   350,    -1,    -1,   352,   351,    -1,
-     421,   355,    -1,    44,   350,    -1,     1,    44,   350,    -1,
-      -1,   354,    -1,     1,    -1,   390,    -1,   358,    -1,   387,
-      -1,   360,    -1,   364,    -1,   367,    -1,   396,    -1,   370,
-      -1,   371,    -1,   357,    -1,   148,   345,    -1,    -1,    45,
-     359,   345,    -1,    -1,    -1,    -1,     6,   361,   362,   477,
-     363,   345,    -1,    -1,    -1,     7,   365,   366,   297,   477,
-     345,    -1,    -1,    -1,     8,   368,   369,   297,   477,    23,
-     330,   262,    -1,   125,    41,   480,    91,   478,    42,    -1,
-      31,   372,    -1,   373,    -1,   378,    -1,    -1,    -1,   374,
-     478,   375,    37,   376,    38,    -1,    -1,   376,   377,    -1,
-     386,    -1,    -1,   379,   381,    37,   385,    38,    -1,    -1,
-     380,   478,    -1,   186,    -1,    41,   380,    42,    -1,    -1,
-     382,   386,    -1,    -1,    41,   384,   382,    42,    -1,   186,
-      -1,    -1,   385,   383,    -1,   532,    -1,   522,    -1,   526,
-      -1,   530,    -1,    43,    -1,   162,    -1,   478,    -1,    -1,
-      -1,    46,   388,   389,   345,    -1,    -1,    -1,   391,   392,
-     345,   395,    -1,    -1,    47,   394,   345,    -1,    -1,   395,
-     393,    -1,    48,   397,    -1,   502,    -1,   503,    -1,   398,
-      -1,   532,   399,    -1,   186,    -1,    -1,    41,   401,   480,
-     400,   403,    42,    -1,    -1,    18,    -1,    49,   480,    -1,
-      -1,   403,   402,    -1,   186,    -1,    -1,    41,   480,   405,
-     403,    42,    -1,    -1,   476,   407,   411,    -1,    -1,   462,
-     408,   409,    -1,   410,    -1,    -1,   411,    -1,   416,   417,
-     415,    -1,   416,   417,    -1,    -1,   412,    -1,    50,   413,
-      -1,    -1,   415,   414,    -1,   477,    -1,    51,    -1,   420,
-     419,    -1,    49,   420,    -1,    -1,   419,   418,    -1,   474,
-      -1,    -1,   476,   422,   426,    -1,    -1,   469,   423,   424,
-      -1,   425,    -1,    -1,   426,    -1,    -1,   428,   427,   436,
-     433,    -1,   434,    -1,   435,    -1,    -1,   428,   430,   417,
-      -1,    -1,   429,    -1,    50,   431,    -1,    -1,   433,   432,
-      -1,   440,    -1,   478,    -1,   439,   438,    -1,    49,   439,
-      -1,    -1,   438,   437,    -1,   475,    -1,   441,    -1,    -1,
-     445,   442,   444,    -1,   104,   445,    -1,    -1,   444,   443,
-      -1,    -1,   451,   446,   448,    -1,    64,   451,    -1,    -1,
-     448,   447,    -1,   453,   450,    -1,    -1,   452,    -1,   449,
-      -1,   102,   449,    -1,   103,    -1,    20,    -1,    62,    -1,
-     532,    -1,    51,    -1,    65,   454,    -1,    41,   440,    42,
-      -1,   460,    -1,    41,   459,    42,    -1,   104,   460,    -1,
-      -1,   456,   455,    -1,    -1,   460,   458,   456,    -1,    -1,
-     457,    -1,   532,    -1,    51,    -1,   102,   461,    -1,   532,
-      -1,    51,    -1,   465,    -1,   463,    -1,    -1,    52,   464,
-     411,    53,    -1,   467,    41,   468,    42,    -1,    32,    -1,
-      33,    -1,    34,    -1,    35,    -1,    36,    -1,    -1,   466,
-      -1,   474,    -1,   468,   474,    -1,   472,    -1,   470,    -1,
-      -1,    52,   471,   426,    53,    -1,   467,    41,   473,    42,
-      -1,   475,    -1,   473,   475,    -1,   476,    -1,   462,    -1,
-     476,    -1,   469,    -1,   478,    -1,   479,    -1,   478,    -1,
-     532,    -1,   183,    -1,   184,    -1,   532,    -1,   522,    -1,
-     526,    -1,   530,    -1,   534,    -1,   186,    -1,   481,    -1,
-     484,   483,    -1,    54,   484,    -1,    -1,   483,   482,    -1,
-     487,   486,    -1,    55,   487,    -1,    -1,   486,   485,    -1,
-     488,    -1,   491,   489,    -1,    -1,   490,    -1,    56,   491,
-      -1,    57,   491,    -1,    58,   491,    -1,    59,   491,    -1,
-      60,   491,    -1,    61,   491,    -1,    67,   404,    -1,    66,
-      67,   404,    -1,   492,    -1,   498,   497,    -1,   528,    -1,
-     529,    -1,    20,   500,    -1,    64,   500,    -1,    -1,   494,
-      -1,    62,   498,    -1,    63,   498,    -1,   493,   495,    -1,
-      -1,   497,   496,    -1,   500,   499,    -1,    -1,   499,   494,
-      -1,    65,   501,    -1,    62,   501,    -1,    63,   501,    -1,
-     501,    -1,   502,    -1,   503,    -1,   520,    -1,   522,    -1,
-     526,    -1,   530,    -1,   478,    -1,   515,    -1,    41,   480,
-      42,    -1,    78,    41,   480,    42,    -1,    79,    41,   480,
-      42,    -1,    80,    41,   480,    49,   480,    42,    -1,    81,
-      41,   480,    42,    -1,    82,    41,   478,    42,    -1,    68,
-      41,   480,    42,    -1,    69,    41,   480,    42,    -1,    70,
-     504,    -1,   118,   186,    -1,   142,    41,   480,    42,    -1,
-     139,    41,   480,    42,    -1,   129,    41,   480,    42,    -1,
-     123,    41,   480,    42,    -1,    90,   404,    -1,   507,    -1,
-     145,    41,   480,    42,    -1,   508,    -1,   143,    41,   480,
-      42,    -1,   141,    41,   480,    42,    -1,   137,    41,   480,
-      42,    -1,   126,    41,   480,    49,   480,    42,    -1,   138,
-      41,   480,    49,   480,    42,    -1,   144,    41,   480,    49,
-     480,    42,    -1,   113,    41,   480,    49,   480,    42,    -1,
-     114,    41,   480,    49,   480,    42,    -1,   115,    41,   480,
-      42,    -1,   147,    41,   480,    42,    -1,   140,    41,   480,
-      42,    -1,   136,    41,   480,    42,    -1,   133,    41,   480,
-      42,    -1,   127,    41,   480,    42,    -1,   122,    41,   480,
-      42,    -1,   121,    41,   480,    42,    -1,   120,   186,    -1,
-     109,   186,    -1,   110,   186,    -1,   111,    41,   480,    42,
-      -1,   146,    41,   480,    42,    -1,   135,    41,   480,    42,
-      -1,   124,    41,   480,    42,    -1,   119,    41,   480,    42,
-      -1,    71,   404,    -1,    72,    41,   480,    49,   480,    49,
-     480,    42,    -1,    73,    41,   480,    49,   480,    42,    -1,
-      74,    41,   480,    49,   480,    42,    -1,    83,    41,   480,
-      49,   480,    42,    -1,    84,    41,   480,    42,    -1,    85,
-      41,   480,    42,    -1,    86,    41,   480,    42,    -1,    87,
-      41,   480,    42,    -1,   101,    41,   480,    42,    -1,   505,
-      -1,   509,    -1,   512,    -1,    41,   480,    42,    -1,   186,
-      -1,    88,    41,   480,    49,   480,   506,    42,    -1,    -1,
-     402,    -1,   134,    41,   480,    49,   480,   506,    42,    -1,
-      75,    41,   480,    49,   480,    49,   480,   506,    42,    -1,
-      -1,    -1,    76,   510,   511,   345,    -1,    -1,    -1,    66,
-      76,   513,   514,   345,    -1,    94,    41,   401,   516,    42,
-      -1,   517,    41,   401,   480,    42,    -1,    99,    41,   401,
-     480,   519,    42,    -1,    20,    -1,   480,    -1,    95,    -1,
-      96,    -1,    97,    -1,    98,    -1,   100,    -1,    50,    77,
-      56,   531,    -1,    -1,   518,    -1,   532,   521,    -1,    -1,
-     399,    -1,   531,   525,    -1,    89,   532,    -1,   185,    -1,
-     523,    -1,    -1,   524,    -1,   527,    -1,   528,    -1,   529,
-      -1,   165,    -1,   166,    -1,   167,    -1,   168,    -1,   169,
-      -1,   170,    -1,   171,    -1,   172,    -1,   173,    -1,   163,
-      -1,   164,    -1,   174,    -1,   176,    -1,   175,    -1,   177,
-      -1,   178,    -1,   533,    -1,   180,    -1,   179,    -1,   181,
-      -1,   182,    -1
-  };
-
-  /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
-     YYRHS.  */
-  const unsigned short int
-  SPARQLParser::yyprhs_[] =
-  {
-         0,     0,     3,     5,     7,     9,    13,    15,    17,    19,
-      21,    23,    27,    28,    30,    31,    34,    35,    38,    39,
-      43,    46,    47,    49,    51,    53,    55,    57,    60,    65,
-      69,    74,    75,    78,    80,    83,    85,    88,    90,    92,
-      93,    97,   100,   102,   107,   111,   116,   117,   120,   122,
-     125,   127,   130,   132,   134,   135,   139,   142,   144,   148,
-     149,   152,   153,   158,   159,   161,   164,   165,   168,   172,
-     176,   180,   183,   184,   185,   191,   192,   198,   199,   202,
-     203,   204,   205,   213,   217,   219,   221,   222,   224,   227,
-     228,   230,   235,   237,   239,   241,   243,   245,   247,   249,
-     251,   253,   256,   258,   260,   263,   268,   273,   279,   281,
-     284,   286,   288,   289,   291,   296,   299,   301,   303,   305,
-     308,   310,   313,   314,   316,   321,   322,   324,   325,   327,
-     328,   330,   331,   333,   337,   339,   342,   344,   346,   351,
-     353,   356,   358,   361,   363,   367,   369,   372,   374,   376,
-     378,   380,   383,   385,   387,   390,   393,   394,   396,   397,
-     399,   402,   405,   407,   410,   411,   413,   416,   419,   420,
-     422,   423,   427,   428,   430,   432,   434,   436,   438,   440,
-     442,   444,   446,   448,   450,   452,   457,   458,   460,   463,
-     464,   466,   470,   474,   478,   484,   490,   496,   497,   501,
-     502,   506,   507,   511,   518,   521,   522,   524,   525,   527,
-     530,   532,   533,   536,   539,   540,   542,   543,   547,   548,
-     552,   555,   557,   560,   562,   565,   566,   568,   571,   573,
-     575,   577,   579,   583,   587,   588,   592,   593,   595,   596,
-     598,   601,   605,   606,   609,   610,   611,   612,   621,   624,
-     627,   628,   630,   632,   634,   636,   638,   640,   641,   646,
-     649,   650,   652,   656,   657,   660,   663,   666,   670,   671,
-     673,   675,   677,   679,   681,   683,   685,   687,   689,   691,
-     693,   695,   698,   699,   703,   704,   705,   706,   713,   714,
-     715,   722,   723,   724,   733,   740,   743,   745,   747,   748,
-     749,   756,   757,   760,   762,   763,   769,   770,   773,   775,
-     779,   780,   783,   784,   789,   791,   792,   795,   797,   799,
-     801,   803,   805,   807,   809,   810,   811,   816,   817,   818,
-     823,   824,   828,   829,   832,   835,   837,   839,   841,   844,
-     846,   847,   854,   855,   857,   860,   861,   864,   866,   867,
-     873,   874,   878,   879,   883,   885,   886,   888,   892,   895,
-     896,   898,   901,   902,   905,   907,   909,   912,   915,   916,
-     919,   921,   922,   926,   927,   931,   933,   934,   936,   937,
-     942,   944,   946,   947,   951,   952,   954,   957,   958,   961,
-     963,   965,   968,   971,   972,   975,   977,   979,   980,   984,
-     987,   988,   991,   992,   996,   999,  1000,  1003,  1006,  1007,
-    1009,  1011,  1014,  1016,  1018,  1020,  1022,  1024,  1027,  1031,
-    1033,  1037,  1040,  1041,  1044,  1045,  1049,  1050,  1052,  1054,
-    1056,  1059,  1061,  1063,  1065,  1067,  1068,  1073,  1078,  1080,
-    1082,  1084,  1086,  1088,  1089,  1091,  1093,  1096,  1098,  1100,
-    1101,  1106,  1111,  1113,  1116,  1118,  1120,  1122,  1124,  1126,
-    1128,  1130,  1132,  1134,  1136,  1138,  1140,  1142,  1144,  1146,
-    1148,  1150,  1153,  1156,  1157,  1160,  1163,  1166,  1167,  1170,
-    1172,  1175,  1176,  1178,  1181,  1184,  1187,  1190,  1193,  1196,
-    1199,  1203,  1205,  1208,  1210,  1212,  1215,  1218,  1219,  1221,
-    1224,  1227,  1230,  1231,  1234,  1237,  1238,  1241,  1244,  1247,
-    1250,  1252,  1254,  1256,  1258,  1260,  1262,  1264,  1266,  1268,
-    1272,  1277,  1282,  1289,  1294,  1299,  1304,  1309,  1312,  1315,
-    1320,  1325,  1330,  1335,  1338,  1340,  1345,  1347,  1352,  1357,
-    1362,  1369,  1376,  1383,  1390,  1397,  1402,  1407,  1412,  1417,
-    1422,  1427,  1432,  1437,  1440,  1443,  1446,  1451,  1456,  1461,
-    1466,  1471,  1474,  1483,  1490,  1497,  1504,  1509,  1514,  1519,
-    1524,  1529,  1531,  1533,  1535,  1539,  1541,  1549,  1550,  1552,
-    1560,  1570,  1571,  1572,  1577,  1578,  1579,  1585,  1591,  1597,
-    1604,  1606,  1608,  1610,  1612,  1614,  1616,  1618,  1623,  1624,
-    1626,  1629,  1630,  1632,  1635,  1638,  1640,  1642,  1643,  1645,
-    1647,  1649,  1651,  1653,  1655,  1657,  1659,  1661,  1663,  1665,
-    1667,  1669,  1671,  1673,  1675,  1677,  1679,  1681,  1683,  1685,
-    1687,  1689,  1691
-  };
-
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   SPARQLParser::yyrline_[] =
   {
-         0,   562,   562,   565,   571,   576,   587,   588,   589,   590,
-     594,   599,   603,   605,   609,   611,   614,   616,   620,   620,
-     637,   643,   646,   650,   653,   656,   659,   662,   671,   672,
-     673,   676,   678,   682,   686,   690,   691,   695,   696,   700,
-     700,   708,   714,   718,   719,   720,   723,   725,   729,   733,
-     737,   738,   742,   743,   747,   747,   755,   761,   765,   768,
-     770,   774,   774,   781,   783,   787,   790,   792,   796,   799,
-     802,   808,   814,   816,   814,   826,   826,   870,   873,   881,
-     884,   888,   881,   907,   919,   922,   929,   932,   937,   944,
-     947,   952,   966,   971,   976,   981,   986,   989,   994,  1000,
-    1005,  1008,  1016,  1029,  1035,  1041,  1050,  1064,  1073,  1076,
-    1084,  1087,  1094,  1097,  1102,  1110,  1117,  1118,  1122,  1128,
-    1134,  1141,  1148,  1150,  1155,  1162,  1165,  1170,  1173,  1178,
-    1181,  1186,  1190,  1194,  1201,  1204,  1211,  1214,  1217,  1226,
-    1232,  1238,  1241,  1248,  1253,  1260,  1264,  1272,  1274,  1282,
-    1285,  1293,  1301,  1302,  1309,  1313,  1321,  1324,  1329,  1332,
-    1336,  1342,  1348,  1352,  1358,  1361,  1365,  1371,  1374,  1376,
-    1380,  1380,  1389,  1391,  1395,  1396,  1397,  1398,  1399,  1400,
-    1401,  1402,  1403,  1404,  1405,  1409,  1415,  1418,  1425,  1432,
-    1435,  1439,  1445,  1451,  1457,  1463,  1469,  1475,  1475,  1486,
-    1486,  1497,  1497,  1508,  1516,  1522,  1525,  1529,  1532,  1536,
-    1540,  1547,  1550,  1559,  1565,  1568,  1572,  1572,  1581,  1581,
-    1590,  1596,  1600,  1607,  1610,  1615,  1617,  1621,  1627,  1630,
-    1633,  1636,  1643,  1650,  1656,  1656,  1664,  1666,  1670,  1672,
-    1673,  1677,  1680,  1682,  1687,  1692,  1695,  1687,  1706,  1710,
-    1713,  1715,  1719,  1720,  1736,  1737,  1738,  1743,  1743,  1754,
-    1758,  1760,  1770,  1774,  1777,  1793,  1798,  1799,  1803,  1806,
-    1807,  1811,  1812,  1813,  1814,  1815,  1816,  1817,  1818,  1819,
-    1822,  1826,  1832,  1832,  1848,  1852,  1854,  1848,  1865,  1869,
-    1865,  1878,  1882,  1878,  1899,  1915,  1921,  1922,  1926,  1928,
-    1926,  1935,  1937,  1941,  1949,  1949,  1956,  1958,  1964,  1965,
-    1968,  1970,  1976,  1976,  1981,  1987,  1989,  1993,  1996,  1999,
-    2002,  2005,  2008,  2011,  2017,  2021,  2017,  2031,  2035,  2031,
-    2045,  2045,  2057,  2059,  2063,  2073,  2074,  2075,  2079,  2087,
-    2091,  2091,  2101,  2104,  2111,  2117,  2119,  2134,  2137,  2137,
-    2147,  2147,  2150,  2150,  2156,  2159,  2161,  2166,  2171,  2175,
-    2177,  2182,  2186,  2188,  2192,  2196,  2204,  2209,  2213,  2215,
-    2219,  2227,  2227,  2230,  2230,  2236,  2239,  2241,  2245,  2245,
-    2251,  2252,  2256,  2256,  2261,  2263,  2267,  2270,  2272,  2276,
-    2285,  2291,  2295,  2298,  2300,  2304,  2311,  2315,  2315,  2325,
-    2331,  2334,  2340,  2340,  2350,  2356,  2359,  2365,  2371,  2374,
-    2378,  2379,  2385,  2388,  2391,  2397,  2400,  2403,  2406,  2415,
-    2416,  2425,  2431,  2434,  2440,  2440,  2450,  2453,  2457,  2460,
-    2463,  2469,  2472,  2480,  2481,  2485,  2485,  2498,  2526,  2529,
-    2532,  2535,  2538,  2545,  2548,  2553,  2557,  2564,  2565,  2569,
-    2569,  2581,  2608,  2612,  2619,  2620,  2624,  2625,  2629,  2632,
-    2636,  2639,  2645,  2646,  2650,  2653,  2656,  2659,  2662,  2663,
-    2669,  2674,  2683,  2690,  2693,  2701,  2710,  2717,  2720,  2727,
-    2732,  2745,  2749,  2753,  2757,  2761,  2765,  2769,  2773,  2777,
-    2781,  2788,  2793,  2802,  2805,  2812,  2815,  2822,  2825,  2830,
-    2833,  2837,  2851,  2854,  2862,  2871,  2874,  2881,  2884,  2887,
-    2890,  2894,  2895,  2896,  2897,  2900,  2903,  2906,  2909,  2913,
-    2925,  2928,  2931,  2934,  2937,  2940,  2943,  2947,  2950,  2953,
-    2956,  2959,  2962,  2965,  2968,  2969,  2972,  2973,  2976,  2979,
-    2982,  2985,  2988,  2991,  2994,  2997,  3000,  3003,  3006,  3009,
-    3012,  3015,  3018,  3021,  3024,  3027,  3030,  3033,  3036,  3039,
-    3042,  3045,  3048,  3051,  3054,  3057,  3060,  3063,  3066,  3069,
-    3072,  3075,  3076,  3077,  3083,  3092,  3099,  3106,  3109,  3113,
-    3119,  3125,  3128,  3125,  3140,  3143,  3140,  3156,  3164,  3173,
-    3189,  3192,  3196,  3199,  3202,  3205,  3208,  3214,  3220,  3223,
-    3227,  3237,  3240,  3245,  3253,  3260,  3264,  3272,  3276,  3280,
-    3281,  3282,  3286,  3287,  3288,  3292,  3293,  3294,  3298,  3299,
-    3300,  3304,  3305,  3309,  3310,  3311,  3312,  3316,  3317,  3321,
-    3322,  3326,  3360
+       0,   563,   563,   566,   572,   577,   588,   589,   590,   591,
+     595,   600,   604,   606,   610,   612,   615,   617,   621,   621,
+     638,   644,   647,   651,   654,   657,   660,   663,   672,   673,
+     674,   677,   679,   683,   687,   691,   692,   696,   697,   701,
+     701,   709,   715,   719,   720,   721,   724,   726,   730,   734,
+     738,   739,   743,   744,   748,   748,   756,   762,   766,   769,
+     771,   775,   775,   782,   784,   788,   791,   793,   797,   800,
+     803,   809,   815,   817,   815,   827,   827,   871,   874,   882,
+     885,   889,   882,   908,   920,   923,   930,   933,   938,   945,
+     948,   953,   967,   972,   977,   982,   987,   990,   995,  1001,
+    1006,  1009,  1017,  1030,  1036,  1042,  1051,  1065,  1074,  1077,
+    1085,  1088,  1095,  1098,  1103,  1111,  1118,  1119,  1123,  1129,
+    1135,  1142,  1149,  1151,  1156,  1163,  1166,  1171,  1174,  1179,
+    1182,  1187,  1191,  1195,  1202,  1205,  1212,  1215,  1218,  1227,
+    1233,  1239,  1242,  1249,  1254,  1261,  1265,  1273,  1275,  1283,
+    1286,  1294,  1302,  1303,  1310,  1314,  1322,  1325,  1330,  1333,
+    1337,  1343,  1349,  1353,  1359,  1362,  1366,  1372,  1375,  1377,
+    1381,  1381,  1390,  1392,  1396,  1397,  1398,  1399,  1400,  1401,
+    1402,  1403,  1404,  1405,  1406,  1410,  1416,  1419,  1426,  1433,
+    1436,  1440,  1446,  1452,  1458,  1464,  1470,  1476,  1476,  1487,
+    1487,  1498,  1498,  1509,  1517,  1523,  1526,  1530,  1533,  1537,
+    1541,  1548,  1551,  1560,  1566,  1569,  1573,  1573,  1582,  1582,
+    1591,  1597,  1601,  1608,  1611,  1616,  1618,  1622,  1628,  1631,
+    1634,  1637,  1644,  1651,  1657,  1657,  1665,  1667,  1671,  1673,
+    1674,  1678,  1681,  1683,  1688,  1693,  1696,  1688,  1707,  1711,
+    1714,  1716,  1720,  1721,  1737,  1738,  1739,  1744,  1744,  1755,
+    1759,  1761,  1771,  1775,  1778,  1794,  1799,  1800,  1804,  1807,
+    1808,  1812,  1813,  1814,  1815,  1816,  1817,  1818,  1819,  1820,
+    1823,  1827,  1833,  1833,  1849,  1853,  1855,  1849,  1866,  1870,
+    1866,  1879,  1883,  1879,  1900,  1916,  1922,  1923,  1927,  1929,
+    1927,  1936,  1938,  1942,  1950,  1950,  1957,  1959,  1965,  1966,
+    1969,  1971,  1977,  1977,  1982,  1988,  1990,  1994,  1997,  2000,
+    2003,  2006,  2009,  2012,  2018,  2022,  2018,  2032,  2036,  2032,
+    2046,  2046,  2058,  2060,  2064,  2074,  2075,  2076,  2080,  2088,
+    2092,  2092,  2102,  2105,  2112,  2118,  2120,  2135,  2138,  2138,
+    2148,  2148,  2151,  2151,  2157,  2160,  2162,  2167,  2172,  2176,
+    2178,  2183,  2187,  2189,  2193,  2197,  2205,  2210,  2214,  2216,
+    2220,  2228,  2228,  2231,  2231,  2237,  2240,  2242,  2246,  2246,
+    2252,  2253,  2257,  2257,  2262,  2264,  2268,  2271,  2273,  2277,
+    2286,  2292,  2296,  2299,  2301,  2305,  2312,  2316,  2316,  2326,
+    2332,  2335,  2341,  2341,  2351,  2357,  2360,  2366,  2372,  2375,
+    2379,  2380,  2386,  2389,  2392,  2398,  2401,  2404,  2407,  2416,
+    2417,  2426,  2432,  2435,  2441,  2441,  2451,  2454,  2458,  2461,
+    2464,  2470,  2473,  2481,  2482,  2486,  2486,  2499,  2527,  2530,
+    2533,  2536,  2539,  2546,  2549,  2554,  2558,  2565,  2566,  2570,
+    2570,  2582,  2609,  2613,  2620,  2621,  2625,  2626,  2630,  2633,
+    2637,  2640,  2646,  2647,  2651,  2654,  2657,  2660,  2663,  2664,
+    2670,  2675,  2684,  2691,  2694,  2702,  2711,  2718,  2721,  2728,
+    2733,  2746,  2750,  2754,  2758,  2762,  2766,  2770,  2774,  2778,
+    2782,  2789,  2794,  2803,  2806,  2813,  2816,  2823,  2826,  2831,
+    2834,  2838,  2852,  2855,  2863,  2872,  2875,  2882,  2885,  2888,
+    2891,  2895,  2896,  2897,  2898,  2901,  2904,  2907,  2910,  2914,
+    2926,  2929,  2932,  2935,  2938,  2941,  2944,  2948,  2951,  2954,
+    2957,  2960,  2963,  2966,  2969,  2970,  2973,  2974,  2977,  2980,
+    2983,  2986,  2989,  2992,  2995,  2998,  3001,  3004,  3007,  3010,
+    3013,  3016,  3019,  3022,  3025,  3028,  3031,  3034,  3037,  3040,
+    3043,  3046,  3049,  3052,  3055,  3058,  3061,  3064,  3067,  3070,
+    3073,  3076,  3077,  3078,  3084,  3093,  3100,  3107,  3110,  3114,
+    3120,  3126,  3129,  3126,  3141,  3144,  3141,  3157,  3165,  3174,
+    3190,  3193,  3197,  3200,  3203,  3206,  3209,  3215,  3221,  3224,
+    3228,  3238,  3241,  3246,  3254,  3261,  3265,  3273,  3277,  3281,
+    3282,  3283,  3287,  3288,  3289,  3293,  3294,  3295,  3299,  3300,
+    3301,  3305,  3306,  3310,  3311,  3312,  3313,  3317,  3318,  3322,
+    3323,  3327,  3361
   };
 
   // Print the state stack on the debug stream.
@@ -6372,9 +5813,11 @@ namespace w3c_sw {
   SPARQLParser::yystack_print_ ()
   {
     *yycdebug_ << "Stack now";
-    for (state_stack_type::const_iterator i = yystate_stack_.begin ();
-	 i != yystate_stack_.end (); ++i)
-      *yycdebug_ << ' ' << *i;
+    for (stack_type::const_iterator
+           i = yystack_.begin (),
+           i_end = yystack_.end ();
+         i != i_end; ++i)
+      *yycdebug_ << ' ' << i->state;
     *yycdebug_ << std::endl;
   }
 
@@ -6384,19 +5827,18 @@ namespace w3c_sw {
   {
     unsigned int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
-    /* Print the symbols being reduced, and their result.  */
+    // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "):" << std::endl;
-    /* The symbols being reduced.  */
+               << " (line " << yylno << "):" << std::endl;
+    // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
-		       yyrhs_[yyprhs_[yyrule] + yyi],
-		       &(yysemantic_stack_[(yynrhs) - (yyi + 1)]),
-		       &(yylocation_stack_[(yynrhs) - (yyi + 1)]));
+                       yystack_[(yynrhs) - (yyi + 1)]);
   }
 #endif // YYDEBUG
 
-  /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
+  // Symbol number corresponding to token number t.
+  inline
   SPARQLParser::token_number_type
   SPARQLParser::yytranslate_ (int t)
   {
@@ -6404,7 +5846,7 @@ namespace w3c_sw {
     const token_number_type
     translate_table[] =
     {
-           0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -6450,33 +5892,21 @@ namespace w3c_sw {
      175,   176,   177,   178,   179,   180,   181,   182,   183,   184,
      185,   186
     };
-    if ((unsigned int) t <= yyuser_token_number_max_)
+    const unsigned int user_token_number_max_ = 441;
+    const token_number_type undef_token_ = 2;
+
+    if (static_cast<int>(t) <= yyeof_)
+      return yyeof_;
+    else if (static_cast<unsigned int> (t) <= user_token_number_max_)
       return translate_table[t];
     else
-      return yyundef_token_;
+      return undef_token_;
   }
-
-  const int SPARQLParser::yyeof_ = 0;
-  const int SPARQLParser::yylast_ = 2937;
-  const int SPARQLParser::yynnts_ = 348;
-  const int SPARQLParser::yyempty_ = -2;
-  const int SPARQLParser::yyfinal_ = 11;
-  const int SPARQLParser::yyterror_ = 1;
-  const int SPARQLParser::yyerrcode_ = 256;
-  const int SPARQLParser::yyntokens_ = 187;
-
-  const unsigned int SPARQLParser::yyuser_token_number_max_ = 441;
-  const SPARQLParser::token_number_type SPARQLParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
-
-/* Line 1136 of lalr1.cc  */
-#line 6476 "lib/SPARQLParser.cpp"
-
-
-/* Line 1138 of lalr1.cc  */
-#line 3366 "lib/SPARQLParser.ypp"
+#line 5909 "lib/SPARQLParser.cpp" // lalr1.cc:1155
+#line 3367 "lib/SPARQLParser.ypp" // lalr1.cc:1156
  /*** Additional Code ***/
 
 void w3c_sw::SPARQLParser::error(const SPARQLParser::location_type& l,
@@ -6746,5 +6176,4 @@ void SPARQLDriver::executeSelect (std::string queryStr, RdfDB* db, ResultSet* rs
 } // namespace w3c_sw
 
 /* END Driver */
-
 

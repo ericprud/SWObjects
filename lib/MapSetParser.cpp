@@ -1,56 +1,57 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+// A Bison parser, made by GNU Bison 3.0.2.
 
-/* Skeleton implementation for Bison LALR(1) parsers in C++
-   
-      Copyright (C) 2002-2011 Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+// Skeleton implementation for Bison LALR(1) parsers in C++
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
-   
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
+// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// As a special exception, you may create a larger work that contains
+// part or all of the Bison parser skeleton and distribute that work
+// under terms of your choice, so long as that work isn't itself a
+// parser generator using the skeleton or a modified version thereof
+// as a parser skeleton.  Alternatively, if you modify or redistribute
+// the parser skeleton itself, you may (at your option) remove this
+// special exception, which will cause the skeleton and the resulting
+// Bison output files to be licensed under the GNU General Public
+// License without this special exception.
+
+// This special exception was added by the Free Software Foundation in
+// version 2.2 of Bison.
 
 // Take the name prefix into account.
 #define yylex   w3c_swlex
 
-/* First part of user declarations.  */
+// First part of user declarations.
 
+#line 39 "lib/MapSetParser.cpp" // lalr1.cc:399
 
-/* Line 293 of lalr1.cc  */
-#line 41 "lib/MapSetParser.cpp"
-
+# ifndef YY_NULLPTR
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULLPTR nullptr
+#  else
+#   define YY_NULLPTR 0
+#  endif
+# endif
 
 #include "MapSetParser.hpp"
 
-/* User implementation prologue.  */
-
-/* Line 299 of lalr1.cc  */
-#line 305 "lib/MapSetParser.ypp"
+// User implementation prologue.
+#line 305 "lib/MapSetParser.ypp" // lalr1.cc:407
 
 #include "MapSetScanner.hpp"
-
-/* Line 299 of lalr1.cc  */
-#line 445 "lib/MapSetParser.ypp"
+#line 445 "lib/MapSetParser.ypp" // lalr1.cc:407
 
 #include "MapSetScanner.hpp"
 
@@ -60,14 +61,13 @@
 #undef yylex
 #define yylex driver.lexer->lexWrapper
 
+#line 65 "lib/MapSetParser.cpp" // lalr1.cc:407
 
-/* Line 299 of lalr1.cc  */
-#line 66 "lib/MapSetParser.cpp"
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
-#   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
+#   include <libintl.h> // FIXME: INFRINGES ON USER NAME SPACE.
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
 #  endif
 # endif
@@ -76,79 +76,78 @@
 # endif
 #endif
 
+#define YYRHSLOC(Rhs, K) ((Rhs)[K].location)
 /* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
    If N is 0, then set CURRENT to the empty location which ends
    the previous symbol: RHS[0] (always defined).  */
 
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                               \
- do                                                                    \
-   if (N)                                                              \
-     {                                                                 \
-       (Current).begin = YYRHSLOC (Rhs, 1).begin;                      \
-       (Current).end   = YYRHSLOC (Rhs, N).end;                        \
-     }                                                                 \
-   else                                                                \
-     {                                                                 \
-       (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;        \
-     }                                                                 \
- while (false)
-#endif
+# ifndef YYLLOC_DEFAULT
+#  define YYLLOC_DEFAULT(Current, Rhs, N)                               \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).begin  = YYRHSLOC (Rhs, 1).begin;                   \
+          (Current).end    = YYRHSLOC (Rhs, N).end;                     \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
+        }                                                               \
+    while (/*CONSTCOND*/ false)
+# endif
 
-/* Suppress unused-variable warnings by "using" E.  */
-#define YYUSE(e) ((void) (e))
 
-/* Enable debugging if requested.  */
+// Suppress unused-variable warnings by "using" E.
+#define YYUSE(E) ((void) (E))
+
+// Enable debugging if requested.
 #if YYDEBUG
 
-/* A pseudo ostream that takes yydebug_ into account.  */
+// A pseudo ostream that takes yydebug_ into account.
 # define YYCDEBUG if (yydebug_) (*yycdebug_)
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)	\
-do {							\
-  if (yydebug_)						\
-    {							\
-      *yycdebug_ << Title << ' ';			\
-      yy_symbol_print_ ((Type), (Value), (Location));	\
-      *yycdebug_ << std::endl;				\
-    }							\
-} while (false)
+# define YY_SYMBOL_PRINT(Title, Symbol)         \
+  do {                                          \
+    if (yydebug_)                               \
+    {                                           \
+      *yycdebug_ << Title << ' ';               \
+      yy_print_ (*yycdebug_, Symbol);           \
+      *yycdebug_ << std::endl;                  \
+    }                                           \
+  } while (false)
 
-# define YY_REDUCE_PRINT(Rule)		\
-do {					\
-  if (yydebug_)				\
-    yy_reduce_print_ (Rule);		\
-} while (false)
+# define YY_REDUCE_PRINT(Rule)          \
+  do {                                  \
+    if (yydebug_)                       \
+      yy_reduce_print_ (Rule);          \
+  } while (false)
 
-# define YY_STACK_PRINT()		\
-do {					\
-  if (yydebug_)				\
-    yystack_print_ ();			\
-} while (false)
+# define YY_STACK_PRINT()               \
+  do {                                  \
+    if (yydebug_)                       \
+      yystack_print_ ();                \
+  } while (false)
 
-#else /* !YYDEBUG */
+#else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
-# define YY_REDUCE_PRINT(Rule)
-# define YY_STACK_PRINT()
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
+# define YY_STACK_PRINT()                static_cast<void>(0)
 
-#endif /* !YYDEBUG */
+#endif // !YYDEBUG
 
-#define yyerrok		(yyerrstatus_ = 0)
-#define yyclearin	(yychar = yyempty_)
+#define yyerrok         (yyerrstatus_ = 0)
+#define yyclearin       (yyempty = true)
 
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrorlab
+#define YYACCEPT        goto yyacceptlab
+#define YYABORT         goto yyabortlab
+#define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 
 namespace w3c_sw {
-
-/* Line 382 of lalr1.cc  */
-#line 152 "lib/MapSetParser.cpp"
+#line 151 "lib/MapSetParser.cpp" // lalr1.cc:474
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -173,7 +172,7 @@ namespace w3c_sw {
             case '\\':
               if (*++yyp != '\\')
                 goto do_not_strip_quotes;
-              /* Fall through.  */
+              // Fall through.
             default:
               yyr += *yyp;
               break;
@@ -196,68 +195,213 @@ namespace w3c_sw {
       yycdebug_ (&std::cerr),
 #endif
       driver (driver_yyarg)
+  {}
+
+  MapSetParser::~MapSetParser ()
+  {}
+
+
+  /*---------------.
+  | Symbol types.  |
+  `---------------*/
+
+  inline
+  MapSetParser::syntax_error::syntax_error (const location_type& l, const std::string& m)
+    : std::runtime_error (m)
+    , location (l)
+  {}
+
+  // basic_symbol.
+  template <typename Base>
+  inline
+  MapSetParser::basic_symbol<Base>::basic_symbol ()
+    : value ()
+  {}
+
+  template <typename Base>
+  inline
+  MapSetParser::basic_symbol<Base>::basic_symbol (const basic_symbol& other)
+    : Base (other)
+    , value ()
+    , location (other.location)
+  {
+    value = other.value;
+  }
+
+
+  template <typename Base>
+  inline
+  MapSetParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const semantic_type& v, const location_type& l)
+    : Base (t)
+    , value (v)
+    , location (l)
+  {}
+
+
+  /// Constructor for valueless symbols.
+  template <typename Base>
+  inline
+  MapSetParser::basic_symbol<Base>::basic_symbol (typename Base::kind_type t, const location_type& l)
+    : Base (t)
+    , value ()
+    , location (l)
+  {}
+
+  template <typename Base>
+  inline
+  MapSetParser::basic_symbol<Base>::~basic_symbol ()
   {
   }
 
-  MapSetParser::~MapSetParser ()
+  template <typename Base>
+  inline
+  void
+  MapSetParser::basic_symbol<Base>::move (basic_symbol& s)
   {
+    super_type::move(s);
+    value = s.value;
+    location = s.location;
+  }
+
+  // by_type.
+  inline
+  MapSetParser::by_type::by_type ()
+     : type (empty)
+  {}
+
+  inline
+  MapSetParser::by_type::by_type (const by_type& other)
+    : type (other.type)
+  {}
+
+  inline
+  MapSetParser::by_type::by_type (token_type t)
+    : type (yytranslate_ (t))
+  {}
+
+  inline
+  void
+  MapSetParser::by_type::move (by_type& that)
+  {
+    type = that.type;
+    that.type = empty;
+  }
+
+  inline
+  int
+  MapSetParser::by_type::type_get () const
+  {
+    return type;
+  }
+
+
+  // by_state.
+  inline
+  MapSetParser::by_state::by_state ()
+    : state (empty)
+  {}
+
+  inline
+  MapSetParser::by_state::by_state (const by_state& other)
+    : state (other.state)
+  {}
+
+  inline
+  void
+  MapSetParser::by_state::move (by_state& that)
+  {
+    state = that.state;
+    that.state = empty;
+  }
+
+  inline
+  MapSetParser::by_state::by_state (state_type s)
+    : state (s)
+  {}
+
+  inline
+  MapSetParser::symbol_number_type
+  MapSetParser::by_state::type_get () const
+  {
+    return state == empty ? 0 : yystos_[state];
+  }
+
+  inline
+  MapSetParser::stack_symbol_type::stack_symbol_type ()
+  {}
+
+
+  inline
+  MapSetParser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
+    : super_type (s, that.location)
+  {
+    value = that.value;
+    // that is emptied.
+    that.type = empty;
+  }
+
+  inline
+  MapSetParser::stack_symbol_type&
+  MapSetParser::stack_symbol_type::operator= (const stack_symbol_type& that)
+  {
+    state = that.state;
+    value = that.value;
+    location = that.location;
+    return *this;
+  }
+
+
+  template <typename Base>
+  inline
+  void
+  MapSetParser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
+  {
+    if (yymsg)
+      YY_SYMBOL_PRINT (yymsg, yysym);
+
+    // User destructor.
+    YYUSE (yysym.type_get ());
   }
 
 #if YYDEBUG
-  /*--------------------------------.
-  | Print this symbol on YYOUTPUT.  |
-  `--------------------------------*/
-
-  inline void
-  MapSetParser::yy_symbol_value_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
-  {
-    YYUSE (yylocationp);
-    YYUSE (yyvaluep);
-    switch (yytype)
-      {
-         default:
-	  break;
-      }
-  }
-
-
+  template <typename Base>
   void
-  MapSetParser::yy_symbol_print_ (int yytype,
-			   const semantic_type* yyvaluep, const location_type* yylocationp)
+  MapSetParser::yy_print_ (std::ostream& yyo,
+                                     const basic_symbol<Base>& yysym) const
   {
-    *yycdebug_ << (yytype < yyntokens_ ? "token" : "nterm")
-	       << ' ' << yytname_[yytype] << " ("
-	       << *yylocationp << ": ";
-    yy_symbol_value_print_ (yytype, yyvaluep, yylocationp);
-    *yycdebug_ << ')';
+    std::ostream& yyoutput = yyo;
+    YYUSE (yyoutput);
+    symbol_number_type yytype = yysym.type_get ();
+    yyo << (yytype < yyntokens_ ? "token" : "nterm")
+        << ' ' << yytname_[yytype] << " ("
+        << yysym.location << ": ";
+    YYUSE (yytype);
+    yyo << ')';
   }
 #endif
 
+  inline
   void
-  MapSetParser::yydestruct_ (const char* yymsg,
-			   int yytype, semantic_type* yyvaluep, location_type* yylocationp)
+  MapSetParser::yypush_ (const char* m, state_type s, symbol_type& sym)
   {
-    YYUSE (yylocationp);
-    YYUSE (yymsg);
-    YYUSE (yyvaluep);
-
-    YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
-
-    switch (yytype)
-      {
-  
-	default:
-	  break;
-      }
+    stack_symbol_type t (s, sym);
+    yypush_ (m, t);
   }
 
+  inline
+  void
+  MapSetParser::yypush_ (const char* m, stack_symbol_type& s)
+  {
+    if (m)
+      YY_SYMBOL_PRINT (m, s);
+    yystack_.push (s);
+  }
+
+  inline
   void
   MapSetParser::yypop_ (unsigned int n)
   {
-    yystate_stack_.pop (n);
-    yysemantic_stack_.pop (n);
-    yylocation_stack_.pop (n);
+    yystack_.pop (n);
   }
 
 #if YYDEBUG
@@ -285,7 +429,17 @@ namespace w3c_sw {
   {
     yydebug_ = l;
   }
-#endif
+#endif // YYDEBUG
+
+  inline MapSetParser::state_type
+  MapSetParser::yy_lr_goto_state_ (state_type yystate, int yysym)
+  {
+    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
+      return yytable_[yyr];
+    else
+      return yydefgoto_[yysym - yyntokens_];
+  }
 
   inline bool
   MapSetParser::yy_pact_value_is_default_ (int yyvalue)
@@ -302,136 +456,118 @@ namespace w3c_sw {
   int
   MapSetParser::parse ()
   {
-    /// Lookahead and lookahead in internal form.
-    int yychar = yyempty_;
-    int yytoken = 0;
+    /// Whether yyla contains a lookahead.
+    bool yyempty = true;
 
-    /* State.  */
+    // State.
     int yyn;
+    /// Length of the RHS of the rule being reduced.
     int yylen = 0;
-    int yystate = 0;
 
-    /* Error handling.  */
+    // Error handling.
     int yynerrs_ = 0;
     int yyerrstatus_ = 0;
 
-    /// Semantic value of the lookahead.
-    semantic_type yylval;
-    /// Location of the lookahead.
-    location_type yylloc;
+    /// The lookahead symbol.
+    symbol_type yyla;
+
     /// The locations where the error started and ended.
-    location_type yyerror_range[3];
+    stack_symbol_type yyerror_range[3];
 
-    /// $$.
-    semantic_type yyval;
-    /// @$.
-    location_type yyloc;
-
+    /// The return value of parse ().
     int yyresult;
 
+    // FIXME: This shoud be completely indented.  It is not yet to
+    // avoid gratuitous conflicts when merging into the master branch.
+    try
+      {
     YYCDEBUG << "Starting parse" << std::endl;
 
 
-    /* User initialization code.  */
-    
-/* Line 565 of lalr1.cc  */
-#line 45 "lib/MapSetParser.ypp"
+    // User initialization code.
+    #line 45 "lib/MapSetParser.ypp" // lalr1.cc:725
 {
     // initialize the initial location object
-    yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
-    driver.yylloc = &yylloc;
+    yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
+    driver.yylloc = &yyla.location;
 }
 
-/* Line 565 of lalr1.cc  */
-#line 347 "lib/MapSetParser.cpp"
+#line 496 "lib/MapSetParser.cpp" // lalr1.cc:725
 
-    /* Initialize the stacks.  The initial state will be pushed in
+    /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
        stacks with a primary value.  */
-    yystate_stack_ = state_stack_type (0);
-    yysemantic_stack_ = semantic_stack_type (0);
-    yylocation_stack_ = location_stack_type (0);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
+    yystack_.clear ();
+    yypush_ (YY_NULLPTR, 0, yyla);
 
-    /* New state.  */
+    // A new symbol was pushed on the stack.
   yynewstate:
-    yystate_stack_.push (yystate);
-    YYCDEBUG << "Entering state " << yystate << std::endl;
+    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
 
-    /* Accept?  */
-    if (yystate == yyfinal_)
+    // Accept?
+    if (yystack_[0].state == yyfinal_)
       goto yyacceptlab;
 
     goto yybackup;
 
-    /* Backup.  */
+    // Backup.
   yybackup:
 
-    /* Try to take a decision without lookahead.  */
-    yyn = yypact_[yystate];
+    // Try to take a decision without lookahead.
+    yyn = yypact_[yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
-    /* Read a lookahead token.  */
-    if (yychar == yyempty_)
+    // Read a lookahead token.
+    if (yyempty)
       {
-	YYCDEBUG << "Reading a token: ";
-	yychar = yylex (&yylval, &yylloc);
+        YYCDEBUG << "Reading a token: ";
+        try
+          {
+            yyla.type = yytranslate_ (yylex (&yyla.value, &yyla.location));
+          }
+        catch (const syntax_error& yyexc)
+          {
+            error (yyexc);
+            goto yyerrlab1;
+          }
+        yyempty = false;
       }
+    YY_SYMBOL_PRINT ("Next token is", yyla);
 
-
-    /* Convert token to internal form.  */
-    if (yychar <= yyeof_)
-      {
-	yychar = yytoken = yyeof_;
-	YYCDEBUG << "Now at end of input." << std::endl;
-      }
-    else
-      {
-	yytoken = yytranslate_ (yychar);
-	YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
-      }
-
-    /* If the proper action on seeing token YYTOKEN is to reduce or to
-       detect an error, take that action.  */
-    yyn += yytoken;
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yytoken)
+    /* If the proper action on seeing token YYLA.TYPE is to reduce or
+       to detect an error, take that action.  */
+    yyn += yyla.type_get ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
       goto yydefault;
 
-    /* Reduce or error.  */
+    // Reduce or error.
     yyn = yytable_[yyn];
     if (yyn <= 0)
       {
-	if (yy_table_value_is_error_ (yyn))
-	  goto yyerrlab;
-	yyn = -yyn;
-	goto yyreduce;
+        if (yy_table_value_is_error_ (yyn))
+          goto yyerrlab;
+        yyn = -yyn;
+        goto yyreduce;
       }
 
-    /* Shift the lookahead token.  */
-    YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
+    // Discard the token being shifted.
+    yyempty = true;
 
-    /* Discard the token being shifted.  */
-    yychar = yyempty_;
-
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yylloc);
-
-    /* Count tokens shifted since error; after three, turn off error
-       status.  */
+    // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
       --yyerrstatus_;
 
-    yystate = yyn;
+    // Shift the lookahead token.
+    yypush_ ("Shifting", yyn, yyla);
     goto yynewstate;
 
   /*-----------------------------------------------------------.
   | yydefault -- do the default action for the current state.  |
   `-----------------------------------------------------------*/
   yydefault:
-    yyn = yydefact_[yystate];
+    yyn = yydefact_[yystack_[0].state];
     if (yyn == 0)
       goto yyerrlab;
     goto yyreduce;
@@ -441,163 +577,155 @@ namespace w3c_sw {
   `-----------------------------*/
   yyreduce:
     yylen = yyr2_[yyn];
-    /* If YYLEN is nonzero, implement the default value of the action:
-       `$$ = $1'.  Otherwise, use the top of the stack.
-
-       Otherwise, the following line sets YYVAL to garbage.
-       This behavior is undocumented and Bison
-       users should not rely upon it.  */
-    if (yylen)
-      yyval = yysemantic_stack_[yylen - 1];
-    else
-      yyval = yysemantic_stack_[0];
-
     {
-      slice<location_type, location_stack_type> slice (yylocation_stack_, yylen);
-      YYLLOC_DEFAULT (yyloc, slice, yylen);
-    }
-    YY_REDUCE_PRINT (yyn);
-    switch (yyn)
-      {
-	  case 2:
+      stack_symbol_type yylhs;
+      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
+      /* If YYLEN is nonzero, implement the default value of the
+         action: '$$ = $1'.  Otherwise, use the top of the stack.
 
-/* Line 690 of lalr1.cc  */
-#line 460 "lib/MapSetParser.ypp"
+         Otherwise, the following line sets YYLHS.VALUE to garbage.
+         This behavior is undocumented and Bison users should not rely
+         upon it.  */
+      if (yylen)
+        yylhs.value = yystack_[yylen - 1].value;
+      else
+        yylhs.value = yystack_[0].value;
+
+      // Compute the default @$.
+      {
+        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+      }
+
+      // Perform the reduction.
+      YY_REDUCE_PRINT (yyn);
+      try
+        {
+          switch (yyn)
+            {
+  case 2:
+#line 460 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.root = new MapSet();
 	driver.root->sharedVars = MapSet::e_PROMISCUOUS;
       }
+#line 613 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 8:
-
-/* Line 690 of lalr1.cc  */
-#line 478 "lib/MapSetParser.ypp"
+#line 478 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 #if REGEX_LIB == SWOb_DISABLED
-      throw std::string("not compiled with REGEX_LIB: can't map ") + (yysemantic_stack_[(4) - (2)].p_Variable)->toString() + " from " + (yysemantic_stack_[(4) - (3)].p_RDFLiteral)->toString() + " to " + (yysemantic_stack_[(4) - (4)].p_RDFLiteral)->toString() + ".";
+      throw std::string("not compiled with REGEX_LIB: can't map ") + (yystack_[2].value.p_Variable)->toString() + " from " + (yystack_[1].value.p_RDFLiteral)->toString() + " to " + (yystack_[0].value.p_RDFLiteral)->toString() + ".";
 #else /* ! REGEX_LIB == SWOb_DISABLED */
 #if NotYet // @@
-      driver.root->rewriteVars.push_back(POSmap((yysemantic_stack_[(4) - (2)].p_Variable), (yysemantic_stack_[(4) - (3)].p_RDFLiteral)->getLexicalValue(), (yysemantic_stack_[(4) - (4)].p_RDFLiteral)->getLexicalValue()));
+      driver.root->rewriteVars.push_back(POSmap((yystack_[2].value.p_Variable), (yystack_[1].value.p_RDFLiteral)->getLexicalValue(), (yystack_[0].value.p_RDFLiteral)->getLexicalValue()));
 #endif /* NotYet */
 #endif /* ! REGEX_LIB == SWOb_DISABLED */
     }
+#line 627 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 9:
-
-/* Line 690 of lalr1.cc  */
-#line 487 "lib/MapSetParser.ypp"
+#line 487 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->driver = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
+	static_cast<MapSet*>(driver.root)->driver = (yystack_[0].value.p_RDFLiteral);
     }
+#line 635 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 10:
-
-/* Line 690 of lalr1.cc  */
-#line 490 "lib/MapSetParser.ypp"
+#line 490 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->server = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
+	static_cast<MapSet*>(driver.root)->server = (yystack_[0].value.p_RDFLiteral);
     }
+#line 643 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 11:
-
-/* Line 690 of lalr1.cc  */
-#line 493 "lib/MapSetParser.ypp"
+#line 493 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->user = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
+	static_cast<MapSet*>(driver.root)->user = (yystack_[0].value.p_RDFLiteral);
     }
+#line 651 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 12:
-
-/* Line 690 of lalr1.cc  */
-#line 496 "lib/MapSetParser.ypp"
+#line 496 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->password = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
+	static_cast<MapSet*>(driver.root)->password = (yystack_[0].value.p_RDFLiteral);
     }
+#line 659 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 13:
-
-/* Line 690 of lalr1.cc  */
-#line 499 "lib/MapSetParser.ypp"
+#line 499 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->database = (yysemantic_stack_[(2) - (2)].p_RDFLiteral);
+	static_cast<MapSet*>(driver.root)->database = (yystack_[0].value.p_RDFLiteral);
     }
+#line 667 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 14:
-
-/* Line 690 of lalr1.cc  */
-#line 502 "lib/MapSetParser.ypp"
+#line 502 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->stemURI = (yysemantic_stack_[(2) - (2)].p_URI);
+	static_cast<MapSet*>(driver.root)->stemURI = (yystack_[0].value.p_URI);
     }
+#line 675 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 16:
-
-/* Line 690 of lalr1.cc  */
-#line 507 "lib/MapSetParser.ypp"
+#line 507 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.sharedVarsSet = true;
     }
+#line 683 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 17:
-
-/* Line 690 of lalr1.cc  */
-#line 511 "lib/MapSetParser.ypp"
+#line 511 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.lastRuleTermSet = false;
     }
+#line 691 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 18:
-
-/* Line 690 of lalr1.cc  */
-#line 517 "lib/MapSetParser.ypp"
+#line 517 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.root->sharedVars = MapSet::e_PROMISCUOUS;
     }
+#line 699 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 19:
-
-/* Line 690 of lalr1.cc  */
-#line 520 "lib/MapSetParser.ypp"
+#line 520 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.root->sharedVars = MapSet::e_VARNAMES;
     }
+#line 707 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 20:
-
-/* Line 690 of lalr1.cc  */
-#line 523 "lib/MapSetParser.ypp"
+#line 523 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.root->sharedVars = MapSet::e_DRACONIAN;
     }
+#line 715 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 21:
-
-/* Line 690 of lalr1.cc  */
-#line 529 "lib/MapSetParser.ypp"
+#line 529 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = NULL;
+	(yylhs.value.p_TTerm) = NULL;
     }
+#line 723 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 23:
-
-/* Line 690 of lalr1.cc  */
-#line 536 "lib/MapSetParser.ypp"
+#line 536 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	RuleTerm nextRuleTerm = RuleTerm((yysemantic_stack_[(4) - (2)].p_TTerm), (yysemantic_stack_[(4) - (4)].p_TTerm));
+	RuleTerm nextRuleTerm = RuleTerm((yystack_[2].value.p_TTerm), (yystack_[0].value.p_TTerm));
 	if (driver.lastRuleTermSet)
 	    static_cast<MapSet*>(driver.root)->nodeShare.addIntersection(driver.lastRuleTerm, nextRuleTerm);
 	driver.lastRuleTerm = nextRuleTerm;
@@ -605,798 +733,714 @@ namespace w3c_sw {
 	if (!driver.sharedVarsSet)
 	    driver.root->sharedVars = MapSet::e_DRACONIAN;
     }
+#line 737 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 32:
-
-/* Line 690 of lalr1.cc  */
-#line 571 "lib/MapSetParser.ypp"
+#line 571 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->keyMap[(yysemantic_stack_[(3) - (1)].p_RDFLiteral)->getLexicalValue()] = (yysemantic_stack_[(3) - (3)].p_RDFLiteral)->getLexicalValue();
+	static_cast<MapSet*>(driver.root)->keyMap[(yystack_[2].value.p_RDFLiteral)->getLexicalValue()] = (yystack_[0].value.p_RDFLiteral)->getLexicalValue();
     }
+#line 745 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 35:
-
-/* Line 690 of lalr1.cc  */
-#line 582 "lib/MapSetParser.ypp"
+#line 582 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	static_cast<MapSet*>(driver.root)->primaryKey = (yysemantic_stack_[(3) - (2)].p_RDFLiteral);
+	static_cast<MapSet*>(driver.root)->primaryKey = (yystack_[1].value.p_RDFLiteral);
     }
+#line 753 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 41:
-
-/* Line 690 of lalr1.cc  */
-#line 605 "lib/MapSetParser.ypp"
+#line 605 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.setBase((yysemantic_stack_[(2) - (2)].p_URI)->getLexicalValue());
+	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
+#line 761 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 42:
-
-/* Line 690 of lalr1.cc  */
-#line 611 "lib/MapSetParser.ypp"
+#line 611 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.ignorePrefix(true);
       }
+#line 769 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 43:
-
-/* Line 690 of lalr1.cc  */
-#line 613 "lib/MapSetParser.ypp"
+#line 613 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  driver.ignorePrefix(false);
       }
+#line 777 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 44:
-
-/* Line 690 of lalr1.cc  */
-#line 615 "lib/MapSetParser.ypp"
+#line 615 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  std::string prefix((yysemantic_stack_[(5) - (3)].p_URI)->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yysemantic_stack_[(5) - (5)].p_URI));
+	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
+	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
+#line 786 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 45:
-
-/* Line 690 of lalr1.cc  */
-#line 623 "lib/MapSetParser.ypp"
+#line 623 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
     }
+#line 795 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 46:
-
-/* Line 690 of lalr1.cc  */
-#line 626 "lib/MapSetParser.ypp"
+#line 626 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curGraphName;
+	  (yylhs.value.p_TTerm) = driver.curGraphName;
 	  driver.curGraphName = NULL;
       }
+#line 804 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 47:
-
-/* Line 690 of lalr1.cc  */
-#line 629 "lib/MapSetParser.ypp"
+#line 629 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 814 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 48:
-
-/* Line 690 of lalr1.cc  */
-#line 633 "lib/MapSetParser.ypp"
+#line 633 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  if ((yysemantic_stack_[(7) - (7)].p_ValuesClause) != NULL)
-	      (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(7) - (7)].p_ValuesClause), (yysemantic_stack_[(7) - (5)].p_WhereClause)->m_GroupGraphPattern);
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(7) - (4)].p_TableOperation), new SubSelect(new Select((yysemantic_stack_[(7) - (3)].p_Project).distinctness, (yysemantic_stack_[(7) - (3)].p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yysemantic_stack_[(7) - (5)].p_WhereClause), (yysemantic_stack_[(7) - (6)].p_SolutionModifier))));
-	  driver.curGraphName = (yysemantic_stack_[(7) - (2)].p_TTerm);
-	  driver.countStar = (yysemantic_stack_[(7) - (1)].p_parentCountStar);
+	  if ((yystack_[0].value.p_ValuesClause) != NULL)
+	      (yystack_[2].value.p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yystack_[0].value.p_ValuesClause), (yystack_[2].value.p_WhereClause)->m_GroupGraphPattern);
+	  driver.curOp = driver.makeConjunction((yystack_[3].value.p_TableOperation), new SubSelect(new Select((yystack_[4].value.p_Project).distinctness, (yystack_[4].value.p_Project).varSet, new ProductionVector<const DatasetClause*>(), (yystack_[2].value.p_WhereClause), (yystack_[1].value.p_SolutionModifier))));
+	  driver.curGraphName = (yystack_[5].value.p_TTerm);
+	  driver.countStar = (yystack_[6].value.p_parentCountStar);
       }
+#line 826 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 49:
-
-/* Line 690 of lalr1.cc  */
-#line 644 "lib/MapSetParser.ypp"
+#line 644 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Project).distinctness = (yysemantic_stack_[(3) - (2)].p_distinctness);
-	(yyval.p_Project).varSet = (yysemantic_stack_[(3) - (3)].p_VarSet);
+	(yylhs.value.p_Project).distinctness = (yystack_[1].value.p_distinctness);
+	(yylhs.value.p_Project).varSet = (yystack_[0].value.p_VarSet);
     }
+#line 835 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 50:
-
-/* Line 690 of lalr1.cc  */
-#line 652 "lib/MapSetParser.ypp"
+#line 652 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_distinct;
+	(yylhs.value.p_distinctness) = DIST_distinct;
     }
+#line 843 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 51:
-
-/* Line 690 of lalr1.cc  */
-#line 655 "lib/MapSetParser.ypp"
+#line 655 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_reduced;
+	(yylhs.value.p_distinctness) = DIST_reduced;
     }
+#line 851 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 52:
-
-/* Line 690 of lalr1.cc  */
-#line 662 "lib/MapSetParser.ypp"
+#line 662 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yylhs.value.p_distinctness) = DIST_all;
     }
+#line 859 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 54:
-
-/* Line 690 of lalr1.cc  */
-#line 670 "lib/MapSetParser.ypp"
+#line 670 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variable) = (yysemantic_stack_[(2) - (2)].p_Variable);
+	(yylhs.value.p_Variable) = (yystack_[0].value.p_Variable);
     }
+#line 867 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 55:
-
-/* Line 690 of lalr1.cc  */
-#line 677 "lib/MapSetParser.ypp"
+#line 677 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Variable) = NULL;
+	(yylhs.value.p_Variable) = NULL;
     }
+#line 875 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 57:
-
-/* Line 690 of lalr1.cc  */
-#line 685 "lib/MapSetParser.ypp"
+#line 685 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = (yystack_[1].value.p_Variable) ? new ExpressionAlias((yystack_[2].value.p_Expression), (yystack_[1].value.p_Variable)) : new ExpressionAlias((yystack_[2].value.p_Expression));
     }
+#line 883 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 58:
-
-/* Line 690 of lalr1.cc  */
-#line 692 "lib/MapSetParser.ypp"
+#line 692 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 891 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 59:
-
-/* Line 690 of lalr1.cc  */
-#line 695 "lib/MapSetParser.ypp"
+#line 695 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_RDFLiteral)));
     }
+#line 899 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 60:
-
-/* Line 690 of lalr1.cc  */
-#line 698 "lib/MapSetParser.ypp"
+#line 698 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_NumericRDFLiteral)));
     }
+#line 907 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 61:
-
-/* Line 690 of lalr1.cc  */
-#line 701 "lib/MapSetParser.ypp"
+#line 701 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_BooleanRDFLiteral)));
     }
+#line 915 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 62:
-
-/* Line 690 of lalr1.cc  */
-#line 704 "lib/MapSetParser.ypp"
+#line 704 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_Variable)));
     }
+#line 923 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 63:
-
-/* Line 690 of lalr1.cc  */
-#line 707 "lib/MapSetParser.ypp"
+#line 707 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 931 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 64:
-
-/* Line 690 of lalr1.cc  */
-#line 710 "lib/MapSetParser.ypp"
+#line 710 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 939 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 66:
-
-/* Line 690 of lalr1.cc  */
-#line 719 "lib/MapSetParser.ypp"
+#line 719 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+	(yylhs.value.p_ExpressionAliaseList) = new ExpressionAliasList((yystack_[0].value.p_ExpressionAlias));
     }
+#line 947 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 67:
-
-/* Line 690 of lalr1.cc  */
-#line 722 "lib/MapSetParser.ypp"
+#line 722 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-    (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
-    (yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+    (yystack_[1].value.p_ExpressionAliaseList)->push_back((yystack_[0].value.p_ExpressionAlias));
+    (yylhs.value.p_ExpressionAliaseList) = (yystack_[1].value.p_ExpressionAliaseList);
 }
+#line 956 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 68:
-
-/* Line 690 of lalr1.cc  */
-#line 730 "lib/MapSetParser.ypp"
+#line 730 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_VarSet) = (yysemantic_stack_[(1) - (1)].p_ExpressionAliaseList); // Grammar action needed for implicit upcast.
+	(yylhs.value.p_VarSet) = (yystack_[0].value.p_ExpressionAliaseList); // Grammar action needed for implicit upcast.
     }
+#line 964 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 69:
-
-/* Line 690 of lalr1.cc  */
-#line 733 "lib/MapSetParser.ypp"
+#line 733 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_VarSet) = new StarVarSet();
+	(yylhs.value.p_VarSet) = new StarVarSet();
     }
+#line 972 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 70:
-
-/* Line 690 of lalr1.cc  */
-#line 740 "lib/MapSetParser.ypp"
+#line 740 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.curOp = NULL;
       }
+#line 980 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 71:
-
-/* Line 690 of lalr1.cc  */
-#line 742 "lib/MapSetParser.ypp"
+#line 742 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	/* $3 is NO LONGER known to be a DefaultGraphPattern because of grammar restrictions. */
-	if ((yysemantic_stack_[(8) - (8)].p_ValuesClause) != NULL)
-	    (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yysemantic_stack_[(8) - (8)].p_ValuesClause), (yysemantic_stack_[(8) - (6)].p_WhereClause)->m_GroupGraphPattern);
-	Construct* constr = new Construct((yysemantic_stack_[(8) - (3)].p_TableOperation), (yysemantic_stack_[(8) - (5)].p_DatasetClauses), (yysemantic_stack_[(8) - (6)].p_WhereClause), (yysemantic_stack_[(8) - (7)].p_SolutionModifier));
-	driver.root->maps.push_back(LabeledConstruct((yysemantic_stack_[(8) - (1)].p_TTerm), constr));
+	if ((yystack_[0].value.p_ValuesClause) != NULL)
+	    (yystack_[2].value.p_WhereClause)->m_GroupGraphPattern = driver.makeConjunction((yystack_[0].value.p_ValuesClause), (yystack_[2].value.p_WhereClause)->m_GroupGraphPattern);
+	Construct* constr = new Construct((yystack_[5].value.p_TableOperation), (yystack_[3].value.p_DatasetClauses), (yystack_[2].value.p_WhereClause), (yystack_[1].value.p_SolutionModifier));
+	driver.root->maps.push_back(LabeledConstruct((yystack_[7].value.p_TTerm), constr));
     }
+#line 992 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 72:
-
-/* Line 690 of lalr1.cc  */
-#line 752 "lib/MapSetParser.ypp"
+#line 752 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(2) - (2)].p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
+#line 1000 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 73:
-
-/* Line 690 of lalr1.cc  */
-#line 758 "lib/MapSetParser.ypp"
+#line 758 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = NULL;
+	(yylhs.value.p_TTerm) = NULL;
     }
+#line 1008 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 75:
-
-/* Line 690 of lalr1.cc  */
-#line 766 "lib/MapSetParser.ypp"
+#line 766 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
+	(yylhs.value.p_DatasetClauses) = new ProductionVector<const DatasetClause*>();
     }
+#line 1016 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 76:
-
-/* Line 690 of lalr1.cc  */
-#line 769 "lib/MapSetParser.ypp"
+#line 769 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_DatasetClauses)->push_back((yysemantic_stack_[(2) - (2)].p_DatasetClause));
-	(yyval.p_DatasetClauses) = (yysemantic_stack_[(2) - (1)].p_DatasetClauses);
+	(yystack_[1].value.p_DatasetClauses)->push_back((yystack_[0].value.p_DatasetClause));
+	(yylhs.value.p_DatasetClauses) = (yystack_[1].value.p_DatasetClauses);
     }
+#line 1025 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 77:
-
-/* Line 690 of lalr1.cc  */
-#line 777 "lib/MapSetParser.ypp"
+#line 777 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = (yysemantic_stack_[(2) - (2)].p_DatasetClause);
+	(yylhs.value.p_DatasetClause) = (yystack_[0].value.p_DatasetClause);
     }
+#line 1033 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 80:
-
-/* Line 690 of lalr1.cc  */
-#line 789 "lib/MapSetParser.ypp"
+#line 789 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = new DefaultGraphClause((yysemantic_stack_[(1) - (1)].p_TTerm), driver.atomFactory);
+	(yylhs.value.p_DatasetClause) = new DefaultGraphClause((yystack_[0].value.p_TTerm), driver.atomFactory);
     }
+#line 1041 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 81:
-
-/* Line 690 of lalr1.cc  */
-#line 795 "lib/MapSetParser.ypp"
+#line 795 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_DatasetClause) = new NamedGraphClause((yysemantic_stack_[(2) - (2)].p_TTerm), driver.atomFactory);
+	(yylhs.value.p_DatasetClause) = new NamedGraphClause((yystack_[0].value.p_TTerm), driver.atomFactory);
     }
+#line 1049 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 82:
-
-/* Line 690 of lalr1.cc  */
-#line 801 "lib/MapSetParser.ypp"
+#line 801 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1057 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 83:
-
-/* Line 690 of lalr1.cc  */
-#line 808 "lib/MapSetParser.ypp"
+#line 808 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_WhereClause) = new WhereClause(driver.ensureGraphPattern());
+	(yylhs.value.p_WhereClause) = new WhereClause(driver.ensureGraphPattern());
 	driver.curOp = NULL;
     }
+#line 1067 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 86:
-
-/* Line 690 of lalr1.cc  */
-#line 822 "lib/MapSetParser.ypp"
+#line 822 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SolutionModifier) = new SolutionModifier((yysemantic_stack_[(4) - (1)].p_ExpressionAliaseList), (yysemantic_stack_[(4) - (2)].p_Expressions), (yysemantic_stack_[(4) - (3)].p_OrderConditions), (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).limit, (yysemantic_stack_[(4) - (4)].p_LimitOffsetPair).offset); // !!!
+	(yylhs.value.p_SolutionModifier) = new SolutionModifier((yystack_[3].value.p_ExpressionAliaseList), (yystack_[2].value.p_Expressions), (yystack_[1].value.p_OrderConditions), (yystack_[0].value.p_LimitOffsetPair).limit, (yystack_[0].value.p_LimitOffsetPair).offset); // !!!
     }
+#line 1075 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 87:
-
-/* Line 690 of lalr1.cc  */
-#line 829 "lib/MapSetParser.ypp"
+#line 829 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = driver.countStar ? new ExpressionAliasList() : NULL;
+	(yylhs.value.p_ExpressionAliaseList) = driver.countStar ? new ExpressionAliasList() : NULL;
     }
+#line 1083 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 89:
-
-/* Line 690 of lalr1.cc  */
-#line 837 "lib/MapSetParser.ypp"
+#line 837 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = NULL;
+	(yylhs.value.p_Expressions) = NULL;
     }
+#line 1091 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 91:
-
-/* Line 690 of lalr1.cc  */
-#line 845 "lib/MapSetParser.ypp"
+#line 845 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = NULL;
+	(yylhs.value.p_OrderConditions) = NULL;
     }
+#line 1099 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 93:
-
-/* Line 690 of lalr1.cc  */
-#line 853 "lib/MapSetParser.ypp"
+#line 853 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
-	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
+	(yylhs.value.p_LimitOffsetPair).limit = LIMIT_None;
+	(yylhs.value.p_LimitOffsetPair).offset = OFFSET_None;
     }
+#line 1108 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 95:
-
-/* Line 690 of lalr1.cc  */
-#line 861 "lib/MapSetParser.ypp"
+#line 861 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(3) - (3)].p_ExpressionAliaseList);
+	(yylhs.value.p_ExpressionAliaseList) = (yystack_[0].value.p_ExpressionAliaseList);
     }
+#line 1116 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 96:
-
-/* Line 690 of lalr1.cc  */
-#line 868 "lib/MapSetParser.ypp"
+#line 868 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAliaseList) = new ExpressionAliasList((yysemantic_stack_[(1) - (1)].p_ExpressionAlias));
+	(yylhs.value.p_ExpressionAliaseList) = new ExpressionAliasList((yystack_[0].value.p_ExpressionAlias));
     }
+#line 1124 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 97:
-
-/* Line 690 of lalr1.cc  */
-#line 871 "lib/MapSetParser.ypp"
+#line 871 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList)->push_back((yysemantic_stack_[(2) - (2)].p_ExpressionAlias));
-	(yyval.p_ExpressionAliaseList) = (yysemantic_stack_[(2) - (1)].p_ExpressionAliaseList);
+	(yystack_[1].value.p_ExpressionAliaseList)->push_back((yystack_[0].value.p_ExpressionAlias));
+	(yylhs.value.p_ExpressionAliaseList) = (yystack_[1].value.p_ExpressionAliaseList);
     }
+#line 1133 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 98:
-
-/* Line 690 of lalr1.cc  */
-#line 878 "lib/MapSetParser.ypp"
+#line 878 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1141 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 99:
-
-/* Line 690 of lalr1.cc  */
-#line 881 "lib/MapSetParser.ypp"
+#line 881 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias((yystack_[0].value.p_Expression));
     }
+#line 1149 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 100:
-
-/* Line 690 of lalr1.cc  */
-#line 884 "lib/MapSetParser.ypp"
+#line 884 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = (yysemantic_stack_[(4) - (3)].p_Variable) ? new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression), (yysemantic_stack_[(4) - (3)].p_Variable)) : new ExpressionAlias((yysemantic_stack_[(4) - (2)].p_Expression));
+	(yylhs.value.p_ExpressionAlias) = (yystack_[1].value.p_Variable) ? new ExpressionAlias((yystack_[2].value.p_Expression), (yystack_[1].value.p_Variable)) : new ExpressionAlias((yystack_[2].value.p_Expression));
     }
+#line 1157 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 101:
-
-/* Line 690 of lalr1.cc  */
-#line 887 "lib/MapSetParser.ypp"
+#line 887 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable)));
+	(yylhs.value.p_ExpressionAlias) = new ExpressionAlias(new TTermExpression((yystack_[0].value.p_Variable)));
     }
+#line 1165 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 102:
-
-/* Line 690 of lalr1.cc  */
-#line 893 "lib/MapSetParser.ypp"
+#line 893 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expressions) = (yystack_[0].value.p_Expressions);
 }
+#line 1173 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 103:
-
-/* Line 690 of lalr1.cc  */
-#line 899 "lib/MapSetParser.ypp"
+#line 899 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>((yysemantic_stack_[(1) - (1)].p_Expression));
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
     }
+#line 1181 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 104:
-
-/* Line 690 of lalr1.cc  */
-#line 902 "lib/MapSetParser.ypp"
+#line 902 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 1190 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 106:
-
-/* Line 690 of lalr1.cc  */
-#line 914 "lib/MapSetParser.ypp"
+#line 914 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = (yysemantic_stack_[(3) - (3)].p_OrderConditions);
+	(yylhs.value.p_OrderConditions) = (yystack_[0].value.p_OrderConditions);
     }
+#line 1198 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 107:
-
-/* Line 690 of lalr1.cc  */
-#line 921 "lib/MapSetParser.ypp"
+#line 921 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
-	(yyval.p_OrderConditions)->push_back((yysemantic_stack_[(1) - (1)].p_OrderConditionPair));
+	(yylhs.value.p_OrderConditions) = new std::vector<s_OrderConditionPair>();
+	(yylhs.value.p_OrderConditions)->push_back((yystack_[0].value.p_OrderConditionPair));
     }
+#line 1207 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 108:
-
-/* Line 690 of lalr1.cc  */
-#line 925 "lib/MapSetParser.ypp"
+#line 925 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_OrderConditions)->push_back((yysemantic_stack_[(2) - (2)].p_OrderConditionPair));
-	(yyval.p_OrderConditions) = (yysemantic_stack_[(2) - (1)].p_OrderConditions);
+	(yystack_[1].value.p_OrderConditions)->push_back((yystack_[0].value.p_OrderConditionPair));
+	(yylhs.value.p_OrderConditions) = (yystack_[1].value.p_OrderConditions);
     }
+#line 1216 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 110:
-
-/* Line 690 of lalr1.cc  */
-#line 935 "lib/MapSetParser.ypp"
+#line 935 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
-	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(1) - (1)].p_Expression);
+	(yylhs.value.p_OrderConditionPair).ascOrDesc = ORDER_Asc;
+	(yylhs.value.p_OrderConditionPair).expression = (yystack_[0].value.p_Expression);
     }
+#line 1225 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 111:
-
-/* Line 690 of lalr1.cc  */
-#line 943 "lib/MapSetParser.ypp"
+#line 943 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Asc;
+	(yylhs.value.p_e_ASCorDESC) = ORDER_Asc;
     }
+#line 1233 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 112:
-
-/* Line 690 of lalr1.cc  */
-#line 946 "lib/MapSetParser.ypp"
+#line 946 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_e_ASCorDESC) = ORDER_Desc;
+	(yylhs.value.p_e_ASCorDESC) = ORDER_Desc;
     }
+#line 1241 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 113:
-
-/* Line 690 of lalr1.cc  */
-#line 954 "lib/MapSetParser.ypp"
+#line 954 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_OrderConditionPair).ascOrDesc = (yysemantic_stack_[(2) - (1)].p_e_ASCorDESC);
-	(yyval.p_OrderConditionPair).expression = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_OrderConditionPair).ascOrDesc = (yystack_[1].value.p_e_ASCorDESC);
+	(yylhs.value.p_OrderConditionPair).expression = (yystack_[0].value.p_Expression);
     }
+#line 1250 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 115:
-
-/* Line 690 of lalr1.cc  */
-#line 963 "lib/MapSetParser.ypp"
+#line 963 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_Variable));
     }
+#line 1258 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 116:
-
-/* Line 690 of lalr1.cc  */
-#line 970 "lib/MapSetParser.ypp"
+#line 970 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).limit;
-	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).offset;
+	(yylhs.value.p_LimitOffsetPair).limit = (yystack_[1].value.p_LimitOffsetPair).limit;
+	(yylhs.value.p_LimitOffsetPair).offset = (yystack_[0].value.p_LimitOffsetPair).offset;
     }
+#line 1267 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 117:
-
-/* Line 690 of lalr1.cc  */
-#line 974 "lib/MapSetParser.ypp"
+#line 974 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = (yysemantic_stack_[(2) - (2)].p_LimitOffsetPair).limit;
-	(yyval.p_LimitOffsetPair).offset = (yysemantic_stack_[(2) - (1)].p_LimitOffsetPair).offset;
+	(yylhs.value.p_LimitOffsetPair).limit = (yystack_[0].value.p_LimitOffsetPair).limit;
+	(yylhs.value.p_LimitOffsetPair).offset = (yystack_[1].value.p_LimitOffsetPair).offset;
     }
+#line 1276 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 118:
-
-/* Line 690 of lalr1.cc  */
-#line 982 "lib/MapSetParser.ypp"
+#line 982 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).offset = OFFSET_None;
+	(yylhs.value.p_LimitOffsetPair).offset = OFFSET_None;
     }
+#line 1284 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 120:
-
-/* Line 690 of lalr1.cc  */
-#line 990 "lib/MapSetParser.ypp"
+#line 990 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = LIMIT_None;
+	(yylhs.value.p_LimitOffsetPair).limit = LIMIT_None;
     }
+#line 1292 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 122:
-
-/* Line 690 of lalr1.cc  */
-#line 997 "lib/MapSetParser.ypp"
+#line 997 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
+	(yylhs.value.p_LimitOffsetPair).limit = ((IntegerRDFLiteral*)(yystack_[0].value.p_NumericRDFLiteral))->getValue();
     }
+#line 1300 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 123:
-
-/* Line 690 of lalr1.cc  */
-#line 1003 "lib/MapSetParser.ypp"
+#line 1003 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yysemantic_stack_[(2) - (2)].p_NumericRDFLiteral))->getValue();
+	(yylhs.value.p_LimitOffsetPair).offset = ((IntegerRDFLiteral*)(yystack_[0].value.p_NumericRDFLiteral))->getValue();
     }
+#line 1308 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 125:
-
-/* Line 690 of lalr1.cc  */
-#line 1013 "lib/MapSetParser.ypp"
+#line 1013 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
+	(yylhs.value.p_ValuesClause) = (yystack_[0].value.p_ValuesClause);
     }
+#line 1316 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 126:
-
-/* Line 690 of lalr1.cc  */
-#line 1019 "lib/MapSetParser.ypp"
+#line 1019 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ValuesClause) = NULL;
+	(yylhs.value.p_ValuesClause) = NULL;
     }
+#line 1324 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 128:
-
-/* Line 690 of lalr1.cc  */
-#line 1026 "lib/MapSetParser.ypp"
+#line 1026 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Silence) = SILENT_No;
+	(yylhs.value.p_Silence) = SILENT_No;
     }
+#line 1332 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 129:
-
-/* Line 690 of lalr1.cc  */
-#line 1029 "lib/MapSetParser.ypp"
+#line 1029 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Silence) = SILENT_Yes;
+	(yylhs.value.p_Silence) = SILENT_Yes;
 }
+#line 1340 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 130:
-
-/* Line 690 of lalr1.cc  */
-#line 1035 "lib/MapSetParser.ypp"
+#line 1035 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TableOperation) = (yysemantic_stack_[(3) - (2)].p_TableOperation);
+	(yylhs.value.p_TableOperation) = (yystack_[1].value.p_TableOperation);
     }
+#line 1348 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 131:
-
-/* Line 690 of lalr1.cc  */
-#line 1041 "lib/MapSetParser.ypp"
+#line 1041 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.curBGP = NULL;
       }
+#line 1356 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 132:
-
-/* Line 690 of lalr1.cc  */
-#line 1043 "lib/MapSetParser.ypp"
+#line 1043 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TableOperation) = driver.ensureGraphPattern();
+	  (yylhs.value.p_TableOperation) = driver.ensureGraphPattern();
 	  driver.curOp = NULL;
       }
+#line 1365 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 140:
-
-/* Line 690 of lalr1.cc  */
-#line 1071 "lib/MapSetParser.ypp"
+#line 1071 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
 	driver.curFilter = NULL;
       }
+#line 1376 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 141:
-
-/* Line 690 of lalr1.cc  */
-#line 1076 "lib/MapSetParser.ypp"
+#line 1076 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(3) - (3)].p_TTerm);
+	  (yylhs.value.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yystack_[0].value.p_TTerm);
       }
+#line 1385 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 142:
-
-/* Line 690 of lalr1.cc  */
-#line 1079 "lib/MapSetParser.ypp"
+#line 1079 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.curBGP = NULL;
 	driver.curOp = NULL;
       }
+#line 1394 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 143:
-
-/* Line 690 of lalr1.cc  */
-#line 1082 "lib/MapSetParser.ypp"
+#line 1082 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  driver.curBGP = NULL;
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(8) - (1)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(8) - (3)].p_TTerm), driver.curOp));
-	  driver.curGraphName = (yysemantic_stack_[(8) - (4)].p_TTerm);
+	  driver.curOp = driver.makeConjunction((yystack_[7].value.p_TableOperation), new GraphGraphPattern((yystack_[5].value.p_TTerm), driver.curOp));
+	  driver.curGraphName = (yystack_[4].value.p_TTerm);
       }
+#line 1404 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 148:
-
-/* Line 690 of lalr1.cc  */
-#line 1104 "lib/MapSetParser.ypp"
+#line 1104 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.curBGP = NULL;
       }
+#line 1412 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 149:
-
-/* Line 690 of lalr1.cc  */
-#line 1106 "lib/MapSetParser.ypp"
+#line 1106 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
  	  // if ($2) LINE << $2 << ": " << *$2 << "--\n";
 	  // if ($4) LINE << $4 << ": " << *$4 << "--\n";
 	  driver.curBGP = NULL;
       }
+#line 1422 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 169:
-
-/* Line 690 of lalr1.cc  */
-#line 1183 "lib/MapSetParser.ypp"
+#line 1183 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yysemantic_stack_[(1) - (1)].p_ValuesClause)) : (yysemantic_stack_[(1) - (1)].p_ValuesClause);
+	driver.curOp = driver.curOp ? driver.makeConjunction(driver.curOp, (yystack_[0].value.p_ValuesClause)) : (yystack_[0].value.p_ValuesClause);
     }
+#line 1430 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 170:
-
-/* Line 690 of lalr1.cc  */
-#line 1189 "lib/MapSetParser.ypp"
+#line 1189 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 1440 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 171:
-
-/* Line 690 of lalr1.cc  */
-#line 1193 "lib/MapSetParser.ypp"
+#line 1193 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  OptionalGraphPattern* ret = new OptionalGraphPattern(driver.ensureGraphPattern());
 	  if (driver.curFilter) {
@@ -1404,674 +1448,605 @@ namespace w3c_sw {
 	      delete driver.curFilter;
 	      driver.curFilter = NULL;
 	  }
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), ret);
+	  driver.curOp = driver.makeConjunction((yystack_[1].value.p_TableOperation), ret);
       }
+#line 1454 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 172:
-
-/* Line 690 of lalr1.cc  */
-#line 1205 "lib/MapSetParser.ypp"
+#line 1205 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 1464 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 173:
-
-/* Line 690 of lalr1.cc  */
-#line 1209 "lib/MapSetParser.ypp"
+#line 1209 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 1472 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 174:
-
-/* Line 690 of lalr1.cc  */
-#line 1211 "lib/MapSetParser.ypp"
+#line 1211 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curGraphName;
-	  driver.curGraphName = (yysemantic_stack_[(4) - (4)].p_TTerm);
+	  (yylhs.value.p_TTerm) = driver.curGraphName;
+	  driver.curGraphName = (yystack_[0].value.p_TTerm);
       }
+#line 1481 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 175:
-
-/* Line 690 of lalr1.cc  */
-#line 1214 "lib/MapSetParser.ypp"
+#line 1214 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(6) - (3)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(6) - (2)].p_TableOperation), new GraphGraphPattern((yysemantic_stack_[(6) - (4)].p_TTerm), driver.curOp));
-	  driver.curGraphName = (yysemantic_stack_[(6) - (5)].p_TTerm);
+	  driver.restoreFilter((yystack_[3].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[4].value.p_TableOperation), new GraphGraphPattern((yystack_[2].value.p_TTerm), driver.curOp));
+	  driver.curGraphName = (yystack_[1].value.p_TTerm);
       }
+#line 1491 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 176:
-
-/* Line 690 of lalr1.cc  */
-#line 1222 "lib/MapSetParser.ypp"
+#line 1222 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 1501 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 177:
-
-/* Line 690 of lalr1.cc  */
-#line 1226 "lib/MapSetParser.ypp"
+#line 1226 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 1509 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 178:
-
-/* Line 690 of lalr1.cc  */
-#line 1228 "lib/MapSetParser.ypp"
+#line 1228 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curGraphName;
+	  (yylhs.value.p_TTerm) = driver.curGraphName;
 	  driver.curGraphName = NULL;
       }
+#line 1518 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 179:
-
-/* Line 690 of lalr1.cc  */
-#line 1231 "lib/MapSetParser.ypp"
+#line 1231 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(7) - (3)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(7) - (2)].p_TableOperation), new ServiceGraphPattern((yysemantic_stack_[(7) - (6)].p_TTerm), driver.curOp, (yysemantic_stack_[(7) - (5)].p_Silence), driver.atomFactory, false));
-	  driver.curGraphName = (yysemantic_stack_[(7) - (4)].p_TTerm);
+	  driver.restoreFilter((yystack_[4].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[5].value.p_TableOperation), new ServiceGraphPattern((yystack_[1].value.p_TTerm), driver.curOp, (yystack_[2].value.p_Silence), driver.atomFactory, false));
+	  driver.curGraphName = (yystack_[3].value.p_TTerm);
       }
+#line 1528 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 180:
-
-/* Line 690 of lalr1.cc  */
-#line 1239 "lib/MapSetParser.ypp"
+#line 1239 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curOp = new Bind(driver.ensureGraphPattern(), (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Variable));
+	driver.curOp = new Bind(driver.ensureGraphPattern(), (yystack_[3].value.p_Expression), (yystack_[1].value.p_Variable));
 	// no more triples go into the current BGP, per
 	//   http://www.w3.org/TR/sparql11-query/#sparqlTranslateGraphPatterns
 	// test reference:
 	//   http://www.sparql.org/query-validator?query=ASK+{+%3Fs+%3Fp+%3Fo+FILTER+%281%29+BIND+%282+AS+%3Fb%29+%3Fs2+%3Fp2+%3Fo2+FILTER+%283%29+BIND+%284+AS+%3Fd%29}&languageSyntax=SPARQL&outputFormat=algebra&linenumbers=false
 	driver.curBGP = NULL;
     }
+#line 1541 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 181:
-
-/* Line 690 of lalr1.cc  */
-#line 1250 "lib/MapSetParser.ypp"
+#line 1250 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ValuesClause) = (yysemantic_stack_[(2) - (2)].p_ValuesClause);
+	(yylhs.value.p_ValuesClause) = (yystack_[0].value.p_ValuesClause);
     }
+#line 1549 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 184:
-
-/* Line 690 of lalr1.cc  */
-#line 1261 "lib/MapSetParser.ypp"
+#line 1261 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingSet();
       }
+#line 1557 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 185:
-
-/* Line 690 of lalr1.cc  */
-#line 1263 "lib/MapSetParser.ypp"
+#line 1263 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
+	  driver.addBindingVar((yystack_[0].value.p_Variable));
       }
+#line 1565 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 186:
-
-/* Line 690 of lalr1.cc  */
-#line 1265 "lib/MapSetParser.ypp"
+#line 1265 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
+	  (yylhs.value.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
+#line 1573 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 189:
-
-/* Line 690 of lalr1.cc  */
-#line 1276 "lib/MapSetParser.ypp"
+#line 1276 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
-	driver.addBindingValue((yysemantic_stack_[(1) - (1)].p_TTerm));
+	driver.addBindingValue((yystack_[0].value.p_TTerm));
 	driver.endBindingRow();
     }
+#line 1583 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 190:
-
-/* Line 690 of lalr1.cc  */
-#line 1284 "lib/MapSetParser.ypp"
+#line 1284 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingSet();
     }
+#line 1591 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 191:
-
-/* Line 690 of lalr1.cc  */
-#line 1286 "lib/MapSetParser.ypp"
+#line 1286 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
+	  (yylhs.value.p_ValuesClause) = new ValuesClause(driver.endBindingSet());
       }
+#line 1599 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 193:
-
-/* Line 690 of lalr1.cc  */
-#line 1293 "lib/MapSetParser.ypp"
+#line 1293 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.addBindingVar((yysemantic_stack_[(2) - (2)].p_Variable));
+	driver.addBindingVar((yystack_[0].value.p_Variable));
     }
+#line 1607 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 197:
-
-/* Line 690 of lalr1.cc  */
-#line 1305 "lib/MapSetParser.ypp"
+#line 1305 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.addBindingValue((yysemantic_stack_[(2) - (2)].p_TTerm));
+	driver.addBindingValue((yystack_[0].value.p_TTerm));
     }
+#line 1615 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 198:
-
-/* Line 690 of lalr1.cc  */
-#line 1311 "lib/MapSetParser.ypp"
+#line 1311 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
       }
+#line 1623 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 199:
-
-/* Line 690 of lalr1.cc  */
-#line 1313 "lib/MapSetParser.ypp"
+#line 1313 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  driver.endBindingRow();
       }
+#line 1631 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 200:
-
-/* Line 690 of lalr1.cc  */
-#line 1316 "lib/MapSetParser.ypp"
+#line 1316 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.startBindingRow();
 	driver.endBindingRow();
     }
+#line 1640 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 203:
-
-/* Line 690 of lalr1.cc  */
-#line 1328 "lib/MapSetParser.ypp"
+#line 1328 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1648 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 204:
-
-/* Line 690 of lalr1.cc  */
-#line 1331 "lib/MapSetParser.ypp"
+#line 1331 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_RDFLiteral);
     }
+#line 1656 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 205:
-
-/* Line 690 of lalr1.cc  */
-#line 1334 "lib/MapSetParser.ypp"
+#line 1334 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 1664 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 206:
-
-/* Line 690 of lalr1.cc  */
-#line 1337 "lib/MapSetParser.ypp"
+#line 1337 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_BooleanRDFLiteral);
     }
+#line 1672 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 207:
-
-/* Line 690 of lalr1.cc  */
-#line 1340 "lib/MapSetParser.ypp"
+#line 1340 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = TTerm::Unbound;
+	(yylhs.value.p_TTerm) = TTerm::Unbound;
     }
+#line 1680 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 208:
-
-/* Line 690 of lalr1.cc  */
-#line 1343 "lib/MapSetParser.ypp"
+#line 1343 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = TTerm::Unbound;
+	(yylhs.value.p_TTerm) = TTerm::Unbound;
     }
+#line 1688 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 209:
-
-/* Line 690 of lalr1.cc  */
-#line 1346 "lib/MapSetParser.ypp"
+#line 1346 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 1696 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 210:
-
-/* Line 690 of lalr1.cc  */
-#line 1352 "lib/MapSetParser.ypp"
+#line 1352 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 1706 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 211:
-
-/* Line 690 of lalr1.cc  */
-#line 1356 "lib/MapSetParser.ypp"
+#line 1356 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 1714 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 212:
-
-/* Line 690 of lalr1.cc  */
-#line 1358 "lib/MapSetParser.ypp"
+#line 1358 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(4) - (3)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (2)].p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
+	  driver.restoreFilter((yystack_[1].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[2].value.p_TableOperation), new MinusGraphPattern(driver.ensureGraphPattern()));
       }
+#line 1723 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 213:
-
-/* Line 690 of lalr1.cc  */
-#line 1366 "lib/MapSetParser.ypp"
+#line 1366 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 1733 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 214:
-
-/* Line 690 of lalr1.cc  */
-#line 1370 "lib/MapSetParser.ypp"
+#line 1370 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_FilterExpressions) = driver.saveFilter();
+	  (yylhs.value.p_FilterExpressions) = driver.saveFilter();
       }
+#line 1741 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 215:
-
-/* Line 690 of lalr1.cc  */
-#line 1372 "lib/MapSetParser.ypp"
+#line 1372 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  driver.restoreFilter((yysemantic_stack_[(4) - (2)].p_FilterExpressions));
-	  driver.curOp = driver.makeConjunction((yysemantic_stack_[(4) - (1)].p_TableOperation), driver.curOp);
+	  driver.restoreFilter((yystack_[2].value.p_FilterExpressions));
+	  driver.curOp = driver.makeConjunction((yystack_[3].value.p_TableOperation), driver.curOp);
       }
+#line 1750 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 216:
-
-/* Line 690 of lalr1.cc  */
-#line 1380 "lib/MapSetParser.ypp"
+#line 1380 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.ensureGraphPattern();
 	driver.restoreFilter(NULL);
-	(yyval.p_TableOperation) = driver.curOp;
+	(yylhs.value.p_TableOperation) = driver.curOp;
 	driver.curOp = NULL;
       }
+#line 1761 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 217:
-
-/* Line 690 of lalr1.cc  */
-#line 1385 "lib/MapSetParser.ypp"
+#line 1385 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  driver.curOp = driver.makeDisjunction((yysemantic_stack_[(3) - (2)].p_TableOperation), driver.ensureGraphPattern());
+	  driver.curOp = driver.makeDisjunction((yystack_[1].value.p_TableOperation), driver.ensureGraphPattern());
       }
+#line 1770 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 220:
-
-/* Line 690 of lalr1.cc  */
-#line 1398 "lib/MapSetParser.ypp"
+#line 1398 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	if (driver.curFilter == NULL) {
 	    driver.ensureGraphPattern();
 	    driver.curFilter = new FilterExpressions();
 	}
-	driver.curFilter->addExpression((yysemantic_stack_[(2) - (2)].p_Expression));
+	driver.curFilter->addExpression((yystack_[0].value.p_Expression));
     }
+#line 1782 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 224:
-
-/* Line 690 of lalr1.cc  */
-#line 1414 "lib/MapSetParser.ypp"
+#line 1414 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall((yystack_[1].value.p_URI), (yystack_[0].value.p_ArgList)));
     }
+#line 1790 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 225:
-
-/* Line 690 of lalr1.cc  */
-#line 1422 "lib/MapSetParser.ypp"
+#line 1422 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ArgList) = NULL;
+	(yylhs.value.p_ArgList) = NULL;
     }
+#line 1798 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 226:
-
-/* Line 690 of lalr1.cc  */
-#line 1426 "lib/MapSetParser.ypp"
+#line 1426 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = driver.curExprList;
-	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(3) - (3)].p_Expression));
+	(yylhs.value.p_Expressions) = driver.curExprList;
+	driver.curExprList = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
       }
+#line 1807 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 227:
-
-/* Line 690 of lalr1.cc  */
-#line 1429 "lib/MapSetParser.ypp"
+#line 1429 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
-	  driver.curExprList = (yysemantic_stack_[(6) - (4)].p_Expressions);
+	  (yylhs.value.p_ArgList) = new ArgList(driver.curExprList); // !!! $2, 
+	  driver.curExprList = (yystack_[2].value.p_Expressions);
       }
+#line 1816 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 228:
-
-/* Line 690 of lalr1.cc  */
-#line 1436 "lib/MapSetParser.ypp"
+#line 1436 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_all;
+	(yylhs.value.p_distinctness) = DIST_all;
     }
+#line 1824 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 229:
-
-/* Line 690 of lalr1.cc  */
-#line 1439 "lib/MapSetParser.ypp"
+#line 1439 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_distinctness) = DIST_distinct;
+	(yylhs.value.p_distinctness) = DIST_distinct;
     }
+#line 1832 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 230:
-
-/* Line 690 of lalr1.cc  */
-#line 1446 "lib/MapSetParser.ypp"
+#line 1446 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 1840 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 232:
-
-/* Line 690 of lalr1.cc  */
-#line 1454 "lib/MapSetParser.ypp"
+#line 1454 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curExprList->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
+	driver.curExprList->push_back((yystack_[0].value.p_Expression));
     }
+#line 1848 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 233:
-
-/* Line 690 of lalr1.cc  */
-#line 1468 "lib/MapSetParser.ypp"
+#line 1468 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 1856 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 234:
-
-/* Line 690 of lalr1.cc  */
-#line 1471 "lib/MapSetParser.ypp"
+#line 1471 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = driver.curExprList;
-	driver.curExprList = new ProductionVector<const Expression*>((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expressions) = driver.curExprList;
+	driver.curExprList = new ProductionVector<const Expression*>((yystack_[0].value.p_Expression));
       }
+#line 1865 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 235:
-
-/* Line 690 of lalr1.cc  */
-#line 1474 "lib/MapSetParser.ypp"
+#line 1474 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_Expressions) = driver.curExprList;
-	  driver.curExprList = (yysemantic_stack_[(5) - (3)].p_Expressions);
+	  (yylhs.value.p_Expressions) = driver.curExprList;
+	  driver.curExprList = (yystack_[2].value.p_Expressions);
       }
+#line 1874 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 236:
-
-/* Line 690 of lalr1.cc  */
-#line 1481 "lib/MapSetParser.ypp"
+#line 1481 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
+#line 1882 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 238:
-
-/* Line 690 of lalr1.cc  */
-#line 1484 "lib/MapSetParser.ypp"
+#line 1484 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
+#line 1890 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 250:
-
-/* Line 690 of lalr1.cc  */
-#line 1528 "lib/MapSetParser.ypp"
+#line 1528 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_TTerm);
-	driver.curPredicate = (yyval.p_TTerm);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
+	driver.curPredicate = (yylhs.value.p_TTerm);
     }
+#line 1899 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 251:
-
-/* Line 690 of lalr1.cc  */
-#line 1532 "lib/MapSetParser.ypp"
+#line 1532 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-	driver.curPredicate = (yyval.p_TTerm);
+	(yylhs.value.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	driver.curPredicate = (yylhs.value.p_TTerm);
     }
+#line 1908 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 256:
-
-/* Line 690 of lalr1.cc  */
-#line 1555 "lib/MapSetParser.ypp"
+#line 1555 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.ensureBasicGraphPattern();
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yysemantic_stack_[(1) - (1)].p_TTerm)), true);
+	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)), true);
     }
+#line 1917 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 257:
-
-/* Line 690 of lalr1.cc  */
-#line 1563 "lib/MapSetParser.ypp"
+#line 1563 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
       }
+#line 1925 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 259:
-
-/* Line 690 of lalr1.cc  */
-#line 1566 "lib/MapSetParser.ypp"
+#line 1566 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curSubject = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curSubject = (yystack_[0].value.p_TTerm);
       }
+#line 1933 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 261:
-
-/* Line 690 of lalr1.cc  */
-#line 1572 "lib/MapSetParser.ypp"
+#line 1572 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yystack_[0].value.p_TTerm);
       }
+#line 1941 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 265:
-
-/* Line 690 of lalr1.cc  */
-#line 1583 "lib/MapSetParser.ypp"
+#line 1583 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	driver.curPredicate = (yysemantic_stack_[(1) - (1)].p_TTerm);
+	driver.curPredicate = (yystack_[0].value.p_TTerm);
       }
+#line 1949 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 274:
-
-/* Line 690 of lalr1.cc  */
-#line 1611 "lib/MapSetParser.ypp"
+#line 1611 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 1957 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 281:
-
-/* Line 690 of lalr1.cc  */
-#line 1638 "lib/MapSetParser.ypp"
+#line 1638 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
+#line 1965 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 283:
-
-/* Line 690 of lalr1.cc  */
-#line 1645 "lib/MapSetParser.ypp"
+#line 1645 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
+#line 1973 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 286:
-
-/* Line 690 of lalr1.cc  */
-#line 1656 "lib/MapSetParser.ypp"
+#line 1656 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
+#line 1981 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 288:
-
-/* Line 690 of lalr1.cc  */
-#line 1663 "lib/MapSetParser.ypp"
+#line 1663 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
+#line 1989 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 301:
-
-/* Line 690 of lalr1.cc  */
-#line 1699 "lib/MapSetParser.ypp"
+#line 1699 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 1997 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 302:
-
-/* Line 690 of lalr1.cc  */
-#line 1702 "lib/MapSetParser.ypp"
+#line 1702 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	(yylhs.value.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
     }
+#line 2005 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 303:
-
-/* Line 690 of lalr1.cc  */
-#line 1705 "lib/MapSetParser.ypp"
+#line 1705 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
+#line 2013 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 304:
-
-/* Line 690 of lalr1.cc  */
-#line 1708 "lib/MapSetParser.ypp"
+#line 1708 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	w3c_sw_NEED_IMPL("@@@");
     }
+#line 2021 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 323:
-
-/* Line 690 of lalr1.cc  */
-#line 1766 "lib/MapSetParser.ypp"
+#line 1766 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_SubjectPredicatePair).subject = driver.curSubject;
-	(yyval.p_SubjectPredicatePair).predicate = driver.curPredicate;
+	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
+	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
+#line 2031 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 324:
-
-/* Line 690 of lalr1.cc  */
-#line 1770 "lib/MapSetParser.ypp"
+#line 1770 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
-	  driver.curSubject = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).subject;
-	  driver.curPredicate = (yysemantic_stack_[(4) - (2)].p_SubjectPredicatePair).predicate;
+	  (yylhs.value.p_TTerm) = driver.curSubject; // could store w/ type in ctx..
+	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
+	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
+#line 2041 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 325:
-
-/* Line 690 of lalr1.cc  */
-#line 1779 "lib/MapSetParser.ypp"
+#line 1779 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_exact) {
-	    (yyval.p_TTerm) = driver.createBNode();
-	    const TTerm* tail = (yyval.p_TTerm);
-	    ProductionVector<const TTerm*>* members = (yysemantic_stack_[(4) - (3)].p_TTerms);
+	if ((yystack_[3].value.p_listModifier) == LIST_exact) {
+	    (yylhs.value.p_TTerm) = driver.createBNode();
+	    const TTerm* tail = (yylhs.value.p_TTerm);
+	    ProductionVector<const TTerm*>* members = (yystack_[1].value.p_TTerms);
 	    const URI* first = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
 	    const URI* rest = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
 	    const TTerm* nil = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
@@ -2084,1354 +2059,1197 @@ namespace w3c_sw {
 	    }
 	    members->clear();
 	    delete members;
-	} else if ((yysemantic_stack_[(4) - (1)].p_listModifier) == LIST_members) {
-	    (yyval.p_TTerm) = new Members((yysemantic_stack_[(4) - (3)].p_TTerms));
+	} else if ((yystack_[3].value.p_listModifier) == LIST_members) {
+	    (yylhs.value.p_TTerm) = new Members((yystack_[1].value.p_TTerms));
 	} else {
-	    error((yyloc), "unsupported function");
+	    error(yylhs.location, "unsupported function");
 	}
     }
+#line 2069 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 326:
-
-/* Line 690 of lalr1.cc  */
-#line 1806 "lib/MapSetParser.ypp"
+#line 1806 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_members;
+	(yylhs.value.p_listModifier) = LIST_members;
     }
+#line 2077 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 327:
-
-/* Line 690 of lalr1.cc  */
-#line 1809 "lib/MapSetParser.ypp"
+#line 1809 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_starts;
+	(yylhs.value.p_listModifier) = LIST_starts;
     }
+#line 2085 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 328:
-
-/* Line 690 of lalr1.cc  */
-#line 1812 "lib/MapSetParser.ypp"
+#line 1812 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_ends;
+	(yylhs.value.p_listModifier) = LIST_ends;
     }
+#line 2093 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 329:
-
-/* Line 690 of lalr1.cc  */
-#line 1815 "lib/MapSetParser.ypp"
+#line 1815 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_any;
+	(yylhs.value.p_listModifier) = LIST_any;
     }
+#line 2101 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 330:
-
-/* Line 690 of lalr1.cc  */
-#line 1818 "lib/MapSetParser.ypp"
+#line 1818 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_unordered;
+	(yylhs.value.p_listModifier) = LIST_unordered;
     }
+#line 2109 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 331:
-
-/* Line 690 of lalr1.cc  */
-#line 1825 "lib/MapSetParser.ypp"
+#line 1825 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_listModifier) = LIST_exact;
+	(yylhs.value.p_listModifier) = LIST_exact;
     }
+#line 2117 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 333:
-
-/* Line 690 of lalr1.cc  */
-#line 1833 "lib/MapSetParser.ypp"
+#line 1833 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerms) = new ProductionVector<const TTerm*>();
-	(yyval.p_TTerms)->push_back((yysemantic_stack_[(1) - (1)].p_TTerm));
+	(yylhs.value.p_TTerms) = new ProductionVector<const TTerm*>();
+	(yylhs.value.p_TTerms)->push_back((yystack_[0].value.p_TTerm));
     }
+#line 2126 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 334:
-
-/* Line 690 of lalr1.cc  */
-#line 1837 "lib/MapSetParser.ypp"
+#line 1837 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_TTerms)->push_back((yysemantic_stack_[(2) - (2)].p_TTerm));
-	(yyval.p_TTerms) = (yysemantic_stack_[(2) - (1)].p_TTerms);
+	(yystack_[1].value.p_TTerms)->push_back((yystack_[0].value.p_TTerm));
+	(yylhs.value.p_TTerms) = (yystack_[1].value.p_TTerms);
     }
+#line 2135 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 337:
-
-/* Line 690 of lalr1.cc  */
-#line 1849 "lib/MapSetParser.ypp"
+#line 1849 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 2143 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 339:
-
-/* Line 690 of lalr1.cc  */
-#line 1856 "lib/MapSetParser.ypp"
+#line 1856 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_Variable);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_Variable);
     }
+#line 2151 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 340:
-
-/* Line 690 of lalr1.cc  */
-#line 1859 "lib/MapSetParser.ypp"
+#line 1859 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 2159 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 343:
-
-/* Line 690 of lalr1.cc  */
-#line 1870 "lib/MapSetParser.ypp"
+#line 1870 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_URI);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
+#line 2167 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 344:
-
-/* Line 690 of lalr1.cc  */
-#line 1873 "lib/MapSetParser.ypp"
+#line 1873 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_RDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_RDFLiteral);
     }
+#line 2175 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 345:
-
-/* Line 690 of lalr1.cc  */
-#line 1876 "lib/MapSetParser.ypp"
+#line 1876 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
+#line 2183 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 346:
-
-/* Line 690 of lalr1.cc  */
-#line 1879 "lib/MapSetParser.ypp"
+#line 1879 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = (yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral);
+	(yylhs.value.p_TTerm) = (yystack_[0].value.p_BooleanRDFLiteral);
     }
+#line 2191 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 348:
-
-/* Line 690 of lalr1.cc  */
-#line 1883 "lib/MapSetParser.ypp"
+#line 1883 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
+	(yylhs.value.p_TTerm) = driver.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"); // !!! new GraphTerm_rule5($1);
     }
+#line 2199 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 350:
-
-/* Line 690 of lalr1.cc  */
-#line 1894 "lib/MapSetParser.ypp"
+#line 1894 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanDisjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new BooleanDisjunction((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 2209 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 351:
-
-/* Line 690 of lalr1.cc  */
-#line 1903 "lib/MapSetParser.ypp"
+#line 1903 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 2217 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 352:
-
-/* Line 690 of lalr1.cc  */
-#line 1910 "lib/MapSetParser.ypp"
+#line 1910 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 2225 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 353:
-
-/* Line 690 of lalr1.cc  */
-#line 1913 "lib/MapSetParser.ypp"
+#line 1913 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 2234 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 354:
-
-/* Line 690 of lalr1.cc  */
-#line 1921 "lib/MapSetParser.ypp"
+#line 1921 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new BooleanConjunction((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new BooleanConjunction((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 2244 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 355:
-
-/* Line 690 of lalr1.cc  */
-#line 1930 "lib/MapSetParser.ypp"
+#line 1930 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 2252 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 356:
-
-/* Line 690 of lalr1.cc  */
-#line 1937 "lib/MapSetParser.ypp"
+#line 1937 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 2260 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 357:
-
-/* Line 690 of lalr1.cc  */
-#line 1940 "lib/MapSetParser.ypp"
+#line 1940 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 2269 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 359:
-
-/* Line 690 of lalr1.cc  */
-#line 1952 "lib/MapSetParser.ypp"
+#line 1952 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp) {
-	    (yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp->setLeftParm((yysemantic_stack_[(2) - (1)].p_Expression));
-	    (yyval.p_Expression) = new ComparatorExpression((yysemantic_stack_[(2) - (2)].p_ComparatorSense).comp); // !!!
-	    if ((yysemantic_stack_[(2) - (2)].p_ComparatorSense).neg)
-		(yyval.p_Expression) = new BooleanNegation((yyval.p_Expression));
+	if ((yystack_[0].value.p_ComparatorSense).comp) {
+	    (yystack_[0].value.p_ComparatorSense).comp->setLeftParm((yystack_[1].value.p_Expression));
+	    (yylhs.value.p_Expression) = new ComparatorExpression((yystack_[0].value.p_ComparatorSense).comp); // !!!
+	    if ((yystack_[0].value.p_ComparatorSense).neg)
+		(yylhs.value.p_Expression) = new BooleanNegation((yylhs.value.p_Expression));
 	} else
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 2283 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 360:
-
-/* Line 690 of lalr1.cc  */
-#line 1965 "lib/MapSetParser.ypp"
+#line 1965 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = NULL;
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = NULL;
     }
+#line 2292 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 362:
-
-/* Line 690 of lalr1.cc  */
-#line 1973 "lib/MapSetParser.ypp"
+#line 1973 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanEQ((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanEQ((yystack_[0].value.p_Expression));
     }
+#line 2301 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 363:
-
-/* Line 690 of lalr1.cc  */
-#line 1977 "lib/MapSetParser.ypp"
+#line 1977 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanNE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanNE((yystack_[0].value.p_Expression));
     }
+#line 2310 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 364:
-
-/* Line 690 of lalr1.cc  */
-#line 1981 "lib/MapSetParser.ypp"
+#line 1981 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanLT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanLT((yystack_[0].value.p_Expression));
     }
+#line 2319 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 365:
-
-/* Line 690 of lalr1.cc  */
-#line 1985 "lib/MapSetParser.ypp"
+#line 1985 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanGT((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanGT((yystack_[0].value.p_Expression));
     }
+#line 2328 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 366:
-
-/* Line 690 of lalr1.cc  */
-#line 1989 "lib/MapSetParser.ypp"
+#line 1989 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanLE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanLE((yystack_[0].value.p_Expression));
     }
+#line 2337 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 367:
-
-/* Line 690 of lalr1.cc  */
-#line 1993 "lib/MapSetParser.ypp"
+#line 1993 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new BooleanGE((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new BooleanGE((yystack_[0].value.p_Expression));
     }
+#line 2346 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 368:
-
-/* Line 690 of lalr1.cc  */
-#line 1997 "lib/MapSetParser.ypp"
+#line 1997 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = false;
-	(yyval.p_ComparatorSense).comp = new NaryIn((yysemantic_stack_[(2) - (2)].p_Expressions));
+	(yylhs.value.p_ComparatorSense).neg = false;
+	(yylhs.value.p_ComparatorSense).comp = new NaryIn((yystack_[0].value.p_Expressions));
     }
+#line 2355 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 369:
-
-/* Line 690 of lalr1.cc  */
-#line 2001 "lib/MapSetParser.ypp"
+#line 2001 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ComparatorSense).neg = true;
-	(yyval.p_ComparatorSense).comp = new NaryIn((yysemantic_stack_[(3) - (3)].p_Expressions));
+	(yylhs.value.p_ComparatorSense).neg = true;
+	(yylhs.value.p_ComparatorSense).comp = new NaryIn((yystack_[0].value.p_Expressions));
     }
+#line 2364 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 371:
-
-/* Line 690 of lalr1.cc  */
-#line 2013 "lib/MapSetParser.ypp"
+#line 2013 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticSum((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new ArithmeticSum((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 2374 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 372:
-
-/* Line 690 of lalr1.cc  */
-#line 2022 "lib/MapSetParser.ypp"
+#line 2022 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new NumberExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 2382 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 373:
-
-/* Line 690 of lalr1.cc  */
-#line 2025 "lib/MapSetParser.ypp"
+#line 2025 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new NumberExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new NumberExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 2390 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 374:
-
-/* Line 690 of lalr1.cc  */
-#line 2032 "lib/MapSetParser.ypp"
+#line 2032 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 2398 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 375:
-
-/* Line 690 of lalr1.cc  */
-#line 2035 "lib/MapSetParser.ypp"
+#line 2035 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticInverse((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticInverse((yystack_[0].value.p_Expression));
     }
+#line 2406 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 376:
-
-/* Line 690 of lalr1.cc  */
-#line 2042 "lib/MapSetParser.ypp"
+#line 2042 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 2414 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 378:
-
-/* Line 690 of lalr1.cc  */
-#line 2050 "lib/MapSetParser.ypp"
+#line 2050 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 2422 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 379:
-
-/* Line 690 of lalr1.cc  */
-#line 2053 "lib/MapSetParser.ypp"
+#line 2053 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticNegation((yystack_[0].value.p_Expression));
     }
+#line 2430 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 380:
-
-/* Line 690 of lalr1.cc  */
-#line 2057 "lib/MapSetParser.ypp"
+#line 2057 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_Expression) == NULL)
-	    (yyval.p_Expression) = (yysemantic_stack_[(2) - (1)].p_Expression);
+	if ((yystack_[0].value.p_Expression) == NULL)
+	    (yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
 	else {
 	    ProductionVector<const Expression*>* v = new ProductionVector<const Expression*>();
-	    v->push_back((yysemantic_stack_[(2) - (1)].p_Expression));
-	    v->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	    (yyval.p_Expression) = new BooleanConjunction(v);
+	    v->push_back((yystack_[1].value.p_Expression));
+	    v->push_back((yystack_[0].value.p_Expression));
+	    (yylhs.value.p_Expression) = new BooleanConjunction(v);
 	}
     }
+#line 2445 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 381:
-
-/* Line 690 of lalr1.cc  */
-#line 2071 "lib/MapSetParser.ypp"
+#line 2071 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 2453 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 382:
-
-/* Line 690 of lalr1.cc  */
-#line 2074 "lib/MapSetParser.ypp"
+#line 2074 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 2462 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 383:
-
-/* Line 690 of lalr1.cc  */
-#line 2082 "lib/MapSetParser.ypp"
+#line 2082 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expressions)->size() > 0 ? new ArithmeticProduct((yysemantic_stack_[(2) - (1)].p_Expression), (yysemantic_stack_[(2) - (2)].p_Expressions)) : (yysemantic_stack_[(2) - (1)].p_Expression);
-	(yysemantic_stack_[(2) - (2)].p_Expressions)->clear();
-	delete (yysemantic_stack_[(2) - (2)].p_Expressions);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expressions)->size() > 0 ? new ArithmeticProduct((yystack_[1].value.p_Expression), (yystack_[0].value.p_Expressions)) : (yystack_[1].value.p_Expression);
+	(yystack_[0].value.p_Expressions)->clear();
+	delete (yystack_[0].value.p_Expressions);
     }
+#line 2472 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 384:
-
-/* Line 690 of lalr1.cc  */
-#line 2091 "lib/MapSetParser.ypp"
+#line 2091 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expressions) = new ProductionVector<const Expression*>();
+	(yylhs.value.p_Expressions) = new ProductionVector<const Expression*>();
     }
+#line 2480 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 385:
-
-/* Line 690 of lalr1.cc  */
-#line 2094 "lib/MapSetParser.ypp"
+#line 2094 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yysemantic_stack_[(2) - (1)].p_Expressions)->push_back((yysemantic_stack_[(2) - (2)].p_Expression));
-	(yyval.p_Expressions) = (yysemantic_stack_[(2) - (1)].p_Expressions);
+	(yystack_[1].value.p_Expressions)->push_back((yystack_[0].value.p_Expression));
+	(yylhs.value.p_Expressions) = (yystack_[1].value.p_Expressions);
     }
+#line 2489 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 386:
-
-/* Line 690 of lalr1.cc  */
-#line 2101 "lib/MapSetParser.ypp"
+#line 2101 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new BooleanNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new BooleanNegation((yystack_[0].value.p_Expression));
     }
+#line 2497 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 387:
-
-/* Line 690 of lalr1.cc  */
-#line 2104 "lib/MapSetParser.ypp"
+#line 2104 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(2) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[0].value.p_Expression);
     }
+#line 2505 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 388:
-
-/* Line 690 of lalr1.cc  */
-#line 2107 "lib/MapSetParser.ypp"
+#line 2107 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new ArithmeticNegation((yysemantic_stack_[(2) - (2)].p_Expression));
+	(yylhs.value.p_Expression) = new ArithmeticNegation((yystack_[0].value.p_Expression));
     }
+#line 2513 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 393:
-
-/* Line 690 of lalr1.cc  */
-#line 2117 "lib/MapSetParser.ypp"
+#line 2117 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_RDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_RDFLiteral));
     }
+#line 2521 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 394:
-
-/* Line 690 of lalr1.cc  */
-#line 2120 "lib/MapSetParser.ypp"
+#line 2120 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_NumericRDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_NumericRDFLiteral));
     }
+#line 2529 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 395:
-
-/* Line 690 of lalr1.cc  */
-#line 2123 "lib/MapSetParser.ypp"
+#line 2123 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_BooleanRDFLiteral));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_BooleanRDFLiteral));
     }
+#line 2537 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 396:
-
-/* Line 690 of lalr1.cc  */
-#line 2126 "lib/MapSetParser.ypp"
+#line 2126 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(1) - (1)].p_Variable));
+	(yylhs.value.p_Expression) = new TTermExpression((yystack_[0].value.p_Variable));
     }
+#line 2545 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 398:
-
-/* Line 690 of lalr1.cc  */
-#line 2133 "lib/MapSetParser.ypp"
+#line 2133 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 2553 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 399:
-
-/* Line 690 of lalr1.cc  */
-#line 2139 "lib/MapSetParser.ypp"
+#line 2139 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_str, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2561 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 400:
-
-/* Line 690 of lalr1.cc  */
-#line 2142 "lib/MapSetParser.ypp"
+#line 2142 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lang, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2569 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 401:
-
-/* Line 690 of lalr1.cc  */
-#line 2145 "lib/MapSetParser.ypp"
+#line 2145 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_langMatches, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2577 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 402:
-
-/* Line 690 of lalr1.cc  */
-#line 2148 "lib/MapSetParser.ypp"
+#line 2148 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_datatype, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2585 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 403:
-
-/* Line 690 of lalr1.cc  */
-#line 2151 "lib/MapSetParser.ypp"
+#line 2151 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yysemantic_stack_[(4) - (3)].p_Variable)), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bound, new TTermExpression((yystack_[1].value.p_Variable)), NULL, NULL));
     }
+#line 2593 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 404:
-
-/* Line 690 of lalr1.cc  */
-#line 2154 "lib/MapSetParser.ypp"
+#line 2154 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2601 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 405:
-
-/* Line 690 of lalr1.cc  */
-#line 2157 "lib/MapSetParser.ypp"
+#line 2157 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_iri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2609 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 406:
-
-/* Line 690 of lalr1.cc  */
-#line 2161 "lib/MapSetParser.ypp"
+#line 2161 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yysemantic_stack_[(2) - (2)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_bnode, (yystack_[0].value.p_Expression), NULL, NULL));
     }
+#line 2617 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 407:
-
-/* Line 690 of lalr1.cc  */
-#line 2164 "lib/MapSetParser.ypp"
+#line 2164 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_rand, NULL, NULL, NULL));
     }
+#line 2625 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 408:
-
-/* Line 690 of lalr1.cc  */
-#line 2167 "lib/MapSetParser.ypp"
+#line 2167 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_abs, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2633 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 409:
-
-/* Line 690 of lalr1.cc  */
-#line 2170 "lib/MapSetParser.ypp"
+#line 2170 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_ceil, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2641 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 410:
-
-/* Line 690 of lalr1.cc  */
-#line 2173 "lib/MapSetParser.ypp"
+#line 2173 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_floor, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2649 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 411:
-
-/* Line 690 of lalr1.cc  */
-#line 2176 "lib/MapSetParser.ypp"
+#line 2176 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_numeric_round, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2657 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 412:
-
-/* Line 690 of lalr1.cc  */
-#line 2179 "lib/MapSetParser.ypp"
+#line 2179 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_concat, new ArgList((yystack_[0].value.p_Expressions))));
     }
+#line 2665 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 414:
-
-/* Line 690 of lalr1.cc  */
-#line 2183 "lib/MapSetParser.ypp"
+#line 2183 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_string_length, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2673 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 415:
-
-/* Line 690 of lalr1.cc  */
-#line 2186 "lib/MapSetParser.ypp"
+#line 2186 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_upper_case, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2681 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 416:
-
-/* Line 690 of lalr1.cc  */
-#line 2189 "lib/MapSetParser.ypp"
+#line 2189 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_lower_case, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2689 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 417:
-
-/* Line 690 of lalr1.cc  */
-#line 2192 "lib/MapSetParser.ypp"
+#line 2192 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_encode_for_uri, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2697 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 418:
-
-/* Line 690 of lalr1.cc  */
-#line 2195 "lib/MapSetParser.ypp"
+#line 2195 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_contains, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2705 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 419:
-
-/* Line 690 of lalr1.cc  */
-#line 2198 "lib/MapSetParser.ypp"
+#line 2198 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_starts_with, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2713 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 420:
-
-/* Line 690 of lalr1.cc  */
-#line 2201 "lib/MapSetParser.ypp"
+#line 2201 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_ends_with, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2721 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 421:
-
-/* Line 690 of lalr1.cc  */
-#line 2204 "lib/MapSetParser.ypp"
+#line 2204 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_before, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2729 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 422:
-
-/* Line 690 of lalr1.cc  */
-#line 2207 "lib/MapSetParser.ypp"
+#line 2207 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring_after, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2737 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 423:
-
-/* Line 690 of lalr1.cc  */
-#line 2210 "lib/MapSetParser.ypp"
+#line 2210 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_year_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2745 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 424:
-
-/* Line 690 of lalr1.cc  */
-#line 2213 "lib/MapSetParser.ypp"
+#line 2213 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_month_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2753 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 425:
-
-/* Line 690 of lalr1.cc  */
-#line 2216 "lib/MapSetParser.ypp"
+#line 2216 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_day_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2761 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 426:
-
-/* Line 690 of lalr1.cc  */
-#line 2219 "lib/MapSetParser.ypp"
+#line 2219 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_hours_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2769 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 427:
-
-/* Line 690 of lalr1.cc  */
-#line 2222 "lib/MapSetParser.ypp"
+#line 2222 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_minutes_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2777 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 428:
-
-/* Line 690 of lalr1.cc  */
-#line 2225 "lib/MapSetParser.ypp"
+#line 2225 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_seconds_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2785 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 429:
-
-/* Line 690 of lalr1.cc  */
-#line 2228 "lib/MapSetParser.ypp"
+#line 2228 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2793 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 430:
-
-/* Line 690 of lalr1.cc  */
-#line 2231 "lib/MapSetParser.ypp"
+#line 2231 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_timezone_from_dateTime, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2801 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 431:
-
-/* Line 690 of lalr1.cc  */
-#line 2234 "lib/MapSetParser.ypp"
+#line 2234 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_now, NULL, NULL, NULL));
     }
+#line 2809 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 432:
-
-/* Line 690 of lalr1.cc  */
-#line 2237 "lib/MapSetParser.ypp"
+#line 2237 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_uuid, NULL, NULL, NULL));
     }
+#line 2817 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 433:
-
-/* Line 690 of lalr1.cc  */
-#line 2240 "lib/MapSetParser.ypp"
+#line 2240 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_struuid, NULL, NULL, NULL));
     }
+#line 2825 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 434:
-
-/* Line 690 of lalr1.cc  */
-#line 2243 "lib/MapSetParser.ypp"
+#line 2243 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_md5, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2833 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 435:
-
-/* Line 690 of lalr1.cc  */
-#line 2246 "lib/MapSetParser.ypp"
+#line 2246 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha1, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2841 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 436:
-
-/* Line 690 of lalr1.cc  */
-#line 2249 "lib/MapSetParser.ypp"
+#line 2249 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha256, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2849 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 437:
-
-/* Line 690 of lalr1.cc  */
-#line 2252 "lib/MapSetParser.ypp"
+#line 2252 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha384, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2857 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 438:
-
-/* Line 690 of lalr1.cc  */
-#line 2255 "lib/MapSetParser.ypp"
+#line 2255 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sha512, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2865 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 439:
-
-/* Line 690 of lalr1.cc  */
-#line 2258 "lib/MapSetParser.ypp"
+#line 2258 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, new ArgList((yysemantic_stack_[(2) - (2)].p_Expressions))));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_coalesce, new ArgList((yystack_[0].value.p_Expressions))));
     }
+#line 2873 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 440:
-
-/* Line 690 of lalr1.cc  */
-#line 2261 "lib/MapSetParser.ypp"
+#line 2261 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yysemantic_stack_[(8) - (3)].p_Expression), (yysemantic_stack_[(8) - (5)].p_Expression), (yysemantic_stack_[(8) - (7)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_if, (yystack_[5].value.p_Expression), (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 2881 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 441:
-
-/* Line 690 of lalr1.cc  */
-#line 2264 "lib/MapSetParser.ypp"
+#line 2264 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strlang, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2889 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 442:
-
-/* Line 690 of lalr1.cc  */
-#line 2267 "lib/MapSetParser.ypp"
+#line 2267 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_strdt, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2897 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 443:
-
-/* Line 690 of lalr1.cc  */
-#line 2270 "lib/MapSetParser.ypp"
+#line 2270 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yysemantic_stack_[(6) - (3)].p_Expression), (yysemantic_stack_[(6) - (5)].p_Expression), NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_sameTerm, (yystack_[3].value.p_Expression), (yystack_[1].value.p_Expression), NULL));
     }
+#line 2905 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 444:
-
-/* Line 690 of lalr1.cc  */
-#line 2273 "lib/MapSetParser.ypp"
+#line 2273 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2913 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 445:
-
-/* Line 690 of lalr1.cc  */
-#line 2276 "lib/MapSetParser.ypp"
+#line 2276 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isIRI, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2921 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 446:
-
-/* Line 690 of lalr1.cc  */
-#line 2279 "lib/MapSetParser.ypp"
+#line 2279 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isBlank, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2929 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 447:
-
-/* Line 690 of lalr1.cc  */
-#line 2282 "lib/MapSetParser.ypp"
+#line 2282 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isLiteral, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2937 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 448:
-
-/* Line 690 of lalr1.cc  */
-#line 2285 "lib/MapSetParser.ypp"
+#line 2285 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yysemantic_stack_[(4) - (3)].p_Expression), NULL, NULL));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_isNumeric, (yystack_[1].value.p_Expression), NULL, NULL));
     }
+#line 2945 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 452:
-
-/* Line 690 of lalr1.cc  */
-#line 2296 "lib/MapSetParser.ypp"
+#line 2296 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = (yysemantic_stack_[(3) - (2)].p_Expression);
+	(yylhs.value.p_Expression) = (yystack_[1].value.p_Expression);
     }
+#line 2953 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 453:
-
-/* Line 690 of lalr1.cc  */
-#line 2299 "lib/MapSetParser.ypp"
+#line 2299 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 2961 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 454:
-
-/* Line 690 of lalr1.cc  */
-#line 2306 "lib/MapSetParser.ypp"
+#line 2306 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_matches, (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 2969 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 455:
-
-/* Line 690 of lalr1.cc  */
-#line 2313 "lib/MapSetParser.ypp"
+#line 2313 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 2977 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 457:
-
-/* Line 690 of lalr1.cc  */
-#line 2320 "lib/MapSetParser.ypp"
+#line 2320 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yysemantic_stack_[(7) - (3)].p_Expression), (yysemantic_stack_[(7) - (5)].p_Expression), (yysemantic_stack_[(7) - (6)].p_Expression)));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall(TTerm::FUNC_substring, (yystack_[4].value.p_Expression), (yystack_[2].value.p_Expression), (yystack_[1].value.p_Expression)));
     }
+#line 2985 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 458:
-
-/* Line 690 of lalr1.cc  */
-#line 2326 "lib/MapSetParser.ypp"
+#line 2326 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
       }
+#line 2994 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 459:
-
-/* Line 690 of lalr1.cc  */
-#line 2329 "lib/MapSetParser.ypp"
+#line 2329 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  (yyval.p_TableOperation) = driver.curOp;
+	  (yylhs.value.p_TableOperation) = driver.curOp;
 	  driver.curOp = NULL;
       }
+#line 3004 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 460:
-
-/* Line 690 of lalr1.cc  */
-#line 2333 "lib/MapSetParser.ypp"
+#line 2333 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	  (yyval.p_Expression) = new ExistsExpression(driver.ensureGraphPattern());
-	  driver.curOp = (yysemantic_stack_[(4) - (3)].p_TableOperation);
-	  driver.countStar = (yysemantic_stack_[(4) - (2)].p_parentCountStar);
+	  (yylhs.value.p_Expression) = new ExistsExpression(driver.ensureGraphPattern());
+	  driver.curOp = (yystack_[1].value.p_TableOperation);
+	  driver.countStar = (yystack_[2].value.p_parentCountStar);
       }
+#line 3014 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 461:
-
-/* Line 690 of lalr1.cc  */
-#line 2341 "lib/MapSetParser.ypp"
+#line 2341 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_parentCountStar) = driver.countStar;
+	(yylhs.value.p_parentCountStar) = driver.countStar;
 	driver.countStar = false;
       }
+#line 3023 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 462:
-
-/* Line 690 of lalr1.cc  */
-#line 2344 "lib/MapSetParser.ypp"
+#line 2344 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  driver.restoreFilter(NULL);
-	  (yyval.p_TableOperation) = driver.curOp;
+	  (yylhs.value.p_TableOperation) = driver.curOp;
 	  driver.curOp = NULL;
       }
+#line 3033 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 463:
-
-/* Line 690 of lalr1.cc  */
-#line 2348 "lib/MapSetParser.ypp"
+#line 2348 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  // $$ = new ExistsExpression(false, driver.ensureGraphPattern());
-	  (yyval.p_Expression) = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
-	  driver.curOp = (yysemantic_stack_[(5) - (4)].p_TableOperation);
-	  driver.countStar = (yysemantic_stack_[(5) - (3)].p_parentCountStar);
+	  (yylhs.value.p_Expression) = new BooleanNegation(new ExistsExpression(driver.ensureGraphPattern()));
+	  driver.curOp = (yystack_[1].value.p_TableOperation);
+	  driver.countStar = (yystack_[2].value.p_parentCountStar);
       }
+#line 3044 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 464:
-
-/* Line 690 of lalr1.cc  */
-#line 2357 "lib/MapSetParser.ypp"
+#line 2357 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.countStar = true;
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression), AggregateCall::ScalarVals()));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_count, (yystack_[2].value.p_distinctness), (yystack_[1].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 3053 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 465:
-
-/* Line 690 of lalr1.cc  */
-#line 2361 "lib/MapSetParser.ypp"
+#line 2361 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	driver.countStar = true;
-	(yyval.p_Expression) = new FunctionCallExpression(new AggregateCall((yysemantic_stack_[(5) - (1)].p_URI), (yysemantic_stack_[(5) - (3)].p_distinctness), (yysemantic_stack_[(5) - (4)].p_Expression), AggregateCall::ScalarVals()));
+	(yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall((yystack_[4].value.p_URI), (yystack_[2].value.p_distinctness), (yystack_[1].value.p_Expression), AggregateCall::ScalarVals()));
     }
+#line 3062 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 466:
-
-/* Line 690 of lalr1.cc  */
-#line 2366 "lib/MapSetParser.ypp"
+#line 2366 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
 	  AggregateCall::ScalarVals svals;
-	  if ((yysemantic_stack_[(6) - (5)].p_RDFLiteral) != NULL)
-	      svals["separator"] = (yysemantic_stack_[(6) - (5)].p_RDFLiteral)->getLexicalValue();
-	  (yyval.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yysemantic_stack_[(6) - (3)].p_distinctness), (yysemantic_stack_[(6) - (4)].p_Expression), svals));
+	  if ((yystack_[1].value.p_RDFLiteral) != NULL)
+	      svals["separator"] = (yystack_[1].value.p_RDFLiteral)->getLexicalValue();
+	  (yylhs.value.p_Expression) = new FunctionCallExpression(new AggregateCall(TTerm::FUNC_group_concat, (yystack_[3].value.p_distinctness), (yystack_[2].value.p_Expression), svals));
     }
+#line 3073 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 467:
-
-/* Line 690 of lalr1.cc  */
-#line 2375 "lib/MapSetParser.ypp"
+#line 2375 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_Expression) = NULL;
+	(yylhs.value.p_Expression) = NULL;
     }
+#line 3081 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 469:
-
-/* Line 690 of lalr1.cc  */
-#line 2382 "lib/MapSetParser.ypp"
+#line 2382 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_sum;
+	(yylhs.value.p_URI) = TTerm::FUNC_sum;
     }
+#line 3089 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 470:
-
-/* Line 690 of lalr1.cc  */
-#line 2385 "lib/MapSetParser.ypp"
+#line 2385 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_min;
+	(yylhs.value.p_URI) = TTerm::FUNC_min;
     }
+#line 3097 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 471:
-
-/* Line 690 of lalr1.cc  */
-#line 2388 "lib/MapSetParser.ypp"
+#line 2388 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_max;
+	(yylhs.value.p_URI) = TTerm::FUNC_max;
     }
+#line 3105 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 472:
-
-/* Line 690 of lalr1.cc  */
-#line 2391 "lib/MapSetParser.ypp"
+#line 2391 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_avg;
+	(yylhs.value.p_URI) = TTerm::FUNC_avg;
     }
+#line 3113 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 473:
-
-/* Line 690 of lalr1.cc  */
-#line 2394 "lib/MapSetParser.ypp"
+#line 2394 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = TTerm::FUNC_sample;
+	(yylhs.value.p_URI) = TTerm::FUNC_sample;
     }
+#line 3121 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 474:
-
-/* Line 690 of lalr1.cc  */
-#line 2400 "lib/MapSetParser.ypp"
+#line 2400 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(4) - (4)].p_string), NULL, NULL);
+	(yylhs.value.p_RDFLiteral) = driver.getRDFLiteral(*(yystack_[0].value.p_string), NULL, NULL);
     }
+#line 3129 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 475:
-
-/* Line 690 of lalr1.cc  */
-#line 2406 "lib/MapSetParser.ypp"
+#line 2406 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RDFLiteral) = NULL;
+	(yylhs.value.p_RDFLiteral) = NULL;
     }
+#line 3137 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 477:
-
-/* Line 690 of lalr1.cc  */
-#line 2413 "lib/MapSetParser.ypp"
+#line 2413 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	if ((yysemantic_stack_[(2) - (2)].p_ArgList))
-	    (yyval.p_Expression) = new FunctionCallExpression(new FunctionCall((yysemantic_stack_[(2) - (1)].p_URI), (yysemantic_stack_[(2) - (2)].p_ArgList)));
+	if ((yystack_[0].value.p_ArgList))
+	    (yylhs.value.p_Expression) = new FunctionCallExpression(new FunctionCall((yystack_[1].value.p_URI), (yystack_[0].value.p_ArgList)));
 	else
-	    (yyval.p_Expression) = new TTermExpression((yysemantic_stack_[(2) - (1)].p_URI));
+	    (yylhs.value.p_Expression) = new TTermExpression((yystack_[1].value.p_URI));
     }
+#line 3148 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 478:
-
-/* Line 690 of lalr1.cc  */
-#line 2423 "lib/MapSetParser.ypp"
+#line 2423 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_ArgList) = NULL;
+	(yylhs.value.p_ArgList) = NULL;
     }
+#line 3156 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 480:
-
-/* Line 690 of lalr1.cc  */
-#line 2431 "lib/MapSetParser.ypp"
+#line 2431 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_RDFLiteral) = driver.getRDFLiteral(*(yysemantic_stack_[(2) - (1)].p_string), (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).uri, (yysemantic_stack_[(2) - (2)].p_uri_or_langtag).langtag);
-	delete (yysemantic_stack_[(2) - (1)].p_string);
+	(yylhs.value.p_RDFLiteral) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
+	delete (yystack_[1].value.p_string);
     }
+#line 3165 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 481:
-
-/* Line 690 of lalr1.cc  */
-#line 2439 "lib/MapSetParser.ypp"
+#line 2439 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_URI) = (yysemantic_stack_[(2) - (2)].p_URI);
+	(yylhs.value.p_URI) = (yystack_[0].value.p_URI);
     }
+#line 3173 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 482:
-
-/* Line 690 of lalr1.cc  */
-#line 2446 "lib/MapSetParser.ypp"
+#line 2446 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = (yysemantic_stack_[(1) - (1)].p_LANGTAG);
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
+#line 3182 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 483:
-
-/* Line 690 of lalr1.cc  */
-#line 2450 "lib/MapSetParser.ypp"
+#line 2450 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = (yysemantic_stack_[(1) - (1)].p_URI);
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 3191 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
   case 484:
-
-/* Line 690 of lalr1.cc  */
-#line 2458 "lib/MapSetParser.ypp"
+#line 2458 "lib/MapSetParser.ypp" // lalr1.cc:847
     {
-	(yyval.p_uri_or_langtag).uri = NULL;
-	(yyval.p_uri_or_langtag).langtag = NULL;
+	(yylhs.value.p_uri_or_langtag).uri = NULL;
+	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
+#line 3200 "lib/MapSetParser.cpp" // lalr1.cc:847
     break;
 
 
+#line 3204 "lib/MapSetParser.cpp" // lalr1.cc:847
+            default:
+              break;
+            }
+        }
+      catch (const syntax_error& yyexc)
+        {
+          error (yyexc);
+          YYERROR;
+        }
+      YY_SYMBOL_PRINT ("-> $$ =", yylhs);
+      yypop_ (yylen);
+      yylen = 0;
+      YY_STACK_PRINT ();
 
-/* Line 690 of lalr1.cc  */
-#line 3364 "lib/MapSetParser.cpp"
-	default:
-          break;
-      }
-    /* User semantic actions sometimes alter yychar, and that requires
-       that yytoken be updated with the new translation.  We take the
-       approach of translating immediately before every use of yytoken.
-       One alternative is translating here after every semantic action,
-       but that translation would be missed if the semantic action
-       invokes YYABORT, YYACCEPT, or YYERROR immediately after altering
-       yychar.  In the case of YYABORT or YYACCEPT, an incorrect
-       destructor might then be invoked immediately.  In the case of
-       YYERROR, subsequent parser actions might lead to an incorrect
-       destructor call or verbose syntax error message before the
-       lookahead is translated.  */
-    YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
-
-    yypop_ (yylen);
-    yylen = 0;
-    YY_STACK_PRINT ();
-
-    yysemantic_stack_.push (yyval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the result of the reduction.  */
-    yyn = yyr1_[yyn];
-    yystate = yypgoto_[yyn - yyntokens_] + yystate_stack_[0];
-    if (0 <= yystate && yystate <= yylast_
-	&& yycheck_[yystate] == yystate_stack_[0])
-      yystate = yytable_[yystate];
-    else
-      yystate = yydefgoto_[yyn - yyntokens_];
+      // Shift the result of the reduction.
+      yypush_ (YY_NULLPTR, yylhs);
+    }
     goto yynewstate;
 
-  /*------------------------------------.
-  | yyerrlab -- here on detecting error |
-  `------------------------------------*/
+  /*--------------------------------------.
+  | yyerrlab -- here on detecting error.  |
+  `--------------------------------------*/
   yyerrlab:
-    /* Make sure we have latest lookahead translation.  See comments at
-       user semantic actions for why this is necessary.  */
-    yytoken = yytranslate_ (yychar);
-
-    /* If not already recovering from an error, report this error.  */
+    // If not already recovering from an error, report this error.
     if (!yyerrstatus_)
       {
-	++yynerrs_;
-	if (yychar == yyempty_)
-	  yytoken = yyempty_;
-	error (yylloc, yysyntax_error_ (yystate, yytoken));
+        ++yynerrs_;
+        error (yyla.location, yysyntax_error_ (yystack_[0].state,
+                                           yyempty ? yyempty_ : yyla.type_get ()));
       }
 
-    yyerror_range[1] = yylloc;
+
+    yyerror_range[1].location = yyla.location;
     if (yyerrstatus_ == 3)
       {
-	/* If just tried and failed to reuse lookahead token after an
-	 error, discard it.  */
+        /* If just tried and failed to reuse lookahead token after an
+           error, discard it.  */
 
-	if (yychar <= yyeof_)
-	  {
-	  /* Return failure if at end of input.  */
-	  if (yychar == yyeof_)
-	    YYABORT;
-	  }
-	else
-	  {
-	    yydestruct_ ("Error: discarding", yytoken, &yylval, &yylloc);
-	    yychar = yyempty_;
-	  }
+        // Return failure if at end of input.
+        if (yyla.type_get () == yyeof_)
+          YYABORT;
+        else if (!yyempty)
+          {
+            yy_destroy_ ("Error: discarding", yyla);
+            yyempty = true;
+          }
       }
 
-    /* Else will try to reuse lookahead token after shifting the error
-       token.  */
+    // Else will try to reuse lookahead token after shifting the error token.
     goto yyerrlab1;
 
 
@@ -3445,100 +3263,105 @@ namespace w3c_sw {
        code.  */
     if (false)
       goto yyerrorlab;
-
-    yyerror_range[1] = yylocation_stack_[yylen - 1];
-    /* Do not reclaim the symbols of the rule which action triggered
+    yyerror_range[1].location = yystack_[yylen - 1].location;
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
-    yystate = yystate_stack_[0];
     goto yyerrlab1;
 
   /*-------------------------------------------------------------.
   | yyerrlab1 -- common code for both syntax error and YYERROR.  |
   `-------------------------------------------------------------*/
   yyerrlab1:
-    yyerrstatus_ = 3;	/* Each real token shifted decrements this.  */
+    yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    {
+      stack_symbol_type error_token;
+      for (;;)
+        {
+          yyn = yypact_[yystack_[0].state];
+          if (!yy_pact_value_is_default_ (yyn))
+            {
+              yyn += yyterror_;
+              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
+                {
+                  yyn = yytable_[yyn];
+                  if (0 < yyn)
+                    break;
+                }
+            }
 
-    for (;;)
-      {
-	yyn = yypact_[yystate];
-	if (!yy_pact_value_is_default_ (yyn))
-	{
-	  yyn += yyterror_;
-	  if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
-	    {
-	      yyn = yytable_[yyn];
-	      if (0 < yyn)
-		break;
-	    }
-	}
+          // Pop the current state because it cannot handle the error token.
+          if (yystack_.size () == 1)
+            YYABORT;
 
-	/* Pop the current state because it cannot handle the error token.  */
-	if (yystate_stack_.height () == 1)
-	YYABORT;
+          yyerror_range[1].location = yystack_[0].location;
+          yy_destroy_ ("Error: popping", yystack_[0]);
+          yypop_ ();
+          YY_STACK_PRINT ();
+        }
 
-	yyerror_range[1] = yylocation_stack_[0];
-	yydestruct_ ("Error: popping",
-		     yystos_[yystate],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-	yypop_ ();
-	yystate = yystate_stack_[0];
-	YY_STACK_PRINT ();
-      }
+      yyerror_range[2].location = yyla.location;
+      YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
-    yyerror_range[2] = yylloc;
-    // Using YYLLOC is tempting, but would change the location of
-    // the lookahead.  YYLOC is available though.
-    YYLLOC_DEFAULT (yyloc, yyerror_range, 2);
-    yysemantic_stack_.push (yylval);
-    yylocation_stack_.push (yyloc);
-
-    /* Shift the error token.  */
-    YY_SYMBOL_PRINT ("Shifting", yystos_[yyn],
-		     &yysemantic_stack_[0], &yylocation_stack_[0]);
-
-    yystate = yyn;
+      // Shift the error token.
+      error_token.state = yyn;
+      yypush_ ("Shifting", error_token);
+    }
     goto yynewstate;
 
-    /* Accept.  */
+    // Accept.
   yyacceptlab:
     yyresult = 0;
     goto yyreturn;
 
-    /* Abort.  */
+    // Abort.
   yyabortlab:
     yyresult = 1;
     goto yyreturn;
 
   yyreturn:
-    if (yychar != yyempty_)
-      {
-        /* Make sure we have latest lookahead translation.  See comments
-           at user semantic actions for why this is necessary.  */
-        yytoken = yytranslate_ (yychar);
-        yydestruct_ ("Cleanup: discarding lookahead", yytoken, &yylval,
-                     &yylloc);
-      }
+    if (!yyempty)
+      yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
-    /* Do not reclaim the symbols of the rule which action triggered
+    /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
-    while (yystate_stack_.height () != 1)
+    while (1 < yystack_.size ())
       {
-	yydestruct_ ("Cleanup: popping",
-		   yystos_[yystate_stack_[0]],
-		   &yysemantic_stack_[0],
-		   &yylocation_stack_[0]);
-	yypop_ ();
+        yy_destroy_ ("Cleanup: popping", yystack_[0]);
+        yypop_ ();
       }
 
     return yyresult;
   }
+    catch (...)
+      {
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
+                 << std::endl;
+        // Do not try to display the values of the reclaimed symbols,
+        // as their printer might throw an exception.
+        if (!yyempty)
+          yy_destroy_ (YY_NULLPTR, yyla);
+
+        while (1 < yystack_.size ())
+          {
+            yy_destroy_ (YY_NULLPTR, yystack_[0]);
+            yypop_ ();
+          }
+        throw;
+      }
+  }
+
+  void
+  MapSetParser::error (const syntax_error& yyexc)
+  {
+    error (yyexc.location, yyexc.what());
+  }
 
   // Generate an error message.
   std::string
-  MapSetParser::yysyntax_error_ (int yystate, int yytoken)
+  MapSetParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
   {
     std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
@@ -3563,7 +3386,7 @@ namespace w3c_sw {
          a consistent state with a default action.  There might have
          been a previous inconsistent state, consistent state with a
          non-default action, or user semantic action that manipulated
-         yychar.
+         yyla.  (However, yyla is currently not documented for users.)
        - Of course, the expected token list depends on states to have
          correct lookahead information, and it depends on the parser not
          to perform extra reductions after fetching a lookahead from the
@@ -3584,7 +3407,7 @@ namespace w3c_sw {
                YYCHECK.  In other words, skip the first -YYN actions for
                this state because they are default actions.  */
             int yyxbegin = yyn < 0 ? -yyn : 0;
-            /* Stay within bounds of both yycheck and yytname.  */
+            // Stay within bounds of both yycheck and yytname.
             int yychecklim = yylast_ - yyn + 1;
             int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
             for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
@@ -3602,7 +3425,7 @@ namespace w3c_sw {
           }
       }
 
-    char const* yyformat = 0;
+    char const* yyformat = YY_NULLPTR;
     switch (yycount)
       {
 #define YYCASE_(N, S)                         \
@@ -3632,13 +3455,14 @@ namespace w3c_sw {
   }
 
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
   const short int MapSetParser::yypact_ninf_ = -684;
+
+  const short int MapSetParser::yytable_ninf_ = -332;
+
   const short int
   MapSetParser::yypact_[] =
   {
-      -684,    56,    48,  -684,   -92,  -684,  -684,  -684,  -684,   408,
+    -684,    56,    48,  -684,   -92,  -684,  -684,  -684,  -684,   408,
       59,   -59,   120,   120,   120,   120,   120,    50,    29,    95,
       47,    38,  -684,  -684,  -684,  -684,  -684,   120,  -684,  -684,
     -684,  -684,  -684,   -57,  -684,  -684,  -684,  -684,  -684,  -684,
@@ -3723,13 +3547,10 @@ namespace w3c_sw {
     -684,  -684,  -684,  -684,  -684,  1282,  -684
   };
 
-  /* YYDEFACT[S] -- default reduction number in state S.  Performed when
-     YYTABLE doesn't specify something else to do.  Zero means the
-     default is an error.  */
   const unsigned short int
   MapSetParser::yydefact_[] =
   {
-         2,     0,    37,     1,     0,     4,    39,    38,    41,     6,
+       2,     0,    37,     1,     0,     4,    39,    38,    41,     6,
       36,     0,     0,     0,     0,     0,     0,     0,    27,     0,
        0,     3,     5,    42,    40,   341,   342,     0,   500,   502,
      501,   503,     9,   484,    10,    11,    12,    13,   504,   507,
@@ -3814,11 +3635,10 @@ namespace w3c_sw {
      269,   291,   474,   179,   217,   331,   266
   };
 
-  /* YYPGOTO[NTERM-NUM].  */
   const short int
   MapSetParser::yypgoto_[] =
   {
-      -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,   517,  -684,
+    -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,   517,  -684,
     -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,
     -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,  -684,
     -684,  -684,  -192,  -684,  -124,  -684,  -684,  -684,  -684,  -684,
@@ -3847,11 +3667,10 @@ namespace w3c_sw {
     -684,   178,   179,   157,  -198,    54,  -684,  -684
   };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   MapSetParser::yydefgoto_[] =
   {
-        -1,     1,     2,     9,    21,    22,    50,    83,    52,    53,
+      -1,     1,     2,     9,    21,    22,    50,    83,    52,    53,
       44,    45,    67,    68,   106,   100,    46,     5,     6,    10,
        7,    24,    58,   104,   279,   280,   397,   631,   505,   629,
      630,   416,   417,   698,   699,   700,   701,    55,   113,    56,
@@ -3880,14 +3699,10 @@ namespace w3c_sw {
       87,    88,    89,   321,    33,   322,    42,    92
   };
 
-  /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule which
-     number is the opposite.  If YYTABLE_NINF_, syntax error.  */
-  const short int MapSetParser::yytable_ninf_ = -332;
   const short int
   MapSetParser::yytable_[] =
   {
-        27,   108,   199,    32,    34,    35,    36,    37,   256,   544,
+      27,   108,   199,    32,    34,    35,    36,    37,   256,   544,
      258,   156,   131,   126,   347,   275,   720,   580,    59,   729,
      524,   165,   622,  -190,   274,   568,    86,   705,   326,    86,
      692,   643,   693,   496,    65,    60,   131,   126,   329,   381,
@@ -4096,11 +3911,10 @@ namespace w3c_sw {
       39,    40
   };
 
-  /* YYCHECK.  */
   const short int
   MapSetParser::yycheck_[] =
   {
-        11,   101,   183,    12,    13,    14,    15,    16,   187,   407,
+      11,   101,   183,    12,    13,    14,    15,    16,   187,   407,
      187,   136,   112,   112,   221,   192,   642,   443,    27,    53,
      400,    28,    45,    44,   192,    24,    51,   630,    44,    54,
       42,    55,    44,   390,    43,    92,   136,   136,    44,    44,
@@ -4309,12 +4123,10 @@ namespace w3c_sw {
      167,   168
   };
 
-  /* STOS_[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
   const unsigned short int
   MapSetParser::yystos_[] =
   {
-         0,   176,   177,     0,    20,   192,   193,   195,   166,   178,
+       0,   176,   177,     0,    20,   192,   193,   195,   166,   178,
      194,     3,     4,     5,     6,     7,     8,     9,    10,    11,
       13,   179,   180,    21,   196,   171,   172,   387,   162,   163,
      164,   165,   430,   439,   430,   430,   430,   430,   166,   167,
@@ -4399,38 +4211,10 @@ namespace w3c_sw {
      344,    42,   439,   264,   264,   343,   332
   };
 
-#if YYDEBUG
-  /* TOKEN_NUMBER_[YYLEX-NUM] -- Internal symbol number corresponding
-     to YYLEX-NUM.  */
-  const unsigned short int
-  MapSetParser::yytoken_number_[] =
-  {
-         0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   347,   348,   349,   350,   351,   352,   353,   354,
-     355,   356,   357,   358,   359,   360,   361,   362,   363,   364,
-     365,   366,   367,   368,   369,   370,   371,   372,   373,   374,
-     375,   376,   377,   378,   379,   380,   381,   382,   383,   384,
-     385,   386,   387,   388,   389,   390,   391,   392,   393,   394,
-     395,   396,   397,   398,   399,   400,   401,   402,   403,   404,
-     405,   406,   407,   408,   409,   410,   411,   412,   413,   414,
-     415,   416,   417,   418,   419,   420,   421,   422,   423,   424,
-     425,   426,   427,   428,   429
-  };
-#endif
-
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
   const unsigned short int
   MapSetParser::yyr1_[] =
   {
-         0,   175,   177,   176,   178,   178,   179,   179,   180,   180,
+       0,   175,   177,   176,   178,   178,   179,   179,   180,   180,
      180,   180,   180,   180,   180,   180,   180,   180,   181,   181,
      181,   182,   182,   183,   184,   184,   185,   186,   186,   187,
      187,   188,   189,   190,   190,   191,   192,   193,   193,   194,
@@ -4483,11 +4267,10 @@ namespace w3c_sw {
      439,   439,   439,   439,   440,   440,   441,   441,   442,   442
   };
 
-  /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
   const unsigned char
   MapSetParser::yyr2_[] =
   {
-         0,     2,     0,     4,     0,     2,     0,     2,     4,     2,
+       0,     2,     0,     4,     0,     2,     0,     2,     4,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     1,     1,
        1,     0,     1,     4,     1,     2,     2,     0,     1,     0,
        1,     3,     3,     0,     2,     3,     2,     0,     1,     0,
@@ -4540,13 +4323,14 @@ namespace w3c_sw {
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1
   };
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
-  /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-     First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
+
+
+  // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
   const char*
   const MapSetParser::yytname_[] =
   {
-    "\"end of file\"", "error", "$undefined", "IT_REWRITEVAR", "IT_DRIVER",
+  "\"end of file\"", "error", "$undefined", "IT_REWRITEVAR", "IT_DRIVER",
   "IT_SERVER", "IT_USER", "IT_PASSWORD", "IT_DATABASE", "IT_STEMURI",
   "IT_PRIMARYKEY", "IT_SHAREDVARS", "IT_PROMISCUOUS", "IT_INTERSECTION",
   "IT_DRACONIAN", "IT_VARNAMES", "IT_LABEL", "IT_GRAPH", "IT_SERVICE",
@@ -4710,217 +4494,14 @@ namespace w3c_sw {
   "_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt", "NumericLiteral",
   "NumericLiteralUnsigned", "NumericLiteralPositive",
   "NumericLiteralNegative", "BooleanLiteral", "String", "iri",
-  "PrefixedName", "BlankNode", 0
+  "PrefixedName", "BlankNode", YY_NULLPTR
   };
-#endif
 
 #if YYDEBUG
-  /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
-  const MapSetParser::rhs_number_type
-  MapSetParser::yyrhs_[] =
-  {
-       176,     0,    -1,    -1,   177,   192,   178,   179,    -1,    -1,
-     178,   180,    -1,    -1,   179,   212,    -1,     3,   387,   430,
-     430,    -1,     4,   430,    -1,     5,   430,    -1,     6,   430,
-      -1,     7,   430,    -1,     8,   430,    -1,     9,   440,    -1,
-      10,   185,    -1,    11,   181,    -1,    13,   184,    -1,    12,
-      -1,    15,    -1,    14,    -1,    -1,   388,    -1,    41,   182,
-      42,   385,    -1,   183,    -1,   184,   183,    -1,   186,   187,
-      -1,    -1,   191,    -1,    -1,   188,    -1,    41,   190,    42,
-      -1,   430,    48,   430,    -1,    -1,   190,   189,    -1,    56,
-     430,    57,    -1,   193,   194,    -1,    -1,   195,    -1,    -1,
-     194,   196,    -1,    20,   166,    -1,    -1,    -1,    21,   197,
-     167,   198,   166,    -1,    -1,    -1,    -1,   200,   201,   203,
-     202,   222,   224,   246,    -1,    26,   205,   211,    -1,    22,
-      -1,    23,    -1,    -1,   204,    -1,    94,   387,    -1,    -1,
-     206,    -1,    44,   389,   207,    45,    -1,   412,    -1,   430,
-      -1,   434,    -1,   438,    -1,   387,    -1,   423,    -1,   313,
-      -1,   208,    -1,   209,    -1,   210,   209,    -1,   210,    -1,
-      24,    -1,    -1,   215,    25,   250,   213,   216,   222,   224,
-     246,    -1,    16,   388,    -1,    -1,   214,    -1,    -1,   216,
-     217,    -1,    27,   218,    -1,   219,    -1,   220,    -1,   221,
-      -1,    28,   221,    -1,   440,    -1,   223,   264,    -1,    -1,
-      43,    -1,   225,   226,   227,   228,    -1,    -1,   229,    -1,
-      -1,   232,    -1,    -1,   235,    -1,    -1,   241,    -1,    95,
-      30,   230,    -1,   231,    -1,   230,   231,    -1,   412,    -1,
-     313,    -1,    44,   389,   207,    45,    -1,   387,    -1,    96,
-     233,    -1,   234,    -1,   233,   234,    -1,   312,    -1,    29,
-      30,   236,    -1,   237,    -1,   236,   237,    -1,   239,    -1,
-     240,    -1,    31,    -1,    32,    -1,   238,   411,    -1,   312,
-      -1,   387,    -1,   244,   242,    -1,   245,   243,    -1,    -1,
-     245,    -1,    -1,   244,    -1,    33,   153,    -1,    34,   153,
-      -1,   248,    -1,    35,   287,    -1,    -1,   247,    -1,    -1,
-      19,    -1,    41,   251,    42,    -1,    -1,   252,   253,   256,
-      -1,    -1,   261,    -1,    -1,    48,    -1,   257,   254,   253,
-      -1,    -1,   256,   255,    -1,    -1,    -1,    -1,   258,    17,
-     386,   259,    41,   260,   253,    42,    -1,   321,   263,    -1,
-      48,   253,    -1,    -1,   262,    -1,    -1,    41,   265,   266,
-      42,    -1,   199,    -1,   267,    -1,   268,   270,    -1,    -1,
-     271,    -1,   274,   254,   268,    -1,    -1,   270,   269,    -1,
-     336,   273,    -1,    48,   268,    -1,    -1,   272,    -1,   305,
-      -1,   275,    -1,   302,    -1,   277,    -1,   281,    -1,   311,
-      -1,   285,    -1,   286,    -1,    -1,    49,   276,   264,    -1,
-      -1,    -1,    -1,    17,   278,   279,   386,   280,   264,    -1,
-      -1,    -1,    -1,    18,   282,   283,   284,   249,   386,   264,
-      -1,   130,    44,   389,    94,   387,    45,    -1,    35,   287,
-      -1,   288,    -1,   293,    -1,    -1,    -1,   289,   387,   290,
-      41,   291,    42,    -1,    -1,   291,   292,    -1,   301,    -1,
-      -1,   294,   296,    41,   300,    42,    -1,    -1,   295,   387,
-      -1,   174,    -1,    44,   295,    45,    -1,    -1,   297,   301,
-      -1,    -1,    44,   299,   297,    45,    -1,   174,    -1,    -1,
-     300,   298,    -1,   440,    -1,   430,    -1,   434,    -1,   438,
-      -1,    46,    -1,    47,    -1,   387,    -1,    -1,    -1,    50,
-     303,   304,   264,    -1,    -1,    -1,   306,   307,   264,   310,
-      -1,    -1,    51,   309,   264,    -1,    -1,   310,   308,    -1,
-      52,   312,    -1,   411,    -1,   412,    -1,   313,    -1,   440,
-     314,    -1,   174,    -1,    -1,    44,   316,   389,   315,   318,
-      45,    -1,    -1,    22,    -1,    53,   389,    -1,    -1,   318,
-     317,    -1,   174,    -1,    -1,    44,   389,   320,   318,    45,
-      -1,    -1,   385,   322,   324,    -1,    -1,   377,   323,   329,
-      -1,   331,   332,   328,    -1,   331,   332,    -1,    -1,   325,
-      -1,    54,   326,    -1,    -1,   328,   327,    -1,   330,    -1,
-      -1,   324,    -1,   386,    -1,    55,    -1,   335,   334,    -1,
-      53,   335,    -1,    -1,   334,   333,    -1,   384,    -1,    -1,
-     385,   337,   339,    -1,    -1,   377,   338,   347,    -1,    -1,
-     341,   340,   332,   346,    -1,   348,    -1,   349,    -1,    -1,
-     341,   343,   332,    -1,    -1,   342,    -1,    54,   344,    -1,
-      -1,   346,   345,    -1,   330,    -1,   350,    -1,   387,    -1,
-     351,    -1,   354,   353,    -1,   107,   354,    -1,    -1,   353,
-     352,    -1,   359,   356,    -1,    68,   359,    -1,    -1,   356,
-     355,    -1,   365,   358,    -1,    -1,   360,    -1,   357,    -1,
-     105,   357,    -1,   364,    -1,    42,    -1,   376,    42,    -1,
-      53,   361,    -1,    42,    -1,   376,   362,    -1,    53,   376,
-      42,    -1,    24,    -1,   106,    -1,    66,    -1,    41,   363,
-      -1,   366,    -1,   440,    -1,    55,    -1,    69,   367,    -1,
-      44,   350,    45,    -1,   372,    -1,   107,   373,    -1,    -1,
-     369,   368,    -1,   373,   369,    -1,    -1,   370,    -1,   373,
-      -1,    44,   371,    45,    -1,   375,    -1,   440,    -1,    55,
-      -1,   440,    -1,    55,    -1,   105,   374,    -1,   153,    -1,
-     380,    -1,   378,    -1,    -1,    56,   379,   324,    57,    -1,
-     382,    44,   383,    45,    -1,    36,    -1,    37,    -1,    38,
-      -1,    39,    -1,    40,    -1,    -1,   381,    -1,   384,    -1,
-     383,   384,    -1,   385,    -1,   377,    -1,   387,    -1,   388,
-      -1,   387,    -1,   440,    -1,   171,    -1,   172,    -1,   440,
-      -1,   430,    -1,   434,    -1,   438,    -1,   442,    -1,   174,
-      -1,   390,    -1,   393,   392,    -1,    58,   393,    -1,    -1,
-     392,   391,    -1,   396,   395,    -1,    59,   396,    -1,    -1,
-     395,   394,    -1,   397,    -1,   400,   398,    -1,    -1,   399,
-      -1,    60,   400,    -1,    61,   400,    -1,    62,   400,    -1,
-      63,   400,    -1,    64,   400,    -1,    65,   400,    -1,    71,
-     319,    -1,    70,    71,   319,    -1,   401,    -1,   407,   406,
-      -1,   436,    -1,   437,    -1,    24,   409,    -1,    68,   409,
-      -1,    -1,   403,    -1,    66,   407,    -1,    67,   407,    -1,
-     402,   404,    -1,    -1,   406,   405,    -1,   409,   408,    -1,
-      -1,   408,   403,    -1,    69,   410,    -1,    66,   410,    -1,
-      67,   410,    -1,   410,    -1,   411,    -1,   412,    -1,   428,
-      -1,   430,    -1,   434,    -1,   438,    -1,   387,    -1,   423,
-      -1,    44,   389,    45,    -1,    81,    44,   389,    45,    -1,
-      82,    44,   389,    45,    -1,    83,    44,   389,    53,   389,
-      45,    -1,    84,    44,   389,    45,    -1,    85,    44,   387,
-      45,    -1,    72,    44,   389,    45,    -1,    73,    44,   389,
-      45,    -1,    74,   413,    -1,   121,   174,    -1,   145,    44,
-     389,    45,    -1,   142,    44,   389,    45,    -1,   134,    44,
-     389,    45,    -1,   128,    44,   389,    45,    -1,    93,   319,
-      -1,   416,    -1,   148,    44,   389,    45,    -1,   146,    44,
-     389,    45,    -1,   144,    44,   389,    45,    -1,   140,    44,
-     389,    45,    -1,   131,    44,   389,    53,   389,    45,    -1,
-     141,    44,   389,    53,   389,    45,    -1,   147,    44,   389,
-      53,   389,    45,    -1,   116,    44,   389,    53,   389,    45,
-      -1,   117,    44,   389,    53,   389,    45,    -1,   118,    44,
-     389,    45,    -1,   150,    44,   389,    45,    -1,   143,    44,
-     389,    45,    -1,   139,    44,   389,    45,    -1,   136,    44,
-     389,    45,    -1,   132,    44,   389,    45,    -1,   127,    44,
-     389,    45,    -1,   126,    44,   389,    45,    -1,   124,   174,
-      -1,   112,   174,    -1,   113,   174,    -1,   114,    44,   389,
-      45,    -1,   149,    44,   389,    45,    -1,   138,    44,   389,
-      45,    -1,   129,    44,   389,    45,    -1,   122,    44,   389,
-      45,    -1,    75,   319,    -1,    76,    44,   389,    53,   389,
-      53,   389,    45,    -1,    77,    44,   389,    53,   389,    45,
-      -1,    78,    44,   389,    53,   389,    45,    -1,    86,    44,
-     389,    53,   389,    45,    -1,    87,    44,   389,    45,    -1,
-      88,    44,   389,    45,    -1,    89,    44,   389,    45,    -1,
-      90,    44,   389,    45,    -1,   104,    44,   389,    45,    -1,
-     414,    -1,   417,    -1,   420,    -1,    44,   389,    45,    -1,
-     174,    -1,    91,    44,   389,    53,   389,   415,    45,    -1,
-      -1,   317,    -1,   137,    44,   389,    53,   389,   415,    45,
-      -1,    -1,    -1,    79,   418,   419,   264,    -1,    -1,    -1,
-      70,    79,   421,   422,   264,    -1,    97,    44,   316,   424,
-      45,    -1,   425,    44,   316,   389,    45,    -1,   102,    44,
-     316,   389,   427,    45,    -1,    24,    -1,   389,    -1,    98,
-      -1,    99,    -1,   100,    -1,   101,    -1,   103,    -1,    54,
-      80,    60,   439,    -1,    -1,   426,    -1,   440,   429,    -1,
-      -1,   314,    -1,   439,   433,    -1,    92,   440,    -1,   173,
-      -1,   431,    -1,    -1,   432,    -1,   435,    -1,   436,    -1,
-     437,    -1,   153,    -1,   154,    -1,   155,    -1,   156,    -1,
-     157,    -1,   158,    -1,   159,    -1,   160,    -1,   161,    -1,
-     151,    -1,   152,    -1,   162,    -1,   164,    -1,   163,    -1,
-     165,    -1,   166,    -1,   441,    -1,   168,    -1,   167,    -1,
-     169,    -1,   170,    -1
-  };
-
-  /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
-     YYRHS.  */
-  const unsigned short int
-  MapSetParser::yyprhs_[] =
-  {
-         0,     0,     3,     4,     9,    10,    13,    14,    17,    22,
-      25,    28,    31,    34,    37,    40,    43,    46,    49,    51,
-      53,    55,    56,    58,    63,    65,    68,    71,    72,    74,
-      75,    77,    81,    85,    86,    89,    93,    96,    97,    99,
-     100,   103,   106,   107,   108,   114,   115,   116,   117,   125,
-     129,   131,   133,   134,   136,   139,   140,   142,   147,   149,
-     151,   153,   155,   157,   159,   161,   163,   165,   168,   170,
-     172,   173,   182,   185,   186,   188,   189,   192,   195,   197,
-     199,   201,   204,   206,   209,   210,   212,   217,   218,   220,
-     221,   223,   224,   226,   227,   229,   233,   235,   238,   240,
-     242,   247,   249,   252,   254,   257,   259,   263,   265,   268,
-     270,   272,   274,   276,   279,   281,   283,   286,   289,   290,
-     292,   293,   295,   298,   301,   303,   306,   307,   309,   310,
-     312,   316,   317,   321,   322,   324,   325,   327,   331,   332,
-     335,   336,   337,   338,   347,   350,   353,   354,   356,   357,
-     362,   364,   366,   369,   370,   372,   376,   377,   380,   383,
-     386,   387,   389,   391,   393,   395,   397,   399,   401,   403,
-     405,   406,   410,   411,   412,   413,   420,   421,   422,   423,
-     431,   438,   441,   443,   445,   446,   447,   454,   455,   458,
-     460,   461,   467,   468,   471,   473,   477,   478,   481,   482,
-     487,   489,   490,   493,   495,   497,   499,   501,   503,   505,
-     507,   508,   509,   514,   515,   516,   521,   522,   526,   527,
-     530,   533,   535,   537,   539,   542,   544,   545,   552,   553,
-     555,   558,   559,   562,   564,   565,   571,   572,   576,   577,
-     581,   585,   588,   589,   591,   594,   595,   598,   600,   601,
-     603,   605,   607,   610,   613,   614,   617,   619,   620,   624,
-     625,   629,   630,   635,   637,   639,   640,   644,   645,   647,
-     650,   651,   654,   656,   658,   660,   662,   665,   668,   669,
-     672,   675,   678,   679,   682,   685,   686,   688,   690,   693,
-     695,   697,   700,   703,   705,   708,   712,   714,   716,   718,
-     721,   723,   725,   727,   730,   734,   736,   739,   740,   743,
-     746,   747,   749,   751,   755,   757,   759,   761,   763,   765,
-     768,   770,   772,   774,   775,   780,   785,   787,   789,   791,
-     793,   795,   796,   798,   800,   803,   805,   807,   809,   811,
-     813,   815,   817,   819,   821,   823,   825,   827,   829,   831,
-     833,   836,   839,   840,   843,   846,   849,   850,   853,   855,
-     858,   859,   861,   864,   867,   870,   873,   876,   879,   882,
-     886,   888,   891,   893,   895,   898,   901,   902,   904,   907,
-     910,   913,   914,   917,   920,   921,   924,   927,   930,   933,
-     935,   937,   939,   941,   943,   945,   947,   949,   951,   955,
-     960,   965,   972,   977,   982,   987,   992,   995,   998,  1003,
-    1008,  1013,  1018,  1021,  1023,  1028,  1033,  1038,  1043,  1050,
-    1057,  1064,  1071,  1078,  1083,  1088,  1093,  1098,  1103,  1108,
-    1113,  1118,  1121,  1124,  1127,  1132,  1137,  1142,  1147,  1152,
-    1155,  1164,  1171,  1178,  1185,  1190,  1195,  1200,  1205,  1210,
-    1212,  1214,  1216,  1220,  1222,  1230,  1231,  1233,  1241,  1242,
-    1243,  1248,  1249,  1250,  1256,  1262,  1268,  1275,  1277,  1279,
-    1281,  1283,  1285,  1287,  1289,  1294,  1295,  1297,  1300,  1301,
-    1303,  1306,  1309,  1311,  1313,  1314,  1316,  1318,  1320,  1322,
-    1324,  1326,  1328,  1330,  1332,  1334,  1336,  1338,  1340,  1342,
-    1344,  1346,  1348,  1350,  1352,  1354,  1356,  1358,  1360,  1362
-  };
-
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned short int
   MapSetParser::yyrline_[] =
   {
-         0,   460,   460,   460,   466,   468,   472,   474,   478,   487,
+       0,   460,   460,   460,   466,   468,   472,   474,   478,   487,
      490,   493,   496,   499,   502,   505,   507,   511,   517,   520,
      523,   529,   532,   536,   548,   549,   553,   556,   558,   561,
      563,   567,   571,   576,   578,   582,   589,   593,   595,   599,
@@ -4978,9 +4559,11 @@ namespace w3c_sw {
   MapSetParser::yystack_print_ ()
   {
     *yycdebug_ << "Stack now";
-    for (state_stack_type::const_iterator i = yystate_stack_.begin ();
-	 i != yystate_stack_.end (); ++i)
-      *yycdebug_ << ' ' << *i;
+    for (stack_type::const_iterator
+           i = yystack_.begin (),
+           i_end = yystack_.end ();
+         i != i_end; ++i)
+      *yycdebug_ << ' ' << i->state;
     *yycdebug_ << std::endl;
   }
 
@@ -4990,19 +4573,18 @@ namespace w3c_sw {
   {
     unsigned int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
-    /* Print the symbols being reduced, and their result.  */
+    // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-	       << " (line " << yylno << "):" << std::endl;
-    /* The symbols being reduced.  */
+               << " (line " << yylno << "):" << std::endl;
+    // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
-		       yyrhs_[yyprhs_[yyrule] + yyi],
-		       &(yysemantic_stack_[(yynrhs) - (yyi + 1)]),
-		       &(yylocation_stack_[(yynrhs) - (yyi + 1)]));
+                       yystack_[(yynrhs) - (yyi + 1)]);
   }
 #endif // YYDEBUG
 
-  /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
+  // Symbol number corresponding to token number t.
+  inline
   MapSetParser::token_number_type
   MapSetParser::yytranslate_ (int t)
   {
@@ -5010,7 +4592,7 @@ namespace w3c_sw {
     const token_number_type
     translate_table[] =
     {
-           0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -5054,33 +4636,21 @@ namespace w3c_sw {
      155,   156,   157,   158,   159,   160,   161,   162,   163,   164,
      165,   166,   167,   168,   169,   170,   171,   172,   173,   174
     };
-    if ((unsigned int) t <= yyuser_token_number_max_)
+    const unsigned int user_token_number_max_ = 429;
+    const token_number_type undef_token_ = 2;
+
+    if (static_cast<int>(t) <= yyeof_)
+      return yyeof_;
+    else if (static_cast<unsigned int> (t) <= user_token_number_max_)
       return translate_table[t];
     else
-      return yyundef_token_;
+      return undef_token_;
   }
-
-  const int MapSetParser::yyeof_ = 0;
-  const int MapSetParser::yylast_ = 2061;
-  const int MapSetParser::yynnts_ = 268;
-  const int MapSetParser::yyempty_ = -2;
-  const int MapSetParser::yyfinal_ = 3;
-  const int MapSetParser::yyterror_ = 1;
-  const int MapSetParser::yyerrcode_ = 256;
-  const int MapSetParser::yyntokens_ = 175;
-
-  const unsigned int MapSetParser::yyuser_token_number_max_ = 429;
-  const MapSetParser::token_number_type MapSetParser::yyundef_token_ = 2;
 
 
 } // w3c_sw
-
-/* Line 1136 of lalr1.cc  */
-#line 5080 "lib/MapSetParser.cpp"
-
-
-/* Line 1138 of lalr1.cc  */
-#line 2519 "lib/MapSetParser.ypp"
+#line 4653 "lib/MapSetParser.cpp" // lalr1.cc:1155
+#line 2519 "lib/MapSetParser.ypp" // lalr1.cc:1156
  /*** Additional Code ***/
 
 void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
@@ -5173,5 +4743,4 @@ MapSet* MapSetDriver::parse (std::string queryStr)
 } // namespace w3c_sw
 
 /* END Driver */
-
 

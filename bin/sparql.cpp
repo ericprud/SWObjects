@@ -214,7 +214,9 @@ struct MyServer : W3C_SW_WEBSERVER<ServerConfig> { // W3C_SW_WEBSERVER defined t
 	std::stringstream tmpss;
 	tmpss << servicePort;
 	const char* bindMe = serviceHost.c_str(); // "0.0.0.0";
+#ifdef INOTIFY_LIB
 	engine.inotifySet.start();
+#endif /* INOTIFY_LIB */
 	try {
 	    serve(bindMe, tmpss.str().c_str(), httpThreads, handler, config, startupMessage);
 	} catch (boost::system::system_error e) {

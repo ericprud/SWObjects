@@ -6,7 +6,7 @@
  */
 
 #define BOOST_TEST_MAIN
-#define BOOST_TEST_MODULE SWSex_tests
+#define BOOST_TEST_MODULE ShEx_tests
 #include "tests/SPARQLTest.hpp"
 #include "ShExCParser.hpp"
 #include "ShExSchema.hpp"
@@ -16,18 +16,18 @@ w3c_sw_DEBUGGING_FUNCTIONS(); // still reachable: 680 bytes in 7 blocks from log
 
 using namespace w3c_sw;
 
-SWSexDriver swsexParser("", &F);
+ShExDriver swsexParser("", &F);
 
 BOOST_AUTO_TEST_CASE( manual ) {
-    SWSexSchema::AtomicRule::ValueSet* t =
-	new SWSexSchema::AtomicRule::ValueSet();
+    ShExSchema::AtomicRule::ValueSet* t =
+	new ShExSchema::AtomicRule::ValueSet();
     t->tterms.push_back(F.getNumericRDFLiteral
 			("1", 1, TTerm::URI_xsd_integer));
-    SWSexSchema* s = new SWSexSchema();
+    ShExSchema* s = new ShExSchema();
     s->ruleMap.insert(std::make_pair
 		      (F.createBNode(),
-		       new SWSexSchema::AtomicRule
-		       (new SWSexSchema::AtomicRule::NameTerm
+		       new ShExSchema::AtomicRule
+		       (new ShExSchema::AtomicRule::NameTerm
 			(F.getURI("asdf")), t, 1, 1)));
     delete s;
 }
@@ -60,7 +60,7 @@ struct BNodeLabelNormalizer {
 };
 
 struct ParseTest {
-    const SWSexSchema* sex;
+    const ShExSchema* sex;
     const std::string expected;
     const std::string serialized;
     ParseTest (const char* parseMe, const char* goal)
@@ -70,9 +70,9 @@ struct ParseTest {
 	sex = NULL;
     }
 
-    static SWSexSchema* parse (const char* parseMe) {
+    static ShExSchema* parse (const char* parseMe) {
 	IStreamContext aistr(parseMe, IStreamContext::FILE);
-	SWSexSchema* sex = swsexParser.parse(aistr, new SWSexSchema());
+	ShExSchema* sex = swsexParser.parse(aistr, new ShExSchema());
 	swsexParser.clear(); // clear out namespaces and base URI.
 	return sex;
     }
@@ -83,7 +83,7 @@ struct ParseTest {
 			   std::istreambuf_iterator<char>());
     }
 
-    static std::string serialize (const SWSexSchema* sex) {
+    static std::string serialize (const ShExSchema* sex) {
 	std::ostringstream ss;
 	ss << *sex << '\n';
 	return ss.str();
@@ -105,23 +105,23 @@ struct NormalizeTest : public ParseTest {
 };
 
 BOOST_AUTO_TEST_CASE( expressivity1 ) {
-    ParseTest n("SWSex/expressivity1.ssx", "SWSex/expressivity1-normalized.ssx");
+    ParseTest n("ShEx/expressivity1.ssx", "ShEx/expressivity1-normalized.ssx");
     BOOST_CHECK_EQUAL(n.serialized, n.expected);
-    // NormalizeTest n("SWSex/expressivity1.ssx", "SWSex/expressivity1-normalized.ssx");
+    // NormalizeTest n("ShEx/expressivity1.ssx", "ShEx/expressivity1-normalized.ssx");
     // BOOST_CHECK_EQUAL(n.normalized, n.expected);
-    // ParseTest p("SWSex/expressivity1-normalized.ssx", "SWSex/expressivity1-normalized.ssx");
+    // ParseTest p("ShEx/expressivity1-normalized.ssx", "ShEx/expressivity1-normalized.ssx");
     // BOOST_CHECK_EQUAL(p.serialized, p.expected);
 }
 
 BOOST_AUTO_TEST_CASE( simple1 ) {
-    SWSexSchema sex;
-    IStreamContext sexstr("SWSex/simple1.ssx", IStreamContext::FILE);
+    ShExSchema sex;
+    IStreamContext sexstr("ShEx/simple1.ssx", IStreamContext::FILE);
     swsexParser.parse(sexstr, &sex);
     swsexParser.clear(); // clear out namespaces and base URI.
 
     {
 	DefaultGraphPattern data;
-	IStreamContext ttlstr("SWSex/simple1-good.ttl", IStreamContext::FILE);
+	IStreamContext ttlstr("ShEx/simple1-good.ttl", IStreamContext::FILE);
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE( simple1 ) {
 
     {
 	DefaultGraphPattern data;
-	IStreamContext ttlstr("SWSex/simple1-bad.ttl", IStreamContext::FILE);
+	IStreamContext ttlstr("ShEx/simple1-bad.ttl", IStreamContext::FILE);
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
@@ -139,14 +139,14 @@ BOOST_AUTO_TEST_CASE( simple1 ) {
 }
 
 BOOST_AUTO_TEST_CASE( issue1 ) {
-    SWSexSchema sex;
-    IStreamContext sexstr("SWSex/issue1.ssx", IStreamContext::FILE);
+    ShExSchema sex;
+    IStreamContext sexstr("ShEx/issue1.ssx", IStreamContext::FILE);
     swsexParser.parse(sexstr, &sex);
     swsexParser.clear(); // clear out namespaces and base URI.
 
     {
 	DefaultGraphPattern data;
-	IStreamContext ttlstr("SWSex/issue1-good.ttl", IStreamContext::FILE);
+	IStreamContext ttlstr("ShEx/issue1-good.ttl", IStreamContext::FILE);
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( issue1 ) {
 
     {
 	DefaultGraphPattern data;
-	IStreamContext ttlstr("SWSex/issue1-bad.ttl", IStreamContext::FILE);
+	IStreamContext ttlstr("ShEx/issue1-bad.ttl", IStreamContext::FILE);
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);

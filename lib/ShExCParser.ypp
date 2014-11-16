@@ -1,5 +1,5 @@
-/* $Id: SWSexParser.ypp,v 1.2 2008-10-24 10:57:32 eric Exp $ -*- mode: c++ -*- */
-/** \file SWSexParser.yy Contains the Bison parser source */
+/* $Id: ShExParser.ypp,v 1.2 2008-10-24 10:57:32 eric Exp $ -*- mode: c++ -*- */
+/** \file ShExParser.yy Contains the Bison parser source */
 
 /*** yacc/bison Declarations ***/
 
@@ -11,7 +11,7 @@
 %debug
 
 /* start symbol is named "start" */
-%start SWSexDoc
+%start ShExDoc
 
 /* write out a header file containing the token defines */
 %defines
@@ -23,7 +23,7 @@
 %name-prefix="w3c_sw"
 
 /* set the parser's class identifier */
-%define "parser_class_name" "SWSexParser"
+%define "parser_class_name" "ShExParser"
 
 /* keep track of the current position within the input */
 %locations
@@ -37,7 +37,7 @@
 /* The driver is passed by reference to the parser and to the scanner. This
  * provides a simple but effective pure interface, not relying on global
  * variables. */
-%parse-param { class SWSexDriver& driver }
+%parse-param { class ShExDriver& driver }
 
 /* verbose error messages */
 %error-verbose
@@ -60,33 +60,33 @@
 
 namespace w3c_sw {
 
-class SWSexDriver : public YaccDataDriver {
+class ShExDriver : public YaccDataDriver {
     location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
-    friend class SWSexParser;
+    friend class ShExParser;
 protected:
-    SWSexSchema* curSchema;
-    SWSexSchema::SetRule* curSetRule;
-    SWSexSchema::AtomicRule::NameClass* curNameClass;
-    SWSexSchema::RulePattern* curRulePattern;
+    ShExSchema* curSchema;
+    ShExSchema::SetRule* curSetRule;
+    ShExSchema::AtomicRule::NameClass* curNameClass;
+    ShExSchema::RulePattern* curRulePattern;
     std::vector<const TTerm*>* curTTerms;
     const TTerm* curSubject;
     const TTerm* curPredicate;
 public:
-    void setSchema (SWSexSchema* schema) { curSchema = schema; }
+    void setSchema (ShExSchema* schema) { curSchema = schema; }
     static size_t DefaultAbortErrorCount;
 
-    SWSexDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = DefaultAbortErrorCount)
+    ShExDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = DefaultAbortErrorCount)
 	: YaccDataDriver(baseURI, atomFactory, abortErrorCount)
     {  }
 
-    SWSexSchema* parse(IStreamContext& in);
-    SWSexSchema* parse(IStreamContext& in, SWSexSchema* schema);
-    SWSexSchema* parse(std::string swsexStr, SWSexSchema* schema);
+    ShExSchema* parse(IStreamContext& in);
+    ShExSchema* parse(IStreamContext& in, ShExSchema* schema);
+    ShExSchema* parse(std::string swsexStr, ShExSchema* schema);
 
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
-    class SWSexScanner* lexer;
+    class ShExScanner* lexer;
 
     const BNode* createBNode () {
 	if (descriptiveBNodeLabels) {
@@ -104,18 +104,18 @@ public:
 // %} // ##bison1
 } // ##bison2
 
- /*** BEGIN SWSex language tokens. ***/
+ /*** BEGIN ShEx language tokens. ***/
 
 %union {
     struct {std::string* label; std::string* text;} p_CODE;
     int p_int;
-    SWSexSchema::AtomicRule::NameClass* p_nameClass;
+    ShExSchema::AtomicRule::NameClass* p_nameClass;
     bool p_bool;
-    SWSexSchema::SetRule* p_setRule;
-    SWSexSchema::RulePattern* p_rulePattern;
-    SWSexSchema::RuleActions* p_ruleActions;
-    SWSexSchema::AtomicRule::Value* p_value;
-    SWSexSchema::AtomicRule::ValueSet* p_valueSet;
+    ShExSchema::SetRule* p_setRule;
+    ShExSchema::RulePattern* p_rulePattern;
+    ShExSchema::RuleActions* p_ruleActions;
+    ShExSchema::AtomicRule::Value* p_value;
+    ShExSchema::AtomicRule::ValueSet* p_valueSet;
     struct {unsigned min; unsigned max;} p_RepeatRange;
 
     struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
@@ -126,8 +126,8 @@ public:
     std::string* p_string;
 
     const NumericRDFLiteral* p_NumericRDFLiteral;
-    SWSexSchema::URIstem p_URIstem;
-    std::vector<SWSexSchema::URIstem>* p_URIstems;
+    ShExSchema::URIstem p_URIstem;
+    std::vector<ShExSchema::URIstem>* p_URIstems;
 
     const TTerm* p_TTerm;
     const URI* p_URI;
@@ -182,7 +182,7 @@ public:
 
 //%destructor { delete $$; } BlankNode
 
- /*** END SWSex language tokens. ***/
+ /*** END ShEx language tokens. ***/
 
 %{
 #include "ShExCScanner.hpp"
@@ -196,8 +196,8 @@ public:
 
 %% /*** Grammar Rules ***/
 
- /*** BEGIN SWSex language structure. ***/
-SWSexDoc:
+ /*** BEGIN ShEx language structure. ***/
+ShExDoc:
     // statement*
     _Qstatement_E_Star	
 ;
@@ -226,7 +226,7 @@ _QCODE_E_Star:
     }
   | _QCODE_E_Star CODE	{
 	$$ = ($1 == NULL)
-	    ? new SWSexSchema::RuleActions(driver.curRulePattern)
+	    ? new ShExSchema::RuleActions(driver.curRulePattern)
 	    : $1;
 	$$->codeMap.insert(std::make_pair(*$2.label, *$2.text));
 	delete $2.label;
@@ -310,7 +310,7 @@ _Q_O_QGT_PIPE_E_S_QAndExpression_E_C_E_Star:
     
   | _Q_O_QGT_PIPE_E_S_QAndExpression_E_C_E_Star _O_QGT_PIPE_E_S_QAndExpression_E_C	{
 	if (driver.curSetRule == NULL)
-	    driver.curSetRule = new SWSexSchema::OrRule();
+	    driver.curSetRule = new ShExSchema::OrRule();
 	driver.curSetRule->rules.push_back($2);
     }
 ;
@@ -340,14 +340,14 @@ _Q_O_QGT_COMMA_E_S_QUnaryExpression_E_C_E_Star:
     
   | _Q_O_QGT_COMMA_E_S_QUnaryExpression_E_C_E_Star _O_QGT_COMMA_E_S_QUnaryExpression_E_C	{
 	if (driver.curSetRule == NULL)
-	    driver.curSetRule = new SWSexSchema::AndRule();
+	    driver.curSetRule = new ShExSchema::AndRule();
 	driver.curSetRule->rules.push_back($2);
     }
 ;
 
 UnaryExpression:
     _Q_O_QGT_DOLLAR_E_S_Qiri_E_C_E_Opt _O_Qarc_E_Or_QGT_LPAREN_E_S_QOrExpression_E_S_QGT_RPAREN_E_S_QGT_OPT_E_Opt_S_QCODE_E_Star_C	{
-	// $$ = $1 ? new SWSexSchema::NegatedRule($2) : $2;
+	// $$ = $1 ? new ShExSchema::NegatedRule($2) : $2;
 	// @@ $1 is a label
 	$$ = $2;
     }
@@ -402,8 +402,8 @@ arc:
 	$2->reverse = $1;
       } valueSpec _Qdefahlt_E_Opt _QrepeatCount_E_Opt {
 	  if ($5)
-	      w3c_sw_NEED_IMPL("SWSex parser support for default");
-	  driver.curRulePattern = new SWSexSchema::AtomicRule(driver.curNameClass, $4, $6.min, $6.max);
+	      w3c_sw_NEED_IMPL("ShEx parser support for default");
+	  driver.curRulePattern = new ShExSchema::AtomicRule(driver.curNameClass, $4, $6.min, $6.max);
       } _QblankNodePropertyList_E_Opt _QCODE_E_Star	{
 	  $$ = $9 == NULL ? driver.curRulePattern : $9;
 	  driver.curRulePattern = NULL;
@@ -454,39 +454,39 @@ _QblankNodePropertyList_E_Opt:
 nameClass:
     iriStem	{
 	if ($1.opt)
-	    $$ = new SWSexSchema::AtomicRule::NamePattern($1.uri);
+	    $$ = new ShExSchema::AtomicRule::NamePattern($1.uri);
 	else
-	    $$ = new SWSexSchema::AtomicRule::NameTerm($1.uri);
+	    $$ = new ShExSchema::AtomicRule::NameTerm($1.uri);
     }
   | GT_DOT exclusions	{
-	$$ = new SWSexSchema::AtomicRule::NameAll($2);
+	$$ = new ShExSchema::AtomicRule::NameAll($2);
     }
   | RDF_TYPE	{
-	$$ = new SWSexSchema::AtomicRule::NameTerm(TTerm::RDF_type);
+	$$ = new ShExSchema::AtomicRule::NameTerm(TTerm::RDF_type);
     }
 ;
 
 valueSpec:
     GT_AT label	{
-	$$ = new SWSexSchema::AtomicRule::ValueReference($2);
+	$$ = new ShExSchema::AtomicRule::ValueReference($2);
     }
   | typeSpec	{
 	const TTerm* b = driver.createBNode();
 	driver.curSchema->ruleMap.insert(std::make_pair(b, $1));
-	$$ = new SWSexSchema::AtomicRule::ValueReference(b);
+	$$ = new ShExSchema::AtomicRule::ValueReference(b);
     }
   | iri	{
-	$$ = new SWSexSchema::AtomicRule::ValueType($1);
+	$$ = new ShExSchema::AtomicRule::ValueType($1);
     }
   | {
-	SWSexSchema::AtomicRule::ValueSet* t = new SWSexSchema::AtomicRule::ValueSet();
+	ShExSchema::AtomicRule::ValueSet* t = new ShExSchema::AtomicRule::ValueSet();
 	$<p_valueSet>$  = t;
 	driver.curTTerms = &t->tterms;
       } valueSet	{
 	  $$ = $<p_valueSet>1;
       }
   | GT_DOT exclusions	{
-	$$ = new SWSexSchema::AtomicRule::ValueAny($2);
+	$$ = new ShExSchema::AtomicRule::ValueAny($2);
     }
   | IT_SPARQL_SRX iri	{
         w3c_sw_NEED_IMPL("SPARQL Results Format callout");
@@ -673,7 +673,7 @@ _Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star:
     }
   | _Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star _O_QGT_MINUS_E_S_QiriStem_E_C	{
 	if ($1 == NULL)
-	    $1 = new std::vector<SWSexSchema::URIstem>();
+	    $1 = new std::vector<ShExSchema::URIstem>();
 	$1->push_back($2);
 	$$ = $1;
     }
@@ -684,11 +684,11 @@ _Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star:
 repeatCount:
     GT_TIMES	{
 	$$.min = 0;
-	$$.max = SWSexSchema::AtomicRule::Unlimited;
+	$$.max = ShExSchema::AtomicRule::Unlimited;
     }
   | GT_PLUS	{
 	$$.min = 1;
-	$$.max = SWSexSchema::AtomicRule::Unlimited;
+	$$.max = ShExSchema::AtomicRule::Unlimited;
     }
   | GT_OPT	{
 	$$.min = 0;
@@ -702,7 +702,7 @@ repeatCount:
 
 _QINTEGER_E_Opt:
     {
-	$$ = SWSexSchema::AtomicRule::Unlimited;
+	$$ = ShExSchema::AtomicRule::Unlimited;
     }
   | INTEGER	{
 	$$ = $1->getInt();
@@ -717,7 +717,7 @@ _O_QGT_COMMA_E_S_QINTEGER_E_Opt_C:
 
 _Q_O_QGT_COMMA_E_S_QINTEGER_E_Opt_C_E_Opt:
     {
-	$$ = SWSexSchema::AtomicRule::Unlimited;
+	$$ = ShExSchema::AtomicRule::Unlimited;
     }
   | _O_QGT_COMMA_E_S_QINTEGER_E_Opt_C	
 ;
@@ -738,7 +738,7 @@ _Qvalue_E_Plus:
 valueChoice:
     iriStem	{
 	if ($1.opt)
-	    w3c_sw_NEED_IMPL("SWSex parser support for URIstems in value sets");
+	    w3c_sw_NEED_IMPL("ShEx parser support for URIstems in value sets");
 	$$ = $1.uri;
     }
   | BlankNode	
@@ -814,11 +814,11 @@ BlankNode:
   | ANON	
 ;
 
- /*** END SWSex language structure. ***/
+ /*** END ShEx language structure. ***/
 
 %% /*** Additional Code ***/
 
-void w3c_sw::SWSexParser::error(const SWSexParser::location_type& l,
+void w3c_sw::ShExParser::error(const ShExParser::location_type& l,
 			    const std::string& m)
 {
     std::string s = m;
@@ -856,31 +856,31 @@ void w3c_sw::SWSexParser::error(const SWSexParser::location_type& l,
 
 namespace w3c_sw {
 
-size_t SWSexDriver::DefaultAbortErrorCount = 100;
+size_t ShExDriver::DefaultAbortErrorCount = 100;
 
-SWSexSchema* SWSexDriver::parse (IStreamContext& in) {
+ShExSchema* ShExDriver::parse (IStreamContext& in) {
     reset();
     streamname = in.nameStr;
     // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
 
-    SWSexScanner scanner(this, in.p);
+    ShExScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
     this->lexer = &scanner;
 
-    SWSexParser parser(*this);
+    ShExParser parser(*this);
     parser.set_debug_level(trace_parsing);
     parser.parse();
     checkErrors();
     return curSchema;
 }
 
-SWSexSchema* SWSexDriver::parse (IStreamContext& in, SWSexSchema* schema) {
+ShExSchema* ShExDriver::parse (IStreamContext& in, ShExSchema* schema) {
     setSchema(schema);
     return parse(in);
 }
 
-SWSexSchema* SWSexDriver::parse (std::string swsexStr, SWSexSchema* schema) {
+ShExSchema* ShExDriver::parse (std::string swsexStr, ShExSchema* schema) {
     IStreamContext in(swsexStr.c_str(), IStreamContext::STRING);
     setSchema(schema);
     return parse(in);

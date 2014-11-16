@@ -179,6 +179,10 @@ ifdef $(CRYPTLIBDEFINED)
   CONFIG_DEFS+= \\\#define CRYPT_LIB "\\n"
 endif
 
+INOTIFYLIBDEFINED = INOTIFYLIB
+ifdef $(INOTIFYLIBDEFINED)
+  CONFIG_DEFS+= \\\#define INOTIFY_LIB "\\n"
+endif
 
 .PHONY: all dep lib test TOUCH_PARSER_GENERATED
 all:   lib test
