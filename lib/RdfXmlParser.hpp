@@ -133,7 +133,7 @@ namespace w3c_sw {
 			const TTerm* s = parentState.s;
 
 			stack.pop(); // we will re-push with a new predicate.
-			if (stack.top().expect == COLLECTION) {
+			if (parentState.expect == COLLECTION) {
 			    const TTerm* b = atomFactory->createBNode();
 
 			    /* Subsequent entries will be rests. */
@@ -141,6 +141,9 @@ namespace w3c_sw {
 			    /* Subsequent entries will append the tail of the list. */
 			    parentState.s = b;
 			    stack.push(parentState);
+			    std::stringstream ss;
+			    ss << "<" << qName.c_str() << ">" << std::endl << dumpStack();
+			    // w3c_sw_LINEN << ss;
 
 			    /*
 			     *	    s
@@ -195,7 +198,7 @@ namespace w3c_sw {
 		     */
 		    if (attrs->value(NS_rdf, "resource", &t))
 			newState.s = atomFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
-		    else if (attrs->value(NS_rdf, "parseType", &parseType))
+		    else if (attrs->value(NS_rdf, "parseType", &parseType) && parseType == "Resource")
 			newState.s = atomFactory->createBNode();
 		    else if (attrs->value(NS_rdf, "nodeID", &t))
 			newState.s = atomFactory->getBNode(t, &bnodeMap);
@@ -295,7 +298,7 @@ namespace w3c_sw {
 		     * except when parsing an empty Collection).
 		     */
 		    const TTerm* n = atomFactory->getURI(std::string(NS_rdf) + "nil");
-		    bgp->addTriplePattern(atomFactory->getTriple(stack.top().s, atomFactory->getURI( std::string(NS_rdf) + "rest"), n));
+		    bgp->addTriplePattern(atomFactory->getTriple(nestedState.s, nestedState.p, n));
 		}
 		    break;
 		case PROPERTY:
