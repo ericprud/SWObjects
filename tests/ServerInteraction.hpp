@@ -134,6 +134,13 @@ namespace w3c_sw {
 	}
 
 	~ServerInteraction () {
+	    // pick your poison
+#if 0
+	    ::signal(SIGPIPE, SIG_IGN);
+#else
+	    // heuristics indicate this will avoid a SIGPIPE
+	    ::usleep(5000); // !! horrible hack 'cause popen is horrible
+#endif
 	    if (pclose(serverPipe) == -1 && errno != ECHILD)
 		throw std::string() + "pclose(serverPipe)" + strerror(errno);
 	}
