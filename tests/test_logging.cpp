@@ -7,7 +7,13 @@
 // g++ -o test_logging test_logging.cpp -DBOOST_TEST_DYN_LINK -I. -Iboost-log -g -O0 -W -Wextra -Wnon-virtual-dtor -ansi -std=c++98 -Lboost-log/stage/lib -lboost_log -lboost_date_time -lboost_filesystem -lboost_system -lboost_thread -lpthread -lboost_unit_test_framework-mt && LD_LIBRARY_PATH=boost-log/stage/lib ./test_logging
 
 #include "SWObjects.hpp"
-#include <boost/utility/empty_deleter.hpp>
+#if (BOOST_VERSION == 105400)
+# include <boost/log/utility/empty_deleter.hpp>
+# define EMPTY_DELETER boost::log::empty_deleter
+#else
+# include <boost/utility/empty_deleter.hpp>
+# define EMPTY_DELETER boost::empty_deleter
+#endif
 
 #define BOOST_TEST_MODULE logging
 #include <boost/test/unit_test.hpp>
@@ -67,7 +73,7 @@ namespace w3c_sw {
 	try {
 
 	    boost::shared_ptr< Logger::Sink_t > sink = Logger::prepare();
-	    Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, boost::empty_deleter()));
+	    Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, EMPTY_DELETER()));
 	    Logger::addStream(sink, boost::shared_ptr< std::ostream >(new std::ofstream("toy-alt.log")));
 	    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 

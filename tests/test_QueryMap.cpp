@@ -16,7 +16,13 @@
 #include "ResultSet.hpp"
 #include "ChainingMapper.hpp"
 #include "SQLizer.hpp"
-#include <boost/utility/empty_deleter.hpp>
+#if (BOOST_VERSION == 105400)
+# include <boost/log/utility/empty_deleter.hpp>
+# define EMPTY_DELETER boost::log::empty_deleter
+#else
+# include <boost/utility/empty_deleter.hpp>
+# define EMPTY_DELETER boost::empty_deleter
+#endif
 
 #ifndef MANUAL_TEST
   #include <boost/test/unit_test.hpp>
@@ -472,7 +478,7 @@ struct RuleMapTest {
 	namespace tst = boost::unit_test::framework;
 	for (int i = 1; i < tst::master_test_suite().argc; ++i)
 	    if (std::string(tst::master_test_suite().argv[i]) == "-D")
-		Logger::addStream(Logger::prepare(), boost::shared_ptr< std::ostream >(&std::clog, boost::empty_deleter()));
+		Logger::addStream(Logger::prepare(), boost::shared_ptr< std::ostream >(&std::clog, EMPTY_DELETER()));
 
 	sparqlParser.unnestTree = true;
 	/* Parse query. */
