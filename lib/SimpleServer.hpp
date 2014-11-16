@@ -1525,6 +1525,8 @@ struct SimpleEngine {
 			    IStreamContext& istr,
 			    ResultSet& rs,
 			    RdfDB* db) {
+  // "-" stands for for STDIN/STDOUT; don't treat as IRI
+	if (nameStr == "-") nameStr = "";
 	/**
 	 * Look for a couple of sparql-specific non-standard "media types".
 	 */

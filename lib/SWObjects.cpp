@@ -176,6 +176,7 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 
     p = after_scheme;
     if (p < name.size() && name[p]=='/'){
+	    absoluteP = true;
 	if (name[p+1]=='/') {
 	    host = name.substr(p+2, name.size());/* host has been specified 	*/
 	    hostP = true;
@@ -184,14 +185,11 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 	    if(p != std::string::npos) {
 	        host.erase(p);			/* Terminate host */
 	        absolute = name.substr(p+1, name.size());/* Root has been found */
-		absoluteP = true;
-	    } else if (fragmentP) {
-		absoluteP = true;
+	    } else {
 		slashlessP = true;
 	    }
 	} else {
 	    absolute = name.substr(p+1, name.size());	/* Root found but no host */
-	    absoluteP = true;
 	}	    
     } else if (after_scheme < name.size()) {
         relative = name.substr(after_scheme, name.size());
