@@ -196,7 +196,9 @@ int main (int argc, char* argv[]) {
 			break;
 		    }
 		case SUBJECT:
-		case COLLECTION: {
+		case COLLECTION: { // 
+		    if (uri == NS_rdf && (localName == "nodeID" || localName == "resource" || localName == "parseType" || localName == "about" || localName == "ID" || localName == "RDF" || localName == "aboutEach" || localName == "aboutEachPrefix" || localName == "bagID"))
+			varError("RDF nodeID, resource, parseType, about, ID, RDF, Description, aboutEach, aboutEachPrefix and bagID are not permitted as a subject type name. seen in %s", stack.top().stateStr());
 		    if (uri == NS_rdf && localName == "li")
 			varError("unexpected element rdf:li within %s", stack.top().stateStr());
 		    std::string t;
@@ -236,6 +238,10 @@ int main (int argc, char* argv[]) {
 			}
 			if (newState.s == NULL)
 			    newState.s = atomFactory->createBNode();
+
+			std::string t;
+			if (attrs->value(NS_rdf, "bagID", &t) && UTF8_firstNonIDChar(t) != -1)
+				varError("malformed RDF bagID (which was removed from the langugae anyways) in %s", stack.top().stateStr());
 		    }
 
 		    /* Create statements for subject's literalPropertyElt. */
@@ -340,6 +346,10 @@ int main (int argc, char* argv[]) {
 		    break;
 		}
 		case PROPERTY: {
+		    if (uri == NS_rdf && (localName == "nodeID" || localName == "resource" || localName == "parseType" || localName == "about" || localName == "ID" || localName == "RDF" || localName == "Description" || localName == "aboutEach" || localName == "aboutEachPrefix" || localName == "bagID"))
+			varError("RDF nodeID, resource, parseType, about, ID, RDF, Description, aboutEach, aboutEachPrefix and bagID are not permitted as a property name. seen in %s", stack.top().stateStr());
+		    if (uri == NS_rdf && (localName == "aboutEach" || localName == "aboutEachPrefix"))
+			varError("RDF aboutEach and aboutEachPrefix have been removed from RDF/XML. seen in %s", stack.top().stateStr());
 		    std::string t; // used a couple times below
 
 		    /* Grab xsd:datatype and xml:lang.
@@ -412,23 +422,28 @@ int main (int argc, char* argv[]) {
 		    for (size_t i = 0; i < attrs->getLength(); ++i) {
 			std::string attrURI = attrs->getURI(i);
 			std::string attrLName = attrs->getLocalName(i);
-			if (attrURI == NS_rdf &&
-			    attrLName != "type" &&
-			    attrLName != "Seq" &&
-			    attrLName != "Alt" &&
-			    attrLName != "Bag")
+			if (attrURI == NS_rdf) {
 			    if (attrLName == "parseType" ||
 				attrLName == "resource" ||
 				attrLName == "datatype" ||
 				attrLName == "ID" ||
 				attrLName == "nodeID") {
 				// allowed attrs
-			    } else {
+				goto next_property_attr;
+			    } else if (attrLName != "aboutEach" &&
+				       attrLName != "aboutEachPrefix") {
 				varError("unexpected attr %s within %s", attrs->getQName(i).c_str(), stack.top().stateStr());
+			    // attrLName != "type" &&
+			    // attrLName != "Seq" &&
+			    // attrLName != "Alt" &&
+			    // attrLName != "Bag")
+
 			    }
-			else if (attrs->getQName(i).substr(0, 3) == "xml") {
+			} else if (attrs->getQName(i).substr(0, 3) == "xml") {
 			    // ignore XML directives.
-			} else {
+			    goto next_property_attr;
+			}
+			{
 			    /* We must have a current node. */
 			    if (newState.s == NULL) {
 				newState.s = atomFactory->createBNode();
@@ -446,6 +461,8 @@ int main (int argc, char* argv[]) {
 			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
 			    expectCharData = false;
 			}
+		    next_property_attr:
+			;
 		    }
 
 		    /* Nested state depends solely on parseType. */
