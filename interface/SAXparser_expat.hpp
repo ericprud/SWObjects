@@ -134,25 +134,27 @@ namespace w3c_sw {
 		 it != nsframe.end(); ++it)
 		std::cout << "xmlns:" << it->first << "=\"" << it->second << "\"\n";
 	}
-	bool _crackQName(const char* name, const char** elLname, const char** elNs) {
+	bool _crackQName(const char* name, const char** elLname, const char** elNs, std::string* qName) {
 	    bool ret = true; // set to false for failed parse.
 	    const char* elPrefix = name;
 	    *elLname = ::strchr(elPrefix, ':');
 	    if (*elLname == NULL) {
 		*elLname = elPrefix;
 		elPrefix = "";
-		if (nsz.top().find("") != nsz.top().end())
+		if (nsz.top().find("") != nsz.top().end()) {
 		    *elNs = nsz.top()[""].c_str();
-		else { // don't whine about non-namespaced docs.
+		    *qName = *elLname;
+		} else { // don't whine about non-namespaced docs.
 		    *elNs = NULL;
 		    ret = false;
 		}
 	    } else {
 		std::string prefix(elPrefix, *elLname);
 		++*elLname;
-		if (nsz.top().find(prefix) != nsz.top().end())
+		if (nsz.top().find(prefix) != nsz.top().end()) {
 		    *elNs = nsz.top()[prefix].c_str();
-		else {
+		    *qName = prefix + '~' + *elLname;
+		} else {
 		    insulator->varError("namespace prefix \"%s\" not found", (char*)prefix.c_str());
 		    ret = false;
 		}
@@ -185,18 +187,9 @@ namespace w3c_sw {
 			++lname;
 		    if (!strncmp(prefix[0] ? prefix : lname, "xmlns", 5)) {
 			self.nsz.top()[prefix[0] ? lname : ""] = value;
-#if TODO_setLang_INTERFACE
-		    } else if (prefix[0] && !strncmp(prefix, "xml", 3)) {
-			if (!strcmp(lname, "base"))
-			    self.insulator->setBase(value);
-			else if (!strcmp(lname, "lang"))
-			    self.insulator->setLang(value); @@ no setLang interface yet
-			else
-			    self.insulator->varError("unknown xml directive \"%s\"", lname);
-#else /* !TODO_setLang_INTERFACE */
-		    } else if (prefix[0] && !strncmp(prefix, "xml", 3) && !strcmp(lname, "base")) {
-			self.insulator->setBase(value);
-#endif /* !TODO_setLang_INTERFACE */
+		    // Handle xml:base/xml:lang directly in the handler.
+		    // } else if (prefix[0] && !strncmp(prefix, "xml", 3) && !strcmp(lname, "base")) {
+		    // 	self.insulator->setBase(value);
 		    } else if (prefix[0]) {
 			size_t len = lname - prefix - 1;
 			char* dup = new char[len + 1];
@@ -212,8 +205,9 @@ namespace w3c_sw {
 
 	    const char* elLname;
 	    const char* elNs;
-	    if (!self._crackQName(name, &elLname, &elNs))
-		self.insulator->varError("namespace prefix not found for \"%s\"", name);
+	    std::string qName(name);
+	    if (!self._crackQName(name, &elLname, &elNs, &qName))
+		; // self.insulator->varError("namespace prefix not found for \"%s\"", name);
 
 	    { /* Fix namespaces on attrs. */
 		for (std::vector<NsSet>::iterator it = attrs.byIndex.begin(); 
@@ -230,7 +224,7 @@ namespace w3c_sw {
 		}
 	    }
 	    SimpleNsMap nsMap(self.nsz.top());
- 	    self.insulator->startElement(elNs, elLname, name, &attrs, nsMap);
+ 	    self.insulator->startElement(elNs ? elNs : "", elLname, qName, &attrs, nsMap);
 	}
 
 	static void endEl (void *voidSelf,
@@ -238,9 +232,10 @@ namespace w3c_sw {
 	    SAXparser_expat &self = *( static_cast<SAXparser_expat*>(voidSelf) );
 	    const char* elLname;
 	    const char* elNs;
-	    self._crackQName(name, &elLname, &elNs);
+	    std::string qName(name);
+	    self._crackQName(name, &elLname, &elNs, &qName);
 	    SimpleNsMap nsMap(self.nsz.top());
- 	    self.insulator->endElement(elNs, elLname, (const char*)name, nsMap);
+ 	    self.insulator->endElement(elNs ? elNs : "", elLname, qName, nsMap);
 	    self.nsz.pop();
 	}
 
