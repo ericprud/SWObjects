@@ -439,6 +439,12 @@ tests/TriGTests:
 
 t_Trig: tests/TriGTests
 
+tests/RDFXMLTests:
+	mkdir -p $@
+	(cd $@ && curl http://www.w3.org/2013/RDFXMLTests/TESTS.tar.gz | tar xzf -)
+
+t_RDFXML: tests/RDFXMLTests
+
 tests/rdb2rdf-tests:
 	mkdir -p $@
 	(cd $@ && curl https://dvcs.w3.org/hg/rdb2rdf-tests/raw-file/d53b6a1cc393/rdb2rdf-ts.zip > rdb2rdf-ts.zip && unzip -q rdb2rdf-ts.zip && rm rdb2rdf-ts.zip)

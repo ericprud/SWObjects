@@ -17,14 +17,15 @@ namespace w3c_sw {
 	protected:
 	    enum Expect {DOCUMENT, SUBJECT, PROPERTY, COLLECTION, XMLLITERAL, s_ERROR};
 	    struct State {
+		std::string XMLbase;
 		enum Expect expect;
 		const TTerm* s;
 		const TTerm* p;
+		const TTerm* reifyID;
 		unsigned int ordinal;
-		std::string reifyID;
 		LANGTAG* langtag;
 
-		State () : expect(s_ERROR), s(NULL), p(NULL), ordinal(0), langtag(NULL)
+		State () : expect(s_ERROR), s(NULL), p(NULL), reifyID(NULL), ordinal(0), langtag(NULL)
 		{  }
 		const char* stateStr () const {
 		    static const char* stateStrs[] =
@@ -47,16 +48,14 @@ namespace w3c_sw {
 
 	    BasicGraphPattern* bgp;
 	    AtomFactory* atomFactory;
-	    std::string baseURI;
 	    std::string chars;
 	    bool expectCharData;
 	    const URI* datatype;
 	    std::stack<State> stack;
 	    TTerm::String2BNode bnodeMap;
-	    std::set<std::string> IDs;
+	    std::set<const TTerm*> IDs;
 
-	    void reify (const TriplePattern* triple, std::string reifID) {
-		const TTerm* reifS = atomFactory->getURI(baseURI + "#" + reifID);
+	    void reify (const TriplePattern* triple, const TTerm* reifS) {
 		bgp->addTriplePattern(atomFactory->getTriple
 				      (reifS, 
 				       atomFactory->getURI(std::string(NS_rdf) + "type"),
@@ -175,13 +174,16 @@ int main (int argc, char* argv[]) {
 
 	public:
 	    RdfXmlSaxHandler (BasicGraphPattern* bgp, std::string baseURI, AtomFactory* atomFactory) : 
-		bgp(bgp), atomFactory(atomFactory), baseURI(baseURI), chars(""), expectCharData(false) {
+		bgp(bgp), atomFactory(atomFactory), chars(""), expectCharData(false) {
 		State newState;
 		newState.expect = DOCUMENT;
+		newState.XMLbase = baseURI;
 		stack.push(newState);
 	    }
 
-	    virtual void setBase (std::string base) { baseURI = base; }
+	    virtual void setBase (std::string base) {
+		stack.top().XMLbase = base;
+	    }
 
 	    virtual void startElement (std::string uri,
 				       std::string localName,
@@ -189,6 +191,16 @@ int main (int argc, char* argv[]) {
 				       Attributes* attrs, 
 				       NSmap& /* nsz */) {
 		State newState;
+		{
+		    std::string t;
+		    newState.XMLbase = attrs->value(NS_xml, "base", &t)
+			// ? t
+			? HTParse(t, &stack.top().XMLbase, (libwww::e_PARSE_opts)(libwww::PARSE_all ^ libwww::PARSE_fragment))
+			: stack.top().XMLbase;
+		    newState.langtag = attrs->value(NS_xml, "lang", &t)
+			? new LANGTAG(t.c_str())
+			: stack.top().langtag;
+		}
 		switch (stack.top().expect) {
 		case DOCUMENT:
 		    if (uri == NS_rdf && localName == "RDF") {
@@ -201,10 +213,7 @@ int main (int argc, char* argv[]) {
 			varError("RDF nodeID, resource, parseType, about, ID, RDF, Description, aboutEach, aboutEachPrefix and bagID are not permitted as a subject type name. seen in %s", stack.top().stateStr());
 		    if (uri == NS_rdf && localName == "li")
 			varError("unexpected element rdf:li within %s", stack.top().stateStr());
-		    std::string t;
-		    newState.langtag = attrs->value(NS_xml, "lang", &t)
-			? new LANGTAG(t.c_str())
-			: stack.top().langtag;
+		    // std::string t;
 
 		    newState.expect = PROPERTY;
 
@@ -215,17 +224,20 @@ int main (int argc, char* argv[]) {
 			std::string subject;
 			if (attrs->value(NS_rdf, "about", &subject))
 			    newState.s = atomFactory->getURI
-				(libwww::HTParse(subject, &baseURI, libwww::PARSE_all).c_str());
+				(libwww::HTParse(subject, &newState.XMLbase, libwww::PARSE_all).c_str());
 			if (attrs->value(NS_rdf, "ID", &subject)) {
 			    if (newState.s)
 				varError("RDF ID attribute inconsistent with other attributes in %s", stack.top().stateStr());
 			    else if (UTF8_firstNonIDChar(subject) != -1)
 				varError("malformed RDF ID in %s", stack.top().stateStr());
-			    else if (IDs.find(subject) != IDs.end())
-				varError("duplicate RDF ID %s in %s", subject.c_str(), stack.top().stateStr());
 			    else {
-				IDs.insert(subject);
-				newState.s = atomFactory->getURI(baseURI + "#" + subject);
+				newState.s = atomFactory->getURI
+				    (libwww::HTParse("#" + subject, &newState.XMLbase, libwww::PARSE_all).c_str());
+				if (IDs.find(newState.s) != IDs.end())
+				    varError("duplicate RDF ID %s in %s", newState.s->getLexicalValue().c_str(), stack.top().stateStr());
+				else {
+				    IDs.insert(newState.s);
+				}
 			    }
 			}
 			if (attrs->value(NS_rdf, "nodeID", &subject)) {
@@ -238,10 +250,6 @@ int main (int argc, char* argv[]) {
 			}
 			if (newState.s == NULL)
 			    newState.s = atomFactory->createBNode();
-
-			std::string t;
-			if (attrs->value(NS_rdf, "bagID", &t) && UTF8_firstNonIDChar(t) != -1)
-				varError("malformed RDF bagID (which was removed from the langugae anyways) in %s", stack.top().stateStr());
 		    }
 
 		    /* Create statements for subject's literalPropertyElt. */
@@ -255,12 +263,13 @@ int main (int argc, char* argv[]) {
 				attrLName == "resource" ||
 				attrLName == "nodeID" ||
 				attrLName == "datatype" ||
-				attrLName == "Description" ||
-				attrLName == "bagID") {
+				attrLName == "Description") {
 				goto next_subject_attr;
-			    } else if (attrLName == "li" ||
+			    } else if (attrLName == "bagID" ||
 				       attrLName == "aboutEach" ||
 				       attrLName == "aboutEachPrefix") {
+				varError("attr %s has been removed from RDF. seen in %s", attrs->getQName(i).c_str(), stack.top().stateStr());
+			    } else if (attrLName == "li") {
 				varError("unexpected attr %s within %s", attrs->getQName(i).c_str(), stack.top().stateStr());
 			    }
 			} else if (attrs->getQName(i).substr(0, 3) == "xml") {
@@ -272,7 +281,7 @@ int main (int argc, char* argv[]) {
 			    const TTerm* predicate = atomFactory->getURI(attrURI + attrLName);
 			    std::string value; attrs->value(attrURI, attrLName, &value);
 			    const TTerm* object = (attrURI == NS_rdf && attrLName == "type")
-				? (const TTerm*)atomFactory->getURI(libwww::HTParse(value, &baseURI, libwww::PARSE_all).c_str())
+				? (const TTerm*)atomFactory->getURI(libwww::HTParse(value, &newState.XMLbase, libwww::PARSE_all).c_str())
 				: (const TTerm*)atomFactory->getRDFLiteral(value, NULL, newState.langtag);
 			    bgp->addTriplePattern(atomFactory->getTriple(newState.s, predicate, object));
 			}
@@ -358,9 +367,6 @@ int main (int argc, char* argv[]) {
 		     * stack state.
 		     */
 		    datatype = attrs->value(NS_rdf, "datatype", &t) ? atomFactory->getURI(t) : NULL;
-		    newState.langtag = attrs->value(NS_xml, "lang", &t) ?
-			new LANGTAG(t.c_str()) :
-			stack.top().langtag;
 
 		    if (uri == NS_rdf && localName == "li") {
 			State parentState = stack.top();
@@ -383,7 +389,7 @@ int main (int argc, char* argv[]) {
 		     */
 		    expectCharData = false;
 		    if (attrs->value(NS_rdf, "resource", &t))
-			newState.s = atomFactory->getURI(libwww::HTParse(t, &baseURI, libwww::PARSE_all).c_str());
+			newState.s = atomFactory->getURI(libwww::HTParse(t, &newState.XMLbase, libwww::PARSE_all).c_str());
 		    if (attrs->value(NS_rdf, "parseType", &parseType)) {
 			if (newState.s)
 			    varError("RDF parseType attribute inconsistent with other attributes in %s", stack.top().stateStr());
@@ -404,17 +410,20 @@ int main (int argc, char* argv[]) {
 		    if (attrs->value(NS_rdf, "ID", &t)) {
 			if (UTF8_firstNonIDChar(t) != -1)
 			    varError("RDF parseType attribute inconsistent with other attributes in %s", stack.top().stateStr());
-			else if (IDs.find(t) != IDs.end())
-			    varError("duplicate RDF ID %s in %s", t.c_str(), stack.top().stateStr());
-			else
-			    newState.reifyID = t;
+			else {
+			    newState.reifyID = atomFactory->getURI(libwww::HTParse("#"+t, &newState.XMLbase, libwww::PARSE_all));
+			    if (IDs.find(newState.reifyID) != IDs.end())
+				varError("duplicate RDF ID %s in %s", newState.reifyID->getLexicalValue().c_str(), stack.top().stateStr());
+			    else
+				IDs.insert(newState.reifyID);
+			}
 		    }
 
 		    if (newState.s != NULL) {
 			const TriplePattern* triple =
 			    atomFactory->getTriple(stack.top().s,newState.p, newState.s);
 			bgp->addTriplePattern(triple);
-			if (newState.reifyID.size())
+			if (newState.reifyID != NULL)
 			    reify(triple, newState.reifyID);
 		    }
 
@@ -430,14 +439,10 @@ int main (int argc, char* argv[]) {
 				attrLName == "nodeID") {
 				// allowed attrs
 				goto next_property_attr;
-			    } else if (attrLName != "aboutEach" &&
-				       attrLName != "aboutEachPrefix") {
-				varError("unexpected attr %s within %s", attrs->getQName(i).c_str(), stack.top().stateStr());
-			    // attrLName != "type" &&
-			    // attrLName != "Seq" &&
-			    // attrLName != "Alt" &&
-			    // attrLName != "Bag")
-
+			    } else if (attrLName == "bagID" ||
+				       attrLName == "aboutEach" ||
+				       attrLName == "aboutEachPrefix") {
+				varError("attr %s has been removed from RDF. seen in %s", attrs->getQName(i).c_str(), stack.top().stateStr());
 			    }
 			} else if (attrs->getQName(i).substr(0, 3) == "xml") {
 			    // ignore XML directives.
@@ -450,7 +455,7 @@ int main (int argc, char* argv[]) {
 				const TriplePattern* triple =
 				    atomFactory->getTriple(stack.top().s, newState.p, newState.s);
 				bgp->addTriplePattern(triple);
-				if (newState.reifyID.size())
+				if (newState.reifyID != NULL)
 				    reify(triple, newState.reifyID);
 			    }
 
@@ -517,7 +522,7 @@ int main (int argc, char* argv[]) {
 			chars = "";
 			const TriplePattern* triple = atomFactory->getTriple(stack.top().s, nestedState.p, o);
 			bgp->addTriplePattern(triple);
-			if (nestedState.reifyID.size())
+			if (nestedState.reifyID != NULL)
 			    reify(triple, nestedState.reifyID);
 		    }
 		    break;
