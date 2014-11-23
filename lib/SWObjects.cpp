@@ -261,15 +261,43 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 	    if(wanted & PARSE_punctuation && !given.isSlashless()) result += "/";
 	    result += given.getAbsolute();
 	} else if(related->hasAbsolute()) {	/* Adopt path not name */
-	    result += "/";
-	    result += related->getAbsolute();
+	    std::string path;
+	    path += "/";
+	    path += related->getAbsolute();
 	    if (given.hasRelative()) {
-		p = result.find('?');	/* Search part? */
-		if (p == std::string::npos) p=result.size()-1;
-		p = result.rfind('/', p);	/* last / */
-		result.erase(p+1);			/* Remove filename */
-		result += given.getRelative();		/* Add given one */
+		p = path.find('?');	/* Search part? */
+		if (p == std::string::npos) p=path.size()-1;
+		p = path.rfind('/', p);	/* last / */
+		path.erase(p+1);			/* Remove filename */
+		std::string rel = given.getRelative();
+		size_t q = rel.find('?');
+		if (q == std::string::npos) q=rel.size()-1;
+		// path += given.getRelative();		/* Add given one */
+		for (size_t i = 0; i < q; ++i) {
+		    size_t last = i;
+		    i = rel.find("/", last);
+		    if (i >= q) {
+			size_t cut = path.find_last_of('/', path.size()-1);
+			if (cut != std::string::npos && cut != path.size()-1)
+			    path = path.substr(0, cut+1);
+			path += rel.substr(last, q-last);
+			break;
+		    }
+		    std::string s(rel.substr(last, i-last));
+		    if (s == ".") {
+		    } else if (s == "..") {
+			if (path[path.size()-1] == '/' && path.size() > 0)
+			    path = path.substr(0, path.size()-1);
+			size_t cut = path.find_last_of('/', path.size()-1);
+			if (cut != 0)
+			    path = path.substr(0, cut+1);
+		    } else {
+			path += "/"+s;
+		    }
+		}
+		path += rel.substr(q);
 	    }
+	    result += path;
 	} else if(given.hasRelative()) {
 	    if(related->hasRelative() && result.empty()) {
 		std::string r = related->getRelative();
