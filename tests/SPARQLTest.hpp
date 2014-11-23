@@ -83,7 +83,7 @@ struct MeasuredRS : public ResultSet {
     static void read (std::string name, std::string baseURI, RdfDB* db) {
 	IStreamContext istr(name, IStreamContext::FILE);
 	if (name.substr(name.size()-4, 4) == ".rdf") {
-	    GRdfXmlParser.setBase(name);
+	    GRdfXmlParser.setBase(baseURI);
 	    GRdfXmlParser.parse(db->ensureGraph(DefaultGraph), istr);
 	    GRdfXmlParser.clear(BASE_URI); // clear out namespaces and base URI.
 	} else if (name.substr(name.size()-4, 4) == ".ttl") {
