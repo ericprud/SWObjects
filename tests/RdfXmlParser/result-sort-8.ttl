@@ -9,7 +9,6 @@
   _:b0x9811be8 <http://www.w3.org/2001/sw/DataAccess/tests/result-set#binding> _:b0x9812468 .
   _:b0x9812468 <http://www.w3.org/2001/sw/DataAccess/tests/result-set#variable> "emp"  .
   _:b0x9812468 <http://www.w3.org/2001/sw/DataAccess/tests/result-set#value> _:b0x9812510 .
-  _:b0x9812510 <http://www.w3.org/1999/02/22-rdf-syntax-ns#nodeID> "node0"  .
   _:b0x980b1a0 <http://www.w3.org/2001/sw/DataAccess/tests/result-set#solution> _:b0x98123d0 .
   _:b0x98123d0 <http://www.w3.org/2001/sw/DataAccess/tests/result-set#index> 2  .
   _:b0x98123d0 <http://www.w3.org/2001/sw/DataAccess/tests/result-set#binding> _:b0x98123b8 .
