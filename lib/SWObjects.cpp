@@ -292,7 +292,9 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 			if (cut != 0)
 			    path = path.substr(0, cut+1);
 		    } else {
-			path += "/"+s;
+			if (path[path.size()-1] != '/')
+			    path += "/";
+			path += s+"/";
 		    }
 		}
 		path += rel.substr(q);
