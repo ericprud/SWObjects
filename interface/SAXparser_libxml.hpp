@@ -218,9 +218,9 @@ namespace w3c_sw {
 
  	    Attributes_libxml attrs(attributes, nb_attributes);
 	    SimpleNsMap nsMap(self.nsz.top());
- 	    self.insulator->startElement((const char*)URI, 
-					  (const char*)localname, 
-					  SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
+ 	    self.insulator->startElement(URI ? (const char*)URI : "", 
+					 (const char*)localname, 
+					 SWSAXhandler::qName((const char*)prefix, (const char*)localname), 
 					 &attrs, nsMap);
 	}
 
@@ -231,7 +231,7 @@ namespace w3c_sw {
 	{
 	    SAXparser_libxml &self = *( static_cast<SAXparser_libxml*>(voidSelf) );
 	    SimpleNsMap nsMap(self.nsz.top());
- 	    self.insulator->endElement((const char*)URI, 
+ 	    self.insulator->endElement(URI ? (const char*)URI : "", 
 				       (const char*)localname, 
 				       SWSAXhandler::qName((const char*)prefix, (const char*)localname), nsMap);
 	    self.nsz.pop();
