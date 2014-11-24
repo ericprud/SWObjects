@@ -16,7 +16,7 @@ w3c_sw_DEBUGGING_FUNCTIONS(); // still reachable: 680 bytes in 7 blocks from log
 
 using namespace w3c_sw;
 
-ShExDriver swsexParser("", &F);
+ShExDriver shexcParser("", &F);
 
 BOOST_AUTO_TEST_CASE( manual ) {
     ShExSchema::AtomicRule::ValueSet* t =
@@ -60,21 +60,21 @@ struct BNodeLabelNormalizer {
 };
 
 struct ParseTest {
-    const ShExSchema* sex;
+    const ShExSchema* shexc;
     const std::string expected;
     const std::string serialized;
     ParseTest (const char* parseMe, const char* goal)
-	: sex(parse(parseMe)), expected(read(goal)), serialized(serialize(sex)) {  }
+	: shexc(parse(parseMe)), expected(read(goal)), serialized(serialize(shexc)) {  }
     ~ParseTest () {
-	delete sex;
-	sex = NULL;
+	delete shexc;
+	shexc = NULL;
     }
 
     static ShExSchema* parse (const char* parseMe) {
 	IStreamContext aistr(parseMe, IStreamContext::FILE);
-	ShExSchema* sex = swsexParser.parse(aistr, new ShExSchema());
-	swsexParser.clear(); // clear out namespaces and base URI.
-	return sex;
+	ShExSchema* shexc = shexcParser.parse(aistr, new ShExSchema());
+	shexcParser.clear(); // clear out namespaces and base URI.
+	return shexc;
     }
 
     static std::string read (const char* goal) {
@@ -83,9 +83,9 @@ struct ParseTest {
 			   std::istreambuf_iterator<char>());
     }
 
-    static std::string serialize (const ShExSchema* sex) {
+    static std::string serialize (const ShExSchema* shexc) {
 	std::ostringstream ss;
-	ss << *sex << '\n';
+	ss << *shexc << '\n';
 	return ss.str();
     }
 };
@@ -105,19 +105,17 @@ struct NormalizeTest : public ParseTest {
 };
 
 BOOST_AUTO_TEST_CASE( expressivity1 ) {
-    ParseTest n("ShEx/expressivity1.ssx", "ShEx/expressivity1-normalized.ssx");
-    BOOST_CHECK_EQUAL(n.serialized, n.expected);
-    // NormalizeTest n("ShEx/expressivity1.ssx", "ShEx/expressivity1-normalized.ssx");
-    // BOOST_CHECK_EQUAL(n.normalized, n.expected);
-    // ParseTest p("ShEx/expressivity1-normalized.ssx", "ShEx/expressivity1-normalized.ssx");
-    // BOOST_CHECK_EQUAL(p.serialized, p.expected);
+    NormalizeTest n("ShEx/expressivity1.ssx", "ShEx/expressivity1-normalized.ssx");
+    BOOST_CHECK_EQUAL(n.normalized, n.expected);
+    ParseTest p("ShEx/expressivity1-normalized.ssx", "ShEx/expressivity1-normalized.ssx");
+    BOOST_CHECK_EQUAL(p.serialized, p.expected);
 }
 
 BOOST_AUTO_TEST_CASE( simple1 ) {
-    ShExSchema sex;
+    ShExSchema shexc;
     IStreamContext sexstr("ShEx/simple1.ssx", IStreamContext::FILE);
-    swsexParser.parse(sexstr, &sex);
-    swsexParser.clear(); // clear out namespaces and base URI.
+    shexcParser.parse(sexstr, &shexc);
+    shexcParser.clear(); // clear out namespaces and base URI.
 
     {
 	DefaultGraphPattern data;
@@ -125,7 +123,7 @@ BOOST_AUTO_TEST_CASE( simple1 ) {
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
-	BOOST_CHECK_EQUAL(sex.validate(data, F.getURI("")), true);
+	BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("")), true);
     }
 
     {
@@ -134,15 +132,15 @@ BOOST_AUTO_TEST_CASE( simple1 ) {
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
-	BOOST_CHECK_EQUAL(sex.validate(data, F.getURI("")), false);
+	BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("")), false);
     }
 }
 
 BOOST_AUTO_TEST_CASE( issue1 ) {
-    ShExSchema sex;
+    ShExSchema shexc;
     IStreamContext sexstr("ShEx/issue1.ssx", IStreamContext::FILE);
-    swsexParser.parse(sexstr, &sex);
-    swsexParser.clear(); // clear out namespaces and base URI.
+    shexcParser.parse(sexstr, &shexc);
+    shexcParser.clear(); // clear out namespaces and base URI.
 
     {
 	DefaultGraphPattern data;
@@ -150,7 +148,7 @@ BOOST_AUTO_TEST_CASE( issue1 ) {
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
-	//BOOST_CHECK_EQUAL(sex.validate(data, F.getURI("issue7")), true);
+	//BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("issue7")), true);
     }
 
     {
@@ -159,7 +157,7 @@ BOOST_AUTO_TEST_CASE( issue1 ) {
 	turtleParser.setGraph(&data);
 	turtleParser.parse(ttlstr);
 	turtleParser.clear(BASE_URI);
-	BOOST_CHECK_EQUAL(sex.validate(data, F.getURI("issue7")), false);
+	BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("issue7")), false);
     }
 }
 // EOF
