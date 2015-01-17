@@ -94,9 +94,8 @@ struct NormalizeTest : public ParseTest {
     const std::string normalized;
 
     NormalizeTest (const char* parseMe, const char* goal)
-	: ParseTest(parseMe, goal), normalized(normalize(serialized)) {
-	w3c_sw_LINEN << "serialized: " << serialized << "\n";
-  }
+	: ParseTest(parseMe, goal), normalized(normalize(serialized))
+    {  }
 
     static std::string normalize (const std::string serialized) {
 	BNodeLabelNormalizer r;
