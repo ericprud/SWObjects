@@ -1,8 +1,9 @@
 *.dep
 *.o
+*~
 /.emacs.desktop
 /.emacs.desktop.lock
-/EGP
+EGP
 /config.h
 *.tlog
 *.filters
@@ -23,3 +24,5 @@
 *.tlh
 *.manifest
 /SWObjects.suo
+/ssl
+/experiments
