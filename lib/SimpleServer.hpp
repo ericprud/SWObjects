@@ -572,6 +572,8 @@ namespace w3c_sw {
 						   rs.resultType == ResultSet::RESULT_Graphs
 						   ? "text/turtle; charset=UTF-8"
 						   : "application/sparql-results+xml; charset=UTF-8");
+				// rep.addHeader("MS-Author-Via", "SPARQL"); ??
+				rep.addHeader("Access-Control-Allow-Origin", "*");
 				rs.toXml(&xml);
 				sout << xml.str();
 			    } /* !htmlResults */
