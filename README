@@ -6,3 +6,7 @@ Hi, welcome to SWObjects and all that. You probably want to:
   make test
 
 This should all be made easier when ./configure if finished.
+
+To learn more about SWObjects, checkout some tutorials given at SWAT4LS in 2010 and 2011:
+2010: http://www.w3.org/2010/Talks/1208-egp-swobjects/
+2011: https://sites.google.com/site/swobjectstutorial/documentation
