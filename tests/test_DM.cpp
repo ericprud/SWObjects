@@ -1,5 +1,15 @@
 /* test_DM.cpp - test the ../bin/dm-materialize executable
  *
+ * The tests require UTF-8 support in the database.
+
+MySQL:
+  CREATE USER DM@localhost IDENTIFIED BY "DM";
+  GRANT ALL PRIVILEGES ON DM.* TO DM@localhost;
+  SET character_set_server = utf8;
+  CREATE DATABASE DM;
+ or create the database without setting character_set_server:
+  CREATE DATABASE DM DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+ *
  * $Id: test_DM.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
