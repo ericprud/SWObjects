@@ -119,6 +119,8 @@ char const * yit = "yacker:implicit-terminal";
 
 /* END yacker-specific test harness */
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
 namespace libwww {
 /* copied from libwww's HTParse.c
  * transliterated to c++ using std::string (for reduced performance) - EGP
@@ -203,6 +205,20 @@ HTURI::HTURI (std::string name) : DummyHTURI()
 	relativeP = false;
     }
 }
+std::string simplify (std::string path) {
+    std::vector<std::string> strs;
+    boost::split(strs, path, boost::is_any_of("/"));
+    for (std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); ) {
+	if (*it == ".") {
+	    it = strs.erase(it, it+1);
+	} else if (*it == ".." && it != strs.begin()) {
+	    it = strs.erase(it-1, it+1);
+	} else {
+	    ++it;
+	}
+    }
+    return boost::algorithm::join(strs, "/");
+}
 std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts wanted)
 {
     // std::cerr << "HTParse(" << name << ", " << (rel ? *rel : std::string("NULL")) << ", " << wanted << ")";
@@ -259,7 +275,7 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
     if (wanted & PARSE_path) {
         if(given.hasAbsolute()) {			/* All is given */
 	    if(wanted & PARSE_punctuation && !given.isSlashless()) result += "/";
-	    result += given.getAbsolute();
+	    result += simplify(given.getAbsolute());
 	} else if(related->hasAbsolute()) {	/* Adopt path not name */
 	    std::string path;
 	    path += "/";
@@ -299,17 +315,18 @@ std::string HTParse (std::string name, const std::string* rel, e_PARSE_opts want
 		}
 		path += rel.substr(q);
 	    }
-	    result += path;
+	    result += simplify(path);
 	} else if(given.hasRelative()) {
+	    std::string path;
 	    if(related->hasRelative() && result.empty()) {
 		std::string r = related->getRelative();
 		size_t endOfPath = r.find_last_of("/");
 		if (endOfPath != std::string::npos)
-		    result += r.substr(0, endOfPath+1);
+		    path = r.substr(0, endOfPath+1);
 	    }
-	    result += given.getRelative();		/* what we've got */
+	    result += simplify(path + given.getRelative());		/* what we've got */
 	} else if(related->hasRelative()) {
-	    result += related->getRelative();
+	    result += simplify(related->getRelative());
 	} else {  /* No inheritance */
 	    result += "/";
 	}
