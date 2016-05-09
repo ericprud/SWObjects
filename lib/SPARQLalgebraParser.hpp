@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.2.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton interface for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
 #ifndef YY_W3C_SW_TMP_SPARQLALGEBRAPARSER_SPARQLALGEBRAPARSER_HPP_INCLUDED
 # define YY_W3C_SW_TMP_SPARQLALGEBRAPARSER_SPARQLALGEBRAPARSER_HPP_INCLUDED
 // //                    "%code requires" blocks.
-#line 52 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:372
+#line 52 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:377
  // ##bison2
 /* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
  * which varies by parser_class_name . Overriding with define specific to
@@ -208,13 +208,14 @@ public:
 
 // %} // ##bison1
 
-#line 212 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:372
+#line 212 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:377
 
 
-# include <vector>
+# include <cstdlib> // std::abort
 # include <iostream>
 # include <stdexcept>
 # include <string>
+# include <vector>
 # include "stack.hh"
 # include "location.hh"
 
@@ -279,7 +280,7 @@ public:
 
 
 namespace w3c_sw {
-#line 283 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:372
+#line 284 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:377
 
 
 
@@ -293,7 +294,7 @@ namespace w3c_sw {
     /// Symbol semantic values.
     union semantic_type
     {
-    #line 222 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:372
+    #line 222 "lib/SPARQLalgebraParser.ypp" // lalr1.cc:377
 
     const NumericRDFLiteral* p_NumericRDFLiteral;
     const Operation* p_Operation;
@@ -331,7 +332,7 @@ namespace w3c_sw {
     const BooleanRDFLiteral* p_BooleanRDFLiteral;
     /* Terminals */
 
-#line 335 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:372
+#line 336 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:377
     };
 #else
     typedef YYSTYPE semantic_type;
@@ -521,8 +522,11 @@ namespace w3c_sw {
     /// (External) token type, as returned by yylex.
     typedef token::yytokentype token_type;
 
-    /// Internal symbol number.
+    /// Symbol type: an internal symbol number.
     typedef int symbol_number_type;
+
+    /// The symbol type number to denote an empty symbol.
+    enum { empty_symbol = -2 };
 
     /// Internal symbol number for tokens (subsumed by symbol_number_type).
     typedef unsigned char token_number_type;
@@ -554,7 +558,14 @@ namespace w3c_sw {
                     const semantic_type& v,
                     const location_type& l);
 
+      /// Destroy the symbol.
       ~basic_symbol ();
+
+      /// Destroy contents, and record that is empty.
+      void clear ();
+
+      /// Whether empty.
+      bool empty () const;
 
       /// Destructive move, \a s is emptied into this.
       void move (basic_symbol& s);
@@ -585,21 +596,23 @@ namespace w3c_sw {
       /// Constructor from (external) token numbers.
       by_type (kind_type t);
 
+      /// Record that this symbol is empty.
+      void clear ();
+
       /// Steal the symbol type from \a that.
       void move (by_type& that);
 
       /// The (internal) type number (corresponding to \a type).
-      /// -1 when this symbol is empty.
+      /// \a empty when empty.
       symbol_number_type type_get () const;
 
       /// The token.
       token_type token () const;
 
-      enum { empty = 0 };
-
       /// The symbol type.
-      /// -1 when this symbol is empty.
-      token_number_type type;
+      /// \a empty_symbol when empty.
+      /// An int, not token_number_type, to be able to store empty_symbol.
+      int type;
     };
 
     /// "External" symbols: returned by the scanner.
@@ -646,9 +659,9 @@ namespace w3c_sw {
 
     /// Generate an error message.
     /// \param yystate   the state where the error occurred.
-    /// \param yytoken   the lookahead token type, or yyempty_.
+    /// \param yyla      the lookahead token.
     virtual std::string yysyntax_error_ (state_type yystate,
-                                         symbol_number_type yytoken) const;
+                                         const symbol_type& yyla) const;
 
     /// Compute post-reduction state.
     /// \param yystate   the current state
@@ -751,16 +764,21 @@ namespace w3c_sw {
       /// Copy constructor.
       by_state (const by_state& other);
 
+      /// Record that this symbol is empty.
+      void clear ();
+
       /// Steal the symbol type from \a that.
       void move (by_state& that);
 
       /// The (internal) type number (corresponding to \a state).
-      /// "empty" when empty.
+      /// \a empty_symbol when empty.
       symbol_number_type type_get () const;
 
-      enum { empty = 0 };
+      /// The state number used to denote an empty symbol.
+      enum { empty_state = -1 };
 
       /// The state.
+      /// \a empty when empty.
       state_type state;
     };
 
@@ -801,13 +819,12 @@ namespace w3c_sw {
     /// Pop \a n symbols the three stacks.
     void yypop_ (unsigned int n = 1);
 
-    // Constants.
+    /// Constants.
     enum
     {
       yyeof_ = 0,
       yylast_ = 2005,     ///< Last index in yytable_.
       yynnts_ = 152,  ///< Number of nonterminal symbols.
-      yyempty_ = -2,
       yyfinal_ = 76, ///< Termination state number.
       yyterror_ = 1,
       yyerrcode_ = 256,
@@ -822,7 +839,7 @@ namespace w3c_sw {
 
 
 } // w3c_sw
-#line 826 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:372
+#line 843 "tmp/SPARQLalgebraParser/SPARQLalgebraParser.hpp" // lalr1.cc:377
 
 
 

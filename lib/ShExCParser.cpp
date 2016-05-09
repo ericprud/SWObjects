@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.2.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 
 // First part of user declarations.
 
-#line 39 "lib/ShExCParser.cpp" // lalr1.cc:399
+#line 39 "lib/ShExCParser.cpp" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -48,10 +48,10 @@
 #include "ShExCParser.hpp"
 
 // User implementation prologue.
-#line 138 "lib/ShExCParser.ypp" // lalr1.cc:407
+#line 138 "lib/ShExCParser.ypp" // lalr1.cc:412
 
 #include "ShExCScanner.hpp"
-#line 187 "lib/ShExCParser.ypp" // lalr1.cc:407
+#line 187 "lib/ShExCParser.ypp" // lalr1.cc:412
 
 #include "ShExCScanner.hpp"
 
@@ -61,7 +61,7 @@
 #undef yylex
 #define yylex driver.lexer->lexWrapper
 
-#line 65 "lib/ShExCParser.cpp" // lalr1.cc:407
+#line 65 "lib/ShExCParser.cpp" // lalr1.cc:412
 
 
 #ifndef YY_
@@ -138,7 +138,7 @@
 #endif // !YYDEBUG
 
 #define yyerrok         (yyerrstatus_ = 0)
-#define yyclearin       (yyempty = true)
+#define yyclearin       (yyla.clear ())
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -147,7 +147,7 @@
 
 
 namespace w3c_sw {
-#line 151 "lib/ShExCParser.cpp" // lalr1.cc:474
+#line 151 "lib/ShExCParser.cpp" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -251,6 +251,23 @@ namespace w3c_sw {
   inline
   ShExParser::basic_symbol<Base>::~basic_symbol ()
   {
+    clear ();
+  }
+
+  template <typename Base>
+  inline
+  void
+  ShExParser::basic_symbol<Base>::clear ()
+  {
+    Base::clear ();
+  }
+
+  template <typename Base>
+  inline
+  bool
+  ShExParser::basic_symbol<Base>::empty () const
+  {
+    return Base::type_get () == empty_symbol;
   }
 
   template <typename Base>
@@ -266,7 +283,7 @@ namespace w3c_sw {
   // by_type.
   inline
   ShExParser::by_type::by_type ()
-     : type (empty)
+    : type (empty_symbol)
   {}
 
   inline
@@ -281,10 +298,17 @@ namespace w3c_sw {
 
   inline
   void
+  ShExParser::by_type::clear ()
+  {
+    type = empty_symbol;
+  }
+
+  inline
+  void
   ShExParser::by_type::move (by_type& that)
   {
     type = that.type;
-    that.type = empty;
+    that.clear ();
   }
 
   inline
@@ -298,7 +322,7 @@ namespace w3c_sw {
   // by_state.
   inline
   ShExParser::by_state::by_state ()
-    : state (empty)
+    : state (empty_state)
   {}
 
   inline
@@ -308,10 +332,17 @@ namespace w3c_sw {
 
   inline
   void
+  ShExParser::by_state::clear ()
+  {
+    state = empty_state;
+  }
+
+  inline
+  void
   ShExParser::by_state::move (by_state& that)
   {
     state = that.state;
-    that.state = empty;
+    that.clear ();
   }
 
   inline
@@ -323,7 +354,10 @@ namespace w3c_sw {
   ShExParser::symbol_number_type
   ShExParser::by_state::type_get () const
   {
-    return state == empty ? 0 : yystos_[state];
+    if (state == empty_state)
+      return empty_symbol;
+    else
+      return yystos_[state];
   }
 
   inline
@@ -337,7 +371,7 @@ namespace w3c_sw {
   {
     value = that.value;
     // that is emptied.
-    that.type = empty;
+    that.type = empty_symbol;
   }
 
   inline
@@ -372,6 +406,10 @@ namespace w3c_sw {
     std::ostream& yyoutput = yyo;
     YYUSE (yyoutput);
     symbol_number_type yytype = yysym.type_get ();
+    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
+    // below array bounds".
+    if (yysym.empty ())
+      std::abort ();
     yyo << (yytype < yyntokens_ ? "token" : "nterm")
         << ' ' << yytname_[yytype] << " ("
         << yysym.location << ": ";
@@ -456,9 +494,6 @@ namespace w3c_sw {
   int
   ShExParser::parse ()
   {
-    /// Whether yyla contains a lookahead.
-    bool yyempty = true;
-
     // State.
     int yyn;
     /// Length of the RHS of the rule being reduced.
@@ -485,14 +520,14 @@ namespace w3c_sw {
 
 
     // User initialization code.
-    #line 31 "lib/ShExCParser.ypp" // lalr1.cc:725
+    #line 31 "lib/ShExCParser.ypp" // lalr1.cc:741
 {
     // initialize the initial location object
     yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
     driver.yylloc = &yyla.location;
 }
 
-#line 496 "lib/ShExCParser.cpp" // lalr1.cc:725
+#line 531 "lib/ShExCParser.cpp" // lalr1.cc:741
 
     /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
@@ -520,7 +555,7 @@ namespace w3c_sw {
       goto yydefault;
 
     // Read a lookahead token.
-    if (yyempty)
+    if (yyla.empty ())
       {
         YYCDEBUG << "Reading a token: ";
         try
@@ -532,7 +567,6 @@ namespace w3c_sw {
             error (yyexc);
             goto yyerrlab1;
           }
-        yyempty = false;
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
@@ -551,9 +585,6 @@ namespace w3c_sw {
         yyn = -yyn;
         goto yyreduce;
       }
-
-    // Discard the token being shifted.
-    yyempty = true;
 
     // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
@@ -604,23 +635,23 @@ namespace w3c_sw {
           switch (yyn)
             {
   case 9:
-#line 218 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 218 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curSchema->start = (yystack_[0].value.p_TTerm);
     }
-#line 612 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 643 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 10:
-#line 224 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 224 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_ruleActions) = NULL;
     }
-#line 620 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 651 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 11:
-#line 227 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 227 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_ruleActions) = ((yystack_[1].value.p_ruleActions) == NULL)
 	    ? new ShExSchema::RuleActions(driver.curRulePattern)
@@ -629,116 +660,116 @@ namespace w3c_sw {
 	delete (yystack_[0].value.p_CODE).label;
 	delete (yystack_[0].value.p_CODE).text;
     }
-#line 633 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 664 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 13:
-#line 239 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 239 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curRulePattern = (yystack_[0].value.p_rulePattern);
       }
-#line 641 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 672 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 14:
-#line 241 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 241 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  driver.curRulePattern = NULL;
 	  (yylhs.value.p_TTerm) = driver.createBNode();
 	  driver.curSchema->ruleMap.insert(std::make_pair((yylhs.value.p_TTerm), (yystack_[0].value.p_ruleActions) == NULL ? (yystack_[2].value.p_rulePattern) : (yystack_[0].value.p_ruleActions)));
       }
-#line 651 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 682 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 15:
-#line 249 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 249 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
-#line 659 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 690 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 16:
-#line 255 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 255 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.ignorePrefix(true);
       }
-#line 667 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 698 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 17:
-#line 257 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 257 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  driver.ignorePrefix(false);
       }
-#line 675 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 706 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 18:
-#line 259 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 259 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
-#line 684 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 715 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 19:
-#line 266 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 266 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curRulePattern = (yystack_[0].value.p_rulePattern);
       }
-#line 692 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 723 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 20:
-#line 268 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 268 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  driver.curRulePattern = NULL;
 	  driver.curSchema->ruleMap.insert(std::make_pair((yystack_[3].value.p_TTerm), (yystack_[0].value.p_ruleActions) == NULL ? (yystack_[2].value.p_rulePattern) : (yystack_[0].value.p_ruleActions)));
       }
-#line 701 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 732 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 21:
-#line 275 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 275 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_nameClass) = driver.curNameClass;
 	driver.curNameClass = NULL;
       }
-#line 710 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 741 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 22:
-#line 278 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 278 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_rulePattern) = driver.curRulePattern;
 	  driver.curRulePattern = NULL;
       }
-#line 719 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 750 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 23:
-#line 281 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 281 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  driver.curRulePattern = (yystack_[2].value.p_rulePattern);
 	  driver.curNameClass = (yystack_[3].value.p_nameClass);
 	  (yylhs.value.p_rulePattern) = (yystack_[1].value.p_rulePattern);
       }
-#line 729 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 760 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 24:
-#line 289 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 289 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_setRule) = driver.curSetRule;
 	driver.curSetRule = NULL;
     }
-#line 738 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 769 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 25:
-#line 292 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 292 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if (driver.curSetRule == NULL)
 	    (yylhs.value.p_rulePattern) = (yystack_[1].value.p_rulePattern);
@@ -748,38 +779,38 @@ namespace w3c_sw {
 	}
 	driver.curSetRule = (yystack_[2].value.p_setRule);
     }
-#line 752 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 783 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 26:
-#line 304 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 304 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_rulePattern) = (yystack_[0].value.p_rulePattern);
     }
-#line 760 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 791 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 28:
-#line 311 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 311 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if (driver.curSetRule == NULL)
 	    driver.curSetRule = new ShExSchema::OrRule();
 	driver.curSetRule->rules.push_back((yystack_[0].value.p_rulePattern));
     }
-#line 770 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 801 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 29:
-#line 319 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 319 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_setRule) = driver.curSetRule;
 	driver.curSetRule = NULL;
     }
-#line 779 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 810 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 30:
-#line 322 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 322 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if (driver.curSetRule == NULL)
 	    (yylhs.value.p_rulePattern) = (yystack_[1].value.p_rulePattern);
@@ -789,376 +820,376 @@ namespace w3c_sw {
 	}
 	driver.curSetRule = (yystack_[2].value.p_setRule);
     }
-#line 793 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 824 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 31:
-#line 334 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 334 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_rulePattern) = (yystack_[0].value.p_rulePattern);
     }
-#line 801 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 832 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 33:
-#line 341 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 341 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if (driver.curSetRule == NULL)
 	    driver.curSetRule = new ShExSchema::AndRule();
 	driver.curSetRule->rules.push_back((yystack_[0].value.p_rulePattern));
     }
-#line 811 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 842 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 34:
-#line 349 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 349 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	// $$ = $1 ? new ShExSchema::NegatedRule($2) : $2;
 	// @@ $1 is a label
 	(yylhs.value.p_rulePattern) = (yystack_[0].value.p_rulePattern);
     }
-#line 821 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 852 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 38:
-#line 367 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 367 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_bool) = false;
     }
-#line 829 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 860 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 39:
-#line 370 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 370 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
         (yylhs.value.p_bool) = true;
     }
-#line 837 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 868 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 41:
-#line 379 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 379 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curRulePattern = (yystack_[1].value.p_rulePattern);
       }
-#line 845 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 876 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 42:
-#line 381 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 381 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  // @@ set flag from $5
 	  driver.curRulePattern = NULL;
 	  (yylhs.value.p_rulePattern) = (yystack_[0].value.p_ruleActions) == NULL ? (yystack_[4].value.p_rulePattern) : (yystack_[0].value.p_ruleActions);
       }
-#line 855 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 886 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 43:
-#line 389 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 389 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 863 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 894 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 44:
-#line 392 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 392 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
-#line 871 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 902 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 45:
-#line 398 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 398 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	// pass down the nameClass 'cause we need valueSpec's CODE* to be able
 	// to make a AtomicRule and potentially wrap it with RuleActions.
 	driver.curNameClass = (yystack_[0].value.p_nameClass);
 	(yystack_[0].value.p_nameClass)->reverse = (yystack_[1].value.p_bool);
       }
-#line 882 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 913 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 46:
-#line 403 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 403 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  if ((yystack_[1].value.p_TTerm))
 	      w3c_sw_NEED_IMPL("ShEx parser support for default");
 	  driver.curRulePattern = new ShExSchema::AtomicRule(driver.curNameClass, (yystack_[2].value.p_value), (yystack_[0].value.p_RepeatRange).min, (yystack_[0].value.p_RepeatRange).max);
       }
-#line 892 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 923 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 47:
-#line 407 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 407 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_rulePattern) = (yystack_[0].value.p_ruleActions) == NULL ? driver.curRulePattern : (yystack_[0].value.p_ruleActions);
 	  driver.curRulePattern = NULL;
 	  driver.curNameClass = NULL;
 	}
-#line 902 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 933 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 48:
-#line 424 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 424 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_bool) = false;
     }
-#line 910 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 941 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 49:
-#line 427 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 427 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_bool) = true;
     }
-#line 918 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 949 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 50:
-#line 433 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 433 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = NULL;
     }
-#line 926 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 957 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 52:
-#line 440 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 440 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_RepeatRange).min = 1;
 	(yylhs.value.p_RepeatRange).max = 1;
     }
-#line 935 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 966 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 56:
-#line 455 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 455 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if ((yystack_[0].value.p_URIstem).opt)
 	    (yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NamePattern((yystack_[0].value.p_URIstem).uri);
 	else
 	    (yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NameTerm((yystack_[0].value.p_URIstem).uri);
     }
-#line 946 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 977 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 57:
-#line 461 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 461 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NameAll((yystack_[0].value.p_URIstems));
     }
-#line 954 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 985 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 58:
-#line 464 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 464 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_nameClass) = new ShExSchema::AtomicRule::NameTerm(TTerm::RDF_type);
     }
-#line 962 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 993 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 59:
-#line 470 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 470 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueReference((yystack_[0].value.p_TTerm));
     }
-#line 970 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1001 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 60:
-#line 473 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 473 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	const TTerm* b = driver.createBNode();
 	driver.curSchema->ruleMap.insert(std::make_pair(b, (yystack_[0].value.p_rulePattern)));
 	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueReference(b);
     }
-#line 980 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1011 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 61:
-#line 478 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 478 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueType((yystack_[0].value.p_URI));
     }
-#line 988 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1019 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 62:
-#line 481 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 481 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	ShExSchema::AtomicRule::ValueSet* t = new ShExSchema::AtomicRule::ValueSet();
 	(yylhs.value.p_valueSet)  = t;
 	driver.curTTerms = &t->tterms;
       }
-#line 998 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1029 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 63:
-#line 485 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 485 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_value) = (yystack_[1].value.p_valueSet);
       }
-#line 1006 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1037 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 64:
-#line 488 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 488 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_value) = new ShExSchema::AtomicRule::ValueAny((yystack_[0].value.p_URIstems));
     }
-#line 1014 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1045 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 65:
-#line 491 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 491 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
         w3c_sw_NEED_IMPL("SPARQL Results Format callout");
     }
-#line 1022 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1053 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 66:
-#line 497 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 497 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_URIstem).uri = (yystack_[1].value.p_URI);
 	(yylhs.value.p_URIstem).opt = (yystack_[0].value.p_bool);
     }
-#line 1031 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1062 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 67:
-#line 504 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 504 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_bool) = false;
     }
-#line 1039 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1070 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 68:
-#line 507 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 507 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
         (yylhs.value.p_bool) = true;
     }
-#line 1047 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1078 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 69:
-#line 513 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 513 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
-#line 1055 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1086 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 70:
-#line 519 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 519 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 1063 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1094 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 83:
-#line 570 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 570 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
 	driver.curPredicate = (yylhs.value.p_TTerm);
     }
-#line 1072 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1103 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 84:
-#line 574 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 574 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_TTerm) = TTerm::RDF_type;
 	driver.curPredicate = (yylhs.value.p_TTerm);
     }
-#line 1081 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1112 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 85:
-#line 581 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 581 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 1089 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1120 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 86:
-#line 587 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 587 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_URI)));
     }
-#line 1097 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1128 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 87:
-#line 590 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 590 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
-#line 1105 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1136 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 88:
-#line 593 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 593 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
-#line 1113 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1144 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 89:
-#line 596 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 596 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
-#line 1121 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1152 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 90:
-#line 599 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 599 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
-#line 1129 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1160 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 94:
-#line 611 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 611 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
-#line 1139 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1170 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 95:
-#line 615 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 615 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
-#line 1149 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1180 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 96:
-#line 624 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 624 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
       }
-#line 1158 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1189 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 97:
-#line 627 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 627 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  if ((yystack_[1].value.p_TTerm) == NULL) {
 	      (yylhs.value.p_TTerm) = TTerm::RDF_nil;
@@ -1171,19 +1202,19 @@ namespace w3c_sw {
 	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
-#line 1175 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1206 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 98:
-#line 642 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 642 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = NULL;
     }
-#line 1183 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1214 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 99:
-#line 645 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 645 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	const TTerm* nextTail = driver.createBNode();
 	if ((yystack_[0].value.p_TTerm) == NULL) // on first element
@@ -1195,200 +1226,200 @@ namespace w3c_sw {
 	driver.curSubject = nextTail;
 	driver.curPredicate = TTerm::RDF_first;
       }
-#line 1199 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1230 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 100:
-#line 655 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 655 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
       }
-#line 1207 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1238 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 102:
-#line 665 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 665 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_URIstem) = (yystack_[0].value.p_URIstem);
     }
-#line 1215 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1246 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 103:
-#line 671 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 671 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_URIstems) = NULL;
     }
-#line 1223 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1254 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 104:
-#line 674 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 674 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if ((yystack_[1].value.p_URIstems) == NULL)
 	    (yystack_[1].value.p_URIstems) = new std::vector<ShExSchema::URIstem>();
 	(yystack_[1].value.p_URIstems)->push_back((yystack_[0].value.p_URIstem));
 	(yylhs.value.p_URIstems) = (yystack_[1].value.p_URIstems);
     }
-#line 1234 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1265 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 105:
-#line 685 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 685 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_RepeatRange).min = 0;
 	(yylhs.value.p_RepeatRange).max = ShExSchema::AtomicRule::Unlimited;
     }
-#line 1243 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1274 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 106:
-#line 689 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 689 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_RepeatRange).min = 1;
 	(yylhs.value.p_RepeatRange).max = ShExSchema::AtomicRule::Unlimited;
     }
-#line 1252 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1283 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 107:
-#line 693 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 693 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_RepeatRange).min = 0;
 	(yylhs.value.p_RepeatRange).max = 1;
     }
-#line 1261 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1292 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 108:
-#line 697 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 697 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_RepeatRange).min = (yystack_[2].value.p_NumericRDFLiteral)->getInt();
 	(yylhs.value.p_RepeatRange).max = (yystack_[1].value.p_int);
     }
-#line 1270 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1301 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 109:
-#line 704 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 704 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_int) = ShExSchema::AtomicRule::Unlimited;
     }
-#line 1278 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1309 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 110:
-#line 707 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 707 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_int) = (yystack_[0].value.p_NumericRDFLiteral)->getInt();
     }
-#line 1286 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1317 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 111:
-#line 713 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 713 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_int) = (yystack_[0].value.p_int);
     }
-#line 1294 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1325 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 112:
-#line 719 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 719 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_int) = ShExSchema::AtomicRule::Unlimited;
     }
-#line 1302 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1333 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 115:
-#line 730 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 730 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curTTerms->push_back((yystack_[0].value.p_TTerm));
     }
-#line 1310 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1341 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 116:
-#line 733 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 733 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	driver.curTTerms->push_back((yystack_[0].value.p_TTerm));
     }
-#line 1318 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1349 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 117:
-#line 739 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 739 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	if ((yystack_[0].value.p_URIstem).opt)
 	    w3c_sw_NEED_IMPL("ShEx parser support for URIstems in value sets");
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URIstem).uri;
     }
-#line 1328 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1359 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 120:
-#line 749 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 749 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
-#line 1336 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1367 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 121:
-#line 752 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 752 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
-#line 1344 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1375 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 122:
-#line 755 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 755 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_NumericRDFLiteral);
     }
-#line 1352 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1383 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 123:
-#line 762 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 762 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
 	delete (yystack_[1].value.p_string);
     }
-#line 1361 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1392 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 124:
-#line 770 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 770 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = NULL;
 	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
-#line 1370 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1401 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 125:
-#line 775 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 775 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
 	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
-#line 1379 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1410 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
   case 126:
-#line 783 "lib/ShExCParser.ypp" // lalr1.cc:847
+#line 783 "lib/ShExCParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = NULL;
 	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
-#line 1388 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1419 "lib/ShExCParser.cpp" // lalr1.cc:859
     break;
 
 
-#line 1392 "lib/ShExCParser.cpp" // lalr1.cc:847
+#line 1423 "lib/ShExCParser.cpp" // lalr1.cc:859
             default:
               break;
             }
@@ -1416,8 +1447,7 @@ namespace w3c_sw {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yyla.location, yysyntax_error_ (yystack_[0].state,
-                                           yyempty ? yyempty_ : yyla.type_get ()));
+        error (yyla.location, yysyntax_error_ (yystack_[0].state, yyla));
       }
 
 
@@ -1430,10 +1460,10 @@ namespace w3c_sw {
         // Return failure if at end of input.
         if (yyla.type_get () == yyeof_)
           YYABORT;
-        else if (!yyempty)
+        else if (!yyla.empty ())
           {
             yy_destroy_ ("Error: discarding", yyla);
-            yyempty = true;
+            yyla.clear ();
           }
       }
 
@@ -1509,7 +1539,7 @@ namespace w3c_sw {
     goto yyreturn;
 
   yyreturn:
-    if (!yyempty)
+    if (!yyla.empty ())
       yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
     /* Do not reclaim the symbols of the rule whose action triggered
@@ -1529,7 +1559,7 @@ namespace w3c_sw {
                  << std::endl;
         // Do not try to display the values of the reclaimed symbols,
         // as their printer might throw an exception.
-        if (!yyempty)
+        if (!yyla.empty ())
           yy_destroy_ (YY_NULLPTR, yyla);
 
         while (1 < yystack_.size ())
@@ -1549,9 +1579,8 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  ShExParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
+  ShExParser::yysyntax_error_ (state_type yystate, const symbol_type& yyla) const
   {
-    std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
     // "expected").
     size_t yycount = 0;
@@ -1565,7 +1594,7 @@ namespace w3c_sw {
          the only way this function was invoked is if the default action
          is an error action.  In that case, don't check for expected
          tokens because there are none.
-       - The only way there can be no lookahead present (in yytoken) is
+       - The only way there can be no lookahead present (in yyla) is
          if this state is a consistent state with a default action.
          Thus, detecting the absence of a lookahead is sufficient to
          determine that there is no unexpected or expected token to
@@ -1585,8 +1614,9 @@ namespace w3c_sw {
          token that will not be accepted due to an error action in a
          later state.
     */
-    if (yytoken != yyempty_)
+    if (!yyla.empty ())
       {
+        int yytoken = yyla.type_get ();
         yyarg[yycount++] = yytname_[yytoken];
         int yyn = yypact_[yystate];
         if (!yy_pact_value_is_default_ (yyn))
@@ -1629,6 +1659,7 @@ namespace w3c_sw {
 #undef YYCASE_
       }
 
+    std::string yyres;
     // Argument number.
     size_t yyi = 0;
     for (char const* yyp = yyformat; *yyp; ++yyp)
@@ -1981,8 +2012,8 @@ namespace w3c_sw {
 
 
 } // w3c_sw
-#line 1985 "lib/ShExCParser.cpp" // lalr1.cc:1155
-#line 819 "lib/ShExCParser.ypp" // lalr1.cc:1156
+#line 2016 "lib/ShExCParser.cpp" // lalr1.cc:1167
+#line 819 "lib/ShExCParser.ypp" // lalr1.cc:1168
  /*** Additional Code ***/
 
 void w3c_sw::ShExParser::error(const ShExParser::location_type& l,

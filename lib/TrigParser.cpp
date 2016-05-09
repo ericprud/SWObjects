@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.2.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 
 // First part of user declarations.
 
-#line 39 "lib/TrigParser.cpp" // lalr1.cc:399
+#line 39 "lib/TrigParser.cpp" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -48,10 +48,10 @@
 #include "TrigParser.hpp"
 
 // User implementation prologue.
-#line 127 "lib/TrigParser.ypp" // lalr1.cc:407
+#line 127 "lib/TrigParser.ypp" // lalr1.cc:412
 
 #include "TrigScanner.hpp"
-#line 170 "lib/TrigParser.ypp" // lalr1.cc:407
+#line 170 "lib/TrigParser.ypp" // lalr1.cc:412
 
 #include "TrigScanner.hpp"
 
@@ -63,7 +63,7 @@
 
 #include "RdfDB.hpp"
 
-#line 67 "lib/TrigParser.cpp" // lalr1.cc:407
+#line 67 "lib/TrigParser.cpp" // lalr1.cc:412
 
 
 #ifndef YY_
@@ -140,7 +140,7 @@
 #endif // !YYDEBUG
 
 #define yyerrok         (yyerrstatus_ = 0)
-#define yyclearin       (yyempty = true)
+#define yyclearin       (yyla.clear ())
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -149,7 +149,7 @@
 
 
 namespace w3c_sw {
-#line 153 "lib/TrigParser.cpp" // lalr1.cc:474
+#line 153 "lib/TrigParser.cpp" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -253,6 +253,23 @@ namespace w3c_sw {
   inline
   TrigParser::basic_symbol<Base>::~basic_symbol ()
   {
+    clear ();
+  }
+
+  template <typename Base>
+  inline
+  void
+  TrigParser::basic_symbol<Base>::clear ()
+  {
+    Base::clear ();
+  }
+
+  template <typename Base>
+  inline
+  bool
+  TrigParser::basic_symbol<Base>::empty () const
+  {
+    return Base::type_get () == empty_symbol;
   }
 
   template <typename Base>
@@ -268,7 +285,7 @@ namespace w3c_sw {
   // by_type.
   inline
   TrigParser::by_type::by_type ()
-     : type (empty)
+    : type (empty_symbol)
   {}
 
   inline
@@ -283,10 +300,17 @@ namespace w3c_sw {
 
   inline
   void
+  TrigParser::by_type::clear ()
+  {
+    type = empty_symbol;
+  }
+
+  inline
+  void
   TrigParser::by_type::move (by_type& that)
   {
     type = that.type;
-    that.type = empty;
+    that.clear ();
   }
 
   inline
@@ -300,7 +324,7 @@ namespace w3c_sw {
   // by_state.
   inline
   TrigParser::by_state::by_state ()
-    : state (empty)
+    : state (empty_state)
   {}
 
   inline
@@ -310,10 +334,17 @@ namespace w3c_sw {
 
   inline
   void
+  TrigParser::by_state::clear ()
+  {
+    state = empty_state;
+  }
+
+  inline
+  void
   TrigParser::by_state::move (by_state& that)
   {
     state = that.state;
-    that.state = empty;
+    that.clear ();
   }
 
   inline
@@ -325,7 +356,10 @@ namespace w3c_sw {
   TrigParser::symbol_number_type
   TrigParser::by_state::type_get () const
   {
-    return state == empty ? 0 : yystos_[state];
+    if (state == empty_state)
+      return empty_symbol;
+    else
+      return yystos_[state];
   }
 
   inline
@@ -339,7 +373,7 @@ namespace w3c_sw {
   {
     value = that.value;
     // that is emptied.
-    that.type = empty;
+    that.type = empty_symbol;
   }
 
   inline
@@ -374,6 +408,10 @@ namespace w3c_sw {
     std::ostream& yyoutput = yyo;
     YYUSE (yyoutput);
     symbol_number_type yytype = yysym.type_get ();
+    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
+    // below array bounds".
+    if (yysym.empty ())
+      std::abort ();
     yyo << (yytype < yyntokens_ ? "token" : "nterm")
         << ' ' << yytname_[yytype] << " ("
         << yysym.location << ": ";
@@ -458,9 +496,6 @@ namespace w3c_sw {
   int
   TrigParser::parse ()
   {
-    /// Whether yyla contains a lookahead.
-    bool yyempty = true;
-
     // State.
     int yyn;
     /// Length of the RHS of the rule being reduced.
@@ -487,14 +522,14 @@ namespace w3c_sw {
 
 
     // User initialization code.
-    #line 31 "lib/TrigParser.ypp" // lalr1.cc:725
+    #line 31 "lib/TrigParser.ypp" // lalr1.cc:741
 {
     // initialize the initial location object
     yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
     driver.yylloc = &yyla.location;
 }
 
-#line 498 "lib/TrigParser.cpp" // lalr1.cc:725
+#line 533 "lib/TrigParser.cpp" // lalr1.cc:741
 
     /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
@@ -522,7 +557,7 @@ namespace w3c_sw {
       goto yydefault;
 
     // Read a lookahead token.
-    if (yyempty)
+    if (yyla.empty ())
       {
         YYCDEBUG << "Reading a token: ";
         try
@@ -534,7 +569,6 @@ namespace w3c_sw {
             error (yyexc);
             goto yyerrlab1;
           }
-        yyempty = false;
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
@@ -553,9 +587,6 @@ namespace w3c_sw {
         yyn = -yyn;
         goto yyreduce;
       }
-
-    // Discard the token being shifted.
-    yyempty = true;
 
     // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
@@ -606,279 +637,279 @@ namespace w3c_sw {
           switch (yyn)
             {
   case 2:
-#line 187 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 187 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.root = driver.defaultBGP;
 	// driver.root = $<p_DefaultGraphPattern>1;
     }
-#line 615 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 646 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 9:
-#line 207 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 207 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP = driver.db->ensureGraph(NULL);
 	driver.neededBGP = NULL;
     }
-#line 624 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 655 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 12:
-#line 216 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 216 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = NULL;
       }
-#line 632 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 663 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 14:
-#line 223 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 223 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP = driver.db->ensureGraph(NULL);
 	driver.neededBGP = NULL;
       }
-#line 641 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 672 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 16:
-#line 230 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 230 "lib/TrigParser.ypp" // lalr1.cc:859
     {
       driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 649 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 680 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 17:
-#line 232 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 232 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = NULL;
       }
-#line 657 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 688 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 18:
-#line 235 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 235 "lib/TrigParser.ypp" // lalr1.cc:859
     {
       driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 665 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 696 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 19:
-#line 237 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 237 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = NULL;
       }
-#line 673 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 704 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 22:
-#line 249 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 249 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP = driver.db->ensureGraph(driver.curSubject);
 	driver.neededBGP = NULL;
       }
-#line 682 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 713 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 23:
-#line 252 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 252 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  driver.curSubject = NULL;
       }
-#line 690 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 721 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 27:
-#line 264 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 264 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.neededBGP = NULL;
     }
-#line 698 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 729 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 31:
-#line 279 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 279 "lib/TrigParser.ypp" // lalr1.cc:859
     {
       driver.curSubject = (yystack_[0].value.p_URI);
     }
-#line 706 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 737 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 32:
-#line 282 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 282 "lib/TrigParser.ypp" // lalr1.cc:859
     {
       driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 714 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 745 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 37:
-#line 297 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 297 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.ignorePrefix(true);
       }
-#line 722 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 753 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 38:
-#line 299 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 299 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  driver.ignorePrefix(false);
       }
-#line 730 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 761 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 39:
-#line 301 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 301 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
-#line 739 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 770 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 41:
-#line 309 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 309 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.setBase((yystack_[1].value.p_URI)->getLexicalValue());
     }
-#line 747 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 778 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 42:
-#line 316 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 316 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
-#line 755 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 786 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 43:
-#line 323 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 323 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.ignorePrefix(true);
       }
-#line 763 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 794 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 44:
-#line 325 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 325 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  driver.ignorePrefix(false);
       }
-#line 771 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 802 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 45:
-#line 327 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 327 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
-#line 780 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 811 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 46:
-#line 335 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 335 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 788 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 819 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 48:
-#line 338 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 338 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 796 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 827 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 61:
-#line 383 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 383 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
 	driver.curPredicate = (yylhs.value.p_TTerm);
     }
-#line 805 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 836 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 62:
-#line 387 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 387 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = TTerm::RDF_type;
 	driver.curPredicate = (yylhs.value.p_TTerm);
     }
-#line 814 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 845 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 63:
-#line 394 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 394 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 822 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 853 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 65:
-#line 401 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 401 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 830 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 861 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 66:
-#line 407 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 407 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	if (!driver.curBGP)
 	    driver.neededBGP = driver.curBGP = new DefaultGraphPattern();
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
-#line 841 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 872 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 67:
-#line 416 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 416 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 849 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 880 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 76:
-#line 436 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 436 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
-#line 859 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 890 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 77:
-#line 440 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 440 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
-#line 869 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 900 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 78:
-#line 449 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 449 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
       }
-#line 878 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 909 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 79:
-#line 452 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 452 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  if ((yystack_[1].value.p_TTerm) == NULL) {
 	      (yylhs.value.p_TTerm) = TTerm::RDF_nil;
@@ -891,19 +922,19 @@ namespace w3c_sw {
 	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
-#line 895 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 926 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 80:
-#line 472 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 472 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = NULL;
     }
-#line 903 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 934 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 81:
-#line 475 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 475 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	const TTerm* nextTail = driver.createBNode();
 	if ((yystack_[0].value.p_TTerm) == NULL) // on first element
@@ -915,55 +946,55 @@ namespace w3c_sw {
 	driver.curSubject = nextTail;
 	driver.curPredicate = TTerm::RDF_first;
       }
-#line 919 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 950 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 82:
-#line 485 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 485 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
       }
-#line 927 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 958 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 86:
-#line 498 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 498 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
 	delete (yystack_[1].value.p_string);
     }
-#line 936 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 967 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 87:
-#line 506 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 506 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = NULL;
 	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
-#line 945 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 976 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 88:
-#line 510 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 510 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
 	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
-#line 954 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 985 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
   case 89:
-#line 518 "lib/TrigParser.ypp" // lalr1.cc:847
+#line 518 "lib/TrigParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = NULL;
 	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
-#line 963 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 994 "lib/TrigParser.cpp" // lalr1.cc:859
     break;
 
 
-#line 967 "lib/TrigParser.cpp" // lalr1.cc:847
+#line 998 "lib/TrigParser.cpp" // lalr1.cc:859
             default:
               break;
             }
@@ -991,8 +1022,7 @@ namespace w3c_sw {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yyla.location, yysyntax_error_ (yystack_[0].state,
-                                           yyempty ? yyempty_ : yyla.type_get ()));
+        error (yyla.location, yysyntax_error_ (yystack_[0].state, yyla));
       }
 
 
@@ -1005,10 +1035,10 @@ namespace w3c_sw {
         // Return failure if at end of input.
         if (yyla.type_get () == yyeof_)
           YYABORT;
-        else if (!yyempty)
+        else if (!yyla.empty ())
           {
             yy_destroy_ ("Error: discarding", yyla);
-            yyempty = true;
+            yyla.clear ();
           }
       }
 
@@ -1084,7 +1114,7 @@ namespace w3c_sw {
     goto yyreturn;
 
   yyreturn:
-    if (!yyempty)
+    if (!yyla.empty ())
       yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
     /* Do not reclaim the symbols of the rule whose action triggered
@@ -1104,7 +1134,7 @@ namespace w3c_sw {
                  << std::endl;
         // Do not try to display the values of the reclaimed symbols,
         // as their printer might throw an exception.
-        if (!yyempty)
+        if (!yyla.empty ())
           yy_destroy_ (YY_NULLPTR, yyla);
 
         while (1 < yystack_.size ())
@@ -1124,9 +1154,8 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  TrigParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
+  TrigParser::yysyntax_error_ (state_type yystate, const symbol_type& yyla) const
   {
-    std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
     // "expected").
     size_t yycount = 0;
@@ -1140,7 +1169,7 @@ namespace w3c_sw {
          the only way this function was invoked is if the default action
          is an error action.  In that case, don't check for expected
          tokens because there are none.
-       - The only way there can be no lookahead present (in yytoken) is
+       - The only way there can be no lookahead present (in yyla) is
          if this state is a consistent state with a default action.
          Thus, detecting the absence of a lookahead is sufficient to
          determine that there is no unexpected or expected token to
@@ -1160,8 +1189,9 @@ namespace w3c_sw {
          token that will not be accepted due to an error action in a
          later state.
     */
-    if (yytoken != yyempty_)
+    if (!yyla.empty ())
       {
+        int yytoken = yyla.type_get ();
         yyarg[yycount++] = yytname_[yytoken];
         int yyn = yypact_[yystate];
         if (!yy_pact_value_is_default_ (yyn))
@@ -1204,6 +1234,7 @@ namespace w3c_sw {
 #undef YYCASE_
       }
 
+    std::string yyres;
     // Argument number.
     size_t yyi = 0;
     for (char const* yyp = yyformat; *yyp; ++yyp)
@@ -1503,8 +1534,8 @@ namespace w3c_sw {
 
 
 } // w3c_sw
-#line 1507 "lib/TrigParser.cpp" // lalr1.cc:1155
-#line 554 "lib/TrigParser.ypp" // lalr1.cc:1156
+#line 1538 "lib/TrigParser.cpp" // lalr1.cc:1167
+#line 554 "lib/TrigParser.ypp" // lalr1.cc:1168
  /*** Additional Code ***/
 
 void w3c_sw::TrigParser::error(const TrigParser::location_type& l,

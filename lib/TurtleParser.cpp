@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.2.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 
 // First part of user declarations.
 
-#line 39 "lib/TurtleParser.cpp" // lalr1.cc:399
+#line 39 "lib/TurtleParser.cpp" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -48,10 +48,10 @@
 #include "TurtleParser.hpp"
 
 // User implementation prologue.
-#line 126 "lib/TurtleParser.ypp" // lalr1.cc:407
+#line 126 "lib/TurtleParser.ypp" // lalr1.cc:412
 
 #include "TurtleScanner.hpp"
-#line 164 "lib/TurtleParser.ypp" // lalr1.cc:407
+#line 164 "lib/TurtleParser.ypp" // lalr1.cc:412
 
 #include "TurtleScanner.hpp"
 
@@ -61,7 +61,7 @@
 #undef yylex
 #define yylex driver.lexer->lexWrapper
 
-#line 65 "lib/TurtleParser.cpp" // lalr1.cc:407
+#line 65 "lib/TurtleParser.cpp" // lalr1.cc:412
 
 
 #ifndef YY_
@@ -138,7 +138,7 @@
 #endif // !YYDEBUG
 
 #define yyerrok         (yyerrstatus_ = 0)
-#define yyclearin       (yyempty = true)
+#define yyclearin       (yyla.clear ())
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -147,7 +147,7 @@
 
 
 namespace w3c_sw {
-#line 151 "lib/TurtleParser.cpp" // lalr1.cc:474
+#line 151 "lib/TurtleParser.cpp" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -251,6 +251,23 @@ namespace w3c_sw {
   inline
   TurtleParser::basic_symbol<Base>::~basic_symbol ()
   {
+    clear ();
+  }
+
+  template <typename Base>
+  inline
+  void
+  TurtleParser::basic_symbol<Base>::clear ()
+  {
+    Base::clear ();
+  }
+
+  template <typename Base>
+  inline
+  bool
+  TurtleParser::basic_symbol<Base>::empty () const
+  {
+    return Base::type_get () == empty_symbol;
   }
 
   template <typename Base>
@@ -266,7 +283,7 @@ namespace w3c_sw {
   // by_type.
   inline
   TurtleParser::by_type::by_type ()
-     : type (empty)
+    : type (empty_symbol)
   {}
 
   inline
@@ -281,10 +298,17 @@ namespace w3c_sw {
 
   inline
   void
+  TurtleParser::by_type::clear ()
+  {
+    type = empty_symbol;
+  }
+
+  inline
+  void
   TurtleParser::by_type::move (by_type& that)
   {
     type = that.type;
-    that.type = empty;
+    that.clear ();
   }
 
   inline
@@ -298,7 +322,7 @@ namespace w3c_sw {
   // by_state.
   inline
   TurtleParser::by_state::by_state ()
-    : state (empty)
+    : state (empty_state)
   {}
 
   inline
@@ -308,10 +332,17 @@ namespace w3c_sw {
 
   inline
   void
+  TurtleParser::by_state::clear ()
+  {
+    state = empty_state;
+  }
+
+  inline
+  void
   TurtleParser::by_state::move (by_state& that)
   {
     state = that.state;
-    that.state = empty;
+    that.clear ();
   }
 
   inline
@@ -323,7 +354,10 @@ namespace w3c_sw {
   TurtleParser::symbol_number_type
   TurtleParser::by_state::type_get () const
   {
-    return state == empty ? 0 : yystos_[state];
+    if (state == empty_state)
+      return empty_symbol;
+    else
+      return yystos_[state];
   }
 
   inline
@@ -337,7 +371,7 @@ namespace w3c_sw {
   {
     value = that.value;
     // that is emptied.
-    that.type = empty;
+    that.type = empty_symbol;
   }
 
   inline
@@ -372,6 +406,10 @@ namespace w3c_sw {
     std::ostream& yyoutput = yyo;
     YYUSE (yyoutput);
     symbol_number_type yytype = yysym.type_get ();
+    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
+    // below array bounds".
+    if (yysym.empty ())
+      std::abort ();
     yyo << (yytype < yyntokens_ ? "token" : "nterm")
         << ' ' << yytname_[yytype] << " ("
         << yysym.location << ": ";
@@ -456,9 +494,6 @@ namespace w3c_sw {
   int
   TurtleParser::parse ()
   {
-    /// Whether yyla contains a lookahead.
-    bool yyempty = true;
-
     // State.
     int yyn;
     /// Length of the RHS of the rule being reduced.
@@ -485,14 +520,14 @@ namespace w3c_sw {
 
 
     // User initialization code.
-    #line 31 "lib/TurtleParser.ypp" // lalr1.cc:725
+    #line 31 "lib/TurtleParser.ypp" // lalr1.cc:741
 {
     // initialize the initial location object
     yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
     driver.yylloc = &yyla.location;
 }
 
-#line 496 "lib/TurtleParser.cpp" // lalr1.cc:725
+#line 531 "lib/TurtleParser.cpp" // lalr1.cc:741
 
     /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
@@ -520,7 +555,7 @@ namespace w3c_sw {
       goto yydefault;
 
     // Read a lookahead token.
-    if (yyempty)
+    if (yyla.empty ())
       {
         YYCDEBUG << "Reading a token: ";
         try
@@ -532,7 +567,6 @@ namespace w3c_sw {
             error (yyexc);
             goto yyerrlab1;
           }
-        yyempty = false;
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
@@ -551,9 +585,6 @@ namespace w3c_sw {
         yyn = -yyn;
         goto yyreduce;
       }
-
-    // Discard the token being shifted.
-    yyempty = true;
 
     // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
@@ -604,168 +635,168 @@ namespace w3c_sw {
           switch (yyn)
             {
   case 12:
-#line 201 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 201 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.ignorePrefix(true);
       }
-#line 612 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 643 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 13:
-#line 203 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 203 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  driver.ignorePrefix(false);
       }
-#line 620 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 651 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 14:
-#line 205 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 205 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
-#line 629 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 660 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 16:
-#line 212 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 212 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.setBase((yystack_[1].value.p_URI)->getLexicalValue());
     }
-#line 637 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 668 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 17:
-#line 218 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 218 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.setBase((yystack_[0].value.p_URI)->getLexicalValue());
     }
-#line 645 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 676 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 18:
-#line 224 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 224 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.ignorePrefix(true);
       }
-#line 653 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 684 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 19:
-#line 226 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 226 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  driver.ignorePrefix(false);
       }
-#line 661 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 692 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 20:
-#line 228 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 228 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  std::string prefix((yystack_[2].value.p_URI)->getLexicalValue());
 	  driver.addPrefix(prefix.substr(0, prefix.length()-1), (yystack_[0].value.p_URI));
       }
-#line 670 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 701 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 21:
-#line 235 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 235 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 678 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 709 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 23:
-#line 238 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 238 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.curSubject = (yystack_[0].value.p_TTerm);
     }
-#line 686 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 717 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 42:
-#line 298 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 298 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
 	driver.curPredicate = (yylhs.value.p_TTerm);
     }
-#line 695 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 726 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 43:
-#line 302 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 302 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = TTerm::RDF_type;
 	driver.curPredicate = (yylhs.value.p_TTerm);
     }
-#line 704 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 735 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 44:
-#line 309 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 309 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 712 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 743 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 47:
-#line 317 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 317 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 720 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 751 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 48:
-#line 323 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 323 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, (yystack_[0].value.p_TTerm)));
     }
-#line 728 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 759 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 49:
-#line 329 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 329 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 736 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 767 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 57:
-#line 345 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 345 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
 	driver.curSubject = driver.createBNode();
       }
-#line 746 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 777 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 58:
-#line 349 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 349 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_TTerm) = (BNode*)driver.curSubject; // could store w/ type in ctx..
 	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
-#line 756 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 787 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 59:
-#line 367 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 367 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_SubjectPredicatePair).subject = driver.curSubject;
 	(yylhs.value.p_SubjectPredicatePair).predicate = driver.curPredicate;
       }
-#line 765 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 796 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 60:
-#line 370 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 370 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  if ((yystack_[1].value.p_TTerm) == NULL) {
 	      (yylhs.value.p_TTerm) = TTerm::RDF_nil;
@@ -778,19 +809,19 @@ namespace w3c_sw {
 	  driver.curSubject = (yystack_[2].value.p_SubjectPredicatePair).subject;
 	  driver.curPredicate = (yystack_[2].value.p_SubjectPredicatePair).predicate;
       }
-#line 782 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 813 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 61:
-#line 390 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 390 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = NULL;
     }
-#line 790 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 821 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 62:
-#line 393 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 393 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	const TTerm* nextTail = driver.createBNode();
 	if ((yystack_[0].value.p_TTerm) == NULL) // on first element
@@ -802,55 +833,55 @@ namespace w3c_sw {
 	driver.curSubject = nextTail;
 	driver.curPredicate = TTerm::RDF_first;
       }
-#line 806 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 837 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 63:
-#line 403 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 403 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	  (yylhs.value.p_TTerm) = (yystack_[1].value.p_TTerm);
       }
-#line 814 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 845 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 67:
-#line 416 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 416 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*(yystack_[1].value.p_string), (yystack_[0].value.p_uri_or_langtag).uri, (yystack_[0].value.p_uri_or_langtag).langtag);
 	delete (yystack_[1].value.p_string);
     }
-#line 823 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 854 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 68:
-#line 424 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 424 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = NULL;
 	(yylhs.value.p_uri_or_langtag).langtag = (yystack_[0].value.p_LANGTAG);
     }
-#line 832 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 863 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 69:
-#line 429 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 429 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = (yystack_[0].value.p_URI);
 	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
-#line 841 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 872 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
   case 70:
-#line 437 "lib/TurtleParser.ypp" // lalr1.cc:847
+#line 437 "lib/TurtleParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_uri_or_langtag).uri = NULL;
 	(yylhs.value.p_uri_or_langtag).langtag = NULL;
     }
-#line 850 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 881 "lib/TurtleParser.cpp" // lalr1.cc:859
     break;
 
 
-#line 854 "lib/TurtleParser.cpp" // lalr1.cc:847
+#line 885 "lib/TurtleParser.cpp" // lalr1.cc:859
             default:
               break;
             }
@@ -878,8 +909,7 @@ namespace w3c_sw {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yyla.location, yysyntax_error_ (yystack_[0].state,
-                                           yyempty ? yyempty_ : yyla.type_get ()));
+        error (yyla.location, yysyntax_error_ (yystack_[0].state, yyla));
       }
 
 
@@ -892,10 +922,10 @@ namespace w3c_sw {
         // Return failure if at end of input.
         if (yyla.type_get () == yyeof_)
           YYABORT;
-        else if (!yyempty)
+        else if (!yyla.empty ())
           {
             yy_destroy_ ("Error: discarding", yyla);
-            yyempty = true;
+            yyla.clear ();
           }
       }
 
@@ -971,7 +1001,7 @@ namespace w3c_sw {
     goto yyreturn;
 
   yyreturn:
-    if (!yyempty)
+    if (!yyla.empty ())
       yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
     /* Do not reclaim the symbols of the rule whose action triggered
@@ -991,7 +1021,7 @@ namespace w3c_sw {
                  << std::endl;
         // Do not try to display the values of the reclaimed symbols,
         // as their printer might throw an exception.
-        if (!yyempty)
+        if (!yyla.empty ())
           yy_destroy_ (YY_NULLPTR, yyla);
 
         while (1 < yystack_.size ())
@@ -1011,9 +1041,8 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  TurtleParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
+  TurtleParser::yysyntax_error_ (state_type yystate, const symbol_type& yyla) const
   {
-    std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
     // "expected").
     size_t yycount = 0;
@@ -1027,7 +1056,7 @@ namespace w3c_sw {
          the only way this function was invoked is if the default action
          is an error action.  In that case, don't check for expected
          tokens because there are none.
-       - The only way there can be no lookahead present (in yytoken) is
+       - The only way there can be no lookahead present (in yyla) is
          if this state is a consistent state with a default action.
          Thus, detecting the absence of a lookahead is sufficient to
          determine that there is no unexpected or expected token to
@@ -1047,8 +1076,9 @@ namespace w3c_sw {
          token that will not be accepted due to an error action in a
          later state.
     */
-    if (yytoken != yyempty_)
+    if (!yyla.empty ())
       {
+        int yytoken = yyla.type_get ();
         yyarg[yycount++] = yytname_[yytoken];
         int yyn = yypact_[yystate];
         if (!yy_pact_value_is_default_ (yyn))
@@ -1091,6 +1121,7 @@ namespace w3c_sw {
 #undef YYCASE_
       }
 
+    std::string yyres;
     // Argument number.
     size_t yyi = 0;
     for (char const* yyp = yyformat; *yyp; ++yyp)
@@ -1364,8 +1395,8 @@ namespace w3c_sw {
 
 
 } // w3c_sw
-#line 1368 "lib/TurtleParser.cpp" // lalr1.cc:1155
-#line 473 "lib/TurtleParser.ypp" // lalr1.cc:1156
+#line 1399 "lib/TurtleParser.cpp" // lalr1.cc:1167
+#line 473 "lib/TurtleParser.ypp" // lalr1.cc:1168
  /*** Additional Code ***/
 
 void w3c_sw::TurtleParser::error(const TurtleParser::location_type& l,

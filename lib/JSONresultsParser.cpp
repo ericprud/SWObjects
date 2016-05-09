@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.2.
+// A Bison parser, made by GNU Bison 3.0.4.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2013 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 
 // First part of user declarations.
 
-#line 39 "lib/JSONresultsParser.cpp" // lalr1.cc:399
+#line 39 "lib/JSONresultsParser.cpp" // lalr1.cc:404
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -48,10 +48,10 @@
 #include "JSONresultsParser.hpp"
 
 // User implementation prologue.
-#line 182 "lib/JSONresultsParser.ypp" // lalr1.cc:407
+#line 182 "lib/JSONresultsParser.ypp" // lalr1.cc:412
 
 #include "JSONresultsScanner.hpp"
-#line 216 "lib/JSONresultsParser.ypp" // lalr1.cc:407
+#line 216 "lib/JSONresultsParser.ypp" // lalr1.cc:412
 
 #include "JSONresultsScanner.hpp"
 
@@ -61,7 +61,7 @@
 #undef yylex
 #define yylex driver.lexer->lexWrapper
 
-#line 65 "lib/JSONresultsParser.cpp" // lalr1.cc:407
+#line 65 "lib/JSONresultsParser.cpp" // lalr1.cc:412
 
 
 #ifndef YY_
@@ -138,7 +138,7 @@
 #endif // !YYDEBUG
 
 #define yyerrok         (yyerrstatus_ = 0)
-#define yyclearin       (yyempty = true)
+#define yyclearin       (yyla.clear ())
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -147,7 +147,7 @@
 
 
 namespace w3c_sw {
-#line 151 "lib/JSONresultsParser.cpp" // lalr1.cc:474
+#line 151 "lib/JSONresultsParser.cpp" // lalr1.cc:479
 
   /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -251,6 +251,23 @@ namespace w3c_sw {
   inline
   JSONresultsParser::basic_symbol<Base>::~basic_symbol ()
   {
+    clear ();
+  }
+
+  template <typename Base>
+  inline
+  void
+  JSONresultsParser::basic_symbol<Base>::clear ()
+  {
+    Base::clear ();
+  }
+
+  template <typename Base>
+  inline
+  bool
+  JSONresultsParser::basic_symbol<Base>::empty () const
+  {
+    return Base::type_get () == empty_symbol;
   }
 
   template <typename Base>
@@ -266,7 +283,7 @@ namespace w3c_sw {
   // by_type.
   inline
   JSONresultsParser::by_type::by_type ()
-     : type (empty)
+    : type (empty_symbol)
   {}
 
   inline
@@ -281,10 +298,17 @@ namespace w3c_sw {
 
   inline
   void
+  JSONresultsParser::by_type::clear ()
+  {
+    type = empty_symbol;
+  }
+
+  inline
+  void
   JSONresultsParser::by_type::move (by_type& that)
   {
     type = that.type;
-    that.type = empty;
+    that.clear ();
   }
 
   inline
@@ -298,7 +322,7 @@ namespace w3c_sw {
   // by_state.
   inline
   JSONresultsParser::by_state::by_state ()
-    : state (empty)
+    : state (empty_state)
   {}
 
   inline
@@ -308,10 +332,17 @@ namespace w3c_sw {
 
   inline
   void
+  JSONresultsParser::by_state::clear ()
+  {
+    state = empty_state;
+  }
+
+  inline
+  void
   JSONresultsParser::by_state::move (by_state& that)
   {
     state = that.state;
-    that.state = empty;
+    that.clear ();
   }
 
   inline
@@ -323,7 +354,10 @@ namespace w3c_sw {
   JSONresultsParser::symbol_number_type
   JSONresultsParser::by_state::type_get () const
   {
-    return state == empty ? 0 : yystos_[state];
+    if (state == empty_state)
+      return empty_symbol;
+    else
+      return yystos_[state];
   }
 
   inline
@@ -337,7 +371,7 @@ namespace w3c_sw {
   {
     value = that.value;
     // that is emptied.
-    that.type = empty;
+    that.type = empty_symbol;
   }
 
   inline
@@ -372,6 +406,10 @@ namespace w3c_sw {
     std::ostream& yyoutput = yyo;
     YYUSE (yyoutput);
     symbol_number_type yytype = yysym.type_get ();
+    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
+    // below array bounds".
+    if (yysym.empty ())
+      std::abort ();
     yyo << (yytype < yyntokens_ ? "token" : "nterm")
         << ' ' << yytname_[yytype] << " ("
         << yysym.location << ": ";
@@ -456,9 +494,6 @@ namespace w3c_sw {
   int
   JSONresultsParser::parse ()
   {
-    /// Whether yyla contains a lookahead.
-    bool yyempty = true;
-
     // State.
     int yyn;
     /// Length of the RHS of the rule being reduced.
@@ -485,14 +520,14 @@ namespace w3c_sw {
 
 
     // User initialization code.
-    #line 43 "lib/JSONresultsParser.ypp" // lalr1.cc:725
+    #line 43 "lib/JSONresultsParser.ypp" // lalr1.cc:741
 {
     // initialize the initial location object
     yyla.location.begin.filename = yyla.location.end.filename = &driver.streamname;
     driver.yylloc = &yyla.location;
 }
 
-#line 496 "lib/JSONresultsParser.cpp" // lalr1.cc:725
+#line 531 "lib/JSONresultsParser.cpp" // lalr1.cc:741
 
     /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
@@ -520,7 +555,7 @@ namespace w3c_sw {
       goto yydefault;
 
     // Read a lookahead token.
-    if (yyempty)
+    if (yyla.empty ())
       {
         YYCDEBUG << "Reading a token: ";
         try
@@ -532,7 +567,6 @@ namespace w3c_sw {
             error (yyexc);
             goto yyerrlab1;
           }
-        yyempty = false;
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
@@ -551,9 +585,6 @@ namespace w3c_sw {
         yyn = -yyn;
         goto yyreduce;
       }
-
-    // Discard the token being shifted.
-    yyempty = true;
 
     // Count tokens shifted since error; after three, turn off error status.
     if (yyerrstatus_)
@@ -604,527 +635,527 @@ namespace w3c_sw {
           switch (yyn)
             {
   case 2:
-#line 230 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 230 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	if (driver.root == NULL)
 	    driver.startBindingSet();
 	else
 	    driver.curResultSet = driver.root;
       }
-#line 615 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 646 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 3:
-#line 235 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 235 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	  driver.root = driver.endBindingSet();
 	  driver.curResultSet = NULL;
       }
-#line 624 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 655 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 12:
-#line 265 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 265 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	// throw away link $4
 	delete (yystack_[1].value.p_str);
     }
-#line 633 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 664 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 13:
-#line 272 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 272 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.addBindingVar(driver.getVariable(*(yystack_[0].value.p_str)));
 	delete (yystack_[0].value.p_str);
     }
-#line 642 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 673 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 15:
-#line 279 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 279 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.addBindingVar(driver.getVariable(*(yystack_[0].value.p_str)));
 	delete (yystack_[0].value.p_str);
     }
-#line 651 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 682 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 19:
-#line 292 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 292 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       driver.curResultSet->resultType = ResultSet::RESULT_Boolean;
       if ((yystack_[0].value.p_bool) == true)
 	  driver.curResultSet->clear();
     }
-#line 661 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 692 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 20:
-#line 300 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 300 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_bool) = true;
 	//	delete $1;
     }
-#line 670 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 701 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 21:
-#line 304 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 304 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_bool) = false;
 	//	delete $1;
     }
-#line 679 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 710 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 26:
-#line 324 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 324 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.startBindingRow(false);
       }
-#line 687 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 718 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 27:
-#line 326 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 326 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	  driver.endBindingRow();
       }
-#line 695 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 726 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 31:
-#line 341 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 341 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.addBinding(driver.getVariable(*(yystack_[4].value.p_str)), (yystack_[1].value.p_TTerm));
 	delete (yystack_[4].value.p_str);
     }
-#line 704 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 735 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 32:
-#line 348 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 348 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_URI);
     }
-#line 712 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 743 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 33:
-#line 351 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 351 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_BNode);
     }
-#line 720 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 751 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 34:
-#line 354 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 354 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_literal);
     }
-#line 728 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 759 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 35:
-#line 357 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 357 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_literal);
     }
-#line 736 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 767 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 36:
-#line 360 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 360 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.curValue = (yystack_[0].value.p_str);
       }
-#line 744 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 775 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 37:
-#line 362 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 362 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	  driver.curValue = NULL;
 	  (yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
       }
-#line 753 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 784 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 38:
-#line 366 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 366 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.curDatatype = (yystack_[0].value.p_URI);
       }
-#line 761 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 792 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 39:
-#line 368 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 368 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	  driver.curDatatype = NULL;
 	  (yylhs.value.p_TTerm) = (yystack_[0].value.p_literal);
       }
-#line 770 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 801 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 40:
-#line 372 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 372 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	driver.curLang = (yystack_[0].value.p_str);
       }
-#line 778 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 809 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 41:
-#line 374 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 374 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	  driver.curLang = NULL;
 	  (yylhs.value.p_TTerm) = (yystack_[0].value.p_literal);
       }
-#line 787 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 818 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 42:
-#line 381 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 381 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_URI) = driver.getURI(*(yystack_[0].value.p_str));
 	delete (yystack_[0].value.p_str);
     }
-#line 796 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 827 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 43:
-#line 388 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 388 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_BNode) = driver.getBNode(*(yystack_[0].value.p_str));
 	delete (yystack_[0].value.p_str);
     }
-#line 805 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 836 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 44:
-#line 395 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 395 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = (yystack_[0].value.p_literal);
     }
-#line 813 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 844 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 45:
-#line 401 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 401 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_str) = (yystack_[0].value.p_str);
     }
-#line 821 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 852 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 46:
-#line 407 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 407 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_str) = NULL;
     }
-#line 829 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 860 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 48:
-#line 414 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 414 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[0].value.p_str), NULL, (yystack_[2].value.p_str) ? new LANGTAG(*(yystack_[2].value.p_str)) : NULL);
 	delete (yystack_[0].value.p_str);
 	delete (yystack_[2].value.p_str);
     }
-#line 839 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 870 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 49:
-#line 419 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 419 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[1].value.p_str), NULL, (yystack_[0].value.p_str) ? new LANGTAG(*(yystack_[0].value.p_str)) : NULL);
 	delete (yystack_[1].value.p_str);
 	delete (yystack_[0].value.p_str);
     }
-#line 849 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 880 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 50:
-#line 427 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 427 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = (yystack_[0].value.p_literal);
     }
-#line 857 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 888 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 51:
-#line 433 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 433 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[0].value.p_str), (yystack_[2].value.p_URI), NULL);
 	delete (yystack_[0].value.p_str);
     }
-#line 866 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 897 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 52:
-#line 437 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 437 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[2].value.p_str), (yystack_[0].value.p_URI), NULL);
 	delete (yystack_[2].value.p_str);
     }
-#line 875 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 906 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 53:
-#line 444 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 444 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = (yystack_[0].value.p_TTerm);
     }
-#line 883 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 914 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 54:
-#line 447 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 447 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yystack_[3].value.p_URI), NULL);
       delete driver.curValue;
       driver.curDatatype = NULL;
     }
-#line 893 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 924 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 55:
-#line 452 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 452 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yystack_[3].value.p_str) ? new LANGTAG(*(yystack_[3].value.p_str)) : NULL);
       delete driver.curValue;
       delete (yystack_[3].value.p_str);
       driver.curLang = NULL;
     }
-#line 904 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 935 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 56:
-#line 461 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 461 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getURI(*driver.curValue);
 	delete driver.curValue;
     }
-#line 913 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 944 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 57:
-#line 465 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 465 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getBNode(*driver.curValue);
 	delete driver.curValue;
     }
-#line 922 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 953 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 58:
-#line 469 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 469 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*driver.curValue, NULL, (yystack_[0].value.p_str) ? new LANGTAG(*(yystack_[0].value.p_str)) : NULL);
 	delete driver.curValue;
 	delete (yystack_[0].value.p_str);
     }
-#line 932 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 963 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 59:
-#line 474 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 474 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_TTerm) = driver.getRDFLiteral(*driver.curValue, (yystack_[0].value.p_URI), NULL);
 	delete driver.curValue;
     }
-#line 941 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 972 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 60:
-#line 481 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 481 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[0].value.p_str), driver.curDatatype, NULL);
 	delete (yystack_[0].value.p_str);
     }
-#line 950 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 981 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 61:
-#line 485 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 485 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[3].value.p_str), driver.curDatatype, NULL);
 	delete (yystack_[3].value.p_str);
     }
-#line 959 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 990 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 62:
-#line 492 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 492 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[0].value.p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yystack_[0].value.p_str);
 	delete driver.curLang;
     }
-#line 969 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1000 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 63:
-#line 497 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 497 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_literal) = driver.getRDFLiteral(*(yystack_[3].value.p_str), NULL, driver.curLang ? new LANGTAG(*driver.curLang) : NULL);
 	delete (yystack_[3].value.p_str);
 	delete driver.curLang;
     }
-#line 979 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1010 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 64:
-#line 505 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 505 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_str) = (yystack_[0].value.p_str);
     }
-#line 987 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1018 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 65:
-#line 511 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 511 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_URI) = driver.getURI(*(yystack_[0].value.p_str));
 	delete (yystack_[0].value.p_str);
     }
-#line 996 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1027 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 66:
-#line 518 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 518 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_str) = (yystack_[0].value.p_str);
     }
-#line 1004 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1035 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 100:
-#line 608 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 608 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
 	(yylhs.value.p_str) = new std::string("head");
     }
-#line 1012 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1043 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 101:
-#line 611 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 611 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("vars");
     }
-#line 1020 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1051 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 102:
-#line 614 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 614 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("results");
     }
-#line 1028 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1059 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 103:
-#line 617 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 617 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("boolean");
     }
-#line 1036 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1067 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 104:
-#line 620 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 620 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("true");
     }
-#line 1044 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1075 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 105:
-#line 623 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 623 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("false");
     }
-#line 1052 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1083 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 106:
-#line 626 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 626 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("bindings");
     }
-#line 1060 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1091 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 107:
-#line 629 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 629 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("type");
     }
-#line 1068 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1099 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 108:
-#line 632 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 632 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("uri");
     }
-#line 1076 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1107 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 109:
-#line 635 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 635 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("bnode");
     }
-#line 1084 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1115 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 110:
-#line 638 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 638 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("literal");
     }
-#line 1092 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1123 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 111:
-#line 641 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 641 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("typedLiteral");
     }
-#line 1100 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1131 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 112:
-#line 644 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 644 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("datatype");
     }
-#line 1108 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1139 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 113:
-#line 647 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 647 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("lang");
     }
-#line 1116 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1147 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
   case 114:
-#line 650 "lib/JSONresultsParser.ypp" // lalr1.cc:847
+#line 650 "lib/JSONresultsParser.ypp" // lalr1.cc:859
     {
       (yylhs.value.p_str) = new std::string("value");
     }
-#line 1124 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1155 "lib/JSONresultsParser.cpp" // lalr1.cc:859
     break;
 
 
-#line 1128 "lib/JSONresultsParser.cpp" // lalr1.cc:847
+#line 1159 "lib/JSONresultsParser.cpp" // lalr1.cc:859
             default:
               break;
             }
@@ -1152,8 +1183,7 @@ namespace w3c_sw {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yyla.location, yysyntax_error_ (yystack_[0].state,
-                                           yyempty ? yyempty_ : yyla.type_get ()));
+        error (yyla.location, yysyntax_error_ (yystack_[0].state, yyla));
       }
 
 
@@ -1166,10 +1196,10 @@ namespace w3c_sw {
         // Return failure if at end of input.
         if (yyla.type_get () == yyeof_)
           YYABORT;
-        else if (!yyempty)
+        else if (!yyla.empty ())
           {
             yy_destroy_ ("Error: discarding", yyla);
-            yyempty = true;
+            yyla.clear ();
           }
       }
 
@@ -1245,7 +1275,7 @@ namespace w3c_sw {
     goto yyreturn;
 
   yyreturn:
-    if (!yyempty)
+    if (!yyla.empty ())
       yy_destroy_ ("Cleanup: discarding lookahead", yyla);
 
     /* Do not reclaim the symbols of the rule whose action triggered
@@ -1265,7 +1295,7 @@ namespace w3c_sw {
                  << std::endl;
         // Do not try to display the values of the reclaimed symbols,
         // as their printer might throw an exception.
-        if (!yyempty)
+        if (!yyla.empty ())
           yy_destroy_ (YY_NULLPTR, yyla);
 
         while (1 < yystack_.size ())
@@ -1285,9 +1315,8 @@ namespace w3c_sw {
 
   // Generate an error message.
   std::string
-  JSONresultsParser::yysyntax_error_ (state_type yystate, symbol_number_type yytoken) const
+  JSONresultsParser::yysyntax_error_ (state_type yystate, const symbol_type& yyla) const
   {
-    std::string yyres;
     // Number of reported tokens (one for the "unexpected", one per
     // "expected").
     size_t yycount = 0;
@@ -1301,7 +1330,7 @@ namespace w3c_sw {
          the only way this function was invoked is if the default action
          is an error action.  In that case, don't check for expected
          tokens because there are none.
-       - The only way there can be no lookahead present (in yytoken) is
+       - The only way there can be no lookahead present (in yyla) is
          if this state is a consistent state with a default action.
          Thus, detecting the absence of a lookahead is sufficient to
          determine that there is no unexpected or expected token to
@@ -1321,8 +1350,9 @@ namespace w3c_sw {
          token that will not be accepted due to an error action in a
          later state.
     */
-    if (yytoken != yyempty_)
+    if (!yyla.empty ())
       {
+        int yytoken = yyla.type_get ();
         yyarg[yycount++] = yytname_[yytoken];
         int yyn = yypact_[yystate];
         if (!yy_pact_value_is_default_ (yyn))
@@ -1365,6 +1395,7 @@ namespace w3c_sw {
 #undef YYCASE_
       }
 
+    std::string yyres;
     // Argument number.
     size_t yyi = 0;
     for (char const* yyp = yyformat; *yyp; ++yyp)
@@ -1720,8 +1751,8 @@ namespace w3c_sw {
 
 
 } // w3c_sw
-#line 1724 "lib/JSONresultsParser.cpp" // lalr1.cc:1155
-#line 657 "lib/JSONresultsParser.ypp" // lalr1.cc:1156
+#line 1755 "lib/JSONresultsParser.cpp" // lalr1.cc:1167
+#line 657 "lib/JSONresultsParser.ypp" // lalr1.cc:1168
  /*** Additional Code ***/
 
 void w3c_sw::JSONresultsParser::error(const JSONresultsParser::location_type& l,
