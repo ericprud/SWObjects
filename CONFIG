@@ -53,9 +53,9 @@ HTTP_SERVER= ASIO
 #   ODBC
 #   
 #SQL_CLIENTS= MYSQL|ORACLE|POSTGRES|MSSQL|ODBC
-SQL_CLIENTS= MYSQL|POSTGRES|MSSQL|ODBC
+SQL_CLIENTS= MYSQL
 #SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM oracle://DM:DM@localhost/ORCL
-SQL_DM_TESTS?= mysql://root@/DM postgres://DM:DM@/DM
+SQL_DM_TESTS?= mysql://root@/DM
 DM_BASE_URI?= http://example.com/base/
 # connect with:
 #   mysql -u root DM
@@ -103,7 +103,7 @@ LRT=-lrt
 # STATIC + ODBC requires explicit dynamic linking functionality so you need to
 # link to ltdl and dl after odbc: LDFLAGS += -lodbc -lltdl -ldl
 LINK= DYNAMIC
-
+LDFLAGS += -ldl
 
 #OSX: flex=/opt/local/bin/flex
 #OSX: bison=/opt/local/bin/bison
