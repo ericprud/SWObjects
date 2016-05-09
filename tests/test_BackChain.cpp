@@ -12,13 +12,6 @@
 #include "TurtleParser.hpp"
 #include "SPARQLParser.hpp"
 #include "BackwardChainingRdfDB.hpp"
-#if (BOOST_VERSION == 105400)
-# include <boost/log/utility/empty_deleter.hpp>
-# define EMPTY_DELETER boost::log::empty_deleter
-#else
-# include <boost/utility/empty_deleter.hpp>
-# define EMPTY_DELETER boost::empty_deleter
-#endif
 
 /* Keep all inclusions of boost *after* the inclusion of SWObjects.hpp
  * (or define BOOST_*_DYN_LINK manually).
@@ -40,7 +33,7 @@ const std::string Piqflow = "http://www.semanticbits.com/piq-workflow/";
  */
 void logAllAt3 () {
     boost::shared_ptr< sw::Logger::Sink_t > sink = sw::Logger::prepare();
-    sw::Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, EMPTY_DELETER()));
+    sw::Logger::addStream(sink, boost::shared_ptr< std::ostream >(&std::clog, BOOST_NULL_DELETER()));
     for (std::vector<const char*>::const_iterator it = sw::Logger::Labels.begin();
 	 it != sw::Logger::Labels.end(); ++it)
 	sw::Logger::getLabelLevel(*it) = sw::Logger::severity_level(3);

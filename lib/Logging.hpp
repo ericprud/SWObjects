@@ -43,8 +43,13 @@
 #include "boost/thread/barrier.hpp"
 #if BOOST_VERSION == 105400
 # include "boost/log/utility/empty_deleter.hpp"
+# define BOOST_NULL_DELETER boost::log::empty_deleter
+#elif BOOST_VERSION < 105800
+# include "boost/log/utility/empty_deleter.hpp"
+# define BOOST_NULL_DELETER boost::empty_deleter
 #else /* BOOST_VERSION != 105400 */
-# include "boost/utility/empty_deleter.hpp"
+# include "boost/core/null_deleter.hpp"
+# define BOOST_NULL_DELETER boost::null_deleter
 #endif /* BOOST_VERSION != 105400 */
 
 namespace w3c_sw {
@@ -411,11 +416,7 @@ namespace w3c_sw {
 	    boost::shared_ptr< Logger::Sink_t > LogSink;
 	    LogSink = Logger::prepare();
 	    Logger::addStream(LogSink, boost::shared_ptr< std::ostream >
-#if BOOST_VERSION == 105400
-			      (os, boost::log::empty_deleter()));
-#else /* BOOST_VERSION != 105400 */
-			      (os, boost::empty_deleter()));
-#endif /* BOOST_VERSION != 105400 */
+			      (os, BOOST_NULL_DELETER()));
 
 	    for (int c = 0; c < argc - 1; ++c)
 		if (!strcmp(argv[c], flag)) {
