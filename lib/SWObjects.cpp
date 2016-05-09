@@ -1690,11 +1690,12 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 #if REGEX_LIB == SWOb_DISABLED
 		throw std::string("parseDateTime -- no regular expression library was linked in");
 #else /* REGEX_LIB != SWOb_DISABLED */
+		std::string value = dt->getLexicalValue();
 		boost::match_results<std::string::const_iterator> what;
 		boost::match_flag_type flags = boost::match_default;
 		const boost::regex pattern(AtomFactory::datetimePattern);
-		if (!regex_search(dt->getLexicalValue(), what, pattern, flags))
-		    throw TypeError(dt->getLexicalValue(), "parseDateTime");
+		if (!regex_search(value, what, pattern, flags))
+		    throw TypeError(value, "parseDateTime");
 #endif /* REGEX_LIB != SWOb_DISABLED */
 		ret.year     = boost::lexical_cast<int>(std::string(what[2].first, what[2].second)+std::string(what[3].first, what[3].second));
 		ret.month    = boost::lexical_cast<int>(std::string(what[4].first, what[4].second));
