@@ -4605,7 +4605,7 @@ public:
     virtual void bnode (const BNode* const, std::string) {  }
     virtual void rdfLiteral (const RDFLiteral* const, std::string, const URI* datatype, const LANGTAG* p_LANGTAG) {
 	if (datatype) datatype->express(this);
-	if (p_LANGTAG) p_LANGTAG->express(this);
+	// if (p_LANGTAG) p_LANGTAG->express(this); -- there is no virtual void LANGTAG (const LANGTAG* const, std::string)
     }
     virtual void rdfLiteral (const NumericRDFLiteral* const, int    , const URI*) {  }
     virtual void rdfLiteral (const NumericRDFLiteral* const, float  , const URI*) {  }
