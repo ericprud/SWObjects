@@ -211,7 +211,11 @@ struct BRTparser {
 		case RT_QNAME: {
 		    unsigned int ord = readInt(f);
 		    std::string localName = readAtom(f);
-		    set(atomFactory->getRDFLiteral(value, atomFactory->getURI(namespaces[ord] + localName)));
+		    std::string dtStr = namespaces[ord] + localName;
+		    const URI* dtTerm = dtStr == "http://www.w3.org/2001/XMLSchema#string"
+			? NULL // treat as plain literal -- someday normalize to always datatyped?
+			: atomFactory->getURI(dtStr);
+		    set(atomFactory->getRDFLiteral(value, dtTerm));
 		} break;
 		case RT_URI: {
 		    std::string iri = readAtom(f);
