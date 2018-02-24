@@ -377,6 +377,20 @@ void validate (boost::any&, const std::vector<std::string>& values, serveURI*, i
     ServerURI = s;
 }
 
+/* File path to serve as a web server. */
+struct servePath {};
+std::string ServerRoot;
+void validate (boost::any&, const std::vector<std::string>& values, servePath*, int)
+{
+    const std::string& s = po::validators::get_single_string(values);
+    if (!ServerRoot.empty())
+	throw boost::program_options
+	    ::VALIDATION_ERROR(std::string("unable files from \"").
+			       append(s).append("\" and ").
+			       append(ServerRoot));
+    ServerRoot = s;
+}
+
 /* Set up a SADI service on the server. */
 struct sadiConstruct {};
 void validate (boost::any&, const std::vector<std::string>& values, sadiConstruct*, int)
@@ -972,6 +986,7 @@ int main(int ac, char* av[])
         hidden.add_options()
             ("exec,e", po::value<queryString>(), "queries")
             ("serve", po::value<serveURI>(), "serve URI")
+            ("root", po::value<servePath>(), "serve filesystem root")
 
 	    /** simple SADI CONSTRUCT service
 	     * test with:
@@ -1343,9 +1358,14 @@ int main(int ac, char* av[])
 		    // web_server_asio, is the same as the server.
 		    dynamicHandler(TheServer.engine, &TheServer, ServerURI, servicePath, ""); // "" is the interfacePath
 		handler.add_handler(&dynamicHandler);
-		sw::StaticHandler stat;
-		stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
-		handler.add_handler(&stat);
+                sw::FileSystemHandler fsHandler(ServerRoot);
+                sw::StaticHandler stat;
+                if (!ServerRoot.empty()) {
+                    handler.add_handler(&fsHandler);
+                } else {
+                    stat.addContent("/favicon.ico", "image/x-icon", sizeof(favicon), (char*)favicon);
+                    handler.add_handler(&stat);
+                }
 
 		unsigned int httpThreads = vm.count("http-threads") ? vm["http-threads"].as<unsigned int>() : 5;
 		TheServer.runServer(handler, httpThreads, ServerURI, serviceHost, servicePort, servicePath, vm.count("server-no-description") == 0);

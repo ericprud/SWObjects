@@ -831,6 +831,46 @@ namespace w3c_sw {
     };
 
 
+    class FileSystemHandler : public WebHandler {
+
+    public:
+	FileSystemHandler (const std::string& doc_root) : 
+	    WebHandler(doc_root)
+	{  }
+
+    protected:
+	webserver::reply::status_type
+	handle_request (webserver::request& req, webserver::reply& rep) {
+
+            std::string path(req.getPath());
+
+            if (path[path.size() - 1] == '/')
+                path += "index.html";
+
+            // Determine the file extension.
+            std::size_t last_slash_pos = path.find_last_of("/");
+            std::size_t last_dot_pos = path.find_last_of(".");
+            std::string extension;
+            if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+                extension = path.substr(last_dot_pos + 1);
+
+            // Open the file to send back.
+            std::string full_path = doc_root_ + path;
+            std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+            if (!is)
+                return webserver::reply::not_found;
+
+            char buf[512];
+            while (is.read(buf, sizeof(buf)).gcount() > 0)
+                rep.content.append(buf, is.gcount());
+	    rep.status = webserver::reply::ok;
+	    rep.addHeader("Content-Type", mime_types::extension_to_type(extension));
+	    return webserver::reply::ok;
+	}
+
+    };
+
+
     class ChainedHandler : public WebHandler {
 
     public:
