@@ -923,6 +923,8 @@ int main(int ac, char* av[])
             ("description-graph,G", po::value<std::vector <std::string> >(), 
 	     "read application description graph into graph arg.")
 
+            ("not-found-is-empty", po::value<bool>(), 
+	     "treat Not Found results as producing empty graphs.")
             ("get-graph-arguments", po::value<bool>(), 
 	     "load named IRI in GRAPH <IRI> or GRAPH ?var when ?var is bound.")
             ("bnode-detailed-label", 
@@ -1253,6 +1255,8 @@ int main(int ac, char* av[])
 		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
 		if (vm.count("ResultSetDebugEnumerateLimit"))
 		    sw::ResultSet::DebugEnumerateLimit = vm["ResultSetDebugEnumerateLimit"].as<size_t>();
+		if (vm.count("not-found-is-empty"))
+		    sw::RdfDB::NotFoundIsEmpty = vm["not-found-is-empty"].as<bool>();
 		if (vm.count("get-graph-arguments"))
 		    sw::RdfDB::GetGraphArguments = vm["get-graph-arguments"].as<bool>();
 

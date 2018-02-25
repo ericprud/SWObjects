@@ -81,6 +81,7 @@ namespace w3c_sw {
 	static size_t DebugEnumerateLimit;
 	static bool GetGraphArguments;
 	static bool DynamicLoading;
+        static bool NotFoundIsEmpty;
 
 	/** RdfDB: simple constructor with no GET or parsing facilities.
 	 */

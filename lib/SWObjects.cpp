@@ -3187,9 +3187,19 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
-	IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
-	if (db->loadData(target, iptr, nameStr, nameStr, m_atomFactory))
-	    throw nameStr + ":0: error: unable to parse web document";
+        bool failed = false;
+        try {
+            IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
+            failed = db->loadData(target, iptr, nameStr, nameStr, m_atomFactory);
+        } catch (boost::system::system_error& e) {
+            if (e.code() == boost::asio::error::not_found && RdfDB::NotFoundIsEmpty)
+                ; // the graph is empty by default
+            else
+                throw e;
+        }
+        if (failed)
+            throw nameStr + ":0: error: unable to parse web document";
+
     }
     void DefaultGraphClause::loadData (RdfDB* db) const {
 	loadGraph(db, m_IRIref, db->ensureGraph(DefaultGraph));

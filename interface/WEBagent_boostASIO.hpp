@@ -220,6 +220,13 @@ namespace w3c_sw {
 		    else
 			throw std::string() + "authentication required for \"" + url + "\" in realm \"" + realm + "\".";
 		    redo = true;
+                    break;
+		}
+		case 404: {
+		    while (boost::asio::read(socket, response,
+					     boost::asio::transfer_at_least(1), error))
+			;
+                    throw boost::system::system_error(boost::asio::error::not_found);
 		}
 		case 200:
 		case 209: {
