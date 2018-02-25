@@ -858,7 +858,7 @@ namespace w3c_sw {
             std::string full_path = doc_root_ + path;
             std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
             if (!is)
-                return webserver::reply::not_found;
+                return webserver::reply::declined;
 
             char buf[512];
             while (is.read(buf, sizeof(buf)).gcount() > 0)
