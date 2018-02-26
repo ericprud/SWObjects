@@ -3187,6 +3187,11 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
+        time_t now = time(NULL);
+        if (db->cacheExpiry.find(nameStr) != db->cacheExpiry.end() &&
+            now <= db->cacheExpiry.find(nameStr)->second)
+            return;
+        db->cacheExpiry[nameStr] = now + 5; // default to 5 second cache. can be overridden by headers
         bool failed = false;
         try {
             IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);

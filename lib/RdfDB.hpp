@@ -185,6 +185,7 @@ namespace w3c_sw {
 	}
 	virtual void bindVariables(ResultSet* rs, const RdfDB* ref) const;
 	void clearTriples();
+        std::map<std::string, time_t> cacheExpiry;
 	virtual bool loadData(BasicGraphPattern* target, IStreamContext& istrP,
 			      std::string nameStr, std::string baseURI,
 			      AtomFactory* atomFactory, NamespaceMap* nsMap = NULL, GRDDLmap* grddlMap = NULL);
