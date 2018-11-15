@@ -1082,7 +1082,7 @@ namespace w3c_sw {
 
 
 	/* Enforce HAVING constraints. */
-	if (having != NULL)
+	if (having != NULL) {
 	    for (ResultSetIterator row = begin() ; row != end(); )
 		for (std::vector<const w3c_sw::Expression*>::const_iterator expr = having->begin();
 		     expr != having->end(); ++expr)
@@ -1106,7 +1106,7 @@ namespace w3c_sw {
 			    }
 			++row;
 		    }
-
+        }
 
 	if (orderConditions != NULL) {
 	    ResultComp resultComp(orderConditions, atomFactory, db);

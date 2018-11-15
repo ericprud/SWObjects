@@ -207,6 +207,7 @@ int main (int argc, char* argv[]) {
 			newState.expect = SUBJECT;
 			break;
 		    }
+                    /* FALLTHRU */
 		case SUBJECT:
 		case COLLECTION: { // 
 		    if (uri == NS_rdf && (localName == "nodeID" || localName == "resource" || localName == "parseType" || localName == "about" || localName == "ID" || localName == "RDF" || localName == "aboutEach" || localName == "aboutEachPrefix" || localName == "bagID"))

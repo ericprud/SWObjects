@@ -24,7 +24,8 @@
 #pragma GCC diagnostic push[[BR]]
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunknown-pragmas" // still see: ../cryptopp561/dll.h:51:0: warning: ignoring #pragma comment  [-Wunknown-pragmas]\n #pragma comment(lib, "cryptopp")
-#include "dll.h"
+#include "cryptopp/dll.h"
+#include "cryptopp/md5.h"
 #include "md5.h"
 #pragma GCC diagnostic pop
 #endif /* CRYPT_LIB */

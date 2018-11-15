@@ -4347,7 +4347,7 @@ public:
 		}
 		streamRewinder.buffer.clear();
 		streamRewinder.state = STATE_pass;
-		// fall through to STATE_pass
+                /* FALLTHRU */
 	    }
 	    case STATE_copy:
 	    case STATE_pass: {

@@ -5,7 +5,27 @@ Hi, welcome to SWObjects and all that. You probably want to:
     There is some guidance in Makefile:33
   make test
 
-This should all be made easier when ./configure if finished.
+This should all be made easier when ./configure is finished.
+
+# Debian instructions
+
+you'll need these packages:
+
+- flex
+- bison
+- zlib1g-dev
+- libmd-dev
+- uuid-dev
+- libcrypto++6
+- libexpat1-dev
+- libmysqlclient-dev
+- libboost-dev
+- libboost-log-dev
+- libboost-regex-dev
+- libboost-test-dev
+- libboost-program-options-dev
+
+# More info
 
 To learn more about SWObjects, checkout some tutorials given at SWAT4LS in 2010 and 2011:
 2010: http://www.w3.org/2010/Talks/1208-egp-swobjects/
