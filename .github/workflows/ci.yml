@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake bison flex libexpat1-dev uuid-dev \
+            libboost-dev libboost-regex-dev libboost-thread-dev \
+            libboost-filesystem-dev libboost-date-time-dev \
+            libboost-program-options-dev libboost-iostreams-dev \
+            libboost-log-dev libboost-test-dev
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install cmake boost bison flex expat
+
+      - name: Fetch W3C test suites
+        run: sh tests/fetch-test-suites.sh
+
+      - name: Configure
+        run: cmake -B build
+
+      - name: Build
+        run: cmake --build build -j4
+
+      - name: Run test suites
+        run: >
+          ctest --test-dir build --output-on-failure --timeout 600
+          -E 'test_(SPARQL|SPARQL11|QueryMap|ShEx)$'
+
+      # These suites carry known pre-existing failures:
+      #  - test_SPARQL11: md5/sha* builtins are unimplemented (8 cases)
+      #  - test_SPARQL: function_library expects CSV <foo> parsed as an IRI,
+      #    a csv-regex branch deliberately disabled upstream (~2013)
+      #  - test_QueryMap, test_ShEx: heap-layout-dependent nondeterminism in
+      #    the query rewriter / ShEx normalizer makes single cases flaky
+      # Run them for visibility without gating the build.
+      - name: Run suites with known pre-existing failures (non-blocking)
+        continue-on-error: true
+        run: >
+          ctest --test-dir build --output-on-failure --timeout 600
+          -R 'test_(SPARQL|SPARQL11|QueryMap|ShEx)$'

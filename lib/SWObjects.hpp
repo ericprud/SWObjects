@@ -973,8 +973,11 @@ class URI : public TTerm {
     friend struct _URIstr_initializer;
 private:
     URI (std::string str) : TTerm(str) {  }
-    ~URI () { }
 public:
+    // Public for GCC: aggregate-initializing AtomFactory::_URIConstants[]
+    // requires an accessible destructor at the point of initialization
+    // (C++17 [dcl.init.aggr]). Construction stays factory-only.
+    ~URI () { }
     virtual e_TYPE getTypeOrder () const { return TYPE_URI; }
     virtual const char * getToken () { return "-TTerm-"; }
     virtual void express(Expressor* p_expressor) const;

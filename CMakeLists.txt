@@ -182,6 +182,15 @@ target_link_libraries(SWObjects PUBLIC
   Boost::iostreams Boost::log Boost::log_setup
 )
 
+# The uuid()/struuid() SPARQL builtins use uuid_generate_random(). macOS
+# and Windows have it in the base system; Linux needs libuuid.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  find_path(LIBUUID_INCLUDE_DIR NAMES uuid/uuid.h REQUIRED)
+  find_library(LIBUUID_LIBRARY NAMES uuid REQUIRED)
+  target_include_directories(SWObjects PUBLIC ${LIBUUID_INCLUDE_DIR})
+  target_link_libraries(SWObjects PUBLIC ${LIBUUID_LIBRARY})
+endif()
+
 if(SWOBJ_XML_PARSER STREQUAL "EXPAT1")
   target_link_libraries(SWObjects PUBLIC EXPAT::EXPAT)
 elseif(SWOBJ_XML_PARSER STREQUAL "LIBXML2")
