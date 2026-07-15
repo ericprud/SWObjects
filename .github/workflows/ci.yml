@@ -19,7 +19,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake bison flex libexpat1-dev uuid-dev \
+          sudo apt-get install -y cmake bison flex libfl-dev libexpat1-dev uuid-dev \
             libboost-dev libboost-regex-dev libboost-thread-dev \
             libboost-filesystem-dev libboost-date-time-dev \
             libboost-program-options-dev libboost-iostreams-dev \

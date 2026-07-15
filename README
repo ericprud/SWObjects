@@ -21,7 +21,7 @@ CI (.github/workflows/ci.yml) runs the same steps on Linux and macOS.
 you'll need these packages:
 
 - cmake
-- flex (>= 2.6)
+- flex (>= 2.6) and libfl-dev (FlexLexer.h)
 - bison (>= 3.2)
 - uuid-dev
 - libexpat1-dev (or libxml2-dev with -DSWOBJ_XML_PARSER=LIBXML2)
