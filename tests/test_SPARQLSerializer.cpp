@@ -42,7 +42,7 @@ bool operator== (const OpWrap& l, const OpWrap& r) {
 }
 
 std::ostream& operator<< (std::ostream& os, OpWrap const& my) {
-    os << operator<<(os, my.str);
+    os << my.str;
     SPARQLAlgebraSerializer s;
     my.op->express(&s);
     return os << s.str();

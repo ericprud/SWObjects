@@ -229,8 +229,8 @@ void expectGraph () {
 	errorStr << "unknown exception while " << doing;
     }
     if (!errorStr.str().empty())
-	::boost::test_tools::tt_detail::check_impl
-	      ((false),
+	::boost::test_tools::tt_detail::report_assertion
+	      (::boost::test_tools::assertion_result(false),
 	       ::boost::unit_test::lazy_ostream::instance() << errorStr.str(),
 	       ManifestFile,
 	       static_cast<std::size_t>(lineNo),
@@ -310,8 +310,9 @@ init_unit_test_suite (int argc, char* argv[])  {
 		// Tell the boost test harness to add an invocation of
 		// expectGraph.
 		suite->add(boost::unit_test::make_test_case
-			   (boost::unit_test::callback0<>(&expectGraph),
-			    connection->info.driver));
+			   (boost::function<void ()>(&expectGraph),
+			    connection->info.driver,
+			    __FILE__, __LINE__));
  	    }
 	}
     }

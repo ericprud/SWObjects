@@ -712,7 +712,7 @@ namespace w3c_sw {
 		head(ss, "Q&amp;D SPARQL Server Parsing Error");
 		ss << "<h2>Parsing Error</h2>\n";
 		ss << "<p><code>" << escapeHTML(ex.what()) << "</code></p>\n";
-		std::string& str(*ex.begin.filename);
+		const std::string& str(*ex.begin.filename);
 		size_t begin = 0;
 		size_t end = 0;
 		size_t line = 0;

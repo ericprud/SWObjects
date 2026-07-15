@@ -3,12 +3,12 @@
 
 /*** yacc/bison Declarations ***/
 
-/* Require bison 2.3 or later */
-%require "2.3"
+/* Require a modern bison */
+%require "3.2"
 
 /* add debug output code to generated parser. disable this for release
  * versions. */
-%debug
+%define parse.trace
 
 /* start symbol is named "start" */
 %start turtleDoc
@@ -20,13 +20,14 @@
 %skeleton "lalr1.cc"
 
 /* namespace to enclose parser in */
-%name-prefix="w3c_sw"
+%define api.namespace {w3c_sw}
 
 /* set the parser's class identifier */
-%define "parser_class_name" "TurtleParser"
+%define api.parser.class {TurtleParser}
 
 /* keep track of the current position within the input */
 %locations
+%define api.location.type {w3c_sw::location}
 %initial-action
 {
     // initialize the initial location object
@@ -40,17 +41,9 @@
 %parse-param { class TurtleDriver& driver }
 
 /* verbose error messages */
-%error-verbose
+%define parse.error verbose
 
-// %{ //  ##bison1
-%code requires { // ##bison2
-/* Bison seems to test inclusion with PARSER_HEADER_H, rather than something
- * which varies by parser_class_name . Overriding with define specific to
- * this parser.
- */
-#endif /* !PARSER_HEADER_H */
-#ifndef TURTLE_PARSER_HPP
-#define TURTLE_PARSER_HPP
+%code requires {
 
 #include "SWObjects.hpp"
 #include "RdfDB.hpp"
@@ -558,9 +551,5 @@ void TurtleDriver::parse (std::string turtleStr, RdfDB* db) {
 
 } // namespace w3c_sw
 
-// FIXME: dirty workaround to make sure linking errors do not occur
-int TurtleFlexLexer::w3c_swlex() {
-	return 0;
-}
 /* END Driver */
 

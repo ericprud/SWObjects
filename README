@@ -1,29 +1,43 @@
 Hi, welcome to SWObjects and all that. You probably want to:
-  Edit CONFIG to change which libs you link to.
-  If you're using MacOS or non debian linux, edit the Makefile 
-    to select the appropriate echo (e.g. ECHO:=`which echo`).
-    There is some guidance in Makefile:33
-  make test
 
-This should all be made easier when ./configure is finished.
+  cmake -B build
+  cmake --build build -j8        # tools land in bin/, e.g. bin/sparql
+  ctest --test-dir build         # run the test suites
+
+Feature selection that used to live in the CONFIG file is now done with
+cmake options (see the options block at the top of CMakeLists.txt):
+
+  cmake -B build -DSWOBJ_XML_PARSER=LIBXML2 -DSWOBJ_SQL_MYSQL=ON
+
+Some test suites (test_Turtle, test_Trig, test_RDFXML, test_SPARQL11)
+expect the W3C test data unpacked under tests/ :
+
+  (cd tests && curl -sL http://www.w3.org/2013/TurtleTests/TESTS.tar.gz | tar xzf -)
+  (cd tests && mkdir -p TriGTests && curl -sL http://www.w3.org/2013/TrigTests/TESTS.tar.gz | tar xzf - -C TriGTests)
+  (cd tests && mkdir -p RDFXMLTests && curl -sL http://www.w3.org/2013/RDFXMLTests/TESTS.tar.gz | tar xzf - -C RDFXMLTests)
+  (cd tests && curl -sL http://www.w3.org/2009/sparql/docs/tests/sparql11-test-suite-20121023.tar.gz | tar xzf - \
+    && cd sparql11-test-suite && patch -p 0 < ../sparql11-test-suite.patch)
 
 # Debian instructions
 
 you'll need these packages:
 
-- flex
-- bison
-- zlib1g-dev
-- libmd-dev
-- uuid-dev
-- libcrypto++6
-- libexpat1-dev
-- libmysqlclient-dev
+- cmake
+- flex (>= 2.6)
+- bison (>= 3.2)
+- libexpat1-dev (or libxml2-dev with -DSWOBJ_XML_PARSER=LIBXML2)
+- libmysqlclient-dev (only with -DSWOBJ_SQL_MYSQL=ON)
 - libboost-dev
 - libboost-log-dev
 - libboost-regex-dev
 - libboost-test-dev
 - libboost-program-options-dev
+- libboost-iostreams-dev
+- libboost-thread-dev
+- libboost-filesystem-dev
+
+On macOS: brew install cmake boost bison flex expat
+(cmake prefers Homebrew's bison/flex over the older /usr/bin ones.)
 
 # More info
 

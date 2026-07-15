@@ -430,6 +430,8 @@ namespace permute {
     template <typename EquatableContainer, typename Functor>
     bool equals(EquatableContainer& l,
     		EquatableContainer& r, Functor& f) {
+	if (l.size() == 0) // the recursion below writes indexes[0] unconditionally.
+	    return r.size() == 0 && f();
 	int* indexes = new int[l.size()];
     	bool ret = equals(indexes, l, r, f, 0, -1);
 	delete[] indexes;
@@ -3004,7 +3006,7 @@ public:
 	const DatasetClause* pref = dynamic_cast<const DatasetClause*>(&ref);
 	return pref == NULL ? false : m_IRIref == ref.m_IRIref && m_atomFactory == ref.m_atomFactory;
     }
-    void loadGraph(RdfDB* db, const TTerm* name, BasicGraphPattern* target) const;
+    void loadGraph(RdfDB* db, const TTerm* name, const TTerm* targetName, BasicGraphPattern* target) const;
     virtual void loadData(RdfDB*) const = 0;
     virtual void express(Expressor* p_expressor) const = 0;
 };
@@ -4370,7 +4372,7 @@ public:
 
 	std::string toString () {
 	    std::stringstream ret;
-	    ret << "Device(" << istr << ")";
+	    ret << "Device(" << &istr << ")";
 	    return ret.str();
 	}
     };

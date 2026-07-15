@@ -473,8 +473,8 @@ namespace w3c_sw {
 	      private boost::noncopyable
 	{
 	public:
-	    /// Construct a connection with the given io_service.
-	    explicit connection(boost::asio::io_service& io_service,
+	    /// Construct a connection with the given io_context.
+	    explicit connection(boost::asio::io_context& io_context,
 				request_handler& handler,
 				server_config& config);
 	    ~connection();
@@ -494,7 +494,7 @@ namespace w3c_sw {
 	    void handle_write(const boost::system::error_code& e);
 
 	    /// Strand to ensure the connection's handlers are not called concurrently.
-	    boost::asio::io_service::strand strand_;
+	    boost::asio::strand<boost::asio::io_context::executor_type> strand_;
 
 	    /// Socket for the connection.
 	    boost::asio::ip::tcp::socket socket_;
@@ -516,11 +516,11 @@ namespace w3c_sw {
 	};
 
 	template <class server_config>
-	inline connection<server_config>::connection(boost::asio::io_service& io_service,
+	inline connection<server_config>::connection(boost::asio::io_context& io_context,
 						     request_handler& handler,
 						     server_config& config)
-	    : strand_(io_service),
-	      socket_(io_service),
+	    : strand_(io_context.get_executor()),
+	      socket_(io_context),
 	      request_handler_(handler),
 	      request_(new asioRequest()),
 	      request_parser_(config),
@@ -539,7 +539,7 @@ namespace w3c_sw {
 	template <class server_config>
 	inline void connection<server_config>::start() {
 	    socket_.async_read_some(boost::asio::buffer(buffer_),
-		    strand_.wrap(
+		    boost::asio::bind_executor(strand_,
 			 boost::bind(&connection<server_config>::handle_read, connection<server_config>::shared_from_this(),
 				     boost::asio::placeholders::error,
 				     boost::asio::placeholders::bytes_transferred)));
@@ -597,19 +597,19 @@ namespace w3c_sw {
 		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << *request_ << reply_;
 
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
-		     strand_.wrap(
+		     boost::asio::bind_executor(strand_,
 			  boost::bind(&connection<server_config>::handle_write, connection<server_config>::shared_from_this(),
 				      boost::asio::placeholders::error)));
 		    //strand_.service_.owner_.impl_.stopped_ = true; stop_all_threads()
 		} else if (!result) {
 		    reply_ = reply::stock_reply(reply::bad_request);
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
-		     strand_.wrap(
+		     boost::asio::bind_executor(strand_,
 			  boost::bind(&connection<server_config>::handle_write, connection<server_config>::shared_from_this(),
 				      boost::asio::placeholders::error)));
 		} else {
 		    socket_.async_read_some(boost::asio::buffer(buffer_),
-			    strand_.wrap(
+			    boost::asio::bind_executor(strand_,
 				 boost::bind(&connection<server_config>::handle_read, connection<server_config>::shared_from_this(),
 					     boost::asio::placeholders::error,
 					     boost::asio::placeholders::bytes_transferred)));
@@ -669,7 +669,7 @@ namespace w3c_sw {
 	    std::size_t thread_pool_size_;
 
 	    /// The io_service used to perform asynchronous operations.
-	    boost::asio::io_service io_service_;
+	    boost::asio::io_context io_service_;
 
 	    /// Acceptor used to listen for incoming connections.
 	    boost::asio::ip::tcp::acceptor acceptor_;
@@ -695,8 +695,16 @@ namespace w3c_sw {
 	{
 	    // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	    boost::asio::ip::tcp::resolver resolver(io_service_);
-	    boost::asio::ip::tcp::resolver::query query(address, port);
-	    boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+	    boost::asio::ip::tcp::resolver::results_type resolved = resolver.resolve(address, port);
+	    // Prefer an IPv4 endpoint; clients (and the tests) reach
+	    // "localhost" servers via 127.0.0.1.
+	    boost::asio::ip::tcp::endpoint endpoint = *resolved.begin();
+	    for (boost::asio::ip::tcp::resolver::results_type::const_iterator it = resolved.begin();
+		 it != resolved.end(); ++it)
+		if (it->endpoint().address().is_v4()) {
+		    endpoint = it->endpoint();
+		    break;
+		}
 	    acceptor_.open(endpoint.protocol());
 	    acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 	    acceptor_.bind(endpoint);
@@ -712,7 +720,7 @@ namespace w3c_sw {
 	    std::vector<boost::shared_ptr<boost::thread> > threads;
 	    for (std::size_t i = 0; i < thread_pool_size_; ++i) {
 		boost::shared_ptr<boost::thread> thread(new boost::thread(
-		  boost::bind(&boost::asio::io_service::run, &io_service_)));
+		  [this]() { io_service_.run(); }));
 		threads.push_back(thread);
 	    }
 
@@ -723,7 +731,13 @@ namespace w3c_sw {
 
 	template <class server_config>
 	inline void server<server_config>::stop() {
-	    io_service_.stop();
+	    // Close the acceptor from within the io_context and let in-flight
+	    // requests drain. A hard io_context::stop() would abandon the
+	    // queued write of the reply that the stop request is waiting for.
+	    boost::asio::post(io_service_, [this]() {
+		boost::system::error_code ignored;
+		acceptor_.close(ignored);
+	    });
 	}
 
 	template <class server_config>

@@ -17,10 +17,10 @@ namespace w3c_sw {
  * mismatch between them.  It's hard to use the bison one 'cause each parser
  * generates its own. */
 struct ParserLocation {
-    std::string *filename;
+    const std::string *filename;
     size_t line;
     size_t column;
-    ParserLocation (std::string *filename, size_t line, size_t column)
+    ParserLocation (const std::string *filename, size_t line, size_t column)
 	: filename(filename), line(line-1), column(column-1)
     {  }
 };

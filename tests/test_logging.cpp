@@ -11,6 +11,7 @@
 #define BOOST_TEST_MODULE logging
 #include <boost/test/unit_test.hpp>
 #include <boost/log/attributes/scoped_attribute.hpp>
+#include <boost/thread.hpp> // thread_group
 
 #ifdef _MSC_VER
   #include <windows.h>

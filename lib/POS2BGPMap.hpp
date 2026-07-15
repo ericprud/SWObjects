@@ -495,7 +495,7 @@ namespace w3c_sw {
 		     @@ that's wierd. figure it out. */
 		    const TableOperation* op = bgpBindings->first;
 		    ret[op] = (_BindingStrength)(bgpBindings->second & ~_Binding_WEAK);
-		    if ((*row)->get(v) == false)
+		    if ((*row)->get(v) == NULL)
 			ret[op] = (_BindingStrength)(ret[op] | _Binding_WEAK);
 		    //std::cerr << "includedRequiredness[" << op << " = " << ConsequentMapList::bindingStr(ret[op]) << " for " << v->toString() << std::endl;
 		}

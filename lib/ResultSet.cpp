@@ -208,7 +208,13 @@ namespace w3c_sw {
 	int col = 0;
 	int lineNo = 1;
 	Result* curRow = NULL;
-	enum {AllParsed = 0, NewLine, Delimiter, BOL, TermText, Variable, IRI, BNode, Quoted, Datatype, Double, Float, Integer, Bare, Empty};
+	// Boost.Regex v5's match_results::operator[] requires an integral
+	// type; an enum no longer converts implicitly.
+	const int AllParsed = 0, NewLine = 1, Delimiter = 2, BOL = 3,
+	    TermText = 4, Variable = 5, IRI = 6, BNode = 7, Quoted = 8,
+	    Datatype = 9, Double = 10, Float = 11, Integer = 12, Bare = 13,
+	    Empty = 14;
+	(void)AllParsed; (void)Delimiter; (void)BOL; (void)TermText;
 	boost::regex csv(std::string() +
 			 "(\\n|\\r\\n?)"
 			  "|(?:(,)|(^))"
@@ -368,7 +374,9 @@ namespace w3c_sw {
 	/* ... and generate Results for each remaining row. */
 	int col = 0;
 	Result* curRow = NULL;
-	enum {WholeString = 0, BoxChars = 1, CapturedTerm = 2, NullBinding = 3};
+	// ints, not an enum, for Boost.Regex v5's match_results::operator[].
+	const int WholeString = 0, BoxChars = 1, CapturedTerm = 2, NullBinding = 3;
+	(void)WholeString; (void)BoxChars;
 	const boost::regex srt("^[ \\t\\n]*(?:"		// ignore leading whitespace
 			       "("				// \1: box chars
 			       "(?:[┌┬┐├┼┤└┴┘─┏┳┓┣╋┫┗┻┛━]+"	//   unicode

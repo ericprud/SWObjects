@@ -41,13 +41,14 @@ namespace w3c_sw {
 	}
 
 	static void childHandler (int /* signo */) {
-	    int status, child_val;
+	    int status = 0;
 
-	    /* Wait for any child without blocking */
-	    if (waitpid(-1, &status, WNOHANG) < 0) 
-		; // sometimes returns error in linux
-	    // throw std::runtime_error("signal caught but child failed to terminate");
-	    if (WIFEXITED(status)) {            /* If child exited normally   */
+	    /* Wait for any child without blocking. If no child was actually
+	     * waiting (e.g. pclose already reaped it), waitpid returns <= 0
+	     * and status must not be consulted — it used to be read
+	     * uninitialized here, randomly reporting bogus exit codes. */
+	    pid_t pid = waitpid(-1, &status, WNOHANG);
+	    if (pid > 0 && WIFEXITED(status)) { /* If child exited normally   */
 		ChildRet = WEXITSTATUS(status); /*   get child's exit status. */
 		ChildRetSet = true;
 	    }
@@ -225,10 +226,16 @@ namespace w3c_sw {
 
 
     /** SPARQLServerInteraction - ivocations of the bin/sparql binary.
+     * The binary location can be overridden with the W3C_SW_SPARQL_BINARY
+     * environment variable (the cmake tests set it to the built sparql).
      */
     struct SPARQLServerInteraction : public ServerInteraction {
+	static std::string sparqlBinary () {
+	    const char* fromEnv = ::getenv("W3C_SW_SPARQL_BINARY");
+	    return fromEnv != NULL ? fromEnv : "../bin/sparql";
+	}
 	SPARQLServerInteraction (std::string serverParams, std::string serverPath, int lowPort, int highPort)
-	    : ServerInteraction ("../bin/sparql", serverPath, "127.0.0.1", serverParams, lowPort, highPort)
+	    : ServerInteraction (sparqlBinary(), serverPath, "127.0.0.1", serverParams, lowPort, highPort)
 	{  }
     };
 

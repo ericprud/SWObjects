@@ -138,6 +138,7 @@ void readAndQueue (std::string filename, Action action, boost::unit_test::test_s
     std::ifstream tsv(filename.c_str());
     std::string name, testData, nqad;
     int lineNo = 1;
+    std::map<std::string, int> seenNames; // Boost.Test forbids duplicate test names.
     while (tsv >> name >> testData) {
 	name = name.substr(1,name.length()-2);
 	testData = testData.substr(1,testData.length()-2);
@@ -145,12 +146,17 @@ void readAndQueue (std::string filename, Action action, boost::unit_test::test_s
 	    tsv >> nqad;
 	    nqad = nqad.substr(1,nqad.length()-2);
 	}
+	int dup = ++seenNames[name];
+	std::string caseName = name;
+	if (dup > 1) // e.g. trig-syntax-bad-num-05 appears twice in the WG manifest.
+	    caseName += "-dup" + boost::lexical_cast<std::string>(dup);
 	ts->add(boost::unit_test::make_test_case
-		(boost::unit_test::callback0<>(boost::bind
+		(boost::function<void ()>(boost::bind
 					       (&parseAndCompare, name, testData, nqad,
 						errorStr("tests/"+filename, lineNo)+":",
 						action)),
-		 boost::unit_test::const_string(name.c_str(), name.length())));
+		 boost::unit_test::const_string(caseName.c_str(), caseName.length()),
+		 filename.c_str(), lineNo));
 	++lineNo;
     }
 }

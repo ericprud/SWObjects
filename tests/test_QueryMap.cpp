@@ -842,6 +842,7 @@ BOOST_AUTO_TEST_SUITE( bsbm )
 		 it != ms->maps.end(); ++it)
 		queryMapper.addRule(it->constr, it->label);
 	    queryMapper.nodeShare = ms->nodeShare;
+	    queryMapper.clear(); // the global queryMapper is shared across test cases.
 	    delete ms;
 	}
 
@@ -859,6 +860,7 @@ BOOST_AUTO_TEST_SUITE( bsbm )
 	    queryMapper.nodeShare = ms->nodeShare;
 
 	    const Operation* transformed = queryMapper.map(query);
+	    queryMapper.clear(); // the global queryMapper is shared across test cases.
 	    delete transformed;
 	    delete query;
 	    delete ms;
@@ -880,6 +882,7 @@ BOOST_AUTO_TEST_SUITE( bsbm )
 	    const Operation* transformed = queryMapper.map(query);
 	    SPARQLSerializer s;
 	    transformed->express(&s);
+	    queryMapper.clear(); // the global queryMapper is shared across test cases.
 	    delete transformed;
 	    delete query;
 	    delete ms;

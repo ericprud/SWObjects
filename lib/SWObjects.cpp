@@ -3186,13 +3186,17 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	return ret;
     }
 
-    void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, BasicGraphPattern* target) const {
+    void DatasetClause::loadGraph (RdfDB* db, const TTerm* name, const TTerm* targetName, BasicGraphPattern* target) const {
 	std::string nameStr = name->getLexicalValue();
         time_t now = time(NULL);
-        if (db->cacheExpiry.find(nameStr) != db->cacheExpiry.end() &&
-            now <= db->cacheExpiry.find(nameStr)->second)
+        // Key the cache by document *and* target graph; the same document may
+        // be loaded into both the default graph (FROM) and a named graph
+        // (FROM NAMED) in one dataset.
+        std::string cacheKey = nameStr + "\n" + targetName->getLexicalValue();
+        if (db->cacheExpiry.find(cacheKey) != db->cacheExpiry.end() &&
+            now <= db->cacheExpiry.find(cacheKey)->second)
             return;
-        db->cacheExpiry[nameStr] = now + 5; // default to 5 second cache. can be overridden by headers
+        db->cacheExpiry[cacheKey] = now + 5; // default to 5 second cache. can be overridden by headers
         bool failed = false;
         try {
             IStreamContext iptr(nameStr, IStreamContext::NONE, NULL, db->webAgent);
@@ -3208,10 +3212,10 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     }
     void DefaultGraphClause::loadData (RdfDB* db) const {
-	loadGraph(db, m_IRIref, db->ensureGraph(DefaultGraph));
+	loadGraph(db, m_IRIref, DefaultGraph, db->ensureGraph(DefaultGraph));
     }
     void NamedGraphClause::loadData (RdfDB* db) const {
-	loadGraph(db, m_IRIref, db->ensureGraph(m_IRIref));
+	loadGraph(db, m_IRIref, m_IRIref, db->ensureGraph(m_IRIref));
     }
 
     ValuesClause::ValuesClause (ResultSet* p_ResultSet) : m_ResultSet(p_ResultSet) {  }
@@ -4743,7 +4747,7 @@ namespace w3c_sw {
 	for (ConjointList::const_iterator con = cl.begin();
 	     con != cl.end(); ++con) {
 	    if (con != cl.begin())
-		os << "·";
+		os << "ï¿½";
 	    os << (*con)->toString();
 	}
 	return os;

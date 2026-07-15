@@ -100,8 +100,8 @@ namespace w3c_sw {
 	    bool redo = false;
 	    boost::system::error_code error;
 	    boost::asio::streambuf response;
-	    boost::asio::io_service io_service;
-	    tcp::socket socket(io_service);
+	    boost::asio::io_context io_context;
+	    tcp::socket socket(io_context);
 	    std::ostringstream body;
 	    std::string authString;
 
@@ -153,17 +153,14 @@ namespace w3c_sw {
 #endif /* LOGGING_HH */
 
 		// Get a list of endpoints corresponding to the server name.
-		tcp::resolver resolver(io_service);
-		tcp::resolver::query query(host.c_str(), port.c_str());
-		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-		tcp::resolver::iterator end;
+		tcp::resolver resolver(io_context);
+		tcp::resolver::results_type endpoints = resolver.resolve(host, port, error);
+		if (error)
+		    throw boost::system::system_error(error);
 
 		// Try each endpoint until we successfully establish a connection.
-		error = boost::asio::error::host_not_found;
-		while (error && endpoint_iterator != end) {
-		    socket.close();
-		    socket.connect(*endpoint_iterator++, error);
-		}
+		socket.close();
+		boost::asio::connect(socket, endpoints, error);
 		if (error)
 		    throw boost::system::system_error(error);
 

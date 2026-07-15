@@ -25,4 +25,11 @@ EGP
 *.manifest
 /SWObjects.suo
 /ssl
-/experiments
+/experimentsexamples/functionExtension.so
+build/
+tests/TurtleTests/
+tests/TriGTests/
+tests/RDFXMLTests/
+tests/sparql11-test-suite/
+bin/parseAndFree
+bin/dm-materialize
