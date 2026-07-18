@@ -446,28 +446,30 @@ BOOST_GLOBAL_FIXTURE( PrepareBoostTestLogger );
 
     } /* namespace Logger */
 
-#ifdef SWObjects_STAND_ALONE
-    namespace Logger {
-	int depth;
-
-	severity_level DefaultLog_level;
-	severity_level RewriteLog_level;
-	severity_level IOLog_level;
-	severity_level ParsingLog_level;
-	severity_level GraphMatchLog_level;
-	severity_level SQLLog_level;
-	severity_level ServiceLog_level;
-	severity_level ProcessLog_level;
-
-	LabelToLevel_t LabelToLevel;
-	std::vector<const char*> Labels;
-	namespace {
-	    LabelInitializer TheLabelInitializer;
-	}
-
-    } /* namespace Logger */
-
-#endif /* SWObjects_STAND_ALONE */
+/* The definitions of the Logger globals live in SWObjects.cpp (see
+ * w3c_sw_DEFINE_LOGGER_GLOBALS); a macro-conditional block here would be
+ * skipped when this header is precompiled. */
+#define w3c_sw_DEFINE_LOGGER_GLOBALS \
+    namespace w3c_sw { \
+    namespace Logger { \
+	int depth; \
+\
+	severity_level DefaultLog_level; \
+	severity_level RewriteLog_level; \
+	severity_level IOLog_level; \
+	severity_level ParsingLog_level; \
+	severity_level GraphMatchLog_level; \
+	severity_level SQLLog_level; \
+	severity_level ServiceLog_level; \
+	severity_level ProcessLog_level; \
+\
+	LabelToLevel_t LabelToLevel; \
+	std::vector<const char*> Labels; \
+	namespace { \
+	    LabelInitializer TheLabelInitializer; \
+	} \
+    } /* namespace Logger */ \
+    } /* namespace w3c_sw */
 
 } // namespace w3c_sw
 

@@ -175,6 +175,9 @@ protected:
 	    if (curOp == NULL)
 		ensureBasicGraphPattern();
 	    curOp = new Filter(curOp, curFilter->m_Expressions.begin(), curFilter->m_Expressions.end());
+	    // the Filter now owns the expressions; free the carrier
+	    curFilter->m_Expressions.clear();
+	    delete curFilter;
 	}
 	curFilter = was;
     }

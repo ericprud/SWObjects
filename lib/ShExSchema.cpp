@@ -461,7 +461,9 @@ namespace ShEx {
 	}
 
 	typedef std::map<const TripleConstraint*, long> Bag;
+    } // namespace
 
+    namespace detail {
 	/** SORBE form of a triple expression plus origin bookkeeping (see
 	 * jena-shex TripleExprForValidation). */
 	struct SorbeExpr {
@@ -697,7 +699,10 @@ namespace ShEx {
 		return interval(relevant(), bag).contains1();
 	    }
 	};
+    } // namespace detail
+    using detail::SorbeExpr;
 
+    namespace {
 	/** Cartesian iteration over triple -> candidate-TC choices. */
 	struct Matchings {
 	    std::vector<DataTriple> triples;
@@ -817,6 +822,22 @@ namespace ShEx {
 	    result = false; // EXTERNAL without a resolution
 	}
     };
+
+    Validator::~Validator () {
+	for (std::map<const TripleExpr*, detail::SorbeExpr*>::iterator it = sorbeCache.begin();
+	     it != sorbeCache.end(); ++it)
+	    delete it->second;
+    }
+
+    detail::SorbeExpr* Validator::getSorbe (const TripleExpr* expr) {
+	std::map<const TripleExpr*, detail::SorbeExpr*>::const_iterator hit
+	    = sorbeCache.find(expr);
+	if (hit != sorbeCache.end())
+	    return hit->second;
+	detail::SorbeExpr* made = new detail::SorbeExpr(schema, expr);
+	sorbeCache[expr] = made;
+	return made;
+    }
 
     bool Validator::satisfies (const TTerm* node, const ShapeExpr* expr,
 			       const std::vector<DataTriple>* neigh) {
@@ -996,16 +1017,29 @@ namespace ShEx {
 
     bool Validator::satisfiesLabel (const TTerm* node, const TTerm* label) {
 	std::pair<const TTerm*, const TTerm*> key(node, label);
-	if (inProgress.find(key) != inProgress.end())
+	if (inProgress.find(key) != inProgress.end()) {
+	    ++assumedCount;
 	    return true; // cyclic: assume conformant
+	}
+	// Completed results can be reused when no handler is watching. Only
+	// results computed without any assumption on the stack are cached.
+	bool cacheable = semActHandler == NULL;
+	if (cacheable) {
+	    std::map<std::pair<const TTerm*, const TTerm*>, bool>::const_iterator hit
+		= memo.find(key);
+	    if (hit != memo.end())
+		return hit->second;
+	}
 	std::map<const TTerm*, ShapeDecl*>::const_iterator decl = schema.declIndex.find(label);
 	if (decl == schema.declIndex.end()) {
 	    lastError = "undefined shape " + label->toString();
 	    return false;
 	}
+	size_t assumedBefore = assumedCount;
 	std::vector<const TTerm*> descendants = nonAbstractDescendants(label);
+	bool ret = false;
 	for (std::vector<const TTerm*>::const_iterator it = descendants.begin();
-	     it != descendants.end(); ++it) {
+	     !ret && it != descendants.end(); ++it) {
 	    const ShapeExpr* expr = schema.getShapeExpr(*it);
 	    if (expr == NULL)
 		continue;
@@ -1014,14 +1048,14 @@ namespace ShEx {
 	    inProgress.insert(dkey);
 	    const TTerm* outerDeclLabel = currentDeclLabel;
 	    currentDeclLabel = *it;
-	    bool ok = satisfies(node, expr, NULL);
+	    ret = satisfies(node, expr, NULL);
 	    currentDeclLabel = outerDeclLabel;
 	    inProgress.erase(dkey);
 	    inProgress.erase(key);
-	    if (ok)
-		return true;
 	}
-	return false;
+	if (cacheable && assumedCount == assumedBefore)
+	    memo[key] = ret; // independent of any cyclic assumption
+	return ret;
     }
 
     bool Validator::validate (const TTerm* node, const TTerm* label) {
@@ -1135,11 +1169,11 @@ namespace ShEx {
 	if (shape->closed && !nonMatchables.empty())
 	    return false;
 
-	// 4. SORBE forms.
+	// 4. SORBE forms (memoized per triple expression).
 	std::vector<SorbeExpr*> sorbes;
 	for (std::vector<const TripleExpr*>::const_iterator it = exprs.begin();
 	     it != exprs.end(); ++it)
-	    sorbes.push_back(*it == NULL ? NULL : new SorbeExpr(schema, *it));
+	    sorbes.push_back(*it == NULL ? NULL : getSorbe(*it));
 
 	bool ret = false;
 	{
@@ -1306,10 +1340,7 @@ namespace ShEx {
 	    }
 	}
 
-	for (std::vector<SorbeExpr*>::const_iterator se = sorbes.begin();
-	     se != sorbes.end(); ++se)
-	    delete *se;
-	return ret;
+	return ret; // the SORBE forms stay cached on the validator
     }
 
     /* -------------------------------------------------- node constraint eval */

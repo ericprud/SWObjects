@@ -25,6 +25,7 @@
 
 #include <fstream>
 #include <cstdlib>
+#include <memory>
 
 #include "Logging.hpp"
 
@@ -429,7 +430,10 @@ namespace {
 
     /** Register one suite directory's entries as test cases. */
     void registerManifest (boost::unit_test::test_suite* parent, const std::string& dir) {
-	Manifest* manifest = new Manifest(); // intentionally kept for the test run
+	// manifests must outlive the test run; owned statically for leak checkers
+	static std::vector<std::unique_ptr<Manifest> > keep;
+	keep.push_back(std::unique_ptr<Manifest>(new Manifest()));
+	Manifest* manifest = keep.back().get();
 	if (!manifest->load(dir))
 	    return;
 	boost::unit_test::test_suite* ts

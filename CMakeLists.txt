@@ -221,6 +221,10 @@ endif()
 target_compile_options(SWObjects PRIVATE -Wall -Wextra
   -Wno-unused-parameter -Wno-deprecated-declarations)
 
+# SWObjects.hpp drags in Boost.Log (via Logging.hpp) and Boost.Regex;
+# precompiling it roughly halves the library's compile time.
+target_precompile_headers(SWObjects PRIVATE lib/SWObjects.hpp)
+
 # ------------------------------------------------------------- executables ---
 
 # The tools land in the source-tree bin/ directory (gitignored), as with the

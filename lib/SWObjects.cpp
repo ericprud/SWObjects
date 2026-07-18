@@ -5,9 +5,8 @@
  * $Id: SWObjects.cpp,v 1.17 2008-12-02 04:57:12 eric Exp $
  */
 
-#define SWObjects_STAND_ALONE
 #include "SWObjects.hpp"
-#undef SWObjects_STAND_ALONE
+w3c_sw_DEFINE_LOGGER_GLOBALS // this translation unit owns the Logger globals
 #include "ResultSet.hpp"
 #include <string.h>
 #include <iomanip>
@@ -3288,14 +3287,11 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	if (groupBy || having || orderConditions) {
 	    // Ideally we wouldn't bother creating this list to sort column but
 	    // <having> extends this list so detaching them would be challenging.
-	    struct NoDelExpressionAlias : public ExpressionAlias {
-		NoDelExpressionAlias (const Expression* expr) : ExpressionAlias(expr) {  }
-		~NoDelExpressionAlias () { expr = NULL; } // we don't want to duplicate expressions for no good reason.
-	    };
 	    ProductionVector<const ExpressionAlias*> expressions; // auto-deletes its payload
 	    const VariableList* vars = rs->getKnownVars();
 	    for (VariableListConstIterator it = vars->begin(); it != vars->end(); ++it)
-		expressions.push_back(new NoDelExpressionAlias(new TTermExpression(*it)));
+		// the alias owns (and frees) the TTermExpression made for it
+		expressions.push_back(new ExpressionAlias(new TTermExpression(*it)));
 	    rs->project(&expressions, groupBy, having, orderConditions, db);
 	}
     }

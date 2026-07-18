@@ -441,6 +441,8 @@ namespace ShEx {
     /** A triple in the data graph, as (subject, predicate, object) TTerms. */
     typedef const TriplePattern* DataTriple;
 
+    namespace detail { struct SorbeExpr; } // validator internals
+
     /** What a semantic action can see when it is dispatched. */
     struct SemActContext {
 	const TTerm* node;                     // focus node, when meaningful
@@ -488,6 +490,7 @@ namespace ShEx {
     public:
 	Validator (const Schema& schema, const BasicGraphPattern& data)
 	    : schema(schema), data(data) {  }
+	~Validator ();
 
 	/** Validate node against the shape labelled label (or the start
 	 * shape if label is NULL). */
@@ -540,6 +543,18 @@ namespace ShEx {
 	/** (node, shapeLabel) pairs currently being validated; assumed
 	 * conformant when re-encountered (cyclic schemas). */
 	std::set<std::pair<const TTerm*, const TTerm*> > inProgress;
+
+	/** Completed (node, shapeLabel) results. Only consulted when no
+	 * semantic-action handler is registered (handlers observe each
+	 * dispatch, so their runs must not skip re-validation), and only
+	 * stored when the result did not lean on a cyclic assumption. */
+	std::map<std::pair<const TTerm*, const TTerm*>, bool> memo;
+	size_t assumedCount = 0; // cyclic assumptions taken so far
+
+	/** SORBE forms are memoized per triple expression (the schema
+	 * outlives the validator). Owned; freed in the destructor. */
+	std::map<const TripleExpr*, detail::SorbeExpr*> sorbeCache;
+	detail::SorbeExpr* getSorbe (const TripleExpr* expr);
 
 	/** The EXTENDS hierarchy: label -> labels it (transitively) extends /
 	 * is extended by. Computed on first use. */
