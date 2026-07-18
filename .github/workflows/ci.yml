@@ -23,7 +23,8 @@ jobs:
             libboost-dev libboost-regex-dev libboost-thread-dev \
             libboost-filesystem-dev libboost-date-time-dev \
             libboost-program-options-dev libboost-iostreams-dev \
-            libboost-log-dev libboost-test-dev
+            libboost-log-dev libboost-test-dev \
+            xsltproc
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
