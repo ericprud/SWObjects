@@ -60,6 +60,18 @@ see lib/ShExManifest.hpp and tests/ShExManifest/):
 --shex-run selects 0-based entries: ranges like "1", "2-5", "5-2"
 (descending) or "*" (everything), comma-separated.
 
+lib/ShExMap.{hpp,cpp} implements the http://shex.io/extensions/Map/#
+semantic-action language for mapping between two schemas: validating
+against a source schema whose constraints carry %Map:{ var %} (or
+regex(...)/hashmap(...) lift functions) collects variable bindings,
+and materialization walks a target schema emitting the bound (or
+lowered) values. Manifest entries drive it with outputSchema[URL],
+outputShape, createRoot, staticVars and optional expectedBindingsURL /
+outputDataURL comparisons (see tests/ShExMap/, ported from shex.js's
+packages/extension-map examples):
+
+  bin/sparql --shex-manifest tests/ShExMap/manifest.yaml
+
 # More info
 
 To learn more about SWObjects, checkout some tutorials given at SWAT4LS in 2010 and 2011:

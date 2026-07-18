@@ -541,6 +541,10 @@ namespace {
 		    BOOST_ERROR(at.str() + ": expected "
 				+ (manifest.entries[i].expectConformant
 				   ? "conformant" : "nonconformant"));
+		else
+		    for (std::vector<std::string>::const_iterator p
+			     = outcome.problems.begin(); p != outcome.problems.end(); ++p)
+			BOOST_ERROR(at.str() + ": " + *p);
 	    }
 	} catch (std::exception& e) {
 	    BOOST_ERROR(path + ": " + e.what());
@@ -598,6 +602,10 @@ bool init_function () {
     webapp->add(boost::unit_test::make_test_case
 		(boost::function<void ()>(&rangeExpansionTest),
 		 "ranges", __FILE__, __LINE__));
+    webapp->add(boost::unit_test::make_test_case
+		(boost::function<void ()>(boost::bind(&webappManifestTest,
+						      std::string("ShExMap/manifest.yaml"))),
+		 "shexmap", __FILE__, __LINE__));
     return true;
 }
 

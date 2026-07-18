@@ -165,6 +165,7 @@ add_library(SWObjects STATIC
   lib/ShExSchema.cpp
   lib/ShExShapeMap.cpp
   lib/ShExManifest.cpp
+  lib/ShExMap.cpp
   lib/SWObjects.cpp
   ${SWOBJ_GENERATED_SOURCES}
 )

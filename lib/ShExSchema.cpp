@@ -471,6 +471,8 @@ namespace ShEx {
 	    std::vector<const TripleConstraint*> allTCs;
 	    std::map<const TTerm*, std::vector<const TripleConstraint*> > byPredicate[2]; // [inverse]
 	    std::map<const TripleExpr*, std::vector<const TripleConstraint*> > subExprTCs;
+	    // sorbe copy -> the original triple constraint it was cloned from
+	    std::map<const TripleConstraint*, const TripleConstraint*> origin;
 
 	    SorbeExpr (const Schema& schema, const TripleExpr* expr)
 		: schema(schema), original(expr) {
@@ -546,6 +548,7 @@ namespace ShEx {
 		    // (and later delete) the value expression.
 		    TripleConstraint* copy = new TripleConstraint(tc->inverse, tc->predicate, NULL);
 		    copy->sharedValueExpr = tc->effectiveValueExpr();
+		    origin[copy] = tc;
 		    return copy;
 		}
 		if (const EachOf* eo = dynamic_cast<const EachOf*>(e)) {
@@ -817,11 +820,14 @@ namespace ShEx {
 
     bool Validator::satisfies (const TTerm* node, const ShapeExpr* expr,
 			       const std::vector<DataTriple>* neigh) {
+	size_t mark = semActHandler != NULL ? semActHandler->mark() : 0;
 	ShapeExprEval eval(*this, node, neigh);
 	expr->accept(eval);
-	if (eval.result && !evalSemActs(expr->semActs))
-	    return false;
-	return eval.result;
+	bool ok = eval.result
+	    && evalSemActs(expr->semActs, SemActContext(node));
+	if (!ok && semActHandler != NULL)
+	    semActHandler->rollback(mark); // failed subtrees leave no bindings
+	return ok;
     }
 
     std::string Validator::termString (const TTerm* node) const {
@@ -833,11 +839,14 @@ namespace ShEx {
 	return node->getLexicalValue();
     }
 
-    bool Validator::evalSemActs (const std::vector<SemAct>& semActs) const {
+    bool Validator::evalSemActs (const std::vector<SemAct>& semActs,
+				 const SemActContext& ctx) const {
 	for (std::vector<SemAct>::const_iterator it = semActs.begin();
 	     it != semActs.end(); ++it) {
+	    if (semActHandler != NULL && !semActHandler->evaluate(*it, ctx))
+		return false;
 	    if (it->name->getLexicalValue() != "http://shex.io/extensions/Test/")
-		continue; // unknown extension languages are not evaluated
+		continue; // other extension languages: only the handler sees them
 	    if (!it->hasCode)
 		continue;
 	    std::string code = it->code;
@@ -848,24 +857,37 @@ namespace ShEx {
 	return true;
     }
 
-    bool Validator::tripleExprSemActsPass (const TripleExpr* e,
+    /** Dispatch the semantic actions in a triple expression tree, giving each
+     * expression the triples the accepted matching assigned within it.
+     * Appends this subtree's matched triples to collected. */
+    bool Validator::tripleExprSemActsPass (const TripleExpr* e, const TTerm* node,
+					   const TCMatches& matches,
+					   std::vector<DataTriple>& collected,
 					   std::set<const TripleExpr*>& seen) const {
 	if (e == NULL || !seen.insert(e).second)
 	    return true;
-	if (!evalSemActs(e->semActs))
-	    return false;
-	if (const TripleExprJunction* j = dynamic_cast<const TripleExprJunction*>(e)) {
-	    for (std::vector<const TripleExpr*>::const_iterator it = j->exprs.begin();
-		 it != j->exprs.end(); ++it)
-		if (!tripleExprSemActsPass(*it, seen))
-		    return false;
-	    return true;
+	std::vector<DataTriple> mine;
+	bool ok = true;
+	if (const TripleConstraint* tc = dynamic_cast<const TripleConstraint*>(e)) {
+	    TCMatches::const_iterator hit = matches.find(tc);
+	    if (hit != matches.end())
+		mine = hit->second;
+	    ok = evalSemActs(e->semActs, SemActContext(node, tc, &mine));
+	} else {
+	    if (const TripleExprJunction* j = dynamic_cast<const TripleExprJunction*>(e)) {
+		for (std::vector<const TripleExpr*>::const_iterator it = j->exprs.begin();
+		     ok && it != j->exprs.end(); ++it)
+		    ok = tripleExprSemActsPass(*it, node, matches, mine, seen);
+	    } else if (const TripleExprCardinality* c = dynamic_cast<const TripleExprCardinality*>(e)) {
+		ok = tripleExprSemActsPass(c->expr, node, matches, mine, seen);
+	    } else if (const TripleExprRef* r = dynamic_cast<const TripleExprRef*>(e)) {
+		ok = tripleExprSemActsPass(schema.getTripleExpr(r->label), node, matches, mine, seen);
+	    }
+	    if (ok)
+		ok = evalSemActs(e->semActs, SemActContext(node, NULL, &mine));
 	}
-	if (const TripleExprCardinality* c = dynamic_cast<const TripleExprCardinality*>(e))
-	    return tripleExprSemActsPass(c->expr, seen);
-	if (const TripleExprRef* r = dynamic_cast<const TripleExprRef*>(e))
-	    return tripleExprSemActsPass(schema.getTripleExpr(r->label), seen);
-	return true;
+	collected.insert(collected.end(), mine.begin(), mine.end());
+	return ok;
     }
 
     /** Split an extendable shape declaration into its main Shape (the one
@@ -1005,7 +1027,7 @@ namespace ShEx {
     bool Validator::validate (const TTerm* node, const TTerm* label) {
 	lastError.clear();
 	inProgress.clear();
-	if (!evalSemActs(schema.startActs))
+	if (!evalSemActs(schema.startActs, SemActContext()))
 	    return false;
 	if (label == NULL) {
 	    if (schema.start == NULL) {
@@ -1244,15 +1266,39 @@ namespace ShEx {
 		    }
 		    if (constraintsOk) {
 			// 10. Semantic actions on the (original) triple
-			//     expressions must not fail.
+			//     expressions must not fail. Each original triple
+			//     constraint sees the triples this matching
+			//     assigned to its SORBE copies.
+			TCMatches tcMatches;
+			for (std::map<DataTriple, const TripleConstraint*>::const_iterator m
+				 = matching.begin(); m != matching.end(); ++m) {
+			    const TripleConstraint* orig = m->second;
+			    for (std::vector<SorbeExpr*>::const_iterator se = sorbes.begin();
+				 se != sorbes.end(); ++se) {
+				if (*se == NULL)
+				    continue;
+				std::map<const TripleConstraint*, const TripleConstraint*>::const_iterator
+				    o = (*se)->origin.find(m->second);
+				if (o != (*se)->origin.end()) {
+				    orig = o->second;
+				    break;
+				}
+			    }
+			    tcMatches[orig].push_back(m->first);
+			}
+			size_t mark = semActHandler != NULL ? semActHandler->mark() : 0;
 			bool semActsOk = true;
 			for (std::vector<const TripleExpr*>::const_iterator te = exprs.begin();
 			     semActsOk && te != exprs.end(); ++te) {
 			    std::set<const TripleExpr*> seen;
-			    semActsOk = tripleExprSemActsPass(*te, seen);
+			    std::vector<DataTriple> collected;
+			    semActsOk = tripleExprSemActsPass(*te, node, tcMatches, collected, seen);
 			}
-			if (!semActsOk)
+			if (!semActsOk) {
+			    if (semActHandler != NULL)
+				semActHandler->rollback(mark);
 			    continue;
+			}
 			ret = true;
 			break;
 		    }

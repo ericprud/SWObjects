@@ -4487,6 +4487,7 @@ public:
 	    return vi->second;
     }
     virtual void set (std::string prefix, const URI* uri) { ns[prefix] = uri; }
+    const std::map<std::string, const URI*>& raw () const { return ns; }
     virtual std::string unmap (std::string mapped);
 
     typedef std::map<std::string, const URI*>::iterator iterator;

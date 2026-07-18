@@ -2,6 +2,7 @@
 
 #include "ShExManifest.hpp"
 #include "MiniJSON.hpp"
+#include "ShExMap.hpp"
 #include "ShExCParser.hpp"
 #include "TurtleParser.hpp"
 #include "RdfDB.hpp"
@@ -137,6 +138,32 @@ namespace ShEx {
 		    std::string key = strip(cur.substr(indent, colon - indent));
 		    std::string value = strip(cur.substr(colon + 1));
 		    ++i;
+		    if (value.empty()) {
+			// a one-level nested mapping (e.g. staticVars:)
+			while (i < yl.lines.size()) {
+			    std::string nl = yl.lines[i];
+			    if (strip(nl).empty()) {
+				++i;
+				continue;
+			    }
+			    size_t nIndent = YamlLines::indentOf(nl);
+			    if (nIndent <= indent || nl.compare(0, 2, "- ") == 0)
+				break;
+			    size_t nColon = nl.find(':', nIndent);
+			    if (nColon == std::string::npos)
+				throw ManifestError("expected nested \"key: value\": " + nl);
+			    std::string nKey = strip(nl.substr(nIndent, nColon - nIndent));
+			    std::string nValue = strip(nl.substr(nColon + 1));
+			    if (!nValue.empty() && nValue[0] == '\'')
+				nValue = nValue.size() >= 2 && nValue[nValue.size()-1] == '\''
+				    ? nValue.substr(1, nValue.size()-2) : nValue;
+			    else if (!nValue.empty() && nValue[0] == '"')
+				nValue = unescapeDoubleQuoted(nValue.substr(1, nValue.size()-2), i);
+			    item[key + "\t" + nKey] = nValue;
+			    ++i;
+			}
+			continue;
+		    }
 		    if (value == "|" || value == "|-") {
 			bool clip = value == "|-";
 			// literal block scalar: lines indented past the key
@@ -201,6 +228,15 @@ namespace ShEx {
 	    if ((it = kv.find("dataURL")) != kv.end()) e.dataURL = it->second;
 	    if ((it = kv.find("queryMap")) != kv.end()) e.queryMap = it->second;
 	    if ((it = kv.find("queryMapURL")) != kv.end()) e.queryMapURL = it->second;
+	    if ((it = kv.find("outputSchema")) != kv.end()) e.outputSchema = it->second;
+	    if ((it = kv.find("outputSchemaURL")) != kv.end()) e.outputSchemaURL = it->second;
+	    if ((it = kv.find("outputShape")) != kv.end()) e.outputShape = it->second;
+	    if ((it = kv.find("createRoot")) != kv.end()) e.createRoot = it->second;
+	    if ((it = kv.find("expectedBindingsURL")) != kv.end()) e.expectedBindingsURL = it->second;
+	    if ((it = kv.find("outputDataURL")) != kv.end()) e.outputDataURL = it->second;
+	    for (it = kv.begin(); it != kv.end(); ++it)
+		if (it->first.compare(0, 11, "staticVars\t") == 0)
+		    e.staticVars[it->first.substr(11)] = it->second;
 	    std::string status;
 	    if ((it = kv.find("status")) != kv.end()) status = it->second;
 	    std::stringstream where;
@@ -219,6 +255,114 @@ namespace ShEx {
 	    if (e.queryMap.empty() && e.queryMapURL.empty())
 		throw ManifestError(where.str() + " needs queryMap or queryMapURL");
 	    return e;
+	}
+    } // namespace
+
+    namespace {
+
+	/** Parse a term from a manifest string: "<iri>", a quoted literal, or
+	 * a bare string (taken as a plain literal). */
+	const TTerm* parseTermString (const std::string& s, AtomFactory& atomFactory) {
+	    std::string t = s;
+	    if (!t.empty() && t[0] == '<' && t[t.size()-1] == '>')
+		return atomFactory.getURI(t.substr(1, t.size() - 2));
+	    if (t.size() >= 2 && t[0] == '"' && t[t.size()-1] == '"')
+		return atomFactory.getRDFLiteral(t.substr(1, t.size() - 2), NULL, NULL);
+	    return atomFactory.getRDFLiteral(t, NULL, NULL);
+	}
+
+	/** JSON binding value {value, type?, language?} -> a term. */
+	const TTerm* bindingValueTerm (const MiniJSON::Value& v, AtomFactory& atomFactory) {
+	    std::string value = v.getString("value");
+	    std::string type = v.getString("type");
+	    std::string language = v.getString("language");
+	    if (!language.empty())
+		return atomFactory.getRDFLiteral(value, NULL, new LANGTAG(language));
+	    if (!type.empty())
+		return atomFactory.getRDFLiteral(value, atomFactory.getURI(type), NULL);
+	    return atomFactory.getRDFLiteral(value, NULL, NULL);
+	}
+
+	void compareBindings (const ManifestEntry& entry, const Manifest& manifest,
+			      const ShExMap::Bindings& bindings, AtomFactory& atomFactory,
+			      EntryOutcome& outcome) {
+	    MiniJSON::Value expected
+		= MiniJSON::parse(readFileOrThrow(manifest.directory + entry.expectedBindingsURL));
+	    if (!expected.isObject())
+		throw ManifestError(entry.expectedBindingsURL + " should be a JSON object");
+	    for (std::vector<std::pair<std::string, MiniJSON::Value> >::const_iterator it
+		     = expected.object.begin(); it != expected.object.end(); ++it) {
+		const TTerm* want = bindingValueTerm(it->second, atomFactory);
+		std::map<std::string, std::deque<const TTerm*> >::const_iterator q
+		    = bindings.queues.find(it->first);
+		bool found = false;
+		if (q != bindings.queues.end())
+		    for (std::deque<const TTerm*>::const_iterator b = q->second.begin();
+			 !found && b != q->second.end(); ++b)
+			found = *b == want;
+		if (!found)
+		    outcome.problems.push_back("expected binding " + it->first + " = "
+					       + want->toString());
+	    }
+	}
+
+	void materializeEntry (const ManifestEntry& entry, const Manifest& manifest,
+			       ShExMap::Bindings& bindings, AtomFactory& atomFactory,
+			       EntryOutcome& outcome) {
+	    // target schema
+	    std::string schemaText = entry.outputSchema;
+	    std::string schemaBase = manifest.baseURI;
+	    if (!entry.outputSchemaURL.empty()) {
+		schemaText = readFileOrThrow(manifest.directory + entry.outputSchemaURL);
+		schemaBase = libwww::GetAbsoluteURIstring(entry.outputSchemaURL, manifest.baseURI);
+	    }
+	    ShEx::Schema target;
+	    ShExDriver targetDriver(schemaBase, &atomFactory);
+	    {
+		IStreamContext istr(schemaText, IStreamContext::STRING);
+		istr.nameStr = schemaBase;
+		targetDriver.parse(istr, &target);
+	    }
+	    target.checkStructure();
+
+	    const TTerm* root = NULL;
+	    if (!entry.createRoot.empty()) {
+		std::string t = entry.createRoot;
+		if (!t.empty() && t[0] == '<' && t[t.size()-1] == '>')
+		    root = atomFactory.getURI(
+			libwww::GetAbsoluteURIstring(t.substr(1, t.size()-2), schemaBase));
+		else
+		    root = parseTermString(t, atomFactory);
+	    }
+	    const TTerm* shapeLabel = NULL;
+	    if (!entry.outputShape.empty()) {
+		std::string t = entry.outputShape;
+		if (!t.empty() && t[0] == '<' && t[t.size()-1] == '>')
+		    shapeLabel = atomFactory.getURI(
+			libwww::GetAbsoluteURIstring(t.substr(1, t.size()-2), schemaBase));
+		else
+		    shapeLabel = atomFactory.getURI(t);
+	    }
+
+	    RdfDB outDB;
+	    BasicGraphPattern* outGraph = outDB.ensureGraph(DefaultGraph);
+	    ShExMap::materialize(target, bindings, atomFactory, outGraph, root, shapeLabel);
+	    outcome.outputGraph = outDB.toString(MediaType("text/turtle"));
+
+	    if (!entry.outputDataURL.empty()) {
+		std::string expectedText = readFileOrThrow(manifest.directory + entry.outputDataURL);
+		std::string expectedBase
+		    = libwww::GetAbsoluteURIstring(entry.outputDataURL, manifest.baseURI);
+		RdfDB expectedDB;
+		TurtleDriver expectedParser(expectedBase, &atomFactory);
+		IStreamContext istr(expectedText, IStreamContext::STRING);
+		istr.nameStr = expectedBase;
+		expectedParser.parse(istr, expectedDB.ensureGraph(DefaultGraph));
+		if (!(outDB == expectedDB))
+		    outcome.problems.push_back("materialized graph differs from "
+					       + entry.outputDataURL + ":\n"
+					       + outcome.outputGraph);
+	    }
 	}
     } // namespace
 
@@ -253,6 +397,11 @@ namespace ShEx {
 			 f = o.object.begin(); f != o.object.end(); ++f)
 		    if (f->second.isString())
 			kv[f->first] = f->second.string;
+		    else if (f->second.isObject()) // e.g. staticVars
+			for (std::vector<std::pair<std::string, MiniJSON::Value> >::const_iterator
+				 n = f->second.object.begin(); n != f->second.object.end(); ++n)
+			    if (n->second.isString())
+				kv[f->first + "\t" + n->first] = n->second.string;
 		m.entries.push_back(entryFromKeyValues(kv, i));
 	    }
 	} else {
@@ -312,14 +461,28 @@ namespace ShEx {
 	    std::vector<Association> associations
 		= parseQueryMap(mapText, &atomFactory, nodeEnv, shapeEnv, *graph);
 
-	    // ---- validate
+	    // ---- validate, collecting ShExMap bindings
+	    ShExMap::Bindings bindings;
+	    for (std::map<std::string, std::string>::const_iterator sv = entry.staticVars.begin();
+		 sv != entry.staticVars.end(); ++sv)
+		bindings.setStatic(sv->first, parseTermString(sv->second, atomFactory));
+	    ShExMap::BindingCollector collector(bindings, &atomFactory, schema.prefixes);
 	    Validator validator(schema, *graph);
+	    validator.setSemActHandler(&collector);
 	    outcome.results = evaluate(validator, associations);
 	    outcome.allAsAsserted = true;
 	    for (std::vector<AssociationResult>::const_iterator it = outcome.results.begin();
 		 it != outcome.results.end(); ++it)
 		outcome.allAsAsserted = outcome.allAsAsserted && it->asAsserted;
 	    outcome.statusMatched = outcome.allAsAsserted == entry.expectConformant;
+	    bindings.freeze();
+	    outcome.bindings = bindings.str();
+
+	    // ---- ShExMap: check bindings, materialize into the target schema
+	    if (!entry.expectedBindingsURL.empty())
+		compareBindings(entry, manifest, bindings, atomFactory, outcome);
+	    if (entry.isMapTest() && outcome.statusMatched && outcome.allAsAsserted)
+		materializeEntry(entry, manifest, bindings, atomFactory, outcome);
 	} catch (std::exception& e) {
 	    outcome.error = e.what();
 	} catch (std::string& e) {

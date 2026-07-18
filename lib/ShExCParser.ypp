@@ -1425,6 +1425,12 @@ void ShExDriver::parse (IStreamContext& in, ShEx::Schema* intoSchema) {
     parser.set_debug_level(trace_parsing);
     parser.parse();
     checkErrors();
+
+    // keep the prefixes for semantic-action languages (e.g. ShExMap)
+    const std::map<std::string, const URI*>& ns = getNamespaceMap()->raw();
+    for (std::map<std::string, const URI*>::const_iterator it = ns.begin();
+	 it != ns.end(); ++it)
+	intoSchema->prefixes[it->first] = it->second->getLexicalValue();
 }
 
 std::string ShExDriver::facetKey (const ShEx::NCComponent* c) {

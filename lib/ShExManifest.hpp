@@ -44,6 +44,17 @@ namespace ShEx {
 	std::string data, dataURL;
 	std::string queryMap, queryMapURL;
 	bool expectConformant;
+
+	/* ShExMap entries additionally name a target schema to materialize
+	 * into (see lib/ShExMap.hpp): */
+	std::string outputSchema, outputSchemaURL;
+	std::string outputShape;     // "<label>" in the output schema; "" = start
+	std::string createRoot;      // subject of the materialized root; "" = bnode
+	std::map<std::string, std::string> staticVars; // var IRI -> value
+	std::string expectedBindingsURL; // JSON var -> {value, type?, language?}
+	std::string outputDataURL;   // expected materialized graph (Turtle)
+
+	bool isMapTest () const { return !outputSchema.empty() || !outputSchemaURL.empty(); }
     };
 
     struct Manifest {
@@ -62,7 +73,11 @@ namespace ShEx {
 	std::vector<AssociationResult> results;
 	bool allAsAsserted;
 	bool statusMatched; // allAsAsserted == entry.expectConformant
+	std::string bindings;    // collected ShExMap bindings (diagnostic)
+	std::string outputGraph; // materialized graph as Turtle, when mapping
+	std::vector<std::string> problems; // bindings/output mismatches
 	EntryOutcome () : allAsAsserted(true), statusMatched(false) {  }
+	bool passed () const { return error.empty() && statusMatched && problems.empty(); }
     };
 
     /** Parse the entry's schema, data and query map, validate every

@@ -1075,7 +1075,7 @@ int main(int ac, char* av[])
 		std::cout << (outcome.allAsAsserted ? "conformant" : "nonconformant")
 			  << ", expected "
 			  << (entry.expectConformant ? "conformant" : "nonconformant")
-			  << (outcome.statusMatched ? " -- PASS" : " -- FAIL") << "\n";
+			  << (outcome.passed() ? " -- PASS" : " -- FAIL") << "\n";
 		for (std::vector<sw::ShEx::AssociationResult>::const_iterator r
 			 = outcome.results.begin(); r != outcome.results.end(); ++r)
 		    std::cout << "  " << r->assoc.node->toString()
@@ -1084,7 +1084,13 @@ int main(int ac, char* av[])
 				 : std::string("START"))
 			      << ": " << (r->conformant ? "conformant" : "nonconformant")
 			      << "\n";
-		if (!outcome.statusMatched)
+		for (std::vector<std::string>::const_iterator p = outcome.problems.begin();
+		     p != outcome.problems.end(); ++p)
+		    std::cout << "  ! " << *p << "\n";
+		if (entry.isMapTest() && !outcome.outputGraph.empty()
+		    && outcome.problems.empty())
+		    std::cout << outcome.outputGraph;
+		if (!outcome.passed())
 		    ++failures;
 	    }
 	    return failures > 125 ? 125 : failures;

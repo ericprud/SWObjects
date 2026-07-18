@@ -394,6 +394,9 @@ namespace ShEx {
 	std::vector<ShapeDecl*> decls; // in declaration order; owns
 	std::map<const TTerm*, ShapeDecl*> declIndex;
 	std::map<const TTerm*, const TripleExpr*> tripleExprIndex; // non-owning
+	/** The document's prefix declarations; semantic-action languages
+	 * (e.g. ShExMap) resolve prefixed names in their code against them. */
+	std::map<std::string, std::string> prefixes;
 
 	Schema () : start(NULL) {  }
 	~Schema () {
@@ -438,6 +441,30 @@ namespace ShEx {
     /** A triple in the data graph, as (subject, predicate, object) TTerms. */
     typedef const TriplePattern* DataTriple;
 
+    /** What a semantic action can see when it is dispatched. */
+    struct SemActContext {
+	const TTerm* node;                     // focus node, when meaningful
+	const TripleConstraint* tc;            // for triple-constraint actions
+	const std::vector<DataTriple>* triples; // triples matched to the expression
+	SemActContext (const TTerm* node = NULL, const TripleConstraint* tc = NULL,
+		       const std::vector<DataTriple>* triples = NULL)
+	    : node(node), tc(tc), triples(triples) {  }
+    };
+
+    /** Callback for semantic-action languages (e.g. ShExMap's variable
+     * binding). Called for every SemAct in addition to the built-in
+     * http://shex.io/extensions/Test/ handling; returning false makes the
+     * current solution fail.
+     *
+     * The validator explores subtrees that end up failing; mark()/rollback()
+     * let a stateful handler discard whatever those attempts recorded. */
+    struct SemActHandler {
+	virtual ~SemActHandler () {  }
+	virtual bool evaluate (const SemAct& act, const SemActContext& ctx) = 0;
+	virtual size_t mark () { return 0; }
+	virtual void rollback (size_t) {  }
+    };
+
     /** Supplies definitions for shapes declared EXTERNAL, keyed by the
      * label of the EXTERNAL declaration. */
     struct ExternalResolver {
@@ -480,12 +507,18 @@ namespace ShEx {
 	    externalResolver = resolver;
 	}
 
+	/** Wire in a semantic-action language handler. */
+	void setSemActHandler (SemActHandler* handler) {
+	    semActHandler = handler;
+	}
+
     private:
 	friend struct ShapeExprEval;
 	const Schema& schema;
 	const BasicGraphPattern& data;
 	const std::map<const TTerm*, std::string>* bnodeLabels = NULL;
 	ExternalResolver* externalResolver = NULL;
+	SemActHandler* semActHandler = NULL;
 	/** Label of the declaration currently being validated; EXTERNAL
 	 * resolves through it. */
 	const TTerm* currentDeclLabel = NULL;
@@ -494,10 +527,15 @@ namespace ShEx {
 	 * or (source) blank node label. */
 	std::string termString (const TTerm* node) const;
 
-	/** Evaluate semantic actions; only the http://shex.io/extensions/Test/
-	 * language is interpreted (its "fail(...)" code fails). */
-	bool evalSemActs (const std::vector<SemAct>& semActs) const;
-	bool tripleExprSemActsPass (const TripleExpr* e, std::set<const TripleExpr*>& seen) const;
+	/** Evaluate semantic actions: the built-in
+	 * http://shex.io/extensions/Test/ language (its "fail(...)" code
+	 * fails) plus any registered handler. */
+	bool evalSemActs (const std::vector<SemAct>& semActs, const SemActContext& ctx) const;
+	typedef std::map<const TripleConstraint*, std::vector<DataTriple> > TCMatches;
+	bool tripleExprSemActsPass (const TripleExpr* e, const TTerm* node,
+				    const TCMatches& matches,
+				    std::vector<DataTriple>& collected,
+				    std::set<const TripleExpr*>& seen) const;
 
 	/** (node, shapeLabel) pairs currently being validated; assumed
 	 * conformant when re-encountered (cyclic schemas). */
