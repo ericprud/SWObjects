@@ -41,17 +41,17 @@ jobs:
       - name: Run test suites
         run: >
           ctest --test-dir build --output-on-failure --timeout 600
-          -E 'test_(SPARQL|SPARQL11|QueryMap|ShEx)$'
+          -E 'test_(SPARQL|SPARQL11|QueryMap)$'
 
       # These suites carry known pre-existing failures:
       #  - test_SPARQL11: md5/sha* builtins are unimplemented (8 cases)
       #  - test_SPARQL: function_library expects CSV <foo> parsed as an IRI,
       #    a csv-regex branch deliberately disabled upstream (~2013)
-      #  - test_QueryMap, test_ShEx: heap-layout-dependent nondeterminism in
-      #    the query rewriter / ShEx normalizer makes single cases flaky
+      #  - test_QueryMap: heap-layout-dependent nondeterminism in the query
+      #    rewriter makes single cases flaky
       # Run them for visibility without gating the build.
       - name: Run suites with known pre-existing failures (non-blocking)
         continue-on-error: true
         run: >
           ctest --test-dir build --output-on-failure --timeout 600
-          -R 'test_(SPARQL|SPARQL11|QueryMap|ShEx)$'
+          -R 'test_(SPARQL|SPARQL11|QueryMap)$'

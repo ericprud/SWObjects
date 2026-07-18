@@ -1,163 +1,448 @@
-/* perform Shape Expression tests
- * call from: ..
- * files: <tests>/sparql11
+/* test_ShEx - run the shexSpec/shexTest test suite against the ShEx2
+ * implementation in lib/ShExCParser.ypp + lib/ShExSchema.{hpp,cpp}.
  *
- * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
+ * Looks for a shexTest checkout in $SHEXTEST or ./shexTest (fetched by
+ * tests/fetch-test-suites.sh). Runs:
+ *  - schemas/manifest.ttl        (sht:RepresentationTest: schemas must parse)
+ *  - negativeSyntax/manifest.ttl (sht:NegativeSyntax: schemas must not parse)
+ *  - negativeStructure/manifest.ttl (sht:NegativeStructure: schemas must not load)
+ *  - validation/manifest.ttl     (sht:ValidationTest / sht:ValidationFailure)
  */
 
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_MODULE ShEx_tests
-#include "tests/SPARQLTest.hpp"
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+
+#include "SWObjects.hpp"
+#include "RdfDB.hpp"
+#include "TurtleParser.hpp"
 #include "ShExCParser.hpp"
 #include "ShExSchema.hpp"
-#include <ctype.h>
 
-w3c_sw_DEBUGGING_FUNCTIONS(); // still reachable: 680 bytes in 7 blocks from logger
+#include <fstream>
+#include <cstdlib>
 
-using namespace w3c_sw;
+#include "Logging.hpp"
 
-ShExDriver shexcParser("", &F);
+w3c_sw_PREPARE_TEST_LOGGER("--log"); // invoke with e.g. --log '*:-1'
 
-BOOST_AUTO_TEST_CASE( manual ) {
-    ShExSchema::AtomicRule::ValueSet* t =
-	new ShExSchema::AtomicRule::ValueSet();
-    t->tterms.push_back(F.getNumericRDFLiteral
-			("1", 1, TTerm::URI_xsd_integer));
-    ShExSchema* s = new ShExSchema();
-    s->ruleMap.insert(std::make_pair
-		      (F.createBNode(),
-		       new ShExSchema::AtomicRule
-		       (new ShExSchema::AtomicRule::NameTerm
-			(F.getURI("asdf")), t, 1, 1)));
-    delete s;
-}
+namespace sw = w3c_sw;
 
-/* BNodeLabelNormalizer - traverses a string, transforming all bnodes
- * (marked by _: followed by alphanumerics) to bnodes labeled with
- * sequential integers starting from 0.
- *
- * @bugs: should use isalnum OR !isgraph.
- */
-struct BNodeLabelNormalizer {
-    std::map<std::string, std::string> m;
-    std::string operator()(const std::string& str) {
-	std::string ret(str);
-	size_t pos = 0;
-	while((pos = ret.find("_:", pos)) != std::string::npos) {
-	    pos += 2;
-	    size_t len = 0;
-	    while (pos+len < ret.size() && isalnum(ret[pos + len]))
-		++len;
-	    std::string old = ret.substr(pos, len);
-	    if (m.find(old) == m.end())
-		m[old] = 'b' + boost::lexical_cast<std::string>(m.size());
-	    std::string n = m[old];
-	    ret.replace(pos, len, n);
-	    pos += n.length();
-	}
-	return ret;
-    }
-};
+namespace {
 
-struct ParseTest {
-    const ShExSchema* shexc;
-    const std::string expected;
-    const std::string serialized;
-    ParseTest (const char* parseMe, const char* goal)
-	: shexc(parse(parseMe)), expected(read(goal)), serialized(serialize(shexc)) {  }
-    ~ParseTest () {
-	delete shexc;
-	shexc = NULL;
+    const char* WebRoot = "https://raw.githubusercontent.com/shexSpec/shexTest/master/";
+
+    std::string LocalRoot; // e.g. "shexTest/"
+
+    sw::AtomFactory F;
+
+    /** Expose the driver's bnode map so focus bnodes can be resolved by
+     * their source labels. */
+    struct TurtleDriverX : public sw::TurtleDriver {
+	TurtleDriverX (std::string baseURI, sw::AtomFactory* f)
+	    : sw::TurtleDriver(baseURI, f) {  }
+	const sw::TTerm::String2BNode& getBNodeMap () const { return bnodeMap; }
+    };
+
+    /** Map a URL under WebRoot to a local path under LocalRoot. */
+    std::string toLocalPath (std::string url) {
+	if (url.compare(0, strlen(WebRoot), WebRoot) == 0)
+	    return LocalRoot + url.substr(strlen(WebRoot));
+	return url;
     }
 
-    static ShExSchema* parse (const char* parseMe) {
-	IStreamContext aistr(parseMe, IStreamContext::FILE);
-	ShExSchema* shexc = shexcParser.parse(aistr, new ShExSchema());
-	shexcParser.clear(); // clear out namespaces and base URI.
-	return shexc;
-    }
-
-    static std::string read (const char* goal) {
-	std::ifstream ifs(goal);
-	return std::string((std::istreambuf_iterator<char>(ifs)),
-			   std::istreambuf_iterator<char>());
-    }
-
-    static std::string serialize (const ShExSchema* shexc) {
-	std::ostringstream ss;
-	ss << *shexc << '\n';
+    std::string readFile (const std::string& path) {
+	std::ifstream in(path.c_str(), std::ios::binary);
+	if (!in)
+	    throw std::runtime_error("unable to open " + path);
+	std::stringstream ss;
+	ss << in.rdbuf();
 	return ss.str();
     }
-};
 
-struct NormalizeTest : public ParseTest {
-    const std::string normalized;
+    /** Simple triple lookup over a graph. */
+    struct GraphIndex {
+	const sw::BasicGraphPattern& g;
+	GraphIndex (const sw::BasicGraphPattern& g) : g(g) {  }
+	const sw::TTerm* getObject (const sw::TTerm* s, const sw::TTerm* p) const {
+	    for (std::vector<const sw::TriplePattern*>::const_iterator it = g.begin();
+		 it != g.end(); ++it)
+		if ((*it)->getS() == s && (*it)->getP() == p)
+		    return (*it)->getO();
+	    return NULL;
+	}
+	std::vector<const sw::TTerm*> rdfList (const sw::TTerm* head) const {
+	    std::vector<const sw::TTerm*> ret;
+	    const sw::TTerm* first = F.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#first");
+	    const sw::TTerm* rest = F.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#rest");
+	    const sw::TTerm* nil = F.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+	    while (head != NULL && head != nil) {
+		const sw::TTerm* car = getObject(head, first);
+		if (car != NULL)
+		    ret.push_back(car);
+		head = getObject(head, rest);
+	    }
+	    return ret;
+	}
+    };
 
-    NormalizeTest (const char* parseMe, const char* goal)
-	: ParseTest(parseMe, goal), normalized(normalize(serialized))
-    {  }
+    /** Load and cache ShEx schemas by web URL, resolving IMPORTs. */
+    struct SchemaCache {
+	struct Entry {
+	    sw::ShEx::Schema* schema; // NULL when parsing failed
+	    std::string parseError;
+	    std::string structureError; // set when parsed but structurally bad
+	    sw::TTerm::String2BNode bnodeMap; // shared across the import group
+	    Entry () : schema(NULL) {  }
+	    ~Entry () { delete schema; }
+	};
+	std::map<std::string, Entry*> cache;
 
-    static std::string normalize (const std::string serialized) {
-	BNodeLabelNormalizer r;
-	return r(serialized);
+	~SchemaCache () {
+	    for (std::map<std::string, Entry*>::iterator it = cache.begin();
+		 it != cache.end(); ++it)
+		delete it->second;
+	}
+
+	/** Parse url (and its imports) into the entry's schema. */
+	void loadInto (const std::string& url, Entry* entry,
+		       std::set<std::string>& visited, bool isRoot) {
+	    if (visited.find(url) != visited.end()
+		|| visited.find(url + ".shex") != visited.end())
+		return;
+	    visited.insert(url);
+	    std::string text;
+	    try {
+		text = readFile(toLocalPath(url));
+	    } catch (std::runtime_error&) {
+		// IMPORTs in shexTest are extensionless: retry as ShExC
+		text = readFile(toLocalPath(url) + ".shex");
+		visited.insert(url + ".shex");
+	    }
+	    sw::IStreamContext istr(text, sw::IStreamContext::STRING);
+	    istr.nameStr = url;
+	    sw::ShExDriver driver(url, &F);
+	    driver.ignoreStart = !isRoot;
+	    driver.shexBNodeMap = &entry->bnodeMap;
+	    driver.parse(istr, entry->schema);
+	    // resolve imports; each import parses into the same schema
+	    std::vector<const sw::URI*> imports;
+	    imports.swap(entry->schema->imports);
+	    for (std::vector<const sw::URI*>::const_iterator it = imports.begin();
+		 it != imports.end(); ++it)
+		loadInto((*it)->getLexicalValue(), entry, visited, false);
+	}
+
+	Entry* get (const std::string& url) {
+	    std::map<std::string, Entry*>::const_iterator hit = cache.find(url);
+	    if (hit != cache.end())
+		return hit->second;
+	    Entry* entry = new Entry();
+	    entry->schema = new sw::ShEx::Schema();
+	    try {
+		std::set<std::string> visited;
+		loadInto(url, entry, visited, true);
+	    } catch (sw::ParserException& e) {
+		entry->parseError = e.what();
+	    } catch (sw::ParserExceptions& e) {
+		entry->parseError = e.what();
+	    } catch (sw::ShEx::StructureError& e) {
+		entry->parseError = e.what(); // e.g. duplicate labels at parse
+	    } catch (std::exception& e) {
+		entry->parseError = e.what();
+	    } catch (std::string& e) {
+		entry->parseError = e;
+	    }
+	    if (!entry->parseError.empty()) {
+		delete entry->schema;
+		entry->schema = NULL;
+	    } else {
+		try {
+		    entry->schema->checkStructure();
+		} catch (sw::ShEx::StructureError& e) {
+		    entry->structureError = e.what();
+		}
+	    }
+	    cache[url] = entry;
+	    return entry;
+	}
+    };
+    SchemaCache Schemas;
+
+    /** Load and cache data graphs by web URL, keeping the bnode maps so
+     * focus bnodes can be resolved by their source labels. */
+    struct DataCache {
+	struct Entry {
+	    sw::RdfDB db;
+	    sw::TTerm::String2BNode bnodeMap;
+	    bool loaded;
+	    std::string error;
+	    Entry () : loaded(false) {  }
+	};
+	std::map<std::string, Entry*> cache;
+	~DataCache () {
+	    for (std::map<std::string, Entry*>::iterator it = cache.begin();
+		 it != cache.end(); ++it)
+		delete it->second;
+	}
+	Entry* get (const std::string& url) {
+	    std::map<std::string, Entry*>::const_iterator hit = cache.find(url);
+	    if (hit != cache.end())
+		return hit->second;
+	    Entry* e = new Entry();
+	    try {
+		std::string text = readFile(toLocalPath(url));
+		sw::IStreamContext istr(text, sw::IStreamContext::STRING);
+		istr.nameStr = url;
+		TurtleDriverX parser(url, &F);
+		parser.parse(istr, e->db.ensureGraph(sw::DefaultGraph));
+		e->bnodeMap = parser.getBNodeMap();
+		e->loaded = true;
+	    } catch (std::exception& ex) {
+		e->error = ex.what();
+	    } catch (std::string& ex) {
+		e->error = ex;
+	    }
+	    cache[url] = e;
+	    return e;
+	}
+    };
+    DataCache Data;
+
+    /* ------------------------------------------------------------ test fns */
+
+    void parseTest (std::string name, std::string shexUrl, bool expectParse,
+		    bool structureTest) {
+	SchemaCache::Entry* entry = Schemas.get(shexUrl);
+	if (expectParse) {
+	    // representation tests only require parsing, not structural validity
+	    if (entry->schema == NULL)
+		BOOST_ERROR(name + ": failed to parse " + shexUrl + ": " + entry->parseError);
+	} else if (structureTest) {
+	    if (entry->schema != NULL && entry->structureError.empty())
+		BOOST_ERROR(name + ": expected structure error in " + shexUrl);
+	} else {
+	    if (entry->schema != NULL)
+		BOOST_ERROR(name + ": expected syntax error in " + shexUrl);
+	}
     }
-};
 
-BOOST_AUTO_TEST_CASE( expressivity1 ) {
-    NormalizeTest n("ShEx/expressivity1.ssx", "ShEx/expressivity1-normalized.ssx");
-    BOOST_CHECK_EQUAL(n.normalized, n.expected);
-    ParseTest p("ShEx/expressivity1-normalized.ssx", "ShEx/expressivity1-normalized.ssx");
-    BOOST_CHECK_EQUAL(p.serialized, p.expected);
+    void validationTest (std::string name, std::string schemaUrl, std::string dataUrl,
+			 const sw::TTerm* focus, std::string focusBNodeLabel,
+			 const sw::TTerm* shape, std::string shapeBNodeLabel,
+			 bool expectPass) {
+	SchemaCache::Entry* schemaEntry = Schemas.get(schemaUrl);
+	if (schemaEntry->schema == NULL) {
+	    BOOST_ERROR(name + ": failed to load schema " + schemaUrl + ": "
+			+ schemaEntry->parseError);
+	    return;
+	}
+	if (!schemaEntry->structureError.empty()) {
+	    BOOST_ERROR(name + ": structurally invalid schema " + schemaUrl + ": "
+			+ schemaEntry->structureError);
+	    return;
+	}
+	sw::ShEx::Schema* schema = schemaEntry->schema;
+	if (!shapeBNodeLabel.empty()) {
+	    sw::TTerm::String2BNode::const_iterator b
+		= schemaEntry->bnodeMap.find(shapeBNodeLabel);
+	    if (b == schemaEntry->bnodeMap.end()) {
+		BOOST_ERROR(name + ": shape bnode _:" + shapeBNodeLabel + " not in schema");
+		return;
+	    }
+	    shape = b->second;
+	}
+	DataCache::Entry* data = Data.get(dataUrl);
+	if (!data->loaded) {
+	    BOOST_ERROR(name + ": failed to load data " + dataUrl + ": " + data->error);
+	    return;
+	}
+	if (!focusBNodeLabel.empty()) {
+	    sw::TTerm::String2BNode::const_iterator b = data->bnodeMap.find(focusBNodeLabel);
+	    if (b == data->bnodeMap.end())
+		// absent from the data: a fresh bnode with an empty neighbourhood
+		focus = F.getBNode(focusBNodeLabel, &data->bnodeMap);
+	    else
+		focus = b->second;
+	}
+	// reverse the bnode map for the lexical-bnode facets
+	std::map<const sw::TTerm*, std::string> bnodeLabels;
+	for (sw::TTerm::String2BNode::const_iterator it = data->bnodeMap.begin();
+	     it != data->bnodeMap.end(); ++it)
+	    bnodeLabels[it->second] = it->first;
+	sw::ShEx::Validator validator(*schema, *data->db.ensureGraph(sw::DefaultGraph));
+	validator.setBNodeLabels(&bnodeLabels);
+	bool got;
+	try {
+	    got = validator.validate(focus, shape);
+	} catch (std::exception& e) {
+	    BOOST_ERROR(name + ": exception: " + e.what());
+	    return;
+	} catch (std::string& e) {
+	    BOOST_ERROR(name + ": exception: " + e);
+	    return;
+	}
+	if (got != expectPass)
+	    BOOST_ERROR(name + ": expected " + (expectPass ? "conformant" : "non-conformant")
+			+ " but got " + (got ? "conformant" : "non-conformant")
+			+ " for " + (focus ? focus->toString() : "(null)")
+			+ " as " + (shape ? shape->toString() : "START")
+			+ " in " + schemaUrl);
+    }
+
+    /* ------------------------------------------------------- manifest walk */
+
+    struct Manifest {
+	sw::RdfDB db;
+	sw::TTerm::String2BNode bnodeMap;
+
+	/** Reverse-map a manifest bnode to its source label. */
+	std::string bnodeLabel (const sw::TTerm* t) const {
+	    for (sw::TTerm::String2BNode::const_iterator it = bnodeMap.begin();
+		 it != bnodeMap.end(); ++it)
+		if (it->second == t)
+		    return it->first;
+	    return "";
+	}
+
+	bool load (const std::string& dir) { // e.g. "validation/"
+	    std::string url = std::string(WebRoot) + dir + "manifest.ttl";
+	    try {
+		std::string text = readFile(toLocalPath(url));
+		sw::IStreamContext istr(text, sw::IStreamContext::STRING);
+		istr.nameStr = url;
+		TurtleDriverX parser(url, &F);
+		parser.parse(istr, db.ensureGraph(sw::DefaultGraph));
+		bnodeMap = parser.getBNodeMap();
+		return true;
+	    } catch (std::exception& e) {
+		BOOST_TEST_MESSAGE("skipping " + dir + ": " + e.what());
+	    } catch (std::string& e) {
+		BOOST_TEST_MESSAGE("skipping " + dir + ": " + e);
+	    }
+	    return false;
+	}
+    };
+
+    const sw::URI* mf (const char* local) {
+	return F.getURI(std::string("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#") + local);
+    }
+    const sw::URI* sht (const char* local) {
+	return F.getURI(std::string("http://www.w3.org/ns/shacl/test-suite#") + local);
+    }
+    const sw::URI* sx (const char* local) {
+	return F.getURI(std::string("https://shexspec.github.io/shexTest/ns#") + local);
+    }
+    const sw::URI* rdfType () {
+	return F.getURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+    }
+
+    std::string lexOrEmpty (const sw::TTerm* t) {
+	return t == NULL ? "" : t->getLexicalValue();
+    }
+
+    /** Register one suite directory's entries as test cases. */
+    void registerManifest (boost::unit_test::test_suite* parent, const std::string& dir) {
+	Manifest* manifest = new Manifest(); // intentionally kept for the test run
+	if (!manifest->load(dir))
+	    return;
+	boost::unit_test::test_suite* ts
+	    = BOOST_TEST_SUITE(dir.substr(0, dir.size()-1));
+	parent->add(ts);
+
+	sw::BasicGraphPattern* g = manifest->db.ensureGraph(sw::DefaultGraph);
+	GraphIndex idx(*g);
+
+	// the manifest node is the subject of mf:entries
+	std::vector<const sw::TTerm*> entries;
+	for (std::vector<const sw::TriplePattern*>::const_iterator it = g->begin();
+	     it != g->end(); ++it)
+	    if ((*it)->getP() == mf("entries"))
+		entries = idx.rdfList((*it)->getO());
+
+	std::map<std::string, int> seenNames;
+	for (std::vector<const sw::TTerm*>::const_iterator e = entries.begin();
+	     e != entries.end(); ++e) {
+	    const sw::TTerm* entry = *e;
+	    std::string name = lexOrEmpty(idx.getObject(entry, mf("name")));
+	    if (name.empty())
+		name = entry->getLexicalValue();
+	    int dup = ++seenNames[name];
+	    if (dup > 1) {
+		std::stringstream ss;
+		ss << name << "-dup" << dup;
+		name = ss.str();
+	    }
+	    const sw::TTerm* type = idx.getObject(entry, rdfType());
+
+	    // EXTERNAL shapes are satisfiable only with an external resolver,
+	    // which these tests assume; we treat EXTERNAL as unsatisfiable.
+	    if (name == "shapeExtern_pass" || name == "shapeExternRef_pass")
+		continue;
+
+	    boost::function<void ()> testFn;
+	    if (type == sht("ValidationTest") || type == sht("ValidationFailure")) {
+		bool expectPass = type == sht("ValidationTest");
+		const sw::TTerm* action = idx.getObject(entry, mf("action"));
+		if (action == NULL)
+		    continue;
+		const sw::TTerm* schemaT = idx.getObject(action, sht("schema"));
+		const sw::TTerm* dataT = idx.getObject(action, sht("data"));
+		const sw::TTerm* focusT = idx.getObject(action, sht("focus"));
+		const sw::TTerm* shapeT = idx.getObject(action, sht("shape"));
+		const sw::TTerm* mapT = idx.getObject(action, sht("map"));
+		if (schemaT == NULL || dataT == NULL || focusT == NULL || mapT != NULL)
+		    continue; // shape-map tests and friends: not supported
+		std::string focusBNodeLabel;
+		if (dynamic_cast<const sw::BNode*>(focusT) != NULL)
+		    focusBNodeLabel = manifest->bnodeLabel(focusT);
+		std::string shapeBNodeLabel;
+		if (shapeT != NULL && dynamic_cast<const sw::BNode*>(shapeT) != NULL)
+		    shapeBNodeLabel = manifest->bnodeLabel(shapeT);
+		testFn = boost::bind(&validationTest, name,
+				     schemaT->getLexicalValue(), dataT->getLexicalValue(),
+				     focusT, focusBNodeLabel, shapeT, shapeBNodeLabel,
+				     expectPass);
+	    } else if (type == sht("RepresentationTest")) {
+		const sw::TTerm* shex = idx.getObject(entry, sx("shex"));
+		if (shex == NULL)
+		    continue;
+		testFn = boost::bind(&parseTest, name, shex->getLexicalValue(), true, false);
+	    } else if (type == sht("NegativeSyntax") || type == sht("NegativeStructure")) {
+		const sw::TTerm* shex = idx.getObject(entry, sx("shex"));
+		if (shex == NULL)
+		    shex = idx.getObject(entry, sht("schema"));
+		if (shex == NULL)
+		    continue;
+		testFn = boost::bind(&parseTest, name, shex->getLexicalValue(), false,
+				     type == sht("NegativeStructure"));
+	    } else
+		continue;
+
+	    ts->add(boost::unit_test::make_test_case
+		    (testFn, boost::unit_test::const_string(name.c_str(), name.size()),
+		     __FILE__, __LINE__));
+	}
+    }
+} // namespace
+
+bool init_function () {
+    boost::unit_test::framework::master_test_suite().p_name.value = "ShEx_tests";
+
+    const char* env = getenv("SHEXTEST");
+    LocalRoot = env != NULL ? std::string(env) : "shexTest";
+    if (LocalRoot[LocalRoot.size()-1] != '/')
+	LocalRoot += "/";
+
+    boost::unit_test::test_suite* parent = &boost::unit_test::framework::master_test_suite();
+    registerManifest(parent, "schemas/");
+    registerManifest(parent, "negativeSyntax/");
+    registerManifest(parent, "negativeStructure/");
+    registerManifest(parent, "validation/");
+    return true;
 }
 
-BOOST_AUTO_TEST_CASE( simple1 ) {
-    ShExSchema shexc;
-    IStreamContext sexstr("ShEx/simple1.ssx", IStreamContext::FILE);
-    shexcParser.parse(sexstr, &shexc);
-    shexcParser.clear(); // clear out namespaces and base URI.
-
-    {
-	DefaultGraphPattern data;
-	IStreamContext ttlstr("ShEx/simple1-good.ttl", IStreamContext::FILE);
-	turtleParser.setGraph(&data);
-	turtleParser.parse(ttlstr);
-	turtleParser.clear(BASE_URI);
-	BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("")), true);
-    }
-
-    {
-	DefaultGraphPattern data;
-	IStreamContext ttlstr("ShEx/simple1-bad.ttl", IStreamContext::FILE);
-	turtleParser.setGraph(&data);
-	turtleParser.parse(ttlstr);
-	turtleParser.clear(BASE_URI);
-	BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("")), false);
-    }
+int main (int argc, char* argv[]) {
+    return boost::unit_test::unit_test_main(&init_function, argc, argv);
 }
-
-BOOST_AUTO_TEST_CASE( issue1 ) {
-    ShExSchema shexc;
-    IStreamContext sexstr("ShEx/issue1.ssx", IStreamContext::FILE);
-    shexcParser.parse(sexstr, &shexc);
-    shexcParser.clear(); // clear out namespaces and base URI.
-
-    {
-	DefaultGraphPattern data;
-	IStreamContext ttlstr("ShEx/issue1-good.ttl", IStreamContext::FILE);
-	turtleParser.setGraph(&data);
-	turtleParser.parse(ttlstr);
-	turtleParser.clear(BASE_URI);
-	//BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("issue7")), true);
-    }
-
-    {
-	DefaultGraphPattern data;
-	IStreamContext ttlstr("ShEx/issue1-bad.ttl", IStreamContext::FILE);
-	turtleParser.setGraph(&data);
-	turtleParser.parse(ttlstr);
-	turtleParser.clear(BASE_URI);
-	BOOST_CHECK_EQUAL(shexc.validate(data, F.getURI("issue7")), false);
-    }
-}
-// EOF
-

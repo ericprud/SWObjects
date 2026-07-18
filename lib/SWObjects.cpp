@@ -2240,18 +2240,9 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	} else if (p_URI == TTerm::URI_xsd_dateTime) {
 	    return getDateTimeRDFLiteral(p_String.c_str());
 	} else if (p_URI == TTerm::URI_xsd_boolean) {
-	    if (p_String == "0" || p_String == "false")
-		return getBooleanRDFLiteral("false", 0);
-	    bool b;
-#ifdef LIBC_PARSES_BOOL
-	    is >> b;
-#else
-	    b = true;
-#endif
-// 	    std::stringstream canonical;
-// 	    canonical << std::boolalpha << b;
-// 	    return getNumericRDFLiteral(canonical.str().c_str(), b);
-	    return getBooleanRDFLiteral(p_String.c_str(), b);
+	    // Preserve the lexical form; the value is true for the two true
+	    // lexical representations.
+	    return getBooleanRDFLiteral(p_String, p_String == "1" || p_String == "true");
 	}
 
 	std::stringstream buf;
@@ -2496,7 +2487,9 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     const BooleanRDFLiteral* AtomFactory::getBooleanRDFLiteral (std::string p_String, bool p_value) {
 	std::stringstream buf;
-	buf << "\"" << (p_value ? "true" : "false") << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>";
+	// key on the lexical form: "TRUE"^^xsd:boolean and "true"^^xsd:boolean
+	// are distinct RDF terms
+	buf << "\"" << p_String << "\"^^<http://www.w3.org/2001/XMLSchema#boolean>";
 	std::string key(buf.str());
 	RDFLiteralMap::const_iterator vi = rdfLiterals_static.find(key);
 	if (vi == rdfLiterals_static.end()) {

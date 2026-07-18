@@ -33,3 +33,4 @@ tests/RDFXMLTests/
 tests/sparql11-test-suite/
 bin/parseAndFree
 bin/dm-materialize
+tests/shexTest/

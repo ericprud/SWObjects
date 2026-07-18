@@ -28,4 +28,9 @@ if [ ! -d sparql11-test-suite ]; then
     (cd sparql11-test-suite && patch -p 0 < ../sparql11-test-suite.patch)
 fi
 
+if [ ! -d shexTest ]; then
+    echo "Fetching shexTest..."
+    git clone --depth 1 https://github.com/shexSpec/shexTest shexTest
+fi
+
 echo "Test suites ready."

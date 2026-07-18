@@ -38,6 +38,15 @@ you'll need these packages:
 On macOS: brew install cmake boost bison flex expat
 (cmake prefers Homebrew's bison/flex over the older /usr/bin ones.)
 
+# ShEx
+
+lib/ShExCParser.ypp and lib/ShExSchema.{hpp,cpp} implement ShEx 2.1
+(ShExC syntax including IMPORT, ABSTRACT and EXTENDS; validation by
+interval-based matching over SORBE-normalized triple expressions, after
+jena-shex). tests/test_ShEx.cpp runs the shexSpec/shexTest suite
+(schemas, negativeSyntax, negativeStructure and validation manifests);
+tests/fetch-test-suites.sh clones the test data.
+
 # More info
 
 To learn more about SWObjects, checkout some tutorials given at SWAT4LS in 2010 and 2011:

@@ -1,4 +1,6 @@
-// $Id: ShExScanner.hpp,v 1.3 2008-10-03 07:06:03 eric Exp $
+/* ShExCScanner.hpp - hand-written wrapper around the flex-generated
+ * ShExFlexLexer, providing token construction helpers for the ShEx2 scanner.
+ */
 
 #ifndef ShExScanner_H
 #define ShExScanner_H
@@ -75,26 +77,22 @@ public:
 protected:
     ShExParser::token_type typedLiteral (ShExParser::semantic_type*& yylval, ShExParser::token_type tok) {
 	std::istringstream is(yytext);
-	std::ostringstream normalized;
 
 	switch (tok) {
 	case w3c_sw::ShExParser::token::INTEGER:
 	    int i;
 	    is >> i;
-	    normalized << i;
-	    yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, i);
+	    yylval->p_Literal = driver->getNumericRDFLiteral(yytext, i);
 	    return tok;
 	case w3c_sw::ShExParser::token::DECIMAL:
 	    float f;
 	    is >> f;
-	    normalized << f;
-	    yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, f);
+	    yylval->p_Literal = driver->getNumericRDFLiteral(yytext, f);
 	    return tok;
 	case w3c_sw::ShExParser::token::DOUBLE:
 	    double d;
 	    is >> d;
-	    normalized << d;
-	    yylval->p_NumericRDFLiteral = driver->getNumericRDFLiteral(yytext, d);
+	    yylval->p_Literal = driver->getNumericRDFLiteral(yytext, d);
 	    return tok;
 	default: throw(new std::exception());
 	}
@@ -105,6 +103,114 @@ protected:
 	YaccDriver::unescapeString(text, len, space, yylloc);
 	yylval->p_string = space;
 	return tok;
+    }
+
+    /** A LANG_STRING_LITERAL* token: <quote>body<quote>@tag . The tag is the
+     * suffix after the last '@'; it contains only [A-Za-z0-9-]. */
+    ShExParser::token_type langString (ShExParser::semantic_type*& yylval,
+				       ShExParser::location_type* yylloc,
+				       size_t trim, ShExParser::token_type tok) {
+	size_t at = yyleng;
+	while (at > 0 && yytext[at-1] != '@')
+	    --at;
+	std::string tag(yytext + at, yyleng - at);
+	std::string body;
+	YaccDriver::unescapeString(yytext + trim, at - 1 - 2*trim, &body, yylloc);
+	yylval->p_Literal = driver->getRDFLiteral(body, NULL, new LANGTAG(tag));
+	return tok;
+    }
+
+    /** REPEAT_RANGE: {m} {m,} {m,n} {m,*} */
+    ShEx::CardPOD repeatRange (const char* text, size_t len) {
+	ShEx::CardPOD card;
+	std::string inner(text + 1, len - 2);
+	size_t comma = inner.find(',');
+	card.min = atoi(inner.c_str());
+	if (comma == std::string::npos)
+	    card.max = card.min;
+	else {
+	    std::string maxStr = inner.substr(comma + 1);
+	    if (maxStr.empty() || maxStr == "*")
+		card.max = ShEx::Unbounded;
+	    else
+		card.max = atoi(maxStr.c_str());
+	}
+	return card;
+    }
+
+    /** REGEXP: /pattern/flags with ShExC regex escaping. Regex metacharacter
+     * escapes stay escaped, \\t \\n \\r become control characters, \\uXXXX and
+     * \\UXXXXXXXX become the code point, and "\\/" becomes "/". */
+    ShEx::PatternC* regexPattern (const char* text, size_t len,
+				  ShExParser::location_type* yylloc) {
+	size_t end = len;
+	while (end > 0 && text[end-1] != '/')
+	    --end;
+	std::string flags(text + end, len - end);
+	std::string pattern;
+	for (size_t i = 1; i + 1 < end; ++i) {
+	    char c = text[i];
+	    if (c != '\\') {
+		pattern += c;
+		continue;
+	    }
+	    char e = text[++i];
+	    switch (e) {
+	    case 't': pattern += "\\t"; break;
+	    case 'n': pattern += "\\n"; break;
+	    case 'r': pattern += "\\r"; break;
+	    case '/': pattern += '/'; break;
+	    case '.': case '\\': case '?': case '*': case '+':
+	    case '{': case '}': case '(': case ')': case '|':
+	    case '^': case '$': case '[': case ']': case '-':
+		pattern += '\\';
+		pattern += e;
+		break;
+	    case 'u': case 'U': {
+		std::string space;
+		size_t width = e == 'u' ? 4 : 8;
+		YaccDriver::unescapeNumeric(text + i - 1, width + 2, &space, yylloc);
+		pattern += space;
+		i += width;
+		break;
+	    }
+	    default:
+		driver->error(*yylloc, std::string("unexpected escape \\") + e + " in regular expression");
+	    }
+	}
+	return new ShEx::PatternC(pattern, flags);
+    }
+
+    /** CODE: "{" body "%}" with \\% and \\\\ escapes plus UCHARs. Counts the
+     * newlines the token spans. */
+    std::string* semActCode (const char* text, size_t len,
+			     ShExParser::location_type* yylloc) {
+	std::string* code = new std::string();
+	for (size_t i = 1; i + 2 < len; ++i) {
+	    char c = text[i];
+	    if (c == '\n')
+		yylloc->end.lines(1);
+	    if (c != '\\') {
+		*code += c;
+		continue;
+	    }
+	    char e = text[++i];
+	    switch (e) {
+	    case '%': *code += '%'; break;
+	    case '\\': *code += '\\'; break;
+	    case 'u': case 'U': {
+		std::string space;
+		size_t width = e == 'u' ? 4 : 8;
+		YaccDriver::unescapeNumeric(text + i - 1, width + 2, &space, yylloc);
+		*code += space;
+		i += width;
+		break;
+	    }
+	    default:
+		driver->error(*yylloc, std::string("unexpected escape \\") + e + " in semantic action");
+	    }
+	}
+	return code;
     }
 
     /** resolvePrefix
@@ -118,7 +224,6 @@ protected:
 
 	size_t index = stripped.find(':');
 	if (index == std::string::npos)
-	    // throw(std::runtime_error("Inexplicable lack of ':' in prefix"));
 	    index = 0;
 	std::string prefix = stripped.substr(0, index);
 	const URI* nspace = driver->getNamespace(prefix, true);
@@ -137,23 +242,6 @@ protected:
 					AtomFactory::validate & AtomFactory::VALIDATE_IRIcharacters
 					? &CharacterRange::NonIRI
 					: NULL);
-#if 0
-	    /*
-	      In principle, something like this could be done to pass this back
-	      to the parser to make sure that the unescaped value complies with
-	      IRIREF, but the overhead of creating another driver and scanner
-	      and adding some way to limit recursion aren't worth the mild
-	      cleverness.
-	     */
-	    std::istringstream is("<" + stripped + ">");
-	    ShExDriver parser2(stripped, driver->atomFactory);
-	    ShExScanner s(&parser2, &is);
-	    ShExParser::semantic_type yylval2;
-	    ShExParser::location_type yylloc2;
-	    ShExParser::token_type yychar = s.lexWrapper(&yylval2, &yylloc2);
-	    if (yychar != ShExParser::token::IRIREF)
-		throw;
-#endif
 	} catch (std::runtime_error& e) {
 	    driver->error(*yylloc, e.what());
 	}
@@ -188,7 +276,7 @@ protected:
 	    (AtomFactory::validate&~AtomFactory::VALIDATE_IRIcharacters);
     }
     void restoreValidation () {
-	    AtomFactory::validate = validation;	
+	    AtomFactory::validate = validation;
     }
 
 };

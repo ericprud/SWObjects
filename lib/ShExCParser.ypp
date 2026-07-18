@@ -1,17 +1,21 @@
-/* $Id: ShExParser.ypp,v 1.2 2008-10-24 10:57:32 eric Exp $ -*- mode: c++ -*- */
-/** \file ShExParser.yy Contains the Bison parser source */
+/* -*- mode: c++ -*-
+ * ShExCParser.ypp - ShEx2 (ShExC) parser.
+ *
+ * Productions ported from shex.js's ShExJison.jison (itself derived from the
+ * yacker grammar at http://www.w3.org/2005/01/yacker/uploads/ShEx2), which is
+ * the reference grammar for the ShEx 2.1 ShExC syntax including IMPORT,
+ * ABSTRACT, EXTENDS and RESTRICTS.
+ */
 
 /*** yacc/bison Declarations ***/
 
 /* Require a modern bison */
 %require "3.2"
 
-/* add debug output code to generated parser. disable this for release
- * versions. */
 %define parse.trace
 
-/* start symbol is named "start" */
-%start ShExDoc
+/* start symbol */
+%start shexDoc
 
 /* write out a header file containing the token defines */
 %defines
@@ -44,140 +48,163 @@
 %define parse.error verbose
 
 %code requires {
-
 #include "SWObjects.hpp"
-#include "RdfDB.hpp"
 #include "ParserCommon.hpp"
 #include "ShExSchema.hpp"
-#include <stack>
 
 namespace w3c_sw {
 
-class ShExDriver : public YaccDataDriver {
-    location* yylloc; // can't move up into YaccDriver 'cause location.hh hasn't been included yet.
-    friend class ShExParser;
-protected:
-    ShExSchema* curSchema;
-    ShExSchema::SetRule* curSetRule;
-    ShExSchema::AtomicRule::NameClass* curNameClass;
-    ShExSchema::RulePattern* curRulePattern;
-    std::vector<const TTerm*>* curTTerms;
-    const TTerm* curSubject;
-    const TTerm* curPredicate;
-public:
-    void setSchema (ShExSchema* schema) { curSchema = schema; }
-    static size_t DefaultAbortErrorCount;
+namespace ShEx {
+    /** POD carriers for the bison %union. */
+    static const int CARD_unset = -3;
+    struct CardPOD { int min; int max; }; // min == CARD_unset when absent
+    struct OrTailPOD { // payload of Jison's "shapeOr" production
+	std::vector<const ShapeExpr*>* ands; // NULL when the tail starts with OR
+	std::vector<const ShapeExpr*>* ors;  // may be NULL (empty)
+    };
+} // namespace ShEx
 
-    ShExDriver (std::string baseURI, AtomFactory* atomFactory, size_t abortErrorCount = DefaultAbortErrorCount)
-	: YaccDataDriver(baseURI, atomFactory, abortErrorCount)
+class ShExScanner;
+
+/** The Driver class brings together the ShExParser and ShExScanner and
+ * accumulates the parsed ShEx::Schema. */
+class ShExDriver : public YaccDriver {
+    friend class ShExParser;
+    friend class ShExScanner;
+protected:
+    location* yylloc;
+
+public:
+    ShEx::Schema* schema; // borrowed from caller during parse
+
+    /** Sentinel for ShExC "." (no constraint). Converted to NULL when used
+     * as a TripleConstraint valueExpr, or to an empty Shape elsewhere. */
+    ShEx::Shape emptyShape;
+
+    /* scratch space for productions that accumulate through the driver */
+    std::vector<const ShEx::ShapeExpr*> pendingRestricts;
+    std::vector<const TTerm*> pendingExtra;
+
+    /** When parsing an IMPORTed schema, its start declaration is ignored. */
+    bool ignoreStart = false;
+
+    /** Blank node labels are shared across an import group so that a schema
+     * can reference bnode-labelled shapes of its imports. */
+    TTerm::String2BNode* shexBNodeMap = NULL;
+    const BNode* getBNode (std::string name) {
+	return atomFactory->getBNode(name, shexBNodeMap != NULL ? shexBNodeMap : &bnodeMap);
+    }
+
+    ShExDriver (std::string baseURI, AtomFactory* atomFactory)
+	: YaccDriver(baseURI, atomFactory), yylloc(NULL), schema(NULL)
     {  }
 
-    ShExSchema* parse(IStreamContext& in);
-    ShExSchema* parse(IStreamContext& in, ShExSchema* schema);
-    ShExSchema* parse(std::string swsexStr, ShExSchema* schema);
+    /** Parse a ShExC document into intoSchema. Throws ParserException/
+     * ParserExceptions/ShEx::StructureError on failure. */
+    void parse (IStreamContext& in, ShEx::Schema* intoSchema);
 
-
-    /** Pointer to the current lexer instance, this is used to connect the
-     * parser to the scanner. It is used in the yylex macro. */
     class ShExScanner* lexer;
 
-    const BNode* createBNode () {
-	if (descriptiveBNodeLabels) {
-	    std::stringstream ss;
-	    ss << *(yylloc->begin.filename) <<":"<< yylloc->begin.line <<":"<< yylloc->begin.column;
-	    return atomFactory->getBNode(ss.str(), &bnodeMap);
-	} else {
-	    return atomFactory->createBNode();
-	}
+    /* --- helpers used by the semantic actions --- */
+
+    bool isEmptyShape (const ShEx::ShapeExpr* e) const { return e == &emptyShape; }
+
+    /** "." becomes an empty Shape when placed in a junction, NOT or decl. */
+    const ShEx::ShapeExpr* materialize (const ShEx::ShapeExpr* e) {
+	return isEmptyShape(e) ? new ShEx::Shape() : e;
     }
+    /** "." as a TripleConstraint valueExpr means "no constraint". */
+    const ShEx::ShapeExpr* asValueExpr (const ShEx::ShapeExpr* e) {
+	return isEmptyShape(e) ? NULL : e;
+    }
+
+    const ShEx::ShapeExpr* junction (bool conjunction,
+				     const ShEx::ShapeExpr* first,
+				     std::vector<const ShEx::ShapeExpr*>* rest) {
+	if (rest == NULL || rest->empty()) {
+	    delete rest;
+	    return first;
+	}
+	ShEx::ShapeJunction* ret = conjunction
+	    ? (ShEx::ShapeJunction*)new ShEx::ShapeAnd()
+	    : (ShEx::ShapeJunction*)new ShEx::ShapeOr();
+	ret->exprs.push_back(materialize(first));
+	for (std::vector<const ShEx::ShapeExpr*>::const_iterator it = rest->begin();
+	     it != rest->end(); ++it)
+	    ret->exprs.push_back(materialize(*it));
+	delete rest;
+	return ret;
+    }
+
+    /** Assemble Jison's shapeExpression from a leading atom and an optional
+     * (AND ...)+ (OR ...)* tail. */
+    const ShEx::ShapeExpr* orShape (const ShEx::ShapeExpr* atom, ShEx::OrTailPOD tail) {
+	if (tail.ands == NULL && tail.ors == NULL)
+	    return atom;
+	const ShEx::ShapeExpr* base = junction(true, atom, tail.ands);
+	return junction(false, base, tail.ors);
+    }
+
+    static std::string facetKey (const ShEx::NCComponent* c);
+
+    /** Add a facet component, rejecting duplicates as the spec requires. */
+    void addFacet (ShEx::NodeConstraint* nc, ShEx::NCComponent* facet, const location& loc) {
+	std::string key = facetKey(facet);
+	for (std::vector<const ShEx::NCComponent*>::const_iterator it = nc->components.begin();
+	     it != nc->components.end(); ++it)
+	    if (facetKey(*it) == key) {
+		delete facet;
+		error(loc, "facet " + key + " defined multiple times");
+		return;
+	    }
+	nc->components.push_back(facet);
+    }
+
+    /** Numeric range facets are only allowed on known numeric datatypes. */
+    void checkNumericFacets (ShEx::NodeConstraint* nc, const URI* datatype, const location& loc);
+
+    const ShEx::TripleExpr* wrapCard (const ShEx::TripleExpr* te, ShEx::CardPOD card) {
+	if (card.min == ShEx::CARD_unset)
+	    return te;
+	return new ShEx::TripleExprCardinality(te, ShEx::Cardinality(card.min, card.max));
+    }
+
+    const URI* rdfType () { return getAbsoluteURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"); }
+    const URI* xsd (const char* local) { return getAbsoluteURI((std::string("http://www.w3.org/2001/XMLSchema#") + local).c_str()); }
 };
 
 } // namespace w3c_sw
 
-// %} // ##bison1
-} // ##bison2
-
- /*** BEGIN ShEx language tokens. ***/
-
-%union {
-    struct {std::string* label; std::string* text;} p_CODE;
-    int p_int;
-    ShExSchema::AtomicRule::NameClass* p_nameClass;
-    bool p_bool;
-    ShExSchema::SetRule* p_setRule;
-    ShExSchema::RulePattern* p_rulePattern;
-    ShExSchema::RuleActions* p_ruleActions;
-    ShExSchema::AtomicRule::Value* p_value;
-    ShExSchema::AtomicRule::ValueSet* p_valueSet;
-    struct {unsigned min; unsigned max;} p_RepeatRange;
-
-    struct {const URI* uri; LANGTAG* langtag;} p_uri_or_langtag;
-
-    /* Terminals */
-    LANGTAG* p_LANGTAG;
-
-    std::string* p_string;
-
-    const NumericRDFLiteral* p_NumericRDFLiteral;
-    ShExSchema::URIstem p_URIstem;
-    std::vector<ShExSchema::URIstem>* p_URIstems;
-
-    const TTerm* p_TTerm;
-    const URI* p_URI;
-    struct {const TTerm* subject; const TTerm* predicate;} p_SubjectPredicatePair;
-
 }
 
-%{
-#include "ShExCScanner.hpp"
-%}
-%token			__EOF__	     0	"end of file"
-/* START TokenBlock */
-/* Terminals */
+%union {
+    const w3c_sw::URI*				p_URI;
+    const w3c_sw::TTerm*			p_TTerm;
+    const w3c_sw::RDFLiteral*			p_Literal;
+    std::string*				p_string;
+    bool					b;
+    int						i;
+    const w3c_sw::ShEx::ShapeExpr*		p_SE;
+    std::vector<const w3c_sw::ShEx::ShapeExpr*>* p_SEs;
+    w3c_sw::ShEx::NodeConstraint*		p_NC;
+    w3c_sw::ShEx::NCComponent*			p_NCC;
+    w3c_sw::ShEx::PatternC*			p_Pattern;
+    w3c_sw::ShEx::ValuesC*			p_Values;
+    const w3c_sw::ShEx::ValueSetValue*		p_VSV;
+    w3c_sw::ShEx::StemRangeValue*		p_Stem;
+    std::vector<w3c_sw::ShEx::StemRangeValue::Exclusion>* p_Excls;
+    const w3c_sw::ShEx::TripleExpr*		p_TE;
+    std::vector<const w3c_sw::ShEx::TripleExpr*>* p_TEs;
+    w3c_sw::ShEx::Shape*			p_Shape;
+    w3c_sw::ShEx::SemAct*			p_SemAct;
+    std::vector<w3c_sw::ShEx::SemAct>*		p_SemActs;
+    w3c_sw::ShEx::Annotation*			p_Annot;
+    std::vector<w3c_sw::ShEx::Annotation>*	p_Annots;
+    w3c_sw::ShEx::CardPOD			p_Card;
+    w3c_sw::ShEx::OrTailPOD			p_OrTail;
+}
 
-%token IT_start GT_EQUAL IT_BASE IT_PREFIX GT_LCURLEY GT_RCURLEY GT_PIPE GT_COMMA GT_DOLLAR GT_OPT GT_LPAREN GT_RPAREN GT_CARROT GT_DOT GT_AT IT_SPARQL_SRX GT_KINDA GT_SEMI GT_LBRACKET GT_RBRACKET GT_MINUS GT_TIMES GT_PLUS GT_DTYPE RDF_TYPE
-
-%token <p_CODE> CODE
-%token <p_TTerm> IT_true IT_false BLANK_NODE_LABEL ANON
-%token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE
-// deepest typing for these tokens:
-// %token <p_BooleanRDFLiteral> IT_true IT_false
-// %token <p_NumericRDFLiteral> INTEGER DECIMAL DOUBLE
-// %token <p_BNode> BLANK_NODE_LABEL ANON
-%token <p_string> STRING_LITERAL1 STRING_LITERAL2 STRING_LITERAL_LONG1 STRING_LITERAL_LONG2
-%token <p_URI> PNAME_NS PNAME_LN IRIREF
-%token <p_LANGTAG> LANGTAG
-
- // !!NEW tokens
-%type <p_TTerm> _O_Qlabel_E_Or_QtypeSpec_E_S_QCODE_E_Star_C label object collection RDFLiteral literal NumericLiteral BooleanLiteral BlankNode blankNodePropertyList verb predicate _Qobject_E_Star _Qdefahlt_E_Opt defahlt _O_Qiri_E_Or_Qliteral_E_C valueChoice
- //%type <p_TTerms> _Qvalue_E_Plus valueSet
-%type <p_int> _QINTEGER_E_Opt _O_QGT_COMMA_E_S_QINTEGER_E_Opt_C _Q_O_QGT_COMMA_E_S_QINTEGER_E_Opt_C_E_Opt
-%type <p_nameClass> nameClass
-%type <p_bool> _QGT_CARROT_E_Opt _QGT_OPT_E_Opt _QGT_KINDA_E_Opt
- //%type <p_bool> _QGT_NOT_E_Opt
-%type <p_rulePattern> typeSpec OrExpression _O_QGT_PIPE_E_S_QAndExpression_E_C AndExpression _O_QGT_COMMA_E_S_QUnaryExpression_E_C UnaryExpression _O_Qarc_E_Or_QGT_LPAREN_E_S_QOrExpression_E_S_QGT_RPAREN_E_S_QGT_OPT_E_Opt_S_QCODE_E_Star_C arc
-%type <p_ruleActions> _QCODE_E_Star
-%type <p_value> valueSpec
-%type <p_RepeatRange> _QrepeatCount_E_Opt repeatCount
-%type <p_URIstems> exclusions _Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star
-%type <p_URIstem> iriStem _O_QGT_MINUS_E_S_QiriStem_E_C
-
-%type <p_URI> iri PrefixedName
-// deepest typing for these productions:
-// %type <p_RDFLiteral> RDFLiteral literal
-// %type <p_NumericRDFLiteral> NumericLiteral
-// %type <p_BooleanRDFLiteral> BooleanLiteral
-%type <p_string> String
-%type <p_uri_or_langtag> _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C
-                       _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt
-
-/* END TokenBlock */
-
-//%destructor { delete $$; } BlankNode
-
- /*** END ShEx language tokens. ***/
-
-%{
+%code {
 #include "ShExCScanner.hpp"
 
 /* this "connects" the bison parser in the driver to the flex scanner class
@@ -185,677 +212,1210 @@ public:
  * current lexer object of the driver context. */
 #undef yylex
 #define yylex driver.lexer->lexWrapper
-%}
+}
 
-%% /*** Grammar Rules ***/
+%token __EOF__ 0 "end of file"
 
- /*** BEGIN ShEx language structure. ***/
-ShExDoc:
-    // statement*
-    _Qstatement_E_Star	
+%token IT_BASE IT_PREFIX IT_IMPORT IT_start IT_EXTERNAL IT_ABSTRACT
+       IT_RESTRICTS IT_EXTENDS IT_CLOSED IT_EXTRA IT_LITERAL IT_BNODE IT_IRI
+       IT_NONLITERAL IT_AND IT_OR IT_NOT
+       IT_MININCLUSIVE IT_MINEXCLUSIVE IT_MAXINCLUSIVE IT_MAXEXCLUSIVE
+       IT_LENGTH IT_MINLENGTH IT_MAXLENGTH IT_TOTALDIGITS IT_FRACTIONDIGITS
+       IT_true IT_false RDF_TYPE
+       GT_EQUAL GT_ANNOT GT_LCURLEY GT_RCURLEY GT_AMP GT_PIPE GT_COMMA
+       GT_LPAREN GT_RPAREN GT_LBRACKET GT_RBRACKET GT_DOLLAR GT_DTYPE
+       GT_CARROT GT_DOT GT_TILDE GT_SEMI GT_TIMES GT_PLUS GT_OPT GT_MINUS
+       GT_MODULO GT_AT
+
+%token <p_URI>		IRIREF PNAME_LN PNAME_NS ATPNAME_LN ATPNAME_NS
+%token <p_TTerm>	BLANK_NODE_LABEL
+%token <p_string>	LANGTAG STRING_LITERAL1 STRING_LITERAL2
+			STRING_LITERAL_LONG1 STRING_LITERAL_LONG2 CODE
+%token <p_Literal>	INTEGER DECIMAL DOUBLE
+			LANG_STRING_LITERAL1 LANG_STRING_LITERAL2
+			LANG_STRING_LITERAL_LONG1 LANG_STRING_LITERAL_LONG2
+%token <p_Pattern>	REGEXP
+%token <p_Card>		REPEAT_RANGE
+
+%type <p_URI> iri prefixedName datatype predicate
+%type <p_TTerm> shapeExprLabel tripleExprLabel blankNode
+%type <p_Literal> rdfLiteral literal numericLiteral booleanLiteral langString
+%type <p_string> string
+%type <b> _QIT_ABSTRACT_E_Opt _QIT_NOT_E_Opt _QsenseFlags_E_Opt _QGT_TILDE_E_Opt
+%type <i> stringLength numericRange numericLength
+%type <p_SE> shapeExprDeclBody shapeExpression inlineShapeExpression inlineShapeOr
+	     shapeOrRef inlineShapeOrRef shapeRef
+	     shapeAnd inlineShapeAnd shapeNot inlineShapeNot
+	     shapeAtom shapeAtomNoRef inlineShapeAtom
+	     shapeDefinition inlineShapeDefinition
+	     extension extendsShapeExpression extendsShapeOr extendsShapeAnd
+	     extendsShapeNot extendsShapeAtom restriction
+	     _O_QshapeExpression_E_Or_QshapeRef_E_Or_QIT_EXTERNAL_E_C
+%type <p_SEs> _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Plus
+	      _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Star
+	      _Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Plus
+	      _Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Star
+	      _Q_O_QIT_OR_E_S_QinlineShapeAnd_E_C_E_Star
+	      _Q_O_QIT_AND_E_S_QinlineShapeNot_E_C_E_Star
+	      _Q_O_QIT_OR_E_S_QextendsShapeAnd_E_C_E_Star
+	      _Q_O_QIT_AND_E_S_QextendsShapeNot_E_C_E_Star
+%type <p_OrTail> shapeOr _QshapeOr_E_Opt
+%type <p_NC> litNodeConstraint nonLitNodeConstraint
+	     litInlineNodeConstraint nonLitInlineNodeConstraint
+	     _QxsFacet_E_Star _QnumericFacet_E_Plus
+	     _QstringFacet_E_Star _QstringFacet_E_Plus
+%type <p_NCC> xsFacet stringFacet numericFacet nonLiteralKind
+%type <p_Values> valueSet _QvalueSetValue_E_Star
+%type <p_VSV> valueSetValue iriRange literalRange languageRange
+	      _O_QiriExclusion_E_Plus_Or_QliteralExclusion_E_Plus_Or_QlanguageExclusion_E_Plus_C
+%type <p_Excls> _QiriExclusion_E_Plus _QliteralExclusion_E_Plus
+		_QlanguageExclusion_E_Plus _QiriExclusion_E_Star
+		_QliteralExclusion_E_Star _QlanguageExclusion_E_Star
+		_O_QGT_TILDE_E_S_QiriExclusion_E_Star_C
+		_Q_O_QGT_TILDE_E_S_QiriExclusion_E_Star_C_E_Opt
+		_O_QGT_TILDE_E_S_QliteralExclusion_E_Star_C
+		_Q_O_QGT_TILDE_E_S_QliteralExclusion_E_Star_C_E_Opt
+		_O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C
+		_Q_O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C_E_Opt
+		iriExclusion literalExclusion languageExclusion
+%type <p_TE> tripleExpression oneOfTripleExpr multiElementOneOf groupTripleExpr
+	     singleElementGroup multiElementGroup unaryTripleExpr
+	     tripleConstraint bracketedTripleExpr include
+	     _O_QtripleConstraint_E_Or_QbracketedTripleExpr_E_C
+	     _QtripleExpression_E_Opt
+%type <p_TEs> _Q_O_QGT_PIPE_E_S_QgroupTripleExpr_E_C_E_Plus
+	      _Q_O_QGT_SEMI_E_S_QunaryTripleExpr_E_C_E_Plus
+%type <p_TTerm> _Q_O_QGT_DOLLAR_E_S_QtripleExprLabel_E_C_E_Opt
+%type <p_Shape> _Q_O_Qextension_E_Or_QextraPropertySet_E_Or_QIT_CLOSED_E_C_E_Star
+%type <p_Card> cardinality _Qcardinality_E_Opt
+%type <p_SemAct> codeDecl
+%type <p_SemActs> semanticActions _QcodeDecl_E_Star _QcodeDecl_E_Plus
+%type <p_Annot> annotation
+%type <p_Annots> _Qannotation_E_Star
+
+%%
+
+shexDoc:
+    _Qdirective_E_Star _Q_O_QnotStartAction_E_Or_QstartActions_E_S_Qstatement_E_Star_C_E_Opt
+;
+
+_Qdirective_E_Star:
+
+  | _Qdirective_E_Star directive
+;
+
+_O_QnotStartAction_E_Or_QstartActions_E_C:
+    notStartAction
+  | startActions
 ;
 
 _Qstatement_E_Star:
-    
-  | _Qstatement_E_Star statement	
+
+  | _Qstatement_E_Star statement
 ;
 
-statement:
-    directive	
-  | shape	
+_O_QnotStartAction_E_Or_QstartActions_E_S_Qstatement_E_Star_C:
+    _O_QnotStartAction_E_Or_QstartActions_E_C _Qstatement_E_Star
+;
+
+_Q_O_QnotStartAction_E_Or_QstartActions_E_S_Qstatement_E_Star_C_E_Opt:
+
+  | _O_QnotStartAction_E_Or_QstartActions_E_S_Qstatement_E_Star_C
 ;
 
 directive:
-    BaseDecl	
-  | PrefixDecl	
-  | IT_start GT_EQUAL _O_Qlabel_E_Or_QtypeSpec_E_S_QCODE_E_Star_C	{
-	driver.curSchema->start = $3;
-    }
+    baseDecl
+  | prefixDecl
+  | importDecl
 ;
 
-_QCODE_E_Star:
-    {
-	$$ = NULL;
-    }
-  | _QCODE_E_Star CODE	{
-	$$ = ($1 == NULL)
-	    ? new ShExSchema::RuleActions(driver.curRulePattern)
-	    : $1;
-	$$->codeMap.insert(std::make_pair(*$2.label, *$2.text));
-	delete $2.label;
-	delete $2.text;
-    }
-;
-
-_O_Qlabel_E_Or_QtypeSpec_E_S_QCODE_E_Star_C:
-    label	
-  | typeSpec {
-	driver.curRulePattern = $1;
-      } _QCODE_E_Star	{
-	  driver.curRulePattern = NULL;
-	  $$ = driver.createBNode();
-	  driver.curSchema->ruleMap.insert(std::make_pair($$, $3 == NULL ? $1 : $3));
-      }
-;
-
-BaseDecl:
+baseDecl:
     IT_BASE IRIREF	{
 	driver.setBase($2->getLexicalValue());
     }
 ;
 
-PrefixDecl:
+prefixDecl:
     IT_PREFIX {
 	driver.ignorePrefix(true);
-      } PNAME_NS {
-	  driver.ignorePrefix(false);
-      } IRIREF	{
-	  std::string prefix($3->getLexicalValue());
-	  driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
-      }
-;
-
-shape:
-    label typeSpec {
-	driver.curRulePattern = $2;
-      } _QCODE_E_Star	{
-	  driver.curRulePattern = NULL;
-	  driver.curSchema->ruleMap.insert(std::make_pair($1, $4 == NULL ? $2 : $4));
-      }
-;
-
-typeSpec:
-    GT_LCURLEY {
-	$<p_nameClass>$ = driver.curNameClass;
-	driver.curNameClass = NULL;
-      } {
-	  $<p_rulePattern>$ = driver.curRulePattern;
-	  driver.curRulePattern = NULL;
-      } OrExpression GT_RCURLEY	{
-	  driver.curRulePattern = $<p_rulePattern>3;
-	  driver.curNameClass = $<p_nameClass>2;
-	  $$ = $4;
-      }
-;
-
-OrExpression:
-    {
-	$<p_setRule>$ = driver.curSetRule;
-	driver.curSetRule = NULL;
-    } AndExpression _Q_O_QGT_PIPE_E_S_QAndExpression_E_C_E_Star	{
-	if (driver.curSetRule == NULL)
-	    $$ = $2;
-	else {
-	    driver.curSetRule->rules.insert(driver.curSetRule->rules.begin(), $2);
-	    $$ = driver.curSetRule;
-	}
-	driver.curSetRule = $<p_setRule>1;
+    } PNAME_NS {
+	driver.ignorePrefix(false);
+    } iri	{
+	std::string prefix($3->getLexicalValue());
+	driver.addPrefix(prefix.substr(0, prefix.length()-1), $5);
     }
 ;
 
-_O_QGT_PIPE_E_S_QAndExpression_E_C:
-    GT_PIPE AndExpression	{
-	$$ = $2;
+importDecl:
+    IT_IMPORT iri	{
+	driver.schema->imports.push_back($2);
     }
 ;
 
-_Q_O_QGT_PIPE_E_S_QAndExpression_E_C_E_Star:
-    
-  | _Q_O_QGT_PIPE_E_S_QAndExpression_E_C_E_Star _O_QGT_PIPE_E_S_QAndExpression_E_C	{
-	if (driver.curSetRule == NULL)
-	    driver.curSetRule = new ShExSchema::OrRule();
-	driver.curSetRule->rules.push_back($2);
-    }
+notStartAction:
+    start
+  | shapeExprDecl
 ;
 
-AndExpression:
-    {
-	$<p_setRule>$ = driver.curSetRule;
-	driver.curSetRule = NULL;
-    } UnaryExpression _Q_O_QGT_COMMA_E_S_QUnaryExpression_E_C_E_Star	{
-	if (driver.curSetRule == NULL)
-	    $$ = $2;
-	else {
-	    driver.curSetRule->rules.insert(driver.curSetRule->rules.begin(), $2);
-	    $$ = driver.curSetRule;
-	}
-	driver.curSetRule = $<p_setRule>1;
-    }
-;
-
-_O_QGT_COMMA_E_S_QUnaryExpression_E_C:
-    GT_COMMA UnaryExpression	{
-	$$ = $2;
-    }
-;
-
-_Q_O_QGT_COMMA_E_S_QUnaryExpression_E_C_E_Star:
-    
-  | _Q_O_QGT_COMMA_E_S_QUnaryExpression_E_C_E_Star _O_QGT_COMMA_E_S_QUnaryExpression_E_C	{
-	if (driver.curSetRule == NULL)
-	    driver.curSetRule = new ShExSchema::AndRule();
-	driver.curSetRule->rules.push_back($2);
-    }
-;
-
-UnaryExpression:
-    _Q_O_QGT_DOLLAR_E_S_Qiri_E_C_E_Opt _O_Qarc_E_Or_QGT_LPAREN_E_S_QOrExpression_E_S_QGT_RPAREN_E_S_QGT_OPT_E_Opt_S_QCODE_E_Star_C	{
-	// $$ = $1 ? new ShExSchema::NegatedRule($2) : $2;
-	// @@ $1 is a label
-	$$ = $2;
-    }
-;
-
-// @@vv
-_O_QGT_DOLLAR_E_S_Qiri_E_C:
-    GT_DOLLAR iri	
-;
-
-_Q_O_QGT_DOLLAR_E_S_Qiri_E_C_E_Opt:
-    
-  | _O_QGT_DOLLAR_E_S_Qiri_E_C	
-;
-
-_QGT_OPT_E_Opt:
-    {
-	$$ = false;
-    }
-  | GT_OPT	{
-        $$ = true;
-    }
-;
-
-// @@^^
-
-_O_Qarc_E_Or_QGT_LPAREN_E_S_QOrExpression_E_S_QGT_RPAREN_E_S_QGT_OPT_E_Opt_S_QCODE_E_Star_C:
-    arc	
-  | GT_LPAREN OrExpression GT_RPAREN {
-	driver.curRulePattern = $2;
-      } _QGT_OPT_E_Opt _QCODE_E_Star	{
-	  // @@ set flag from $5
-	  driver.curRulePattern = NULL;
-	  $$ = $6 == NULL ? $2 : $6;
-      }
-;
-
-label:
-    iri	{
-	$$ = $1;
-    }
-  | BlankNode	{
-	$$ = $1;
-    }
-;
-
-arc:
-    _QGT_CARROT_E_Opt nameClass {
-	// pass down the nameClass 'cause we need valueSpec's CODE* to be able
-	// to make a AtomicRule and potentially wrap it with RuleActions.
-	driver.curNameClass = $2;
-	$2->reverse = $1;
-      } valueSpec _Qdefahlt_E_Opt _QrepeatCount_E_Opt {
-	  if ($5)
-	      w3c_sw_NEED_IMPL("ShEx parser support for default");
-	  driver.curRulePattern = new ShExSchema::AtomicRule(driver.curNameClass, $4, $6.min, $6.max);
-      } _QblankNodePropertyList_E_Opt _QCODE_E_Star	{
-	  $$ = $9 == NULL ? driver.curRulePattern : $9;
-	  driver.curRulePattern = NULL;
-	  driver.curNameClass = NULL;
-	}
-;
-
-/*_QGT_NOT_E_Opt:
-    {
-	$$ = false;
-    }
-  | GT_NOT	{
-      $$ = true;
-    }
-;*/
-
-_QGT_CARROT_E_Opt:
-    {
-	$$ = false;
-    }
-  | GT_CARROT	{
-	$$ = true;
-    }
-;
-
-_Qdefahlt_E_Opt:
-    {
-	$$ = NULL;
-    }
-  | defahlt	
-;
-
-_QrepeatCount_E_Opt:
-    {
-	$$.min = 1;
-	$$.max = 1;
-    }
-  | repeatCount	
-;
-
-// @@vv
-_QblankNodePropertyList_E_Opt:
-    
-  | blankNodePropertyList	
-;
-// @@^^
-
-nameClass:
-    iriStem	{
-	if ($1.opt)
-	    $$ = new ShExSchema::AtomicRule::NamePattern($1.uri);
+start:
+    IT_start GT_EQUAL shapeAnd _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Star	{
+	const ShEx::ShapeExpr* built = driver.materialize(driver.junction(false, $3, $4));
+	if (driver.ignoreStart)
+	    delete built; // an IMPORTed schema's start declaration
+	else if (driver.schema->start != NULL)
+	    driver.error(@1, "start already defined");
 	else
-	    $$ = new ShExSchema::AtomicRule::NameTerm($1.uri);
-    }
-  | GT_DOT exclusions	{
-	$$ = new ShExSchema::AtomicRule::NameAll($2);
-    }
-  | RDF_TYPE	{
-	$$ = new ShExSchema::AtomicRule::NameTerm(TTerm::RDF_type);
+	    driver.schema->start = built;
     }
 ;
 
-valueSpec:
-    GT_AT label	{
-	$$ = new ShExSchema::AtomicRule::ValueReference($2);
-    }
-  | typeSpec	{
-	const TTerm* b = driver.createBNode();
-	driver.curSchema->ruleMap.insert(std::make_pair(b, $1));
-	$$ = new ShExSchema::AtomicRule::ValueReference(b);
-    }
-  | iri	{
-	$$ = new ShExSchema::AtomicRule::ValueType($1);
-    }
-  | {
-	ShExSchema::AtomicRule::ValueSet* t = new ShExSchema::AtomicRule::ValueSet();
-	$<p_valueSet>$  = t;
-	driver.curTTerms = &t->tterms;
-      } valueSet	{
-	  $$ = $<p_valueSet>1;
-      }
-  | GT_DOT exclusions	{
-	$$ = new ShExSchema::AtomicRule::ValueAny($2);
-    }
-  | IT_SPARQL_SRX iri	{
-        w3c_sw_NEED_IMPL("SPARQL Results Format callout");
-    }
-;
-
-iriStem:
-    iri _QGT_KINDA_E_Opt	{
-	$$.uri = $1;
-	$$.opt = $2;
-    }
-;
-
-_QGT_KINDA_E_Opt:
-    {
-	$$ = false;
-    }
-  | GT_KINDA	{
-        $$ = true;
-    }
-;
-
-defahlt:
-    GT_EQUAL _O_Qiri_E_Or_Qliteral_E_C	{
-	$$ = $2;
-    }
-;
-
-_O_Qiri_E_Or_Qliteral_E_C:
-    iri	{
-	$$ = $1;
-    }
-  | literal	
-;
-
-//@@vv
-predicateObjectList:
-    // verb objectList ( ';' ( verb objectList )? )*
-    verb objectList _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star	
-;
-
-// verb objectList
-_O_Qverb_E_S_QobjectList_E_C:
-    verb objectList	
-;
-
-// ( verb objectList )?
-_Q_O_Qverb_E_S_QobjectList_E_C_E_Opt:
-    
-  | _O_Qverb_E_S_QobjectList_E_C	
-;
-
-// ';' ( verb objectList )?
-_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C:
-    GT_SEMI _Q_O_Qverb_E_S_QobjectList_E_C_E_Opt	
-;
-
-// ( ';' ( verb objectList )? )*
-_Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star:
-    
-  | _Q_O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C_E_Star _O_QGT_SEMI_E_S_Qverb_E_S_QobjectList_E_Opt_C	
-;
-
-objectList:
-    // object ( ',' object )*
-    object _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star	
-;
-
-// ',' object
-_O_QGT_COMMA_E_S_Qobject_E_C:
-    GT_COMMA object	
-;
-
-// ( ',' object )*
-_Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star:
-    
-  | _Q_O_QGT_COMMA_E_S_Qobject_E_C_E_Star _O_QGT_COMMA_E_S_Qobject_E_C	
-;
-
-verb:
-    predicate	{
-	$$ = $1;
-	driver.curPredicate = $$;
-    }
-  | RDF_TYPE	{
-      $$ = TTerm::RDF_type;
-	driver.curPredicate = $$;
-    }
-;
-
-predicate:
-    iri	{
-	$$ = $1;
-    }
-;
-
-object:
-    iri	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | BlankNode	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | collection	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | blankNodePropertyList	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-  | literal	{
-	driver.curBGP->addTriplePattern(driver.atomFactory->getTriple(driver.curSubject, driver.curPredicate, $1));
-    }
-;
-
-literal:
-    RDFLiteral	
-  | NumericLiteral	// { $$ = $1; }
-  | BooleanLiteral	// { $$ = $1; }
-;
-
-blankNodePropertyList:
-    GT_LBRACKET {
-	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
-	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
-	driver.curSubject = driver.createBNode();
-      } predicateObjectList GT_RBRACKET	{
-	  $$ = (BNode*)driver.curSubject; // could store w/ type in ctx..
-	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
-	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
-      }
-;
-
-collection:
-    // '(' object* ')'
-    GT_LPAREN {
-	$<p_SubjectPredicatePair>$.subject = driver.curSubject;
-	$<p_SubjectPredicatePair>$.predicate = driver.curPredicate;
-      } _Qobject_E_Star GT_RPAREN	{
-	  if ($3 == NULL) {
-	      $$ = TTerm::RDF_nil;
-	  } else {
-	      $$ = $3;
-	      driver.curBGP->addTriplePattern
-		  (driver.atomFactory->getTriple
-		   (driver.curSubject, TTerm::RDF_rest, TTerm::RDF_nil));
-	  }
-	  driver.curSubject = $<p_SubjectPredicatePair>2.subject;
-	  driver.curPredicate = $<p_SubjectPredicatePair>2.predicate;
-      }
-;
-
-_Qobject_E_Star:
-    {
-	$$ = NULL;
-    }
-  | _Qobject_E_Star {
-	const TTerm* nextTail = driver.createBNode();
-	if ($1 == NULL) // on first element
-	    $<p_TTerm>$ = nextTail;
-	else		// on later elements
-	    driver.curBGP->addTriplePattern
-		(driver.atomFactory->getTriple
-		 (driver.curSubject, TTerm::RDF_rest, nextTail));
-	driver.curSubject = nextTail;
-	driver.curPredicate = TTerm::RDF_first;
-      } object	{
-	  $$ = $<p_TTerm>2;
-      }
-;
-
-exclusions:
-    _Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star	
-;
-
-_O_QGT_MINUS_E_S_QiriStem_E_C:
-    GT_MINUS iriStem	{
-	$$ = $2;
-    }
-;
-
-_Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star:
-    {
-	$$ = NULL;
-    }
-  | _Q_O_QGT_MINUS_E_S_QiriStem_E_C_E_Star _O_QGT_MINUS_E_S_QiriStem_E_C	{
-	if ($1 == NULL)
-	    $1 = new std::vector<ShExSchema::URIstem>();
-	$1->push_back($2);
-	$$ = $1;
-    }
-;
-
-//@@^^
-
-repeatCount:
-    GT_TIMES	{
-	$$.min = 0;
-	$$.max = ShExSchema::AtomicRule::Unlimited;
-    }
-  | GT_PLUS	{
-	$$.min = 1;
-	$$.max = ShExSchema::AtomicRule::Unlimited;
-    }
-  | GT_OPT	{
-	$$.min = 0;
-	$$.max = 1;
-    }
-  | GT_LCURLEY INTEGER _Q_O_QGT_COMMA_E_S_QINTEGER_E_Opt_C_E_Opt GT_RCURLEY	{
-	$$.min = $2->getInt();
-	$$.max = $3;
-    }
-;
-
-_QINTEGER_E_Opt:
-    {
-	$$ = ShExSchema::AtomicRule::Unlimited;
-    }
-  | INTEGER	{
-	$$ = $1->getInt();
-    }
-;
-
-_O_QGT_COMMA_E_S_QINTEGER_E_Opt_C:
-    GT_COMMA _QINTEGER_E_Opt	{
-	$$ = $2;
-    }
-;
-
-_Q_O_QGT_COMMA_E_S_QINTEGER_E_Opt_C_E_Opt:
-    {
-	$$ = ShExSchema::AtomicRule::Unlimited;
-    }
-  | _O_QGT_COMMA_E_S_QINTEGER_E_Opt_C	
-;
-
-valueSet:
-    GT_LPAREN _Qvalue_E_Plus GT_RPAREN	
-;
-
-_Qvalue_E_Plus:
-    valueChoice	{
-	driver.curTTerms->push_back($1);
-    }
-  | _Qvalue_E_Plus valueChoice	{
-	driver.curTTerms->push_back($2);
-    }
-;
-
-valueChoice:
-    iriStem	{
-	if ($1.opt)
-	    w3c_sw_NEED_IMPL("ShEx parser support for URIstems in value sets");
-	$$ = $1.uri;
-    }
-  | BlankNode	
-  | literal	
-;
-
-NumericLiteral:
-    INTEGER	{
-	$$ = $1;
-    }
-  | DECIMAL	{
-	$$ = $1;
-    }
-  | DOUBLE	{
-	$$ = $1;
-    }
-;
-
-RDFLiteral:
-    // String ( LANGTAG | ( '^^' iri ) )?
-    String _Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt	{
-	$$ = driver.getRDFLiteral(*$1, $2.uri, $2.langtag);
+startActions:
+    _QcodeDecl_E_Plus	{
+	driver.schema->startActs = *$1;
 	delete $1;
     }
 ;
 
-// LANGTAG | ( '^^' iri )
-_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C:
-    LANGTAG	{
-	$$.uri = NULL;
-	$$.langtag = $1;
+_QcodeDecl_E_Plus:
+    codeDecl	{
+	$$ = new std::vector<ShEx::SemAct>();
+	$$->push_back(*$1);
+	delete $1;
     }
-// '^^' iri
-  | GT_DTYPE iri	{
-	$$.uri = $2;
-	$$.langtag = NULL;
+  | _QcodeDecl_E_Plus codeDecl	{
+	$$ = $1;
+	$$->push_back(*$2);
+	delete $2;
     }
 ;
 
-// ( LANGTAG | ( '^^' iri ) )?
-_Q_O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C_E_Opt:
-    {
-	$$.uri = NULL;
-	$$.langtag = NULL;
+statement:
+    directive
+  | notStartAction
+;
+
+shapeExprDecl:
+    _QIT_ABSTRACT_E_Opt shapeExprLabel _Qrestriction_E_Star shapeExprDeclBody	{
+	driver.schema->addShape($2, $1, $4);
+	// restrictions were queued in the driver by the restriction production
+	driver.schema->decls.back()->restricts.swap(driver.pendingRestricts);
     }
-  | _O_QLANGTAG_E_Or_QGT_DTYPE_E_S_Qiri_E_C	
 ;
 
-BooleanLiteral:
-    IT_true	
-  | IT_false	
+shapeExprDeclBody:
+    _O_QshapeExpression_E_Or_QshapeRef_E_Or_QIT_EXTERNAL_E_C	{ $$ = $1; }
 ;
 
-String:
-    STRING_LITERAL1	
-  | STRING_LITERAL2	
-  | STRING_LITERAL_LONG1	
-  | STRING_LITERAL_LONG2	
+_QIT_ABSTRACT_E_Opt:
+    	{ $$ = false; }
+  | IT_ABSTRACT	{ $$ = true; }
+;
+
+_Qrestriction_E_Star:
+
+  | _Qrestriction_E_Star restriction	{
+	driver.pendingRestricts.push_back($2);
+    }
+;
+
+_O_QshapeExpression_E_Or_QshapeRef_E_Or_QIT_EXTERNAL_E_C:
+    shapeExpression	{ $$ = driver.materialize($1); }
+  | shapeRef	{ $$ = $1; }
+  | IT_EXTERNAL	{ $$ = new ShEx::ShapeExternal(); }
+;
+
+shapeExpression:
+    _QIT_NOT_E_Opt shapeAtomNoRef _QshapeOr_E_Opt	{
+	const ShEx::ShapeExpr* base = $1 ? new ShEx::ShapeNot(driver.materialize($2)) : $2;
+	$$ = driver.orShape(base, $3);
+    }
+  | IT_NOT shapeRef _QshapeOr_E_Opt	{
+	$$ = driver.orShape(new ShEx::ShapeNot($2), $3);
+    }
+  | shapeRef shapeOr	{
+	$$ = driver.orShape($1, $2);
+    }
+;
+
+_QshapeOr_E_Opt:
+    	{ $$.ands = NULL; $$.ors = NULL; }
+  | shapeOr	{ $$ = $1; }
+;
+
+inlineShapeExpression:
+    inlineShapeOr	{ $$ = $1; }
+;
+
+shapeOr:
+    _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Plus	{
+	$$.ands = NULL;
+	$$.ors = $1;
+    }
+  | _Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Plus _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Star	{
+	$$.ands = $1;
+	if ($2->empty()) {
+	    delete $2;
+	    $$.ors = NULL;
+	} else
+	    $$.ors = $2;
+    }
+;
+
+_O_QIT_OR_E_S_QshapeAnd_E_C:
+    IT_OR shapeAnd	{ $<p_SE>$ = $2; }
+;
+
+_Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Plus:
+    _O_QIT_OR_E_S_QshapeAnd_E_C	{
+	$$ = new std::vector<const ShEx::ShapeExpr*>();
+	$$->push_back($<p_SE>1);
+    }
+  | _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Plus _O_QIT_OR_E_S_QshapeAnd_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+_O_QIT_AND_E_S_QshapeNot_E_C:
+    IT_AND shapeNot	{ $<p_SE>$ = $2; }
+;
+
+_Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Plus:
+    _O_QIT_AND_E_S_QshapeNot_E_C	{
+	$$ = new std::vector<const ShEx::ShapeExpr*>();
+	$$->push_back($<p_SE>1);
+    }
+  | _Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Plus _O_QIT_AND_E_S_QshapeNot_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+_Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Star:
+    	{ $$ = new std::vector<const ShEx::ShapeExpr*>(); }
+  | _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Star _O_QIT_OR_E_S_QshapeAnd_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+inlineShapeOr:
+    inlineShapeAnd _Q_O_QIT_OR_E_S_QinlineShapeAnd_E_C_E_Star	{
+	$$ = driver.junction(false, $1, $2);
+    }
+;
+
+_O_QIT_OR_E_S_QinlineShapeAnd_E_C:
+    IT_OR inlineShapeAnd	{ $<p_SE>$ = $2; }
+;
+
+_Q_O_QIT_OR_E_S_QinlineShapeAnd_E_C_E_Star:
+    	{ $$ = new std::vector<const ShEx::ShapeExpr*>(); }
+  | _Q_O_QIT_OR_E_S_QinlineShapeAnd_E_C_E_Star _O_QIT_OR_E_S_QinlineShapeAnd_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+shapeAnd:
+    shapeNot _Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Star	{
+	$$ = driver.junction(true, $1, $2);
+    }
+;
+
+_Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Star:
+    	{ $$ = new std::vector<const ShEx::ShapeExpr*>(); }
+  | _Q_O_QIT_AND_E_S_QshapeNot_E_C_E_Star _O_QIT_AND_E_S_QshapeNot_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+inlineShapeAnd:
+    inlineShapeNot _Q_O_QIT_AND_E_S_QinlineShapeNot_E_C_E_Star	{
+	$$ = driver.junction(true, $1, $2);
+    }
+;
+
+_O_QIT_AND_E_S_QinlineShapeNot_E_C:
+    IT_AND inlineShapeNot	{ $<p_SE>$ = $2; }
+;
+
+_Q_O_QIT_AND_E_S_QinlineShapeNot_E_C_E_Star:
+    	{ $$ = new std::vector<const ShEx::ShapeExpr*>(); }
+  | _Q_O_QIT_AND_E_S_QinlineShapeNot_E_C_E_Star _O_QIT_AND_E_S_QinlineShapeNot_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+shapeNot:
+    _QIT_NOT_E_Opt shapeAtom	{
+	$$ = $1 ? new ShEx::ShapeNot(driver.materialize($2)) : $2;
+    }
+;
+
+_QIT_NOT_E_Opt:
+    	{ $$ = false; }
+  | IT_NOT	{ $$ = true; }
+;
+
+inlineShapeNot:
+    _QIT_NOT_E_Opt inlineShapeAtom	{
+	$$ = $1 ? new ShEx::ShapeNot(driver.materialize($2)) : $2;
+    }
+;
+
+shapeAtom:
+    nonLitNodeConstraint _QshapeOrRef_E_Opt	{
+	$$ = $<p_SE>2 == NULL
+	    ? (const ShEx::ShapeExpr*)$1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_SE>2));
+    }
+  | litNodeConstraint	{ $$ = $1; }
+  | shapeOrRef _QnonLitNodeConstraint_E_Opt	{
+	$$ = $<p_NC>2 == NULL
+	    ? $1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_NC>2));
+    }
+  | GT_LPAREN shapeExpression GT_RPAREN	{ $$ = $2; }
+  | GT_DOT	{ $$ = &driver.emptyShape; }
+;
+
+_QshapeOrRef_E_Opt:
+    	{ $<p_SE>$ = NULL; }
+  | shapeOrRef	{ $<p_SE>$ = $1; }
+;
+
+_QnonLitNodeConstraint_E_Opt:
+    	{ $<p_NC>$ = NULL; }
+  | nonLitNodeConstraint	{ $<p_NC>$ = $1; }
+;
+
+shapeAtomNoRef:
+    nonLitNodeConstraint _QshapeOrRef_E_Opt	{
+	$$ = $<p_SE>2 == NULL
+	    ? (const ShEx::ShapeExpr*)$1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_SE>2));
+    }
+  | litNodeConstraint	{ $$ = $1; }
+  | shapeDefinition _QnonLitNodeConstraint_E_Opt	{
+	$$ = $<p_NC>2 == NULL
+	    ? $1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_NC>2));
+    }
+  | GT_LPAREN shapeExpression GT_RPAREN	{ $$ = $2; }
+  | GT_DOT	{ $$ = &driver.emptyShape; }
+;
+
+inlineShapeAtom:
+    nonLitInlineNodeConstraint _QinlineShapeOrRef_E_Opt	{
+	$$ = $<p_SE>2 == NULL
+	    ? (const ShEx::ShapeExpr*)$1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_SE>2));
+    }
+  | litInlineNodeConstraint	{ $$ = $1; }
+  | inlineShapeOrRef _QnonLitInlineNodeConstraint_E_Opt	{
+	$$ = $<p_NC>2 == NULL
+	    ? $1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_NC>2));
+    }
+  | GT_LPAREN shapeExpression GT_RPAREN	{ $$ = $2; }
+  | GT_DOT	{ $$ = &driver.emptyShape; }
+;
+
+_QinlineShapeOrRef_E_Opt:
+    	{ $<p_SE>$ = NULL; }
+  | inlineShapeOrRef	{ $<p_SE>$ = $1; }
+;
+
+_QnonLitInlineNodeConstraint_E_Opt:
+    	{ $<p_NC>$ = NULL; }
+  | nonLitInlineNodeConstraint	{ $<p_NC>$ = $1; }
+;
+
+shapeOrRef:
+    shapeDefinition	{ $$ = $1; }
+  | shapeRef	{ $$ = $1; }
+;
+
+inlineShapeOrRef:
+    inlineShapeDefinition	{ $$ = $1; }
+  | shapeRef	{ $$ = $1; }
+;
+
+shapeRef:
+    ATPNAME_LN	{ $$ = new ShEx::ShapeExprRef($1); }
+  | ATPNAME_NS	{ $$ = new ShEx::ShapeExprRef($1); }
+  | GT_AT shapeExprLabel	{ $$ = new ShEx::ShapeExprRef($2); }
+;
+
+litNodeConstraint:
+    litInlineNodeConstraint _Qannotation_E_Star semanticActions	{
+	$$ = $1;
+	$$->annotations = *$2; delete $2;
+	if ($3 != NULL) { $$->semActs = *$3; delete $3; }
+    }
+;
+
+_Qannotation_E_Star:
+    	{ $$ = new std::vector<ShEx::Annotation>(); }
+  | _Qannotation_E_Star annotation	{
+	$$ = $1;
+	$$->push_back(*$2);
+	delete $2;
+    }
+;
+
+nonLitNodeConstraint:
+    nonLitInlineNodeConstraint _Qannotation_E_Star semanticActions	{
+	$$ = $1;
+	$$->annotations = *$2; delete $2;
+	if ($3 != NULL) { $$->semActs = *$3; delete $3; }
+    }
+;
+
+litInlineNodeConstraint:
+    IT_LITERAL _QxsFacet_E_Star	{
+	$$ = $2;
+	$$->components.insert($$->components.begin(), new ShEx::NodeKindC(ShEx::NodeKindC::Literal_kind));
+    }
+  | datatype _QxsFacet_E_Star	{
+	$$ = $2;
+	driver.checkNumericFacets($$, $1, @1);
+	$$->components.insert($$->components.begin(), new ShEx::DatatypeC($1));
+    }
+  | valueSet _QxsFacet_E_Star	{
+	$$ = $2;
+	$$->components.insert($$->components.begin(), $1);
+    }
+  | _QnumericFacet_E_Plus	{ $$ = $1; }
+;
+
+_QxsFacet_E_Star:
+    	{ $$ = new ShEx::NodeConstraint(); }
+  | _QxsFacet_E_Star xsFacet	{
+	$$ = $1;
+	driver.addFacet($$, $2, @2);
+    }
+;
+
+_QnumericFacet_E_Plus:
+    numericFacet	{
+	$$ = new ShEx::NodeConstraint();
+	driver.addFacet($$, $1, @1);
+    }
+  | _QnumericFacet_E_Plus numericFacet	{
+	$$ = $1;
+	driver.addFacet($$, $2, @2);
+    }
+;
+
+nonLitInlineNodeConstraint:
+    nonLiteralKind _QstringFacet_E_Star	{
+	$$ = $2;
+	$$->components.insert($$->components.begin(), $1);
+    }
+  | _QstringFacet_E_Plus	{ $$ = $1; }
+;
+
+_QstringFacet_E_Star:
+    	{ $$ = new ShEx::NodeConstraint(); }
+  | _QstringFacet_E_Star stringFacet	{
+	$$ = $1;
+	driver.addFacet($$, $2, @2);
+    }
+;
+
+_QstringFacet_E_Plus:
+    stringFacet	{
+	$$ = new ShEx::NodeConstraint();
+	driver.addFacet($$, $1, @1);
+    }
+  | _QstringFacet_E_Plus stringFacet	{
+	$$ = $1;
+	driver.addFacet($$, $2, @2);
+    }
+;
+
+nonLiteralKind:
+    IT_IRI	{ $$ = new ShEx::NodeKindC(ShEx::NodeKindC::IRI_kind); }
+  | IT_BNODE	{ $$ = new ShEx::NodeKindC(ShEx::NodeKindC::BNode_kind); }
+  | IT_NONLITERAL	{ $$ = new ShEx::NodeKindC(ShEx::NodeKindC::NonLiteral_kind); }
+;
+
+xsFacet:
+    stringFacet	{ $$ = $1; }
+  | numericFacet	{ $$ = $1; }
+;
+
+stringFacet:
+    stringLength INTEGER	{
+	long len = atol($2->getLexicalValue().c_str());
+	$$ = new ShEx::StrLengthC((ShEx::StrLengthC::Kind)$1, len);
+    }
+  | REGEXP	{ $$ = $1; }
+;
+
+stringLength:
+    IT_LENGTH	{ $$ = ShEx::StrLengthC::Length; }
+  | IT_MINLENGTH	{ $$ = ShEx::StrLengthC::MinLength; }
+  | IT_MAXLENGTH	{ $$ = ShEx::StrLengthC::MaxLength; }
+;
+
+numericFacet:
+    numericRange rawNumeric	{
+	$$ = new ShEx::NumRangeC((ShEx::NumRangeC::Kind)$1, $<p_Literal>2);
+    }
+  | numericLength INTEGER	{
+	long len = atol($2->getLexicalValue().c_str());
+	$$ = new ShEx::NumLengthC((ShEx::NumLengthC::Kind)$1, len);
+    }
+;
+
+rawNumeric:
+    INTEGER	{ $<p_Literal>$ = $1; }
+  | DECIMAL	{ $<p_Literal>$ = $1; }
+  | DOUBLE	{ $<p_Literal>$ = $1; }
+  | string GT_DTYPE datatype	{ // ## deprecated
+	const URI* dt = $3;
+	if (dt != driver.xsd("integer") && dt != driver.xsd("decimal") &&
+	    dt != driver.xsd("float") && dt != driver.xsd("double"))
+	    driver.error(@3, "numeric range facet expected numeric datatype instead of " + dt->getLexicalValue());
+	$<p_Literal>$ = driver.getRDFLiteral(*$1, dt, NULL);
+	delete $1;
+    }
+;
+
+numericRange:
+    IT_MININCLUSIVE	{ $$ = ShEx::NumRangeC::MinInclusive; }
+  | IT_MINEXCLUSIVE	{ $$ = ShEx::NumRangeC::MinExclusive; }
+  | IT_MAXINCLUSIVE	{ $$ = ShEx::NumRangeC::MaxInclusive; }
+  | IT_MAXEXCLUSIVE	{ $$ = ShEx::NumRangeC::MaxExclusive; }
+;
+
+numericLength:
+    IT_TOTALDIGITS	{ $$ = ShEx::NumLengthC::TotalDigits; }
+  | IT_FRACTIONDIGITS	{ $$ = ShEx::NumLengthC::FractionDigits; }
+;
+
+shapeDefinition:
+    inlineShapeDefinition _Qannotation_E_Star semanticActions	{
+	if (driver.isEmptyShape($1) && $2->empty() && $3 == NULL) {
+	    delete $2;
+	    $$ = $1; // still the sentinel
+	} else {
+	    ShEx::Shape* shape = (ShEx::Shape*)driver.materialize($1);
+	    shape->annotations = *$2; delete $2;
+	    if ($3 != NULL) { shape->semActs = *$3; delete $3; }
+	    $$ = shape;
+	}
+    }
+;
+
+inlineShapeDefinition:
+    _Q_O_Qextension_E_Or_QextraPropertySet_E_Or_QIT_CLOSED_E_C_E_Star GT_LCURLEY _QtripleExpression_E_Opt GT_RCURLEY	{
+	if ($3 == NULL && $1->extends.empty() && $1->extra.empty() && !$1->closed) {
+	    delete $1;
+	    $$ = &driver.emptyShape;
+	} else {
+	    $1->expression = $3;
+	    $$ = $1;
+	}
+    }
+;
+
+_O_Qextension_E_Or_QextraPropertySet_E_Or_QIT_CLOSED_E_C:
+    extension	{ $<p_SE>$ = $1; }	// tagged by non-NULL p_SE
+  | extraPropertySet	{ $<p_SE>$ = NULL; }	// predicates queued in driver
+  | IT_CLOSED	{ $<p_SE>$ = (const ShEx::ShapeExpr*)&driver.emptyShape; }	// CLOSED marker
+;
+
+_Q_O_Qextension_E_Or_QextraPropertySet_E_Or_QIT_CLOSED_E_C_E_Star:
+    	{ $$ = new ShEx::Shape(); }
+  | _Q_O_Qextension_E_Or_QextraPropertySet_E_Or_QIT_CLOSED_E_C_E_Star _O_Qextension_E_Or_QextraPropertySet_E_Or_QIT_CLOSED_E_C	{
+	$$ = $1;
+	if ($<p_SE>2 == (const ShEx::ShapeExpr*)&driver.emptyShape)
+	    $$->closed = true;
+	else if ($<p_SE>2 != NULL)
+	    $$->extends.push_back($<p_SE>2);
+	else {
+	    $$->extra.insert(driver.pendingExtra.begin(), driver.pendingExtra.end());
+	    driver.pendingExtra.clear();
+	}
+    }
+;
+
+_QtripleExpression_E_Opt:
+    	{ $$ = NULL; }
+  | tripleExpression	{ $$ = $1; }
+;
+
+extraPropertySet:
+    IT_EXTRA _Qpredicate_E_Plus
+;
+
+_Qpredicate_E_Plus:
+    predicate	{ driver.pendingExtra.push_back($1); }
+  | _Qpredicate_E_Plus predicate	{ driver.pendingExtra.push_back($2); }
+;
+
+tripleExpression:
+    oneOfTripleExpr	{ $$ = $1; }
+;
+
+oneOfTripleExpr:
+    groupTripleExpr	{ $$ = $1; }
+  | multiElementOneOf	{ $$ = $1; }
+;
+
+multiElementOneOf:
+    groupTripleExpr _Q_O_QGT_PIPE_E_S_QgroupTripleExpr_E_C_E_Plus	{
+	ShEx::OneOf* oneOf = new ShEx::OneOf();
+	oneOf->exprs.push_back($1);
+	oneOf->exprs.insert(oneOf->exprs.end(), $2->begin(), $2->end());
+	delete $2;
+	$$ = oneOf;
+    }
+;
+
+_O_QGT_PIPE_E_S_QgroupTripleExpr_E_C:
+    GT_PIPE groupTripleExpr	{ $<p_TE>$ = $2; }
+;
+
+_Q_O_QGT_PIPE_E_S_QgroupTripleExpr_E_C_E_Plus:
+    _O_QGT_PIPE_E_S_QgroupTripleExpr_E_C	{
+	$$ = new std::vector<const ShEx::TripleExpr*>();
+	$$->push_back($<p_TE>1);
+    }
+  | _Q_O_QGT_PIPE_E_S_QgroupTripleExpr_E_C_E_Plus _O_QGT_PIPE_E_S_QgroupTripleExpr_E_C	{
+	$$ = $1;
+	$$->push_back($<p_TE>2);
+    }
+;
+
+groupTripleExpr:
+    singleElementGroup	{ $$ = $1; }
+  | multiElementGroup	{ $$ = $1; }
+;
+
+singleElementGroup:
+    unaryTripleExpr _QGT_SEMI_E_Opt	{ $$ = $1; }
+;
+
+_QGT_SEMI_E_Opt:
+
+  | GT_COMMA	// @Deprecated
+  | GT_SEMI
+;
+
+multiElementGroup:
+    unaryTripleExpr _Q_O_QGT_SEMI_E_S_QunaryTripleExpr_E_C_E_Plus _QGT_SEMI_E_Opt	{
+	ShEx::EachOf* eachOf = new ShEx::EachOf();
+	eachOf->exprs.push_back($1);
+	eachOf->exprs.insert(eachOf->exprs.end(), $2->begin(), $2->end());
+	delete $2;
+	$$ = eachOf;
+    }
+;
+
+_O_QGT_SEMI_E_S_QunaryTripleExpr_E_C:
+    GT_COMMA unaryTripleExpr	{ $<p_TE>$ = $2; }	// @Deprecated
+  | GT_SEMI unaryTripleExpr	{ $<p_TE>$ = $2; }
+;
+
+_Q_O_QGT_SEMI_E_S_QunaryTripleExpr_E_C_E_Plus:
+    _O_QGT_SEMI_E_S_QunaryTripleExpr_E_C	{
+	$$ = new std::vector<const ShEx::TripleExpr*>();
+	$$->push_back($<p_TE>1);
+    }
+  | _Q_O_QGT_SEMI_E_S_QunaryTripleExpr_E_C_E_Plus _O_QGT_SEMI_E_S_QunaryTripleExpr_E_C	{
+	$$ = $1;
+	$$->push_back($<p_TE>2);
+    }
+;
+
+unaryTripleExpr:
+    _Q_O_QGT_DOLLAR_E_S_QtripleExprLabel_E_C_E_Opt _O_QtripleConstraint_E_Or_QbracketedTripleExpr_E_C	{
+	$$ = $2;
+	if ($1 != NULL) {
+	    const_cast<ShEx::TripleExpr*>($$)->id = $1;
+	    driver.schema->addTripleExprLabel($1, $$);
+	}
+    }
+  | include	{ $$ = $1; }
+;
+
+_O_QGT_DOLLAR_E_S_QtripleExprLabel_E_C:
+    GT_DOLLAR tripleExprLabel	{ $<p_TTerm>$ = $2; }
+;
+
+_Q_O_QGT_DOLLAR_E_S_QtripleExprLabel_E_C_E_Opt:
+    	{ $$ = NULL; }
+  | _O_QGT_DOLLAR_E_S_QtripleExprLabel_E_C	{ $$ = $<p_TTerm>1; }
+;
+
+_O_QtripleConstraint_E_Or_QbracketedTripleExpr_E_C:
+    tripleConstraint	{ $$ = $1; }
+  | bracketedTripleExpr	{ $$ = $1; }
+;
+
+bracketedTripleExpr:
+    GT_LPAREN tripleExpression GT_RPAREN _Qcardinality_E_Opt _Qannotation_E_Star semanticActions	{
+	const ShEx::TripleExpr* te = driver.wrapCard($2, $4);
+	ShEx::TripleExpr* mut = const_cast<ShEx::TripleExpr*>(te);
+	mut->annotations.insert(mut->annotations.end(), $5->begin(), $5->end());
+	delete $5;
+	if ($6 != NULL) {
+	    mut->semActs.insert(mut->semActs.end(), $6->begin(), $6->end());
+	    delete $6;
+	}
+	$$ = te;
+    }
+;
+
+_Qcardinality_E_Opt:
+    	{ $$.min = ShEx::CARD_unset; $$.max = ShEx::CARD_unset; }
+  | cardinality	{ $$ = $1; }
+;
+
+tripleConstraint:
+    _QsenseFlags_E_Opt predicate inlineShapeExpression _Qcardinality_E_Opt _Qannotation_E_Star semanticActions	{
+	ShEx::TripleConstraint* tc
+	    = new ShEx::TripleConstraint($1, $2, driver.asValueExpr($3));
+	tc->annotations = *$5; delete $5;
+	if ($6 != NULL) { tc->semActs = *$6; delete $6; }
+	$$ = driver.wrapCard(tc, $4);
+    }
+;
+
+_QsenseFlags_E_Opt:
+    	{ $$ = false; }
+  | GT_CARROT	{ $$ = true; }
+;
+
+cardinality:
+    GT_TIMES	{ $$.min = 0; $$.max = ShEx::Unbounded; }
+  | GT_PLUS	{ $$.min = 1; $$.max = ShEx::Unbounded; }
+  | GT_OPT	{ $$.min = 0; $$.max = 1; }
+  | REPEAT_RANGE	{ $$ = $1; }
+;
+
+valueSet:
+    GT_LBRACKET _QvalueSetValue_E_Star GT_RBRACKET	{ $$ = $2; }
+;
+
+_QvalueSetValue_E_Star:
+    	{ $$ = new ShEx::ValuesC(); }
+  | _QvalueSetValue_E_Star valueSetValue	{
+	$$ = $1;
+	$$->values.push_back($2);
+    }
+;
+
+valueSetValue:
+    iriRange	{ $$ = $1; }
+  | literalRange	{ $$ = $1; }
+  | languageRange	{ $$ = $1; }
+  | GT_DOT _O_QiriExclusion_E_Plus_Or_QliteralExclusion_E_Plus_Or_QlanguageExclusion_E_Plus_C	{ $$ = $2; }
+;
+
+_QiriExclusion_E_Plus:
+    iriExclusion	{ $$ = $1; }
+  | _QiriExclusion_E_Plus iriExclusion	{
+	$$ = $1;
+	$$->insert($$->end(), $2->begin(), $2->end());
+	delete $2;
+    }
+;
+
+_QliteralExclusion_E_Plus:
+    literalExclusion	{ $$ = $1; }
+  | _QliteralExclusion_E_Plus literalExclusion	{
+	$$ = $1;
+	$$->insert($$->end(), $2->begin(), $2->end());
+	delete $2;
+    }
+;
+
+_QlanguageExclusion_E_Plus:
+    languageExclusion	{ $$ = $1; }
+  | _QlanguageExclusion_E_Plus languageExclusion	{
+	$$ = $1;
+	$$->insert($$->end(), $2->begin(), $2->end());
+	delete $2;
+    }
+;
+
+_O_QiriExclusion_E_Plus_Or_QliteralExclusion_E_Plus_Or_QlanguageExclusion_E_Plus_C:
+    _QiriExclusion_E_Plus	{
+	ShEx::StemRangeValue* v = new ShEx::StemRangeValue(ShEx::StemRangeValue::IRI_family);
+	v->exclusions = *$1; delete $1;
+	$$ = v;
+    }
+  | _QliteralExclusion_E_Plus	{
+	ShEx::StemRangeValue* v = new ShEx::StemRangeValue(ShEx::StemRangeValue::Literal_family);
+	v->exclusions = *$1; delete $1;
+	$$ = v;
+    }
+  | _QlanguageExclusion_E_Plus	{
+	ShEx::StemRangeValue* v = new ShEx::StemRangeValue(ShEx::StemRangeValue::Language_family);
+	v->exclusions = *$1; delete $1;
+	$$ = v;
+    }
+;
+
+iriRange:
+    iri _Q_O_QGT_TILDE_E_S_QiriExclusion_E_Star_C_E_Opt	{
+	if ($2 == NULL)
+	    $$ = new ShEx::TermValue($1);
+	else {
+	    ShEx::StemRangeValue* v
+		= new ShEx::StemRangeValue(ShEx::StemRangeValue::IRI_family, $1->getLexicalValue());
+	    v->exclusions = *$2; delete $2;
+	    $$ = v;
+	}
+    }
+;
+
+_QiriExclusion_E_Star:
+    	{ $$ = new std::vector<ShEx::StemRangeValue::Exclusion>(); }
+  | _QiriExclusion_E_Star iriExclusion	{
+	$$ = $1;
+	$$->insert($$->end(), $2->begin(), $2->end());
+	delete $2;
+    }
+;
+
+_O_QGT_TILDE_E_S_QiriExclusion_E_Star_C:
+    GT_TILDE _QiriExclusion_E_Star	{ $$ = $2; }
+;
+
+_Q_O_QGT_TILDE_E_S_QiriExclusion_E_Star_C_E_Opt:
+    	{ $$ = NULL; }
+  | _O_QGT_TILDE_E_S_QiriExclusion_E_Star_C	{ $$ = $1; }
+;
+
+iriExclusion:
+    GT_MINUS iri _QGT_TILDE_E_Opt	{
+	$$ = new std::vector<ShEx::StemRangeValue::Exclusion>();
+	$$->push_back(ShEx::StemRangeValue::Exclusion($3, $2->getLexicalValue()));
+    }
+;
+
+_QGT_TILDE_E_Opt:
+    	{ $$ = false; }
+  | GT_TILDE	{ $$ = true; }
+;
+
+literalRange:
+    literal _Q_O_QGT_TILDE_E_S_QliteralExclusion_E_Star_C_E_Opt	{
+	if ($2 == NULL)
+	    $$ = new ShEx::TermValue($1);
+	else {
+	    ShEx::StemRangeValue* v
+		= new ShEx::StemRangeValue(ShEx::StemRangeValue::Literal_family, $1->getLexicalValue());
+	    v->exclusions = *$2; delete $2;
+	    $$ = v;
+	}
+    }
+;
+
+_QliteralExclusion_E_Star:
+    	{ $$ = new std::vector<ShEx::StemRangeValue::Exclusion>(); }
+  | _QliteralExclusion_E_Star literalExclusion	{
+	$$ = $1;
+	$$->insert($$->end(), $2->begin(), $2->end());
+	delete $2;
+    }
+;
+
+_O_QGT_TILDE_E_S_QliteralExclusion_E_Star_C:
+    GT_TILDE _QliteralExclusion_E_Star	{ $$ = $2; }
+;
+
+_Q_O_QGT_TILDE_E_S_QliteralExclusion_E_Star_C_E_Opt:
+    	{ $$ = NULL; }
+  | _O_QGT_TILDE_E_S_QliteralExclusion_E_Star_C	{ $$ = $1; }
+;
+
+literalExclusion:
+    GT_MINUS literal _QGT_TILDE_E_Opt	{
+	$$ = new std::vector<ShEx::StemRangeValue::Exclusion>();
+	$$->push_back(ShEx::StemRangeValue::Exclusion($3, $2->getLexicalValue()));
+    }
+;
+
+languageRange:
+    LANGTAG _Q_O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C_E_Opt	{
+	ShEx::StemRangeValue* v
+	    = new ShEx::StemRangeValue(ShEx::StemRangeValue::Language_family, *$1);
+	if ($2 == NULL)
+	    v->isExactLanguage = true;
+	else {
+	    v->exclusions = *$2;
+	    delete $2;
+	}
+	delete $1;
+	$$ = v;
+    }
+  | GT_AT _O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C	{
+	ShEx::StemRangeValue* v
+	    = new ShEx::StemRangeValue(ShEx::StemRangeValue::Language_family, "");
+	v->exclusions = *$2; delete $2;
+	$$ = v;
+    }
+;
+
+_QlanguageExclusion_E_Star:
+    	{ $$ = new std::vector<ShEx::StemRangeValue::Exclusion>(); }
+  | _QlanguageExclusion_E_Star languageExclusion	{
+	$$ = $1;
+	$$->insert($$->end(), $2->begin(), $2->end());
+	delete $2;
+    }
+;
+
+_O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C:
+    GT_TILDE _QlanguageExclusion_E_Star	{ $$ = $2; }
+;
+
+_Q_O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C_E_Opt:
+    	{ $$ = NULL; }
+  | _O_QGT_TILDE_E_S_QlanguageExclusion_E_Star_C	{ $$ = $1; }
+;
+
+languageExclusion:
+    GT_MINUS LANGTAG _QGT_TILDE_E_Opt	{
+	$$ = new std::vector<ShEx::StemRangeValue::Exclusion>();
+	$$->push_back(ShEx::StemRangeValue::Exclusion($3, *$2));
+	delete $2;
+    }
+;
+
+include:
+    GT_AMP tripleExprLabel	{ $$ = new ShEx::TripleExprRef($2); }
+;
+
+annotation:
+    GT_ANNOT predicate _O_Qiri_E_Or_Qliteral_E_C	{
+	$$ = new ShEx::Annotation($2, $<p_TTerm>3);
+    }
+;
+
+_O_Qiri_E_Or_Qliteral_E_C:
+    iri	{ $<p_TTerm>$ = $1; }
+  | literal	{ $<p_TTerm>$ = $1; }
+;
+
+semanticActions:
+    _QcodeDecl_E_Star	{
+	if ($1->empty()) {
+	    delete $1;
+	    $$ = NULL;
+	} else
+	    $$ = $1;
+    }
+;
+
+_QcodeDecl_E_Star:
+    	{ $$ = new std::vector<ShEx::SemAct>(); }
+  | _QcodeDecl_E_Star codeDecl	{
+	$$ = $1;
+	$$->push_back(*$2);
+	delete $2;
+    }
+;
+
+codeDecl:
+    GT_MODULO iri _O_QCODE_E_Or_QGT_MODULO_E_C	{
+	if ($<p_string>3 != NULL) {
+	    $$ = new ShEx::SemAct($2, *$<p_string>3);
+	    delete $<p_string>3;
+	} else
+	    $$ = new ShEx::SemAct($2);
+    }
+;
+
+_O_QCODE_E_Or_QGT_MODULO_E_C:
+    CODE	{ $<p_string>$ = $1; }
+  | GT_MODULO	{ $<p_string>$ = NULL; }
+;
+
+literal:
+    rdfLiteral	{ $$ = $1; }
+  | numericLiteral	{ $$ = $1; }
+  | booleanLiteral	{ $$ = $1; }
+;
+
+predicate:
+    iri	{ $$ = $1; }
+  | RDF_TYPE	{ $$ = driver.rdfType(); }
+;
+
+datatype:
+    iri	{ $$ = $1; }
+;
+
+shapeExprLabel:
+    iri	{ $$ = $1; }
+  | blankNode	{ $$ = $1; }
+;
+
+tripleExprLabel:
+    iri	{ $$ = $1; }
+  | blankNode	{ $$ = $1; }
+;
+
+numericLiteral:
+    INTEGER	{ $$ = $1; }
+  | DECIMAL	{ $$ = $1; }
+  | DOUBLE	{ $$ = $1; }
+;
+
+rdfLiteral:
+    langString	{ $$ = $1; }
+  | string _Q_O_QGT_DTYPE_E_S_Qdatatype_E_C_E_Opt	{
+	$$ = driver.getRDFLiteral(*$1, $<p_URI>2, NULL);
+	delete $1;
+    }
+;
+
+_O_QGT_DTYPE_E_S_Qdatatype_E_C:
+    GT_DTYPE datatype	{ $<p_URI>$ = $2; }
+;
+
+_Q_O_QGT_DTYPE_E_S_Qdatatype_E_C_E_Opt:
+    	{ $<p_URI>$ = NULL; }
+  | _O_QGT_DTYPE_E_S_Qdatatype_E_C	{ $<p_URI>$ = $<p_URI>1; }
+;
+
+booleanLiteral:
+    IT_true	{ $$ = driver.getBooleanRDFLiteral("true", true); }
+  | IT_false	{ $$ = driver.getBooleanRDFLiteral("false", false); }
+;
+
+string:
+    STRING_LITERAL1	{ $$ = $1; }
+  | STRING_LITERAL_LONG1	{ $$ = $1; }
+  | STRING_LITERAL2	{ $$ = $1; }
+  | STRING_LITERAL_LONG2	{ $$ = $1; }
+;
+
+langString:
+    LANG_STRING_LITERAL1	{ $$ = $1; }
+  | LANG_STRING_LITERAL_LONG1	{ $$ = $1; }
+  | LANG_STRING_LITERAL2	{ $$ = $1; }
+  | LANG_STRING_LITERAL_LONG2	{ $$ = $1; }
 ;
 
 iri:
-    IRIREF	
-  | PrefixedName	
+    IRIREF	{ $$ = $1; }
+  | prefixedName	{ $$ = $1; }
 ;
 
-PrefixedName:
-    PNAME_LN	
-  | PNAME_NS	
+prefixedName:
+    PNAME_LN	{ $$ = $1; }
+  | PNAME_NS	{ $$ = $1; }
 ;
 
-BlankNode:
-    BLANK_NODE_LABEL	
-  | ANON	
+blankNode:
+    BLANK_NODE_LABEL	{ $$ = $1; }
 ;
 
- /*** END ShEx language structure. ***/
+extension:
+    _O_QIT_EXTENDS_E_Or_QGT_AMP_E_C extendsShapeExpression	{
+	$$ = driver.materialize($2);
+    }
+;
 
-%% /*** Additional Code ***/
+extendsShapeExpression:
+    extendsShapeOr	{ $$ = $1; }
+;
 
-void w3c_sw::ShExParser::error(const ShExParser::location_type& l,
-			    const std::string& m)
-{
-    std::string s = m;
-    _SUBS(s, "GT_DOT", "'.'");
-    _SUBS(s, "GT_SEMI", "';'");
-    _SUBS(s, "GT_LBRACKET", "'['");
-    _SUBS(s, "GT_RBRACKET", "']'");
-    _SUBS(s, "GT_LPAREN", "'('");
-    _SUBS(s, "GT_RPAREN", "')'");
-    _SUBS(s, "GT_DTYPE", "'^^'");
-    _SUBS(s, "IT_true", "boolean true");
-    _SUBS(s, "IT_false", "boolean false");
-    _SUBS(s, "IT_PREFIX", "PREFIX");
-    _SUBS(s, "IT_BASE", "BASE");
-    _SUBS(s, "BASE", "@base");
-    _SUBS(s, "PREFIX", "@prefix");
-    _SUBS(s, "RDF_TYPE", "keyword 'a'");
-    _SUBS(s, "IRIREF", "IRI");
-    _SUBS(s, "PNAME_NS", "namespace prefix");
-    _SUBS(s, "PNAME_LN", "local name");
-    _SUBS(s, "BLANK_NODE_LABEL", "blank node label");
-    _SUBS(s, "LANGTAG", "language tag");
-    _SUBS(s, "INTEGER", "integer");
-    _SUBS(s, "DECIMAL", "decimal");
-    _SUBS(s, "DOUBLE", "double");
-    _SUBS(s, "STRING_LITERAL1", "'string'");
-    _SUBS(s, "STRING_LITERAL2", "\"string\"");
-    _SUBS(s, "STRING_LITERAL_LONG1", "'''string'''");
-    _SUBS(s, "STRING_LITERAL_LONG2", "\"\"\"string\"\"\"");
-    _SUBS(s, "ANON", "anonymous blank node");
-    driver.error(l, s);
-}
+extendsShapeOr:
+    extendsShapeAnd _Q_O_QIT_OR_E_S_QextendsShapeAnd_E_C_E_Star	{
+	$$ = driver.junction(false, $1, $2);
+    }
+;
 
-/* START Driver (@@ stand-alone would allow it to be shared with other parsers */
+_O_QIT_OR_E_S_QextendsShapeAnd_E_C:
+    IT_OR extendsShapeAnd	{ $<p_SE>$ = $2; }
+;
+
+_Q_O_QIT_OR_E_S_QextendsShapeAnd_E_C_E_Star:
+    	{ $$ = new std::vector<const ShEx::ShapeExpr*>(); }
+  | _Q_O_QIT_OR_E_S_QextendsShapeAnd_E_C_E_Star _O_QIT_OR_E_S_QextendsShapeAnd_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+extendsShapeAnd:
+    extendsShapeNot _Q_O_QIT_AND_E_S_QextendsShapeNot_E_C_E_Star	{
+	$$ = driver.junction(true, $1, $2);
+    }
+;
+
+_O_QIT_AND_E_S_QextendsShapeNot_E_C:
+    IT_AND extendsShapeNot	{ $<p_SE>$ = $2; }
+;
+
+_Q_O_QIT_AND_E_S_QextendsShapeNot_E_C_E_Star:
+    	{ $$ = new std::vector<const ShEx::ShapeExpr*>(); }
+  | _Q_O_QIT_AND_E_S_QextendsShapeNot_E_C_E_Star _O_QIT_AND_E_S_QextendsShapeNot_E_C	{
+	$$ = $1;
+	$$->push_back($<p_SE>2);
+    }
+;
+
+extendsShapeNot:
+    _QIT_NOT_E_Opt extendsShapeAtom	{
+	$$ = $1 ? new ShEx::ShapeNot(driver.materialize($2)) : $2;
+    }
+;
+
+extendsShapeAtom:
+    nonLitInlineNodeConstraint inlineShapeOrRef	{
+	$$ = driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $2));
+    }
+  | litInlineNodeConstraint	{ $$ = $1; }
+  | inlineShapeOrRef _QnonLitInlineNodeConstraint_E_Opt	{
+	$$ = $<p_NC>2 == NULL
+	    ? $1
+	    : driver.junction(true, $1, new std::vector<const ShEx::ShapeExpr*>(1, $<p_NC>2));
+    }
+  | GT_LPAREN shapeExpression GT_RPAREN	{ $$ = $2; }
+  | GT_DOT	{ $$ = &driver.emptyShape; }
+;
+
+_O_QIT_EXTENDS_E_Or_QGT_AMP_E_C:
+    IT_EXTENDS
+  | GT_AMP
+;
+
+restriction:
+    _O_QIT_RESTRICTS_E_Or_QGT_MINUS_E_C shapeOrRef	{ $$ = $2; }
+;
+
+_O_QIT_RESTRICTS_E_Or_QGT_MINUS_E_C:
+    IT_RESTRICTS
+  | GT_MINUS
+;
+
+%%
+
+/* Additional code */
 
 namespace w3c_sw {
 
-size_t ShExDriver::DefaultAbortErrorCount = 100;
-
-ShExSchema* ShExDriver::parse (IStreamContext& in) {
+void ShExDriver::parse (IStreamContext& in, ShEx::Schema* intoSchema) {
     reset();
+    schema = intoSchema;
     streamname = in.nameStr;
-    // clear prefixes for nth run but keep them around for e.g. serialization.
     clearPrefixes();
+    pendingRestricts.clear();
+    pendingExtra.clear();
 
     ShExScanner scanner(this, in.p);
     scanner.set_debug(trace_scanning);
@@ -865,21 +1425,51 @@ ShExSchema* ShExDriver::parse (IStreamContext& in) {
     parser.set_debug_level(trace_parsing);
     parser.parse();
     checkErrors();
-    return curSchema;
 }
 
-ShExSchema* ShExDriver::parse (IStreamContext& in, ShExSchema* schema) {
-    setSchema(schema);
-    return parse(in);
+std::string ShExDriver::facetKey (const ShEx::NCComponent* c) {
+    if (const ShEx::StrLengthC* f = dynamic_cast<const ShEx::StrLengthC*>(c))
+	return f->kind == ShEx::StrLengthC::Length ? "length"
+	    : f->kind == ShEx::StrLengthC::MinLength ? "minlength" : "maxlength";
+    if (dynamic_cast<const ShEx::PatternC*>(c))
+	return "pattern";
+    if (const ShEx::NumRangeC* f = dynamic_cast<const ShEx::NumRangeC*>(c)) {
+	static const char* names[] = {"mininclusive", "minexclusive", "maxinclusive", "maxexclusive"};
+	return names[f->kind];
+    }
+    if (const ShEx::NumLengthC* f = dynamic_cast<const ShEx::NumLengthC*>(c))
+	return f->kind == ShEx::NumLengthC::TotalDigits ? "totaldigits" : "fractiondigits";
+    if (dynamic_cast<const ShEx::NodeKindC*>(c))
+	return "nodekind";
+    if (dynamic_cast<const ShEx::DatatypeC*>(c))
+	return "datatype";
+    return "values";
 }
 
-ShExSchema* ShExDriver::parse (std::string swsexStr, ShExSchema* schema) {
-    IStreamContext in(swsexStr.c_str(), IStreamContext::STRING);
-    setSchema(schema);
-    return parse(in);
+void ShExDriver::checkNumericFacets (ShEx::NodeConstraint* nc, const URI* datatype,
+				     const location& loc) {
+    // Mirror ShExJison's numericDatatypes list.
+    static const char* known[] = {
+	"integer", "decimal", "float", "double", "string", "boolean", "dateTime",
+	"nonPositiveInteger", "negativeInteger", "long", "int", "short", "byte",
+	"nonNegativeInteger", "unsignedLong", "unsignedInt", "unsignedShort",
+	"unsignedByte", "positiveInteger"
+    };
+    for (size_t i = 0; i < sizeof(known)/sizeof(known[0]); ++i)
+	if (datatype == xsd(known[i]))
+	    return;
+    for (std::vector<const ShEx::NCComponent*>::const_iterator it = nc->components.begin();
+	 it != nc->components.end(); ++it)
+	if (const ShEx::NumRangeC* f = dynamic_cast<const ShEx::NumRangeC*>(*it))
+	    error(loc, "facet " + facetKey(f) + " not allowed for unknown datatype "
+		  + datatype->getLexicalValue());
 }
 
 } // namespace w3c_sw
 
-/* END Driver */
+void w3c_sw::ShExParser::error (const ShExParser::location_type& l,
+				const std::string& m) {
+    driver.error(l, m);
+}
 
+/* END Parser */
