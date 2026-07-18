@@ -128,8 +128,18 @@ public:
 	curExprList(NULL), validate(DefaultValidation), root(NULL), unnestTree(false)
     {  }
 
-    ~SPARQLDriver ()
-    {  }
+    ~SPARQLDriver () {
+	// free mid-parse state stranded when a parse error unwinds
+	if (curFilter != NULL) {
+	    for (std::vector<const Expression*>::const_iterator it = curFilter->m_Expressions.begin();
+		 it != curFilter->m_Expressions.end(); ++it)
+		delete *it;
+	    delete curFilter;
+	}
+	// curBGP is conjoined into curOp as soon as it is created
+	// (ensureBasicGraphPattern), so deleting curOp covers it
+	delete curOp;
+    }
 
 protected:
 

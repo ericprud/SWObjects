@@ -2346,8 +2346,22 @@ struct BindingState {
 
 class TableOperation : public Base {
 protected:
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+    static std::set<const TableOperation*> liveOps;
+    TableOperation () : Base() { liveOps.insert(this); }
+    TableOperation (const TableOperation& ref);
+public:
+    virtual ~TableOperation () {
+	if (liveOps.erase(this) == 0) {
+	    fprintf(stderr, "double delete of TableOperation %p\n", (void*)this);
+	    abort();
+	}
+    }
+protected:
+#else
     TableOperation () : Base() {  }
     TableOperation(const TableOperation& ref);
+#endif
     BindingState bindings;
 
 public:
@@ -2511,7 +2525,11 @@ public:
 	triple_iterator (TTerm2TTerm2Triple_type::range outer)
 	    : outer(outer), useOuter(true), matchFail(false),
 	      tterm2triple(outer.first),
-	      inner(tterm2triple->second.begin(), tterm2triple->second.end()),
+	      // don't dereference an empty range's end iterator
+	      inner(outer.first == outer.second
+		    ? TTerm2Triple_range(e, e)
+		    : TTerm2Triple_range(tterm2triple->second.begin(),
+					 tterm2triple->second.end())),
 	      triple(inner.first), atEnd(outer.first == outer.second)
 	{  }
 
@@ -3667,6 +3685,7 @@ namespace AtomicFunction {
 	    FPtr FUNC_md5;
 	    FPtr FUNC_sha1;
 	    FPtr FUNC_sha256;
+	    FPtr FUNC_sha384;
 	    FPtr FUNC_sha512;
 	    FPtr FUNC_starts_with;
 	    FPtr FUNC_ends_with;

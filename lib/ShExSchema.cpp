@@ -626,6 +626,29 @@ namespace ShEx {
 		// TripleExprRef cannot appear in a SORBE form
 	    }
 
+	    /** Upper bound on how many triples each TC can absorb: the product
+	     * of the enclosing cardinality maxima (Unbounded when any is
+	     * unbounded). A necessary condition on bags, used to prune the
+	     * matching enumeration. */
+	    static void maxCounts (const TripleExpr* e, long mult,
+				   std::map<const TripleConstraint*, long>& into) {
+		if (const TripleConstraint* tc = dynamic_cast<const TripleConstraint*>(e)) {
+		    into[tc] = mult;
+		    return;
+		}
+		if (const TripleExprJunction* j = dynamic_cast<const TripleExprJunction*>(e)) {
+		    for (std::vector<const TripleExpr*>::const_iterator it = j->exprs.begin();
+			 it != j->exprs.end(); ++it)
+			maxCounts(*it, mult, into);
+		    return;
+		}
+		if (const TripleExprCardinality* c = dynamic_cast<const TripleExprCardinality*>(e)) {
+		    long inner = (mult == Unbounded || c->card.max == Unbounded)
+			? (long)Unbounded : mult * c->card.max;
+		    maxCounts(c->expr, inner, into);
+		}
+	    }
+
 	    const std::vector<const TripleConstraint*>& tcsOfSubExpr (const TripleExpr* e) {
 		std::map<const TripleExpr*, std::vector<const TripleConstraint*> >::iterator it
 		    = subExprTCs.find(e);
@@ -703,15 +726,23 @@ namespace ShEx {
     using detail::SorbeExpr;
 
     namespace {
-	/** Cartesian iteration over triple -> candidate-TC choices. */
+	/** Iteration over triple -> candidate-TC choices: a DFS that
+	 * backtracks as soon as a partial assignment gives some TC more
+	 * triples than its cardinality maxima allow (SorbeExpr::maxCounts),
+	 * so infeasible cartesian subtrees are never expanded. */
 	struct Matchings {
 	    std::vector<DataTriple> triples;
 	    std::vector<const std::vector<const TripleConstraint*>*> options;
+	    const std::map<const TripleConstraint*, long>& bounds;
 	    std::vector<size_t> idx;
+	    std::map<const TripleConstraint*, long> counts;
+	    size_t pos;      // levels [0, pos) are chosen and counted
+	    bool fresh;      // no assignment emitted yet
 	    bool exhausted;
 
-	    Matchings (const std::map<DataTriple, std::vector<const TripleConstraint*> >& preMatching)
-		: exhausted(false) {
+	    Matchings (const std::map<DataTriple, std::vector<const TripleConstraint*> >& preMatching,
+		       const std::map<const TripleConstraint*, long>& bounds)
+		: bounds(bounds), pos(0), fresh(true), exhausted(false) {
 		for (std::map<DataTriple, std::vector<const TripleConstraint*> >::const_iterator it
 			 = preMatching.begin(); it != preMatching.end(); ++it) {
 		    triples.push_back(it->first);
@@ -722,27 +753,55 @@ namespace ShEx {
 		}
 	    }
 
+	    bool fits (const TripleConstraint* tc) const {
+		std::map<const TripleConstraint*, long>::const_iterator b = bounds.find(tc);
+		if (b == bounds.end() || b->second == Unbounded)
+		    return true;
+		std::map<const TripleConstraint*, long>::const_iterator c = counts.find(tc);
+		return (c == counts.end() ? 0 : c->second) < b->second;
+	    }
+
 	    bool next (std::map<DataTriple, const TripleConstraint*>& matching) {
 		if (exhausted)
 		    return false;
-		matching.clear();
-		for (size_t i = 0; i < triples.size(); ++i)
-		    matching[triples[i]] = (*options[i])[idx[i]];
-		// advance to the next combination
 		if (triples.empty()) {
 		    exhausted = true; // the single empty matching
+		    matching.clear();
 		    return true;
 		}
-		size_t i = triples.size();
-		while (i > 0) {
-		    --i;
-		    if (++idx[i] < options[i]->size())
-			return true;
-		    idx[i] = 0;
-		    if (i == 0)
-			exhausted = true;
+		if (!fresh) {
+		    // resume: back out of the last emitted assignment
+		    --pos;
+		    --counts[(*options[pos])[idx[pos]]];
+		    ++idx[pos];
 		}
-		return true;
+		fresh = false;
+		while (true) {
+		    if (pos == triples.size()) {
+			matching.clear();
+			for (size_t i = 0; i < triples.size(); ++i)
+			    matching[triples[i]] = (*options[i])[idx[i]];
+			return true;
+		    }
+		    if (idx[pos] >= options[pos]->size()) {
+			if (pos == 0) {
+			    exhausted = true;
+			    return false;
+			}
+			idx[pos] = 0;
+			--pos;
+			--counts[(*options[pos])[idx[pos]]];
+			++idx[pos];
+			continue;
+		    }
+		    const TripleConstraint* tc = (*options[pos])[idx[pos]];
+		    if (!fits(tc)) {
+			++idx[pos]; // prune: this TC cannot absorb another triple
+			continue;
+		    }
+		    ++counts[tc];
+		    ++pos;
+		}
 	    }
 	};
     } // namespace
@@ -1150,18 +1209,21 @@ namespace ShEx {
 	}
 	std::vector<DataTriple> matchables, nonMatchables;
 	if (neighIn == NULL) {
-	    for (std::vector<const TriplePattern*>::const_iterator it = data.begin();
-		 it != data.end(); ++it) {
-		if ((*it)->getS() == node) {
-		    if (fwdPreds.find((*it)->getP()) != fwdPreds.end())
-			matchables.push_back(*it);
-		    else
-			nonMatchables.push_back(*it);
-		}
-		if ((*it)->getO() == node
-		    && invPreds.find((*it)->getP()) != invPreds.end())
-		    matchables.push_back(*it);
+	    // the SP/PO indexes make this linear in the neighbourhood
+	    // instead of the graph
+	    const BasicGraphPattern::triple_iterator end;
+	    for (BasicGraphPattern::triple_iterator ti = data.getTripleIterator(node, NULL, NULL);
+		 ti != end; ++ti) {
+		if (fwdPreds.find((*ti)->getP()) != fwdPreds.end())
+		    matchables.push_back(*ti);
+		else
+		    nonMatchables.push_back(*ti);
 	    }
+	    for (std::set<const TTerm*>::const_iterator p = invPreds.begin();
+		 p != invPreds.end(); ++p)
+		for (BasicGraphPattern::triple_iterator ti = data.getTripleIterator(NULL, *p, node);
+		     ti != end; ++ti)
+		    matchables.push_back(*ti);
 	} else
 	    matchables = *neighIn;
 
@@ -1206,22 +1268,34 @@ namespace ShEx {
 	    }
 
 	    // 6. Eager recursive filtering: drop (triple, TC) pairs whose
-	    //    valueExpr is not satisfied by the opposite node.
-	    for (std::map<DataTriple, std::vector<const TripleConstraint*> >::iterator
-		     pm = preMatching.begin(); pm != preMatching.end(); ++pm) {
-		std::vector<const TripleConstraint*>& cands = pm->second;
-		for (std::vector<const TripleConstraint*>::iterator tc = cands.begin();
-		     tc != cands.end(); ) {
-		    const ShapeExpr* valueExpr = (*tc)->effectiveValueExpr();
-		    if (valueExpr == NULL) {
-			++tc;
-			continue;
+	    //    valueExpr is not satisfied by the opposite node. Runs with
+	    //    the semantic-action handler suppressed: candidates that
+	    //    validate but are not chosen by the accepted matching must
+	    //    not leave bindings, so handler-observed actions fire later
+	    //    (step 10) from the accepted matching only.
+	    {
+		struct SuppressHandler {
+		    Validator& v;
+		    SemActHandler* saved;
+		    SuppressHandler (Validator& v) : v(v), saved(v.semActHandler) { v.semActHandler = NULL; }
+		    ~SuppressHandler () { v.semActHandler = saved; }
+		} suppress(*this);
+		for (std::map<DataTriple, std::vector<const TripleConstraint*> >::iterator
+			 pm = preMatching.begin(); pm != preMatching.end(); ++pm) {
+		    std::vector<const TripleConstraint*>& cands = pm->second;
+		    for (std::vector<const TripleConstraint*>::iterator tc = cands.begin();
+			 tc != cands.end(); ) {
+			const ShapeExpr* valueExpr = (*tc)->effectiveValueExpr();
+			if (valueExpr == NULL) {
+			    ++tc;
+			    continue;
+			}
+			const TTerm* opposite = (*tc)->inverse ? pm->first->getS() : pm->first->getO();
+			if (satisfies(opposite, valueExpr, NULL))
+			    ++tc;
+			else
+			    tc = cands.erase(tc);
 		    }
-		    const TTerm* opposite = (*tc)->inverse ? pm->first->getS() : pm->first->getO();
-		    if (satisfies(opposite, valueExpr, NULL))
-			++tc;
-		    else
-			tc = cands.erase(tc);
 		}
 	    }
 
@@ -1245,9 +1319,17 @@ namespace ShEx {
 	    if (!extraViolation) {
 		// 8. Iterate matchings; a matching is accepted when every
 		//    hierarchy member's expression accepts its bag...
-		Matchings iter(preMatching);
+		std::map<const TripleConstraint*, long> tcBounds;
+		for (std::vector<SorbeExpr*>::const_iterator se = sorbes.begin();
+		     se != sorbes.end(); ++se)
+		    if (*se != NULL)
+			SorbeExpr::maxCounts((*se)->relevant(), 1, tcBounds);
+		Matchings iter(preMatching, tcBounds);
 		std::map<DataTriple, const TripleConstraint*> matching;
 		while (iter.next(matching)) {
+		    // any bindings this matching creates (steps 9 and 10) are
+		    // rolled back if the matching is rejected
+		    size_t matchMark = semActHandler != NULL ? semActHandler->mark() : 0;
 		    bool all = true;
 		    for (std::vector<SorbeExpr*>::const_iterator se = sorbes.begin();
 			 all && se != sorbes.end(); ++se) {
@@ -1298,8 +1380,34 @@ namespace ShEx {
 			     constraintsOk && c != constraints[i].end(); ++c)
 			    constraintsOk = satisfies(node, *c, &split);
 		    }
-		    if (constraintsOk) {
-			// 10. Semantic actions on the (original) triple
+		    if (!constraintsOk) {
+			if (semActHandler != NULL)
+			    semActHandler->rollback(matchMark);
+			continue;
+		    }
+		    {
+			// 10. Semantic actions run against the accepted
+			//     matching only. First fire the nested value
+			//     expressions' actions for the chosen (triple,
+			//     constraint) pairs (step 6 filtered silently)...
+			bool nestedOk = true;
+			if (semActHandler != NULL) {
+			    for (std::map<DataTriple, const TripleConstraint*>::const_iterator m
+				     = matching.begin(); nestedOk && m != matching.end(); ++m) {
+				const ShapeExpr* valueExpr = m->second->effectiveValueExpr();
+				if (valueExpr == NULL)
+				    continue;
+				const TTerm* opposite = m->second->inverse
+				    ? m->first->getS() : m->first->getO();
+				nestedOk = satisfies(opposite, valueExpr, NULL);
+			    }
+			}
+			if (!nestedOk) {
+			    if (semActHandler != NULL)
+				semActHandler->rollback(matchMark);
+			    continue;
+			}
+			//     ...then the actions on the (original) triple
 			//     expressions must not fail. Each original triple
 			//     constraint sees the triples this matching
 			//     assigned to its SORBE copies.
@@ -1320,7 +1428,6 @@ namespace ShEx {
 			    }
 			    tcMatches[orig].push_back(m->first);
 			}
-			size_t mark = semActHandler != NULL ? semActHandler->mark() : 0;
 			bool semActsOk = true;
 			for (std::vector<const TripleExpr*>::const_iterator te = exprs.begin();
 			     semActsOk && te != exprs.end(); ++te) {
@@ -1330,7 +1437,7 @@ namespace ShEx {
 			}
 			if (!semActsOk) {
 			    if (semActHandler != NULL)
-				semActHandler->rollback(mark);
+				semActHandler->rollback(matchMark);
 			    continue;
 			}
 			ret = true;

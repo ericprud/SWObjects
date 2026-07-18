@@ -8,6 +8,7 @@
 #include "SWObjects.hpp"
 #include "location.hh"
 #include "utf8.h"
+#include <memory>
 
 void stop(size_t line);
 
@@ -95,22 +96,19 @@ struct ParserExceptions : std::exception {
 class ParserDriver {
 protected:
     std::string		baseURI;
-    NamespaceMap*	namespaces;
-    bool		freeNamespaces;
+    std::unique_ptr<NamespaceMap> ownNamespaces; // engaged unless a map was borrowed
+    NamespaceMap*	namespaces;              // always the one in use
     TTerm::String2BNode	bnodeMap;
-    
+
     ParserDriver ()
-	: baseURI(""), namespaces(new NamespaceMap()), 
-	  freeNamespaces(true) {  }
+	: baseURI(""), ownNamespaces(new NamespaceMap()),
+	  namespaces(ownNamespaces.get()) {  }
 
     ParserDriver (std::string baseURI)
-	: baseURI(baseURI), namespaces(new NamespaceMap()), 
-	  freeNamespaces(true) {  }
+	: baseURI(baseURI), ownNamespaces(new NamespaceMap()),
+	  namespaces(ownNamespaces.get()) {  }
 
-    virtual ~ParserDriver () {
-	if (freeNamespaces)
-	    delete namespaces;
-    }
+    virtual ~ParserDriver () {  }
 
 public:
 
@@ -130,10 +128,8 @@ public:
     }
 
     void setNamespaceMap (NamespaceMap* newMap, bool pFreeNamespaces = false) {
-	if (freeNamespaces)
-	    delete namespaces;
+	ownNamespaces.reset(pFreeNamespaces ? newMap : NULL);
 	namespaces = newMap;
-	freeNamespaces = pFreeNamespaces;
     }
 
     NamespaceMap* getNamespaceMap () { return namespaces; }

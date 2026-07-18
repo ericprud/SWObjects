@@ -99,6 +99,15 @@ public:
 	: YaccDriver(baseURI, atomFactory), yylloc(NULL), schema(NULL)
     {  }
 
+    ~ShExDriver () {
+	// restricts queued by the restriction production are only handed to
+	// the schema when a shapeExprDecl completes; free any stranded by a
+	// parse error
+	for (std::vector<const ShEx::ShapeExpr*>::const_iterator it = pendingRestricts.begin();
+	     it != pendingRestricts.end(); ++it)
+	    delete *it;
+    }
+
     /** Parse a ShExC document into intoSchema. Throws ParserException/
      * ParserExceptions/ShEx::StructureError on failure. */
     void parse (IStreamContext& in, ShEx::Schema* intoSchema);
@@ -153,7 +162,8 @@ public:
 	for (std::vector<const ShEx::NCComponent*>::const_iterator it = nc->components.begin();
 	     it != nc->components.end(); ++it)
 	    if (facetKey(*it) == key) {
-		delete facet;
+		// error throws; the facet is still on the parser stack and
+		// %destructor frees it during the unwind
 		error(loc, "facet " + key + " defined multiple times");
 		return;
 	    }
@@ -293,6 +303,47 @@ public:
 %type <p_Annot> annotation
 %type <p_Annots> _Qannotation_E_Star
 
+/* Free semantic values discarded on parse errors. AtomFactory-interned
+ * values (<p_URI> <p_TTerm> <p_Literal>) get no destructor -- the factory
+ * owns them -- and the driver's emptyShape sentinel must never be freed. */
+%destructor { delete $$; } <p_string> <p_NC> <p_NCC> <p_Pattern> <p_Values>
+			   <p_VSV> <p_Stem> <p_Excls> <p_Shape> <p_SemAct>
+			   <p_SemActs> <p_Annot> <p_Annots> <p_TE>
+%destructor { if (!driver.isEmptyShape($$)) delete $$; } <p_SE>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<const w3c_sw::ShEx::ShapeExpr*>::const_iterator it = $$->begin();
+	     it != $$->end(); ++it)
+	    if (!driver.isEmptyShape(*it))
+		delete *it;
+	delete $$;
+    }
+} <p_SEs>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<const w3c_sw::ShEx::TripleExpr*>::const_iterator it = $$->begin();
+	     it != $$->end(); ++it)
+	    delete *it;
+	delete $$;
+    }
+} <p_TEs>
+%destructor {
+    if ($$.ands != NULL) {
+	for (std::vector<const w3c_sw::ShEx::ShapeExpr*>::const_iterator it = $$.ands->begin();
+	     it != $$.ands->end(); ++it)
+	    if (!driver.isEmptyShape(*it))
+		delete *it;
+	delete $$.ands;
+    }
+    if ($$.ors != NULL) {
+	for (std::vector<const w3c_sw::ShEx::ShapeExpr*>::const_iterator it = $$.ors->begin();
+	     it != $$.ors->end(); ++it)
+	    if (!driver.isEmptyShape(*it))
+		delete *it;
+	delete $$.ors;
+    }
+} <p_OrTail>
+
 %%
 
 shexDoc:
@@ -359,11 +410,12 @@ notStartAction:
 
 start:
     IT_start GT_EQUAL shapeAnd _Q_O_QIT_OR_E_S_QshapeAnd_E_C_E_Star	{
+	// error before consuming $3/$4: on throw their %destructors run
+	if (!driver.ignoreStart && driver.schema->start != NULL)
+	    driver.error(@1, "start already defined");
 	const ShEx::ShapeExpr* built = driver.materialize(driver.junction(false, $3, $4));
 	if (driver.ignoreStart)
 	    delete built; // an IMPORTed schema's start declaration
-	else if (driver.schema->start != NULL)
-	    driver.error(@1, "start already defined");
 	else
 	    driver.schema->start = built;
     }

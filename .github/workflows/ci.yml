@@ -38,20 +38,9 @@ jobs:
       - name: Build
         run: cmake --build build -j4
 
+      # All suites gate the build: the md5/sha* builtins, the
+      # function_library CSV IRI branch, and the query-rewriter
+      # double-delete that made these three non-blocking are fixed.
       - name: Run test suites
         run: >
           ctest --test-dir build --output-on-failure --timeout 600
-          -E 'test_(SPARQL|SPARQL11|QueryMap)$'
-
-      # These suites carry known pre-existing failures:
-      #  - test_SPARQL11: md5/sha* builtins are unimplemented (8 cases)
-      #  - test_SPARQL: function_library expects CSV <foo> parsed as an IRI,
-      #    a csv-regex branch deliberately disabled upstream (~2013)
-      #  - test_QueryMap: heap-layout-dependent nondeterminism in the query
-      #    rewriter makes single cases flaky
-      # Run them for visibility without gating the build.
-      - name: Run suites with known pre-existing failures (non-blocking)
-        continue-on-error: true
-        run: >
-          ctest --test-dir build --output-on-failure --timeout 600
-          -R 'test_(SPARQL|SPARQL11|QueryMap)$'

@@ -632,7 +632,13 @@ namespace w3c_sw {
 		if (ret.nestingConj == NULL)
 		    ret.nestingConj = new TableConjunction();
 		if (lastBGP) {
-		    ret.nestingConj->addTableOperation(lastBGP, false); // @@@ try true?
+		    /* defaultGraphPattern/namedGraphPattern already add a
+		     * fresh BGP to an existing nestingConj; adding it again
+		     * here would give the conjunction the same child twice
+		     * (double delete on teardown). */
+		    if (std::find(ret.nestingConj->begin(), ret.nestingConj->end(),
+				  (const TableOperation*)lastBGP) == ret.nestingConj->end())
+			ret.nestingConj->addTableOperation(lastBGP, false);
 		    lastBGP = NULL;
 		}
 		inConj = false;
@@ -678,15 +684,25 @@ namespace w3c_sw {
 	    last.tableOperation = ret;
 	}
 	virtual void tableDisjunction (const TableDisjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
+	    /* Capture the surrounding conjunction once; each disjunct is
+	     * processed in a fresh context (so sibling BGPs don't merge
+	     * across branches) and owned by ret alone. The completed
+	     * disjunction then joins the pending conjunction as a whole --
+	     * adding each child to it as well (the old behaviour) gave the
+	     * children two owners and a double delete on teardown. */
+	    NonConjunctionState outer = flushConjunction();
 	    TableDisjunction* ret = new TableDisjunction();
 	    for (std::vector<const TableOperation*>::const_iterator it = p_TableOperations->begin();
 		 it != p_TableOperations->end(); it++) {
-		NonConjunctionState outer = flushConjunction();
+		inConj = false;
+		nestingConj = NULL;
+		lastBGP = NULL;
+		lastInConj = false;
 		(*it)->express(this);
 		ret->addTableOperation(last.tableOperation, true);
-		pendingConjunction(outer);
 	    }
 	    last.tableOperation = ret;
+	    pendingConjunction(outer);
 	}
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    bool wasInConj = inConj;

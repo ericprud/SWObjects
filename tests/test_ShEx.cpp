@@ -65,16 +65,19 @@ namespace {
 	return ss.str();
     }
 
-    /** Simple triple lookup over a graph. */
+    /** Simple triple lookup over a graph, indexed by (subject, predicate). */
     struct GraphIndex {
-	const sw::BasicGraphPattern& g;
-	GraphIndex (const sw::BasicGraphPattern& g) : g(g) {  }
-	const sw::TTerm* getObject (const sw::TTerm* s, const sw::TTerm* p) const {
+	std::map<std::pair<const sw::TTerm*, const sw::TTerm*>, const sw::TTerm*> sp2o;
+	GraphIndex (const sw::BasicGraphPattern& g) {
 	    for (std::vector<const sw::TriplePattern*>::const_iterator it = g.begin();
 		 it != g.end(); ++it)
-		if ((*it)->getS() == s && (*it)->getP() == p)
-		    return (*it)->getO();
-	    return NULL;
+		sp2o.insert(std::make_pair(std::make_pair((*it)->getS(), (*it)->getP()),
+					   (*it)->getO()));
+	}
+	const sw::TTerm* getObject (const sw::TTerm* s, const sw::TTerm* p) const {
+	    std::map<std::pair<const sw::TTerm*, const sw::TTerm*>, const sw::TTerm*>::const_iterator
+		hit = sp2o.find(std::make_pair(s, p));
+	    return hit == sp2o.end() ? NULL : hit->second;
 	}
 	std::vector<const sw::TTerm*> rdfList (const sw::TTerm* head) const {
 	    std::vector<const sw::TTerm*> ret;
@@ -101,13 +104,7 @@ namespace {
 	    Entry () : schema(NULL) {  }
 	    ~Entry () { delete schema; }
 	};
-	std::map<std::string, Entry*> cache;
-
-	~SchemaCache () {
-	    for (std::map<std::string, Entry*>::iterator it = cache.begin();
-		 it != cache.end(); ++it)
-		delete it->second;
-	}
+	std::map<std::string, std::unique_ptr<Entry> > cache;
 
 	/** Parse url (and its imports) into the entry's schema. */
 	void loadInto (const std::string& url, Entry* entry,
@@ -139,10 +136,11 @@ namespace {
 	}
 
 	Entry* get (const std::string& url) {
-	    std::map<std::string, Entry*>::const_iterator hit = cache.find(url);
+	    std::map<std::string, std::unique_ptr<Entry> >::const_iterator hit = cache.find(url);
 	    if (hit != cache.end())
-		return hit->second;
+		return hit->second.get();
 	    Entry* entry = new Entry();
+	    cache[url] = std::unique_ptr<Entry>(entry);
 	    entry->schema = new sw::ShEx::Schema();
 	    try {
 		std::set<std::string> visited;
@@ -168,7 +166,6 @@ namespace {
 		    entry->structureError = e.what();
 		}
 	    }
-	    cache[url] = entry;
 	    return entry;
 	}
     };
@@ -184,17 +181,13 @@ namespace {
 	    std::string error;
 	    Entry () : loaded(false) {  }
 	};
-	std::map<std::string, Entry*> cache;
-	~DataCache () {
-	    for (std::map<std::string, Entry*>::iterator it = cache.begin();
-		 it != cache.end(); ++it)
-		delete it->second;
-	}
+	std::map<std::string, std::unique_ptr<Entry> > cache;
 	Entry* get (const std::string& url) {
-	    std::map<std::string, Entry*>::const_iterator hit = cache.find(url);
+	    std::map<std::string, std::unique_ptr<Entry> >::const_iterator hit = cache.find(url);
 	    if (hit != cache.end())
-		return hit->second;
+		return hit->second.get();
 	    Entry* e = new Entry();
+	    cache[url] = std::unique_ptr<Entry>(e);
 	    try {
 		std::string text = readFile(toLocalPath(url));
 		sw::IStreamContext istr(text, sw::IStreamContext::STRING);
@@ -208,7 +201,6 @@ namespace {
 	    } catch (std::string& ex) {
 		e->error = ex;
 	    }
-	    cache[url] = e;
 	    return e;
 	}
     };

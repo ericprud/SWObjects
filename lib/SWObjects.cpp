@@ -7,27 +7,22 @@
 
 #include "SWObjects.hpp"
 w3c_sw_DEFINE_LOGGER_GLOBALS // this translation unit owns the Logger globals
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+namespace w3c_sw { std::set<const TableOperation*> TableOperation::liveOps; }
+#endif
 #include "ResultSet.hpp"
 #include <string.h>
 #include <iomanip>
 #include <vector>
 #include <set>
+#include <random> // FUNC_rand
 #include <math.h> // exp, log, round, roundf
 #include "SPARQLSerializer.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "../interface/WEBagent.hpp"
 #include "utf8.h"
 
-#ifdef CRYPT_LIB
-#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
-#pragma GCC diagnostic push[[BR]]
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunknown-pragmas" // still see: ../cryptopp561/dll.h:51:0: warning: ignoring #pragma comment  [-Wunknown-pragmas]\n #pragma comment(lib, "cryptopp")
-#include "cryptopp/dll.h"
-#include "cryptopp/md5.h"
-#include "md5.h"
-#pragma GCC diagnostic pop
-#endif /* CRYPT_LIB */
+#include "SWCrypto.hpp"
 
 #ifdef _MSC_VER
 #define snprintf c99_snprintf
@@ -1638,47 +1633,32 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	    }
 	    
 
-#ifdef CRYPT_LIB
-	    std::string hashIntoHex (CryptoPP::HashTransformation &sh, std::string from) {
-		CryptoPP::SecByteBlock digest(sh.DigestSize());
-		sh.Update((const byte*)from.c_str(), from.size());
-		sh.Final(digest);
-		std::stringstream ss;
-		for (unsigned j=0; j<sh.DigestSize(); j++)
-		    ss << std::setw(2) << std::setfill('0') << std::hex << (int)digest[j];
-		return ss.str();
+	    /** The SPARQL 1.1 hash builtins take a simple literal or an
+	     * xsd:string and return the lower-case hex digest of its UTF-8
+	     * bytes. */
+	    std::string hashArg (std::vector<const TTerm*>& args, const char* funcName) {
+		const RDFLiteral* key = dynamic_cast<const RDFLiteral*>(args[0]);
+		if (key == NULL || key->getLangtag() != NULL
+		    || (key->getDatatype() != NULL && key->getDatatype() != TTerm::URI_xsd_string))
+		    throw TypeError(args[0]->toString(), funcName);
+		return key->getLexicalValue();
 	    }
 
 	    const TTerm* FUNC_md5 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
-		    throw TypeError(args[2]->toString(), "MD5");
-		CryptoPP::Weak::MD5 md;
-		return atomFactory->getRDFLiteral(hashIntoHex(md, key->getLexicalValue()));
+		return atomFactory->getRDFLiteral(crypto::md5Hex(hashArg(args, "MD5")));
 	    }
-
 	    const TTerm* FUNC_sha1 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
-		    throw TypeError(args[2]->toString(), "SHA1");
-		CryptoPP::SHA1 hash;
-		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
+		return atomFactory->getRDFLiteral(crypto::sha1Hex(hashArg(args, "SHA1")));
 	    }
 	    const TTerm* FUNC_sha256 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
-		    throw TypeError(args[2]->toString(), "SHA256");
-		CryptoPP::SHA256 hash;
-		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
+		return atomFactory->getRDFLiteral(crypto::sha256Hex(hashArg(args, "SHA256")));
+	    }
+	    const TTerm* FUNC_sha384 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
+		return atomFactory->getRDFLiteral(crypto::sha384Hex(hashArg(args, "SHA384")));
 	    }
 	    const TTerm* FUNC_sha512 (const URI* /* name */, std::vector<const TTerm*>& args, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-		const RDFLiteral* key  = dynamic_cast<const RDFLiteral*>(args[0]);
-		if (key == NULL || key->getDatatype() != NULL || key->getLangtag() != NULL)
-		    throw TypeError(args[2]->toString(), "SHA512");
-		CryptoPP::SHA512 hash;
-		return atomFactory->getRDFLiteral(hashIntoHex(hash, key->getLexicalValue()));
+		return atomFactory->getRDFLiteral(crypto::sha512Hex(hashArg(args, "SHA512")));
 	    }
-#endif /* CRYPT_LIB */
 
 	    struct DateTimeDetails {
 		int year, month, day, hours, minutes;
@@ -1777,20 +1757,8 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		return atomFactory->getRDFLiteral(Util::GMTimeAs8601(), TTerm::URI_xsd_dateTime);
 	    }
 	    const TTerm* FUNC_rand (const URI* /* name */, std::vector<const TTerm*>& /* args */, AtomFactory* atomFactory, TTerm::String2BNode* /* bnodeMap */, const RdfDB* /* db */) {
-#ifdef CRYPT_LIB
-		static bool seeded = false;
-		static struct drand48_data seed;
-		if (!seeded) {
-		    struct timeval tv;
-		    gettimeofday(&tv, NULL);
-		    srand48_r(tv.tv_sec * tv.tv_usec, &seed);
-		    seeded = true;
-		}
-		double d;
-		drand48_r(&seed, &d);
-#else /* !CRYPT_LIB */
-		double d = 9.9999E-1;
-#endif /* !CRYPT_LIB */
+		static std::mt19937_64 gen((std::random_device())());
+		double d = std::uniform_real_distribution<double>(0.0, 1.0)(gen);
 		return atomFactory->getNumericRDFLiteral(d);
 	    }
 
@@ -1840,12 +1808,11 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		Map::Initializer(TTerm::FUNC_substring_after, 2, 2, &FUNC_substring_after),
 		Map::Initializer(TTerm::FUNC_uuid, 0, 0, &FUNC_uuid),
 		Map::Initializer(TTerm::FUNC_struuid, 0, 0, &FUNC_struuid),
-#ifdef CRYPT_LIB
 		Map::Initializer(TTerm::FUNC_md5, 1, 1, &FUNC_md5),
 		Map::Initializer(TTerm::FUNC_sha1, 1, 1, &FUNC_sha1),
 		Map::Initializer(TTerm::FUNC_sha256, 1, 1, &FUNC_sha256),
+		Map::Initializer(TTerm::FUNC_sha384, 1, 1, &FUNC_sha384),
 		Map::Initializer(TTerm::FUNC_sha512, 1, 1, &FUNC_sha512),
-#endif /* CRYPT_LIB */
 		Map::Initializer(TTerm::FUNC_starts_with, 2, 2, &FUNC_starts_with),
 		Map::Initializer(TTerm::FUNC_ends_with, 2, 2, &FUNC_ends_with),
 		Map::Initializer(TTerm::FUNC_substring, 2, 3, &FUNC_substring),
@@ -2206,42 +2173,44 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
 	if (p_URI != NULL && needsValidation == true)
 	    validateXSDlexicalForm(p_String, p_URI->getLexicalValue());
-	if (p_URI == TTerm::URI_xsd_integer || 
-	    p_URI == TTerm::URI_xsd_nonPositiveInteger || 
-	    p_URI == TTerm::URI_xsd_negativeInteger || 
-	    p_URI == TTerm::URI_xsd_long || 
-	    p_URI == TTerm::URI_xsd_int || 
-	    p_URI == TTerm::URI_xsd_short || 
-	    p_URI == TTerm::URI_xsd_byte || 
-	    p_URI == TTerm::URI_xsd_nonNegativeInteger || 
-	    p_URI == TTerm::URI_xsd_unsignedLong || 
-	    p_URI == TTerm::URI_xsd_unsignedInt || 
-	    p_URI == TTerm::URI_xsd_unsignedShort || 
-	    p_URI == TTerm::URI_xsd_unsignedByte || 
+	const RDFLiteral* typed = NULL;
+	if (p_URI == TTerm::URI_xsd_integer ||
+	    p_URI == TTerm::URI_xsd_nonPositiveInteger ||
+	    p_URI == TTerm::URI_xsd_negativeInteger ||
+	    p_URI == TTerm::URI_xsd_long ||
+	    p_URI == TTerm::URI_xsd_int ||
+	    p_URI == TTerm::URI_xsd_short ||
+	    p_URI == TTerm::URI_xsd_byte ||
+	    p_URI == TTerm::URI_xsd_nonNegativeInteger ||
+	    p_URI == TTerm::URI_xsd_unsignedLong ||
+	    p_URI == TTerm::URI_xsd_unsignedInt ||
+	    p_URI == TTerm::URI_xsd_unsignedShort ||
+	    p_URI == TTerm::URI_xsd_unsignedByte ||
 	    p_URI == TTerm::URI_xsd_positiveInteger) {
 	    int i;
 	    is >> i;
-// 	    return getNumericRDFLiteral(i);
-	    return getNumericRDFLiteral(p_String.c_str(), i, p_URI);
-	} else if (p_URI == TTerm::URI_xsd_decimal || 
+	    typed = getNumericRDFLiteral(p_String.c_str(), i, p_URI);
+	} else if (p_URI == TTerm::URI_xsd_decimal ||
 		   p_URI == TTerm::URI_xsd_float) {
 	    float f;
 	    is >> f;
-// 	    return p_URI == TTerm::URI_xsd_float ? getNumericRDFLiteral(f, true) : getNumericRDFLiteral(f);
-	    return p_URI == TTerm::URI_xsd_float ? 
+	    typed = p_URI == TTerm::URI_xsd_float ?
 		getNumericRDFLiteral(p_String.c_str(), f, p_URI, true) :
 		getNumericRDFLiteral(p_String.c_str(), f, p_URI);
 	} else if (p_URI == TTerm::URI_xsd_double) {
 	    double d;
 	    is >> d;
-// 	    return getNumericRDFLiteral(d);
-	    return getNumericRDFLiteral(p_String.c_str(), d, p_URI);
+	    typed = getNumericRDFLiteral(p_String.c_str(), d, p_URI);
 	} else if (p_URI == TTerm::URI_xsd_dateTime) {
-	    return getDateTimeRDFLiteral(p_String.c_str());
+	    typed = getDateTimeRDFLiteral(p_String.c_str());
 	} else if (p_URI == TTerm::URI_xsd_boolean) {
 	    // Preserve the lexical form; the value is true for the two true
 	    // lexical representations.
-	    return getBooleanRDFLiteral(p_String, p_String == "1" || p_String == "true");
+	    typed = getBooleanRDFLiteral(p_String, p_String == "1" || p_String == "true");
+	}
+	if (typed != NULL) {
+	    delete p_LANGTAG; // a datatyped literal carries no language tag
+	    return typed;
 	}
 
 	std::stringstream buf;
@@ -4511,6 +4480,9 @@ compared against
     }
     TableOperation::TableOperation (const TableOperation& ref) :
 	Base(ref) {
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+	liveOps.insert(this);
+#endif
 #if 0
 	SWObjectDuplicator dup(NULL); // doesn't need to create new atoms.
 	for (std::vector<const Filter*>::const_iterator it = ref.m_Filters.begin();

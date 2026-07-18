@@ -839,6 +839,48 @@ namespace w3c_sw {
 	    rules.push_back(r);
 	}
 
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+	/** Collect every TableOperation pointer in a tree, flagging nodes
+	 * reachable twice. */
+	struct OpCollector : public RecursiveExpressor {
+	    std::set<const TableOperation*> seen;
+	    std::vector<const TableOperation*> dups;
+	    void note (const TableOperation* op) {
+		if (!seen.insert(op).second)
+		    dups.push_back(op);
+	    }
+	    virtual void base (const Base* const, std::string) {  }
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* a, bool b, const ProductionVector<const TriplePattern*>* c) { note(self); RecursiveExpressor::namedGraphPattern(self, a, b, c); }
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool a, const ProductionVector<const TriplePattern*>* b) { note(self); RecursiveExpressor::defaultGraphPattern(self, a, b); }
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* a) { note(self); RecursiveExpressor::tableConjunction(self, a); }
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* a) { note(self); RecursiveExpressor::tableDisjunction(self, a); }
+	    virtual void filter (const Filter* const self, const TableOperation* a, const ProductionVector<const Expression*>* b) { note(self); RecursiveExpressor::filter(self, a, b); }
+	    virtual void bind (const Bind* const self, const TableOperation* a, const Expression* b, const Variable* c) { note(self); RecursiveExpressor::bind(self, a, b, c); }
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* a, const ProductionVector<const Expression*>* b) { note(self); RecursiveExpressor::optionalGraphPattern(self, a, b); }
+	    virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* a) { note(self); RecursiveExpressor::minusGraphPattern(self, a); }
+	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* a, const TableOperation* b) { note(self); RecursiveExpressor::graphGraphPattern(self, a, b); }
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* a, const TableOperation* b, e_Silence c, AtomFactory* d, bool e) { note(self); RecursiveExpressor::serviceGraphPattern(self, a, b, c, d, e); }
+	};
+
+	/** Print tree structure with node pointers. */
+	struct OpPrinter : public OpCollector {
+	    int depth = 0;
+	    void note (const TableOperation* op) {
+		fprintf(stderr, "%*s%p %s\n", depth * 2, "", (void*)op, typeid(*op).name());
+	    }
+	    virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* a, bool b, const ProductionVector<const TriplePattern*>* c) { note(self); ++depth; RecursiveExpressor::namedGraphPattern(self, a, b, c); --depth; }
+	    virtual void defaultGraphPattern (const DefaultGraphPattern* const self, bool a, const ProductionVector<const TriplePattern*>* b) { note(self); ++depth; RecursiveExpressor::defaultGraphPattern(self, a, b); --depth; }
+	    virtual void tableConjunction (const TableConjunction* const self, const ProductionVector<const TableOperation*>* a) { note(self); ++depth; RecursiveExpressor::tableConjunction(self, a); --depth; }
+	    virtual void tableDisjunction (const TableDisjunction* const self, const ProductionVector<const TableOperation*>* a) { note(self); ++depth; RecursiveExpressor::tableDisjunction(self, a); --depth; }
+	    virtual void filter (const Filter* const self, const TableOperation* a, const ProductionVector<const Expression*>* b) { note(self); ++depth; RecursiveExpressor::filter(self, a, b); --depth; }
+	    virtual void bind (const Bind* const self, const TableOperation* a, const Expression* b, const Variable* c) { note(self); ++depth; RecursiveExpressor::bind(self, a, b, c); --depth; }
+	    virtual void optionalGraphPattern (const OptionalGraphPattern* const self, const TableOperation* a, const ProductionVector<const Expression*>* b) { note(self); ++depth; RecursiveExpressor::optionalGraphPattern(self, a, b); --depth; }
+	    virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* a) { note(self); ++depth; RecursiveExpressor::minusGraphPattern(self, a); --depth; }
+	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* a, const TableOperation* b) { note(self); ++depth; RecursiveExpressor::graphGraphPattern(self, a, b); --depth; }
+	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* a, const TableOperation* b, e_Silence c, AtomFactory* d, bool e) { note(self); ++depth; RecursiveExpressor::serviceGraphPattern(self, a, b, c, d, e); --depth; }
+	};
+#endif /* SWOBJ_DEBUG_DOUBLE_DELETE */
+
 	/** Map a SPARQL operation over the consequents of #rules to an operation over the antecedents of #rules. */
 	const Operation* map (const Operation* query, const ResultSet* mappingConstants = NULL) {
 	    QueryWalker walker(rules, atomFactory, sharedVars, nodeShare);
@@ -848,6 +890,29 @@ namespace w3c_sw {
                 return op;
 	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7
 	    op->express(&dup);
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+	    {
+		OpCollector inTree, outTree;
+		op->express(&inTree);
+		dup.last.operation->express(&outTree);
+		for (std::vector<const TableOperation*>::const_iterator d = inTree.dups.begin();
+		     d != inTree.dups.end(); ++d)
+		    fprintf(stderr, "walker tree aliases %p (%s)\n", (void*)*d, typeid(**d).name());
+		for (std::vector<const TableOperation*>::const_iterator d = outTree.dups.begin();
+		     d != outTree.dups.end(); ++d)
+		    fprintf(stderr, "simplified tree aliases %p (%s)\n", (void*)*d, typeid(**d).name());
+		for (std::set<const TableOperation*>::const_iterator s = outTree.seen.begin();
+		     s != outTree.seen.end(); ++s)
+		    if (inTree.seen.find(*s) != inTree.seen.end())
+			fprintf(stderr, "simplified tree shares %p (%s) with walker tree\n", (void*)*s, typeid(**s).name());
+		if (!inTree.dups.empty() || !outTree.dups.empty()) {
+		    fprintf(stderr, "---- simplified tree ----\n");
+		    OpPrinter p;
+		    dup.last.operation->express(&p);
+		    _exit(77);
+		}
+	    }
+#endif /* SWOBJ_DEBUG_DOUBLE_DELETE */
 	    delete op;
 
 	    SWObjectCanonicalizer c(atomFactory);
