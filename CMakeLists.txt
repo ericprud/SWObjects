@@ -163,6 +163,8 @@ add_library(SWObjects STATIC
   lib/RdfQueryDB.cpp
   lib/ResultSet.cpp
   lib/ShExSchema.cpp
+  lib/ShExShapeMap.cpp
+  lib/ShExManifest.cpp
   lib/SWObjects.cpp
   ${SWOBJ_GENERATED_SOURCES}
 )

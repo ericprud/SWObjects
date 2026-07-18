@@ -43,9 +43,22 @@ On macOS: brew install cmake boost bison flex expat
 lib/ShExCParser.ypp and lib/ShExSchema.{hpp,cpp} implement ShEx 2.1
 (ShExC syntax including IMPORT, ABSTRACT and EXTENDS; validation by
 interval-based matching over SORBE-normalized triple expressions, after
-jena-shex). tests/test_ShEx.cpp runs the shexSpec/shexTest suite
-(schemas, negativeSyntax, negativeStructure and validation manifests);
+jena-shex). EXTERNAL shapes resolve through ShEx::ExternalResolver
+(e.g. against a .shextern schema). lib/ShExShapeMap.{hpp,cpp} parses
+fixed and query shape maps (node@shape, node@!shape, START,
+{FOCUS <p> _} patterns) and the shexTest JSON map format.
+tests/test_ShEx.cpp runs the shexSpec/shexTest suite (schemas,
+negativeSyntax, negativeStructure and validation manifests);
 tests/fetch-test-suites.sh clones the test data.
+
+bin/sparql runs shex-webapp-style validation manifests (JSON or YAML;
+see lib/ShExManifest.hpp and tests/ShExManifest/):
+
+  bin/sparql --shex-manifest tests/ShExManifest/manifest.yaml
+  bin/sparql --shex-manifest m.json --shex-run '2-5,0'
+
+--shex-run selects 0-based entries: ranges like "1", "2-5", "5-2"
+(descending) or "*" (everything), comma-separated.
 
 # More info
 

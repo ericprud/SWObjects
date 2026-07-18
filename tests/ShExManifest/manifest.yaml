@@ -1,0 +1,69 @@
+---
+- schemaLabel: clinical observation
+  schema: |
+    PREFIX : <http://hl7.org/fhir/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    start = @<ObservationShape>
+
+    <ObservationShape> {               # An Observation has:
+      :status ["preliminary" "final"]; #   status in this value set
+      :subject @<PatientShape>         #   a subject matching <PatientShape>.
+    }
+
+    <PatientShape> {                   # A Patient has:
+     :name xsd:string*;                #   one or more names
+     :birthdate xsd:date?              #   and an optional birthdate.
+    }
+  dataLabel: with birthdate
+  data: |
+    PREFIX : <http://hl7.org/fhir/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    <Obs1>
+      :status    "final" ;
+      :subject   <Patient2> .
+
+    <Patient2>
+      :name "Bob" ;
+      :birthdate "1999-12-31"^^xsd:date .
+  queryMap: |
+    {FOCUS :status _}@START,
+    <Patient2>@!<ObservationShape>
+  status: conformant
+- schemaLabel: clinical observation
+  schema: |
+    PREFIX : <http://hl7.org/fhir/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    start = @<ObservationShape>
+
+    <ObservationShape> {               # An Observation has:
+      :status ["preliminary" "final"]; #   status in this value set
+      :subject @<PatientShape>         #   a subject matching <PatientShape>.
+    }
+
+    <PatientShape> {                   # A Patient has:
+     :name xsd:string*;                #   one or more names
+     :birthdate xsd:date?              #   and an optional birthdate.
+    }
+  dataLabel: bad status
+  data: |
+    PREFIX : <http://hl7.org/fhir/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    <Obs1>
+      :status    "finally" ;
+      :subject   <Patient2> .
+
+    <Patient2>
+      :name "Bob" ;
+      :birthdate "1999-12-31"^^xsd:date .
+  queryMap: "<Obs1>@START\n"
+  status: nonconformant
+- schemaLabel: clinical observation
+  schemaURL: ClinObs.shex
+  dataLabel: with birthdate (by URL)
+  dataURL: ClinObs-with-birthdate.ttl
+  queryMap: "{FOCUS :status _}@START,\n<Patient2>@<PatientShape>"
+  status: conformant

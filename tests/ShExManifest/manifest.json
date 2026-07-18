@@ -1,0 +1,18 @@
+[
+  {
+    "schemaLabel": "clinical observation",
+    "schema": "PREFIX : <http://hl7.org/fhir/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\nstart = @<ObservationShape>\n\n<ObservationShape> {\n  :status [\"preliminary\" \"final\"];\n  :subject @<PatientShape>\n}\n\n<PatientShape> {\n :name xsd:string*;\n :birthdate xsd:date?\n}\n",
+    "dataLabel": "without birthdate",
+    "data": "PREFIX : <http://hl7.org/fhir/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\n<Obs1>\n  :status    \"preliminary\" ;\n  :subject   <Patient2> .\n\n<Patient2>\n  :name \"Bob\" .\n",
+    "queryMap": "<Obs1>@START\n",
+    "status": "conformant"
+  },
+  {
+    "schemaLabel": "clinical observation",
+    "schemaURL": "ClinObs.shex",
+    "dataLabel": "no subject",
+    "data": "PREFIX : <http://hl7.org/fhir/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\n<Obs1>\n  :status    \"final\" .\n",
+    "queryMap": "<Obs1>@START",
+    "status": "nonconformant"
+  }
+]

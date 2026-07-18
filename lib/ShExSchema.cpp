@@ -788,7 +788,13 @@ namespace ShEx {
 	    for (std::vector<const TTerm*>::const_iterator it = descendants.begin();
 		 it != descendants.end(); ++it) {
 		const ShapeExpr* defn = v.schema.getShapeExpr(*it);
-		if (defn != NULL && v.satisfies(node, defn, neigh)) {
+		if (defn == NULL)
+		    continue;
+		const TTerm* outerDeclLabel = v.currentDeclLabel;
+		v.currentDeclLabel = *it;
+		bool ok = v.satisfies(node, defn, neigh);
+		v.currentDeclLabel = outerDeclLabel;
+		if (ok) {
 		    result = true;
 		    return;
 		}
@@ -797,7 +803,15 @@ namespace ShEx {
 	}
 	virtual void visit (const ShapeExternal& e) {
 	    (void)e;
-	    result = false; // EXTERNAL: no external resolver wired in
+	    if (v.externalResolver != NULL && v.currentDeclLabel != NULL) {
+		const ShapeExpr* resolved
+		    = v.externalResolver->resolveExternal(v.currentDeclLabel);
+		if (resolved != NULL) {
+		    result = v.satisfies(node, resolved, neigh);
+		    return;
+		}
+	    }
+	    result = false; // EXTERNAL without a resolution
 	}
     };
 
@@ -976,7 +990,10 @@ namespace ShEx {
 	    std::pair<const TTerm*, const TTerm*> dkey(node, *it);
 	    inProgress.insert(key);
 	    inProgress.insert(dkey);
+	    const TTerm* outerDeclLabel = currentDeclLabel;
+	    currentDeclLabel = *it;
 	    bool ok = satisfies(node, expr, NULL);
+	    currentDeclLabel = outerDeclLabel;
 	    inProgress.erase(dkey);
 	    inProgress.erase(key);
 	    if (ok)

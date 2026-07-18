@@ -50,6 +50,7 @@ namespace sw = w3c_sw;
 #endif /* BOOST_PROCESS */
 
 #include "SimpleServer.hpp"
+#include "ShExManifest.hpp"
 
 #ifndef _MSC_VER
 #include <dlfcn.h>
@@ -1004,14 +1005,29 @@ int main(int ac, char* av[])
 	    ("trap-sig-int", po::value<bool>(), "0|1 no|yes")
             ;
 
+        po::options_description shexOpts("ShEx options");
+        shexOpts.add_options()
+            ("shex-manifest", po::value<std::string>(),
+	     "run a shex-webapp-style validation manifest (JSON or YAML): a list "
+	     "of entries with schema[URL], data[URL], queryMap[URL] and an "
+	     "expected status of conformant or nonconformant.")
+            ("shex-run", po::value<std::string>()->default_value("*"),
+	     "which manifest entries to run:\n"
+	     "  entry: range (',' range)* ','?\n"
+	     "  range: index ('-' index)?\n"
+	     "  index: [0-9]+ | '*'\n"
+	     "0-based; '*' as a range or endpoint selects all entries; \"5-2\" "
+	     "runs 5,4,3,2; e.g. \"2-5,*\" runs 2,3,4,5 and then everything.")
+            ;
+
         po::options_description cmdline_options;
-        cmdline_options.add(generalOpts).add(resultsOpts).add(uriOpts).add(dataOpts).add(httpOpts).add(sqlOpts).add(hidden);
+        cmdline_options.add(generalOpts).add(resultsOpts).add(uriOpts).add(dataOpts).add(httpOpts).add(sqlOpts).add(shexOpts).add(hidden);
 
         po::options_description config_file_options;
         config_file_options.add(resultsOpts).add(uriOpts).add(dataOpts).add(httpOpts).add(sqlOpts).add(hidden);
 
         po::options_description visible("");
-        visible.add(generalOpts).add(resultsOpts).add(uriOpts).add(httpOpts).add(sqlOpts).add(dataOpts);
+        visible.add(generalOpts).add(resultsOpts).add(uriOpts).add(httpOpts).add(sqlOpts).add(shexOpts).add(dataOpts);
         
         po::options_description cursory("");
         cursory.add(generalOpts).add(resultsOpts).add(uriOpts).add(dataOpts);
@@ -1033,6 +1049,45 @@ int main(int ac, char* av[])
 	if (vm.count("bnode-detailed-label")) {
 	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Creating detailed bnode labels.\n";
 	    sw::YaccDriver::defaultDescriptiveBNodeLabels = true;
+	}
+
+	if (vm.count("shex-manifest")) {
+	    /* Run a shex-webapp validation manifest and exit. */
+	    sw::AtomFactory atomFactory;
+	    sw::ShEx::Manifest manifest
+		= sw::ShEx::Manifest::load(vm["shex-manifest"].as<std::string>());
+	    std::vector<size_t> toRun
+		= sw::ShEx::expandRanges(vm["shex-run"].as<std::string>(),
+					 manifest.entries.size());
+	    int failures = 0;
+	    for (std::vector<size_t>::const_iterator it = toRun.begin();
+		 it != toRun.end(); ++it) {
+		const sw::ShEx::ManifestEntry& entry = manifest.entries[*it];
+		sw::ShEx::EntryOutcome outcome
+		    = sw::ShEx::runEntry(entry, manifest, atomFactory);
+		std::cout << "[" << *it << "] " << entry.schemaLabel
+			  << " / " << entry.dataLabel << ": ";
+		if (!outcome.error.empty()) {
+		    ++failures;
+		    std::cout << "ERROR " << outcome.error << "\n";
+		    continue;
+		}
+		std::cout << (outcome.allAsAsserted ? "conformant" : "nonconformant")
+			  << ", expected "
+			  << (entry.expectConformant ? "conformant" : "nonconformant")
+			  << (outcome.statusMatched ? " -- PASS" : " -- FAIL") << "\n";
+		for (std::vector<sw::ShEx::AssociationResult>::const_iterator r
+			 = outcome.results.begin(); r != outcome.results.end(); ++r)
+		    std::cout << "  " << r->assoc.node->toString()
+			      << "@" << (r->assoc.negated ? "!" : "")
+			      << (r->assoc.shape ? r->assoc.shape->toString()
+				 : std::string("START"))
+			      << ": " << (r->conformant ? "conformant" : "nonconformant")
+			      << "\n";
+		if (!outcome.statusMatched)
+		    ++failures;
+	    }
+	    return failures > 125 ? 125 : failures;
 	}
 
 	if (vm.count("post")) {

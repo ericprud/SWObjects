@@ -19,6 +19,9 @@
 #include "TurtleParser.hpp"
 #include "ShExCParser.hpp"
 #include "ShExSchema.hpp"
+#include "ShExShapeMap.hpp"
+#include "ShExManifest.hpp"
+#include "MiniJSON.hpp"
 
 #include <fstream>
 #include <cstdlib>
@@ -231,7 +234,7 @@ namespace {
     void validationTest (std::string name, std::string schemaUrl, std::string dataUrl,
 			 const sw::TTerm* focus, std::string focusBNodeLabel,
 			 const sw::TTerm* shape, std::string shapeBNodeLabel,
-			 bool expectPass) {
+			 std::string externsUrl, bool expectPass) {
 	SchemaCache::Entry* schemaEntry = Schemas.get(schemaUrl);
 	if (schemaEntry->schema == NULL) {
 	    BOOST_ERROR(name + ": failed to load schema " + schemaUrl + ": "
@@ -273,6 +276,17 @@ namespace {
 	    bnodeLabels[it->second] = it->first;
 	sw::ShEx::Validator validator(*schema, *data->db.ensureGraph(sw::DefaultGraph));
 	validator.setBNodeLabels(&bnodeLabels);
+	std::unique_ptr<sw::ShEx::SchemaExternalResolver> resolver;
+	if (!externsUrl.empty()) {
+	    SchemaCache::Entry* externs = Schemas.get(externsUrl);
+	    if (externs->schema == NULL) {
+		BOOST_ERROR(name + ": failed to load shapeExterns " + externsUrl + ": "
+			    + externs->parseError);
+		return;
+	    }
+	    resolver.reset(new sw::ShEx::SchemaExternalResolver(*externs->schema));
+	    validator.setExternalResolver(resolver.get());
+	}
 	bool got;
 	try {
 	    got = validator.validate(focus, shape);
@@ -289,6 +303,77 @@ namespace {
 			+ " for " + (focus ? focus->toString() : "(null)")
 			+ " as " + (shape ? shape->toString() : "START")
 			+ " in " + schemaUrl);
+    }
+
+    /** A shexTest sht:map test: validate every {node, shape} pair of the JSON
+     * map. With an mf:result file, compare each pair to its expected result;
+     * otherwise all pairs must conform (ValidationTest) or not all
+     * (ValidationFailure). */
+    void shapeMapTest (std::string name, std::string schemaUrl, std::string dataUrl,
+		       std::string mapUrl, std::string resultUrl, bool expectPass) {
+	SchemaCache::Entry* schemaEntry = Schemas.get(schemaUrl);
+	if (schemaEntry->schema == NULL || !schemaEntry->structureError.empty()) {
+	    BOOST_ERROR(name + ": failed to load schema " + schemaUrl + ": "
+			+ schemaEntry->parseError + schemaEntry->structureError);
+	    return;
+	}
+	DataCache::Entry* data = Data.get(dataUrl);
+	if (!data->loaded) {
+	    BOOST_ERROR(name + ": failed to load data " + dataUrl + ": " + data->error);
+	    return;
+	}
+	try {
+	    std::vector<sw::ShEx::Association> associations
+		= sw::ShEx::parseJsonMap(readFile(toLocalPath(mapUrl)), &F);
+	    sw::ShEx::Validator validator(*schemaEntry->schema,
+					  *data->db.ensureGraph(sw::DefaultGraph));
+	    std::vector<sw::ShEx::AssociationResult> results
+		= sw::ShEx::evaluate(validator, associations);
+	    if (!resultUrl.empty()) {
+		sw::MiniJSON::Value expected = sw::MiniJSON::parse(readFile(toLocalPath(resultUrl)));
+		for (std::vector<sw::ShEx::AssociationResult>::const_iterator r
+			 = results.begin(); r != results.end(); ++r) {
+		    const sw::MiniJSON::Value* forNode
+			= expected.get(r->assoc.node->getLexicalValue());
+		    if (forNode == NULL || !forNode->isArray()) {
+			BOOST_ERROR(name + ": no expected result for "
+				    + r->assoc.node->toString());
+			continue;
+		    }
+		    bool found = false;
+		    for (std::vector<sw::MiniJSON::Value>::const_iterator e
+			     = forNode->array.begin(); e != forNode->array.end(); ++e)
+			if (e->getString("shape")
+			    == (r->assoc.shape ? r->assoc.shape->getLexicalValue()
+			       : std::string("START"))) {
+			    found = true;
+			    const sw::MiniJSON::Value* res = e->get("result");
+			    bool want = res != NULL && res->type == sw::MiniJSON::Value::Bool_T
+				&& res->boolean;
+			    if (r->conformant != want)
+				BOOST_ERROR(name + ": " + r->assoc.node->toString()
+					    + " expected " + (want ? "conformant" : "non-conformant")
+					    + " but got "
+					    + (r->conformant ? "conformant" : "non-conformant"));
+			}
+		    if (!found)
+			BOOST_ERROR(name + ": no expected result for "
+				    + r->assoc.node->toString());
+		}
+	    } else {
+		bool all = true;
+		for (std::vector<sw::ShEx::AssociationResult>::const_iterator r
+			 = results.begin(); r != results.end(); ++r)
+		    all = all && r->asAsserted;
+		if (all != expectPass)
+		    BOOST_ERROR(name + ": expected map to be "
+				+ (expectPass ? "conformant" : "non-conformant"));
+	    }
+	} catch (std::exception& e) {
+	    BOOST_ERROR(name + ": exception: " + e.what());
+	} catch (std::string& e) {
+	    BOOST_ERROR(name + ": exception: " + e);
+	}
     }
 
     /* ------------------------------------------------------- manifest walk */
@@ -376,11 +461,6 @@ namespace {
 	    }
 	    const sw::TTerm* type = idx.getObject(entry, rdfType());
 
-	    // EXTERNAL shapes are satisfiable only with an external resolver,
-	    // which these tests assume; we treat EXTERNAL as unsatisfiable.
-	    if (name == "shapeExtern_pass" || name == "shapeExternRef_pass")
-		continue;
-
 	    boost::function<void ()> testFn;
 	    if (type == sht("ValidationTest") || type == sht("ValidationFailure")) {
 		bool expectPass = type == sht("ValidationTest");
@@ -392,18 +472,28 @@ namespace {
 		const sw::TTerm* focusT = idx.getObject(action, sht("focus"));
 		const sw::TTerm* shapeT = idx.getObject(action, sht("shape"));
 		const sw::TTerm* mapT = idx.getObject(action, sht("map"));
-		if (schemaT == NULL || dataT == NULL || focusT == NULL || mapT != NULL)
-		    continue; // shape-map tests and friends: not supported
-		std::string focusBNodeLabel;
-		if (dynamic_cast<const sw::BNode*>(focusT) != NULL)
-		    focusBNodeLabel = manifest->bnodeLabel(focusT);
-		std::string shapeBNodeLabel;
-		if (shapeT != NULL && dynamic_cast<const sw::BNode*>(shapeT) != NULL)
-		    shapeBNodeLabel = manifest->bnodeLabel(shapeT);
-		testFn = boost::bind(&validationTest, name,
-				     schemaT->getLexicalValue(), dataT->getLexicalValue(),
-				     focusT, focusBNodeLabel, shapeT, shapeBNodeLabel,
-				     expectPass);
+		const sw::TTerm* externsT = idx.getObject(action, sht("shapeExterns"));
+		if (schemaT == NULL || dataT == NULL)
+		    continue;
+		if (mapT != NULL) {
+		    const sw::TTerm* resultT = idx.getObject(entry, mf("result"));
+		    testFn = boost::bind(&shapeMapTest, name,
+					 schemaT->getLexicalValue(), dataT->getLexicalValue(),
+					 mapT->getLexicalValue(),
+					 lexOrEmpty(resultT), expectPass);
+		} else if (focusT != NULL) {
+		    std::string focusBNodeLabel;
+		    if (dynamic_cast<const sw::BNode*>(focusT) != NULL)
+			focusBNodeLabel = manifest->bnodeLabel(focusT);
+		    std::string shapeBNodeLabel;
+		    if (shapeT != NULL && dynamic_cast<const sw::BNode*>(shapeT) != NULL)
+			shapeBNodeLabel = manifest->bnodeLabel(shapeT);
+		    testFn = boost::bind(&validationTest, name,
+					 schemaT->getLexicalValue(), dataT->getLexicalValue(),
+					 focusT, focusBNodeLabel, shapeT, shapeBNodeLabel,
+					 lexOrEmpty(externsT), expectPass);
+		} else
+		    continue;
 	    } else if (type == sht("RepresentationTest")) {
 		const sw::TTerm* shex = idx.getObject(entry, sx("shex"));
 		if (shex == NULL)
@@ -427,6 +517,60 @@ namespace {
     }
 } // namespace
 
+namespace {
+
+    /** Run a webapp-style manifest (tests/ShExManifest/*) and require every
+     * entry's status to match. */
+    void webappManifestTest (std::string path) {
+	try {
+	    sw::ShEx::Manifest manifest = sw::ShEx::Manifest::load(path);
+	    if (manifest.entries.empty()) {
+		BOOST_ERROR(path + ": no entries");
+		return;
+	    }
+	    sw::AtomFactory factory;
+	    for (size_t i = 0; i < manifest.entries.size(); ++i) {
+		sw::ShEx::EntryOutcome outcome
+		    = sw::ShEx::runEntry(manifest.entries[i], manifest, factory);
+		std::stringstream at;
+		at << path << " entry " << i
+		   << " (" << manifest.entries[i].dataLabel << ")";
+		if (!outcome.error.empty())
+		    BOOST_ERROR(at.str() + ": " + outcome.error);
+		else if (!outcome.statusMatched)
+		    BOOST_ERROR(at.str() + ": expected "
+				+ (manifest.entries[i].expectConformant
+				   ? "conformant" : "nonconformant"));
+	    }
+	} catch (std::exception& e) {
+	    BOOST_ERROR(path + ": " + e.what());
+	}
+    }
+
+    std::string rangesStr (const std::string& spec, size_t n) {
+	std::vector<size_t> got = sw::ShEx::expandRanges(spec, n);
+	std::stringstream ss;
+	for (size_t i = 0; i < got.size(); ++i) {
+	    if (i > 0) ss << " ";
+	    ss << got[i];
+	}
+	return ss.str();
+    }
+
+    void rangeExpansionTest () {
+	BOOST_CHECK_EQUAL(rangesStr("*", 3), "0 1 2");
+	BOOST_CHECK_EQUAL(rangesStr("1", 3), "1");
+	BOOST_CHECK_EQUAL(rangesStr("0-2", 4), "0 1 2");
+	BOOST_CHECK_EQUAL(rangesStr("2-5,*", 7), "2 3 4 5 0 1 2 3 4 5 6");
+	BOOST_CHECK_EQUAL(rangesStr("*-3", 2), "0 1");   // '*' endpoint = all
+	BOOST_CHECK_EQUAL(rangesStr("5-2", 8), "5 4 3 2");
+	BOOST_CHECK_EQUAL(rangesStr("1,2,", 4), "1 2");  // trailing comma ok
+	BOOST_CHECK_EQUAL(rangesStr("1-9", 4), "1 2 3"); // clipped to size
+	BOOST_CHECK_THROW(sw::ShEx::expandRanges("1,,2", 4), sw::ShEx::ManifestError);
+	BOOST_CHECK_THROW(sw::ShEx::expandRanges("x", 4), sw::ShEx::ManifestError);
+    }
+} // namespace
+
 bool init_function () {
     boost::unit_test::framework::master_test_suite().p_name.value = "ShEx_tests";
 
@@ -440,6 +584,20 @@ bool init_function () {
     registerManifest(parent, "negativeSyntax/");
     registerManifest(parent, "negativeStructure/");
     registerManifest(parent, "validation/");
+
+    boost::unit_test::test_suite* webapp = BOOST_TEST_SUITE("webappManifest");
+    parent->add(webapp);
+    webapp->add(boost::unit_test::make_test_case
+		(boost::function<void ()>(boost::bind(&webappManifestTest,
+						      std::string("ShExManifest/manifest.yaml"))),
+		 "yaml", __FILE__, __LINE__));
+    webapp->add(boost::unit_test::make_test_case
+		(boost::function<void ()>(boost::bind(&webappManifestTest,
+						      std::string("ShExManifest/manifest.json"))),
+		 "json", __FILE__, __LINE__));
+    webapp->add(boost::unit_test::make_test_case
+		(boost::function<void ()>(&rangeExpansionTest),
+		 "ranges", __FILE__, __LINE__));
     return true;
 }
 

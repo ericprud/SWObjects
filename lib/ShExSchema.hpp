@@ -438,6 +438,25 @@ namespace ShEx {
     /** A triple in the data graph, as (subject, predicate, object) TTerms. */
     typedef const TriplePattern* DataTriple;
 
+    /** Supplies definitions for shapes declared EXTERNAL, keyed by the
+     * label of the EXTERNAL declaration. */
+    struct ExternalResolver {
+	virtual ~ExternalResolver () {  }
+	/** Return the external definition of label, or NULL if unknown. The
+	 * returned expression stays owned by the resolver. */
+	virtual const ShapeExpr* resolveExternal (const TTerm* label) = 0;
+    };
+
+    /** Resolves EXTERNAL declarations against another Schema (e.g. a
+     * .shextern document) by looking up the same label. */
+    struct SchemaExternalResolver : public ExternalResolver {
+	const Schema& externs;
+	SchemaExternalResolver (const Schema& externs) : externs(externs) {  }
+	virtual const ShapeExpr* resolveExternal (const TTerm* label) {
+	    return externs.getShapeExpr(label);
+	}
+    };
+
     class Validator {
     public:
 	Validator (const Schema& schema, const BasicGraphPattern& data)
@@ -456,11 +475,20 @@ namespace ShEx {
 	    bnodeLabels = labels;
 	}
 
+	/** Wire in resolution of EXTERNAL shape declarations. */
+	void setExternalResolver (ExternalResolver* resolver) {
+	    externalResolver = resolver;
+	}
+
     private:
 	friend struct ShapeExprEval;
 	const Schema& schema;
 	const BasicGraphPattern& data;
 	const std::map<const TTerm*, std::string>* bnodeLabels = NULL;
+	ExternalResolver* externalResolver = NULL;
+	/** Label of the declaration currently being validated; EXTERNAL
+	 * resolves through it. */
+	const TTerm* currentDeclLabel = NULL;
 
 	/** The string the string facets apply to: literal lexical form, IRI,
 	 * or (source) blank node label. */

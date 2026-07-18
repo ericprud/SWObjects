@@ -135,6 +135,8 @@ public:
 	namespaces = newMap;
 	freeNamespaces = pFreeNamespaces;
     }
+
+    NamespaceMap* getNamespaceMap () { return namespaces; }
 };
 
 struct CharacterRange {
