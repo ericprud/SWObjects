@@ -291,9 +291,15 @@ namespace {
 	}
 	~MiniEndpoint () {
 	    stopping = true;
+	    /* closing the fd does not wake a blocked accept(2) on Linux -
+	     * connect once to kick the loop, which then sees `stopping` */
 	    boost::system::error_code ec;
-	    acceptor.close(ec);
+	    boost::asio::io_context wakeIo;
+	    boost::asio::ip::tcp::socket wake(wakeIo);
+	    wake.connect(acceptor.local_endpoint(), ec);
+	    wake.close(ec);
 	    if (thread.joinable()) thread.join();
+	    acceptor.close(ec);
 	}
 	std::string url () const {
 	    std::ostringstream ss;
@@ -314,11 +320,11 @@ namespace {
 	}
 
 	void run () {
-	    while (!stopping) {
+	    for (;;) {
 		boost::asio::ip::tcp::socket sock(io);
 		boost::system::error_code ec;
 		acceptor.accept(sock, ec);
-		if (ec) return; // acceptor closed - shut down
+		if (ec || stopping) return;
 		try { handle(sock); } catch (...) {  }
 	    }
 	}
