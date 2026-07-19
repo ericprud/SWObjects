@@ -60,6 +60,8 @@ const FUNS = { // SPARQL builtin -> a3 call name (manifesty.yaml map)
 const AGGS = new Set(["count", "sum", "min", "max", "avg", "sample", "group_concat"]);
 
 function expr(e, ctx) {
+  if (e.termType === "Variable" && ctx?.rename && !ctx.inScope.has("?" + e.value))
+    return ctx.fresh(e.value); // rule 2: out-of-scope -> renamed apart
   if (e.termType != null) return term(e);
   if (e.type === "aggregate") {
     const name = e.aggregation.toLowerCase();
@@ -117,8 +119,21 @@ function bgp(triples, ind) {
   return lines.join(" .\n" + ind);
 }
 
-/** compile a sparqljs pattern ARRAY (one group's contents) */
-function group(patterns, ind) {
+/** wrap a group's compilation in scope(...) share(its in-scope vars) */
+function scoped(patterns, ind, ctx) {
+  const V = [...inScope(patterns)];
+  const inner = { ...ctx, inScope: inScope(patterns, new Set(ctx.inScope)) };
+  return "scope ( " + group(patterns, ind + "  ", inner) + " )"
+       + " share (" + V.join(" ") + ")";
+}
+
+/** compile a sparqljs pattern ARRAY (one group's contents).
+ * ctx = {mode:"topdown"|"bottomup", inScope:Set, fresh, rename:bool} */
+function group(patterns, ind, ctx = { mode: "topdown" }) {
+  const bu = ctx.mode === "bottomup";
+  const ectx = bu ? { ...ctx, rename: true,
+                      inScope: inScope(patterns, new Set(ctx.inScope)) } : undefined;
+  const filters = []; // bottom-up: group filters apply after all joins
   const parts = []; // each a conjunct string
   for (const p of patterns) {
     switch (p.type) {
@@ -126,46 +141,68 @@ function group(patterns, ind) {
       if (p.triples.length) parts.push(bgp(p.triples, ind));
       break;
     case "optional":
-      parts.push("~( " + group(p.patterns, ind + "   ") + " )");
+      if (bu) {
+	/* rule 3: absorb the optional group's IMMEDIATE filters - they sit
+	 * outside the scope, at the LeftJoin, where outer names stay visible */
+	const direct = p.patterns.filter(x => x.type === "filter"
+					 && x.expression?.operator?.toLowerCase() !== "notexists");
+	const rest = p.patterns.filter(x => !direct.includes(x));
+	const joinScope = inScope(rest, new Set(ectx.inScope));
+	const jctx = { ...ctx, rename: true, inScope: joinScope };
+	let o = scoped(rest, ind + "  ", ctx);
+	for (const f of direct)
+	    o += " .\n" + ind + "  {" + expr(f.expression, jctx) + "}";
+	parts.push(direct.length ? "~( " + o + " )" : "~ " + o);
+      } else
+	parts.push("~( " + group(p.patterns, ind + "   ", ctx) + " )");
       break;
     case "minus": {
       /* MINUS binds to the group built so far: (acc |! (P)) */
       const acc = parts.length ? parts.join(" .\n" + ind) : "";
-      const rhs = "( " + group(p.patterns, ind + "     ") + " )";
+      const rhs = bu ? "( " + scoped(p.patterns, ind + "     ", ctx) + " )"
+                     : "( " + group(p.patterns, ind + "     ", ctx) + " )";
       parts.length = 0;
       parts.push(acc ? "( " + acc + "\n" + ind + "  |! " + rhs + " )" : "|! " + rhs);
       break;
     }
     case "union":
-      parts.push("( " + p.patterns.map(b =>
-        group(b.type === "group" ? b.patterns : [b], ind + "  ")).join("\n" + ind + "|&\n" + ind + "  ") + " )");
+      parts.push("( " + p.patterns.map(b => {
+        const ps = b.type === "group" ? b.patterns : [b];
+        return bu ? scoped(ps, ind + "  ", ctx) : group(ps, ind + "  ", ctx);
+      }).join("\n" + ind + "|&\n" + ind + "  ") + " )");
       break;
     case "group":
-      parts.push("( " + group(p.patterns, ind + "  ") + " )");
+      parts.push(bu ? scoped(p.patterns, ind + "  ", ctx)
+                    : "( " + group(p.patterns, ind + "  ", ctx) + " )");
       break;
     case "graph":
-      parts.push("in " + term(p.name) + " ( " + group(p.patterns, ind + "  ") + " )");
+      parts.push("in " + term(p.name) + " ( "
+        + (bu ? scoped(p.patterns, ind + "  ", ctx) : group(p.patterns, ind + "  ", ctx)) + " )");
       break;
     case "filter": {
       const op = p.expression?.operator?.toLowerCase();
       if (op === "notexists") {
         const arg = p.expression.args[0];
-        parts.push("!( " + group(arg.patterns ?? [arg], ind + "   ") + " )");
+        /* NB in bottom-up mode ! evaluates as Minus; SPARQL NOT EXISTS's
+         * substitution semantics are the top-down reading */
+        parts.push("!( " + group(arg.patterns ?? [arg], ind + "   ", ctx) + " )");
       }
       else if (op === "exists")
         throw new Error("unsupported: FILTER EXISTS (use the pattern directly)");
+      else if (bu)
+        filters.push("{" + expr(p.expression, ectx) + "}"); // group filters join last
       else
         parts.push("{" + expr(p.expression) + "}");
       break;
     }
     case "bind":
-      parts.push("let (" + term(p.variable) + " " + expr(p.expression) + ")");
+      parts.push("let (" + term(p.variable) + " " + expr(p.expression, ectx) + ")");
       break;
     case "values":
       parts.push(valuesBlock(p.values, ind));
       break;
     case "query":
-      parts.push(subselect(p, ind));
+      parts.push(subselect(p, ind, ctx));
       break;
     case "service":
       throw new Error("unsupported: SERVICE");
@@ -173,6 +210,7 @@ function group(patterns, ind) {
       throw new Error("unsupported pattern: " + p.type);
     }
   }
+  parts.push(...filters);
   return parts.join(" .\n" + ind);
 }
 
@@ -181,6 +219,58 @@ function valuesBlock(values, ind) {
   const rows = values.map(r =>
     "(" + vars.map(v => r[v] === undefined ? "UNDEF" : term(r[v])).join(" ") + ")");
   return "bindings (" + vars.join(" ") + ") { " + rows.join(" ") + " }";
+}
+
+/* ── section 4 (bottom-up) machinery ────────────────────────────────────── */
+
+/** SPARQL in-scope variables of a pattern list (18.2.1-ish) */
+function inScope(patterns, into = new Set()) {
+  for (const p of patterns ?? []) {
+    switch (p.type) {
+    case "bgp":
+      for (const t of p.triples)
+        for (const k of ["subject", "predicate", "object"])
+          if (t[k].termType === "Variable") into.add("?" + t[k].value);
+      break;
+    case "bind": into.add(term(p.variable)); break;
+    case "values": for (const v of Object.keys(p.values[0] ?? {})) into.add(v); break;
+    case "graph":
+      if (p.name.termType === "Variable") into.add(term(p.name));
+      inScope(p.patterns, into); break;
+    case "optional": case "group": case "union":
+      inScope(p.patterns, into); break;
+    case "query":
+      for (const v of p.variables ?? [])
+        if (v.termType === "Variable") into.add(term(v));
+        else if (v.variable) into.add(term(v.variable));
+      break;
+    case "minus": case "filter": break; // not in-scope contributors
+    }
+  }
+  return into;
+}
+
+/** fresh-name allocator over the whole query's variables (?v -> ?v_1) */
+function freshener(allVars) {
+  const made = new Map();
+  return name => {
+    if (made.has(name)) return made.get(name);
+    let n = 1;
+    while (allVars.has("?" + name + "_" + n)) ++n;
+    const f = "?" + name + "_" + n;
+    allVars.add(f);
+    made.set(name, f);
+    return f;
+  };
+}
+
+function allQueryVars(node, into = new Set()) {
+  if (!node || typeof node !== "object") return into;
+  if (node.termType === "Variable") into.add("?" + node.value);
+  for (const v of Object.values(node))
+    if (Array.isArray(v)) v.forEach(x => allQueryVars(x, into));
+    else if (v && typeof v === "object") allQueryVars(v, into);
+  return into;
 }
 
 /* projections + solution modifiers shared by SELECT and subselect */
@@ -211,14 +301,15 @@ function collectClause(q, ind) {
 }
 
 /** a nested SELECT becomes a scoped sub-pipeline sharing its projection */
-function subselect(q, ind) {
+function subselect(q, ind, ctx = { mode: "topdown" }) {
   if (q.queryType !== "SELECT") throw new Error("unsupported nested query: " + q.queryType);
   const inner = ind + "        ";
   const shared = q.variables.some(v => v.termType === "Wildcard")
     ? [...collectVars(q.where)]
     : q.variables.map(v => v.termType === "Variable" ? term(v) : term(v.variable));
   const { collect, having } = collectClause(q, inner);
-  let body = "ask ( " + group(q.where, inner) + " )\n" + inner + collect;
+  const sctx = { ...ctx, inScope: new Set() }; // subselect isolates
+  let body = "ask ( " + group(q.where, inner, sctx) + " )\n" + inner + collect;
   for (const h of having) body += "\n" + inner + h;
   return "scope ( " + body + "\n" + ind + "      ) share (" + shared.join(" ") + ")";
 }
@@ -243,10 +334,21 @@ function collectVars(patterns, into = new Set()) {
 
 /* ── whole queries ──────────────────────────────────────────────────────── */
 
-export function compile(ast) {
+export function compile(ast, opts = {}) {
+  const mode = opts.mode === "bottomup" ? "bottomup" : "topdown";
+  const ctx = { mode, inScope: new Set(),
+                fresh: freshener(allQueryVars(ast)) };
   const out = [];
-  out.push("# compiled from SPARQL (sparql-to-algae3.md section 3, top-down)");
-  out.push("require <http://www.w3.org/ns/algae3#eval-topdown>");
+  if (mode === "bottomup") {
+    out.push("# compiled from SPARQL (sparql-to-algae3.md section 4, bottom-up:");
+    out.push("#  groups scoped to their in-scope variables; out-of-scope");
+    out.push("#  expression variables renamed apart; OPTIONAL-immediate");
+    out.push("#  filters absorbed at the LeftJoin)");
+    out.push("require <http://www.w3.org/ns/algae3#eval-bottomup>");
+  } else {
+    out.push("# compiled from SPARQL (sparql-to-algae3.md section 3, top-down)");
+    out.push("require <http://www.w3.org/ns/algae3#eval-topdown>");
+  }
   for (const [pfx, iri] of Object.entries(ast.prefixes ?? {}))
     out.push("prefix " + pfx + ": <" + iri + ">");
   if (ast.base) out.push("base <" + ast.base + ">");
@@ -258,16 +360,16 @@ export function compile(ast) {
   switch (ast.queryType) {
   case "SELECT": {
     const { collect, having } = collectClause(ast, "");
-    out.push("ask ( " + group(ast.where, ind) + " )");
+    out.push("ask ( " + group(ast.where, ind, ctx) + " )");
     out.push(collect);
     for (const h of having) out.push(h);
     break;
   }
   case "ASK":
-    out.push("test ( " + group(ast.where, ind) + " )");
+    out.push("test ( " + group(ast.where, ind, ctx) + " )");
     break;
   case "CONSTRUCT":
-    out.push("ask ( " + group(ast.where, ind) + " )");
+    out.push("ask ( " + group(ast.where, ind, ctx) + " )");
     out.push("assert ( " + bgp(ast.template ?? [], ind) + " )");
     break;
   default:
@@ -277,7 +379,7 @@ export function compile(ast) {
 }
 
 /** parse text with a sparqljs Parser instance and compile */
-export function compileText(sparqlText, SparqlParser, baseIRI) {
+export function compileText(sparqlText, SparqlParser, baseIRI, opts) {
   const parser = new SparqlParser(baseIRI ? { baseIRI } : {});
-  return compile(parser.parse(sparqlText));
+  return compile(parser.parse(sparqlText), opts ?? {});
 }

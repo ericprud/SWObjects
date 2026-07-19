@@ -84,7 +84,11 @@ Start the server with e.g.
   </div>
   <div>
     <h2>Source SPARQL
-      <button onclick="compileSparql()" style="margin-left:8px">Compile &rarr; a3</button>
+      <select id="cmode" style="margin-left:8px;font-size:11px">
+        <option value="topdown">&sect;3 top-down</option>
+        <option value="bottomup">&sect;4 bottom-up (SPARQL-faithful)</option>
+      </select>
+      <button onclick="compileSparql()">Compile &rarr; a3</button>
       <span id="cstat" style="font-weight:normal;font-size:11px;color:#888"></span></h2>
     <textarea id="sparql" rows="14" placeholder="# paste raw SPARQL (.rq) here and Compile - or reference only"></textarea>
   </div>
@@ -231,8 +235,11 @@ window.compileSparql = async () => {
       import("https://esm.sh/sparqljs?bundle").then(m => m.default ?? m),
       import("./sparql-to-a3.js"),
     ]);
-    $("script").value = s2a3.compileText(q, SparqlJs.Parser);
-    $("cstat").textContent = "compiled (top-down structural translation)";
+    const m = $("cmode").value;
+    $("script").value = s2a3.compileText(q, SparqlJs.Parser, null, { mode: m });
+    $("cstat").textContent = "compiled (" + (m === "bottomup"
+      ? "sec. 4: scoped groups, fresh vars, absorbed OPTIONAL filters"
+      : "sec. 3: top-down structural") + ")";
   } catch (e) {
     $("cstat").textContent = "compile error: " + e.message;
   }
