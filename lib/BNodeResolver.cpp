@@ -192,6 +192,15 @@ namespace bnr {
 	 * us there are N nodes - collapsing to one witness would lose the
 	 * others. Distinct candidates get distinct proxies; structurally
 	 * identical ones dedup onto one witness via the fragment key. */
+	/* neighbor identification is shared across candidates: labels are
+	 * consistent within this one response, so a neighbor reached from two
+	 * candidates resolves once (nbrAssigned), and sibling neighbors
+	 * sharing a link pin draw successive candidates from one recursive
+	 * resolution (nbrPools) - a bijection, correct up to automorphism,
+	 * instead of collapsing them all onto the first candidate */
+	std::map<const TTerm*, const TTerm*> nbrAssigned;
+	std::map<std::string, std::pair<std::vector<const TTerm*>, size_t> > nbrPools;
+
 	std::vector<const TTerm*> proxies;
 	for (std::vector<const TTerm*>::const_iterator cand = order.begin();
 	     cand != order.end(); ++cand) {
@@ -204,19 +213,37 @@ namespace bnr {
 	    for (std::vector<Arc>::const_iterator a = arcs.begin(); a != arcs.end(); ++a) {
 		Arc arc = *a;
 		if (dynamic_cast<const BNode*>(arc.other) != NULL) {
-		    /* neighbor bnode: identify it through its link to the hole */
-		    std::string nbrPin = pinWhere
-			+ (arc.holeAtSubject
-			   ? "?bnrH9 " + sparqlTerm(arc.p) + " ?bnrHn9 . "
-			   : "?bnrHn9 " + sparqlTerm(arc.p) + " ?bnrH9 . ");
-		    /* re-pin with the neighbor as the new hole */
-		    std::string renamed;
-		    for (size_t i = 0; i < nbrPin.size(); ) {
-			if (nbrPin.compare(i, 7, "?bnrHn9") == 0) { renamed += "?bnrH9"; i += 7; }
-			else if (nbrPin.compare(i, 6, "?bnrH9") == 0) { renamed += "?bnrPrev9"; i += 6; }
-			else renamed += nbrPin[i++];
+		    std::map<const TTerm*, const TTerm*>::const_iterator known
+			= nbrAssigned.find(arc.other);
+		    if (known != nbrAssigned.end()) {
+			arc.other = known->second;
+		    } else {
+			/* pin the neighbor through its link to the hole,
+			 * narrowed by the arcs already accumulated for the
+			 * hole (they discriminate it where the outer pin
+			 * alone does not) */
+			std::string nbrPin = pinWhere;
+			size_t nctr = (depth + 1) * 100; // mention vars disjoint per level
+			nbrPin += fragmentWhere(frag, "bnrH9", nctr);
+			nbrPin += (arc.holeAtSubject
+				   ? "?bnrH9 " + sparqlTerm(arc.p) + " ?bnrHn9 . "
+				   : "?bnrHn9 " + sparqlTerm(arc.p) + " ?bnrH9 . ");
+			/* re-pin with the neighbor as the new hole */
+			std::string renamed;
+			for (size_t i = 0; i < nbrPin.size(); ) {
+			    if (nbrPin.compare(i, 7, "?bnrHn9") == 0) { renamed += "?bnrH9"; i += 7; }
+			    else if (nbrPin.compare(i, 6, "?bnrH9") == 0) { renamed += "?bnrPrev9"; i += 6; }
+			    else renamed += nbrPin[i++];
+			}
+			if (nbrPools.find(renamed) == nbrPools.end())
+			    nbrPools[renamed] = std::make_pair(
+				resolveBNode(renamed, inFlight, depth + 1), (size_t)0);
+			std::pair<std::vector<const TTerm*>, size_t>& pool = nbrPools[renamed];
+			const TTerm* nbr = pool.first[std::min(pool.second, pool.first.size() - 1)];
+			++pool.second;
+			nbrAssigned[arc.other] = nbr;
+			arc.other = nbr;
 		    }
-		    arc.other = resolveBNode(renamed, inFlight, depth + 1)[0];
 		}
 		frag.arcs.push_back(arc);
 		if (uniquelyIdentifies(frag)) {

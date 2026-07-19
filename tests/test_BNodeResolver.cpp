@@ -120,6 +120,47 @@ BOOST_AUTO_TEST_CASE( mention_rejoins_the_right_bnode ) {
     }
 }
 
+BOOST_AUTO_TEST_CASE( sibling_neighbors_distinguished_by_recursion ) {
+    /* two anonymous neighbors of x:s via the SAME predicate are themselves
+     * only distinguishable through THEIR neighbors (a second bnode hop):
+     * identification must recurse, and sibling neighbors must draw distinct
+     * candidates from the recursive resolution instead of all collapsing
+     * onto its first candidate */
+    sw::RdfDB db;
+    {
+	sw::TurtleDriver parser("", &F);
+	std::string ttl =
+	    "@prefix x: <http://a.example/x#> .\n"
+	    "x:s x:p _:n1, _:n2 .\n"
+	    "_:n1 x:q _:c1 . _:c1 x:r x:v1 .\n"
+	    "_:n2 x:q _:c2 . _:c2 x:r x:v2 .\n";
+	sw::IStreamContext istr(ttl, sw::IStreamContext::STRING);
+	parser.parse(istr, db.ensureGraph(sw::DefaultGraph));
+    }
+    sw::bnr::RelabelingLocalClient client(&F, &db);
+    sw::bnr::BNodeResolver resolver(&F, &client);
+
+    std::string where = "<http://a.example/x#s> <http://a.example/x#p> ?n . ";
+    sw::bnr::Table t = resolver.select("SELECT ?n WHERE { " + where + "}", where);
+    BOOST_REQUIRE_EQUAL(t.size(), 2u);
+    const sw::TTerm* ns[] = { t[0]["n"], t[1]["n"] };
+    BOOST_CHECK(ns[0] != ns[1]); // siblings must not collapse
+
+    /* each proxy re-queries to exactly one node, and between them the two
+     * reach both x:r values - the bijection covers both siblings */
+    std::set<std::string> vs;
+    for (int i = 0; i < 2; ++i) {
+	std::string w2;
+	size_t ctr = 0;
+	std::string m = resolver.mention(ns[i], w2, ctr);
+	w2 += m + " <http://a.example/x#q> ?c . ?c <http://a.example/x#r> ?v . ";
+	sw::bnr::Table t2 = resolver.select("SELECT ?v WHERE { " + w2 + "}", w2);
+	BOOST_REQUIRE_EQUAL(t2.size(), 1u);
+	vs.insert(t2[0].find("v")->second->getLexicalValue());
+    }
+    BOOST_CHECK_EQUAL(vs.size(), 2u);
+}
+
 BOOST_AUTO_TEST_CASE( provider_caches_and_subsumes ) {
     Endpoint ep;
     sw::RdfDB cacheDB;
