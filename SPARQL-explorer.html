@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPARQL / Algae 3 Evaluation Explorer</title>
+<style>
+:root { font-family: system-ui, sans-serif; font-size: 14px;
+        --now: #fff8e1; --done: #e8f5e9; --pend: #fafafa; }
+* { box-sizing: border-box; margin: 0; }
+body { max-width: 1500px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 1.3em; margin-bottom: 4px; }
+h2 { font-size: 1.02em; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 14px 0 8px; }
+p.desc { font-size: 12px; color: #555; margin: 3px 0 8px; }
+code { font-family: monospace; background: #f3f3f3; padding: 1px 3px; border-radius: 2px; }
+button { padding: 3px 12px; font-size: 12px; cursor: pointer; border: 1px solid #bbb;
+         border-radius: 3px; background: #f4f4f4; }
+button:hover { background: #e8e8e8; }
+button.primary { background: #1565c0; border-color: #1565c0; color: white; }
+button.primary:hover { background: #0d47a1; }
+.row { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+.row label { font-size: 12px; color: #666; min-width: 72px; }
+.row input[type=text] { flex: 1; border: 1px solid #ccc; padding: 3px 7px;
+                        font-family: monospace; font-size: 12px; border-radius: 3px; }
+textarea { width: 100%; font-family: monospace; font-size: 11px; border: 1px solid #ccc;
+           border-radius: 3px; padding: 6px; }
+#status { font-style: italic; color: #888; font-size: 12px; }
+#status.err { color: #c62828; }
+
+.panes { display: flex; gap: 12px; align-items: flex-start; }
+.panes > div { flex: 1; min-width: 0; }
+
+/* pipeline */
+#pipeline { font-family: monospace; font-size: 11px; }
+.act { display: flex; gap: 7px; padding: 4px 7px; border-left: 3px solid #ccc;
+       margin: 2px 0; background: var(--pend); cursor: pointer; border-radius: 0 3px 3px 0; }
+.act:hover { filter: brightness(.97); }
+.act.done { background: var(--done); border-left-color: #388e3c; }
+.act.now  { background: var(--now);  border-left-color: #f9a825; font-weight: bold; }
+.act .ord { color: #999; min-width: 18px; text-align: right; }
+.act .alg { white-space: pre-wrap; word-break: break-all; }
+
+/* results */
+table.sp { border-collapse: collapse; font-family: monospace; font-size: 12px; margin: 6px 0; }
+table.sp th, table.sp td { border: 1px solid #ccc; padding: 3px 7px; white-space: nowrap; }
+table.sp th { background: #e8e8f0; position: sticky; top: 0; }
+table.sp td.nil { color: #bbb; }
+#rswrap { max-height: 420px; overflow: auto; border: 1px solid #eee; }
+.proofrow td { background: #f6f8fa; color: #555; font-size: 10px; }
+.delta { font-size: 12px; color: #666; margin: 4px 0; }
+.delta b.grow { color: #2e7d32; } .delta b.shrink { color: #c62828; }
+
+.cmp { display: flex; gap: 12px; }
+.cmp > div { flex: 1; overflow: auto; }
+details summary { cursor: pointer; font-size: 12px; color: #0366d6; }
+</style>
+</head>
+<body>
+<h1>SPARQL / Algae 3 Evaluation Explorer</h1>
+<p class="desc">
+A generic step-through of query evaluation, driven live by the
+<code>bin/algae3 --serve</code> debugger (see the SWObjects checkout).
+Load an Algae 3 pipeline — typically a SPARQL query compiled per
+<code>doc/sparql-to-algae3.md</code> — and advance action by action, watching
+the result set evolve through each triple constraint, join, filter, scope
+(subselect), <code>collect … by</code> (GROUP BY / aggregates) and standalone
+<code>{…}</code> (HAVING). Paste the source SPARQL alongside for reference.
+Start the server with e.g.
+<code>bin/algae3 --serve 8765 --serve-dir tests/Algae3</code>.
+</p>
+
+<div class="row">
+  <label for="server">server</label>
+  <input type="text" id="server" value="http://localhost:8765">
+  <label for="scriptURL">script URL</label>
+  <input type="text" id="scriptURL" placeholder="e.g. tests/Algae3/rule-engine-dnf.a3 (fetched by the browser)">
+  <button onclick="loadScriptURL()">Fetch</button>
+</div>
+
+<div class="panes">
+  <div>
+    <h2>Algae 3 pipeline (evaluated)</h2>
+    <textarea id="script" rows="14" placeholder="# paste an Algae 3 script (load / ask / collect ...)"></textarea>
+  </div>
+  <div>
+    <h2>Source SPARQL (reference only)</h2>
+    <textarea id="sparql" rows="14" placeholder="# optionally paste the SPARQL this pipeline compiles"></textarea>
+  </div>
+</div>
+
+<div class="row" style="margin-top:8px">
+  <button class="primary" onclick="doLoad()">Load into debugger</button>
+  <label style="min-width:0">mode</label>
+  <select id="mode">
+    <option value="">script's require</option>
+    <option value="topdown">topdown (correlated)</option>
+    <option value="bottomup">bottomup (SPARQL algebra)</option>
+  </select>
+  <button onclick="doStep()">Step ▸</button>
+  <button onclick="doRun()">Run ▸▸</button>
+  <button onclick="doReset()">Reset ⟲</button>
+  <button onclick="compareModes()" title="Run the whole pipeline in both modes and diff the final result sets">Compare modes ⇄</button>
+  <span id="status">idle — load a script</span>
+</div>
+
+<div class="panes">
+  <div style="flex:0 0 46%">
+    <h2>Pipeline <span id="modeTag" style="font-weight:normal;font-size:11px;color:#888"></span></h2>
+    <p class="desc">Click an action to run from the start up to (and including) it.</p>
+    <div id="pipeline"><em style="font-size:12px;color:#999">no script loaded</em></div>
+    <h2>Speculative match (<code>try</code>)</h2>
+    <p class="desc">Evaluate a pattern against the current result set in the
+    current mode <em>without committing</em> — e.g. paste a negation to see
+    whether correlated <code>!</code> vs bottom-up Minus would drop rows.</p>
+    <textarea id="trybox" rows="3" placeholder="!( ?s <p> ?o )"></textarea>
+    <div class="row"><button onclick="doTry()">try ( … )</button>
+      <span id="tryout" style="font-size:12px;color:#666"></span></div>
+  </div>
+  <div>
+    <h2>Result set <span id="rowcount" style="font-weight:normal;font-size:11px;color:#888"></span></h2>
+    <div class="delta" id="delta"></div>
+    <label style="font-size:12px"><input type="checkbox" id="showProofs" onchange="render()"> show proof sets</label>
+    <div id="rswrap"></div>
+    <div id="extras" style="font-size:12px;color:#555;margin-top:6px"></div>
+    <div id="compare"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+let state = null;        // last server state
+let prevRowCount = null; // for the delta line
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const srv = () => $("server").value.replace(/\/+$/, "");
+
+function setStatus(msg, err) {
+  $("status").textContent = msg;
+  $("status").className = err ? "err" : "";
+}
+
+async function api(path, body) {
+  const r = await fetch(srv() + path, { method: "POST", body: body ?? "" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+/* ── actions ────────────────────────────────────────────────────────────── */
+window.loadScriptURL = async () => {
+  const u = $("scriptURL").value.trim();
+  if (!u) return;
+  try {
+    $("script").value = await (await fetch(u)).text();
+    // convention: a sibling .rq with the same stem is the SPARQL source
+    const rq = u.replace(/(-topdown|-bottomup)?\.a3$/, ".rq");
+    if (rq !== u)
+      try { const r = await fetch(rq); if (r.ok) $("sparql").value = await r.text(); }
+      catch (e) { /* no paired SPARQL; fine */ }
+    setStatus("fetched " + u + " — Load into debugger to begin");
+  } catch (e) { setStatus("fetch failed: " + e.message, true); }
+};
+
+window.doLoad = async () => {
+  const script = $("script").value;
+  if (!script.trim()) { setStatus("nothing to load", true); return; }
+  try {
+    prevRowCount = null;
+    state = await api("/load?mode=" + $("mode").value, script);
+    $("compare").innerHTML = "";
+    render();
+    setStatus(state.error ? "load error: " + state.error
+                          : "loaded " + state.actions.length + " actions", !!state.error);
+  } catch (e) { setStatus("server error: " + e.message + " — is bin/algae3 --serve running?", true); }
+};
+
+window.doStep  = () => advance("/step");
+window.doRun   = () => advance("/run");
+window.doReset = () => { prevRowCount = null; return advance("/reset"); };
+
+async function advance(path) {
+  if (!state) { setStatus("load a script first", true); return; }
+  try {
+    prevRowCount = state.rows.length;
+    state = await api(path);
+    render();
+    setStatus(state.error ? "action error: " + state.error
+            : state.done ? "pipeline complete"
+            : "at action " + state.pos + " of " + state.actions.length, !!state.error);
+  } catch (e) { setStatus("server error: " + e.message, true); }
+}
+
+/* click an action ordinal: reset then step to it */
+window.runTo = async n => {
+  if (!state) return;
+  try {
+    await api("/reset");
+    prevRowCount = null;
+    for (let i = 0; i <= n; ++i) { prevRowCount = state.rows.length; state = await api("/step"); }
+    render();
+    setStatus("ran to action " + n + " (" + state.rows.length + " rows)");
+  } catch (e) { setStatus("server error: " + e.message, true); }
+};
+
+window.doTry = async () => {
+  const t = $("trybox").value.trim();
+  if (!t || !state) return;
+  try {
+    const r = await api("/try", t);
+    $("tryout").textContent = r.error ? "parse error: " + r.error
+      : `over ${r.rowsNow} rows: +${r.extended} extended, −${r.dropped} dropped (discarded)`;
+  } catch (e) { $("tryout").textContent = "server error: " + e.message; }
+};
+
+/* run the whole pipeline under both modes; show final tables side by side */
+window.compareModes = async () => {
+  const script = $("script").value;
+  if (!script.trim()) { setStatus("nothing to compare", true); return; }
+  try {
+    setStatus("comparing modes…");
+    const td = await api("/load?mode=topdown", script).then(() => api("/run"));
+    const bu = await api("/load?mode=bottomup", script).then(() => api("/run"));
+    const key = s => JSON.stringify([s.vars, [...s.rows].map(r => r.join(" ")).sort()]);
+    const same = key(td) === key(bu);
+    $("compare").innerHTML =
+      `<h2>Mode comparison — final result sets ${same
+         ? '<span style="color:#2e7d32">(identical)</span>'
+         : '<span style="color:#c62828">(DIVERGENT)</span>'}</h2>
+       <div class="cmp">
+         <div><b style="font-size:12px">topdown (correlated)</b>${rsTable(td, false)}</div>
+         <div><b style="font-size:12px">bottomup (SPARQL algebra)</b>${rsTable(bu, false)}</div>
+       </div>`;
+    // restore the selected mode's fresh session
+    prevRowCount = null;
+    state = await api("/load?mode=" + $("mode").value, script);
+    render();
+    setStatus(same ? "modes agree on this pipeline"
+                   : "modes DIVERGE — inspect with step + try", !same);
+  } catch (e) { setStatus("server error: " + e.message, true); }
+};
+
+/* ── rendering ──────────────────────────────────────────────────────────── */
+
+/** pretty-print an action-algebra s-expression with indentation */
+function prettyAlg(s) {
+  let out = "", depth = 0;
+  const BREAKERS = new Set(["djoin","join","optjoin","leftjoin","notexists","minus",
+                            "orelse","union","munion","diff","scope","pipeline",
+                            "ask","collect","ingraph"]);
+  const toks = s.match(/\(|\)|[^()\s]+|\s+/g) ?? [];
+  let lineStart = true;
+  for (let i = 0; i < toks.length; ++i) {
+    const t = toks[i];
+    if (/^\s+$/.test(t)) { if (!lineStart) out += " "; continue; }
+    if (t === "(") {
+      const head = toks[i+1] ?? "";
+      if (BREAKERS.has(head) && !lineStart) { out += "\n" + "  ".repeat(depth); }
+      out += "("; depth++; lineStart = false;
+    } else if (t === ")") { depth--; out += ")"; lineStart = false; }
+    else { out += t; lineStart = false; }
+  }
+  return out;
+}
+
+function classify(alg) {
+  if (alg.startsWith("(load"))     return ["load",    "dataset construction (merge / named graph)"];
+  if (alg.startsWith("(ask"))      return ["ask",     "pattern matching over the current result set"];
+  if (alg.startsWith("(collect")) {
+    if (alg.includes("(groupby"))  return ["collect", "GROUP BY + aggregate projection"];
+    return ["collect", "projection / DISTINCT / ORDER / LIMIT"];
+  }
+  if (alg.startsWith("(filter"))   return ["filter",  "standalone filter (HAVING when after an aggregating collect)"];
+  if (alg.startsWith("(bindings")) return ["bindings","inline table join (VALUES)"];
+  if (alg.startsWith("(let"))      return ["let",     "computed binding (BIND)"];
+  if (alg.startsWith("(test"))     return ["test",    "boolean probe (ASK) — result set unchanged"];
+  if (alg.startsWith("(assert"))   return ["assert",  "template instantiation (CONSTRUCT/INSERT)"];
+  if (alg.startsWith("(fwrule"))   return ["fwrule",  "forward rule to fixpoint"];
+  return ["", ""];
+}
+
+function rsTable(s, withProofs) {
+  if (!s.vars.length && !s.rows.length) return "<em style='font-size:12px'>(unit result set)</em>";
+  if (!s.rows.length) return "<em style='font-size:12px'>(empty result set)</em>";
+  const hdr = s.vars.map(v => `<th>${esc(v)}</th>`).join("");
+  const body = s.rows.map((r, i) => {
+    const tds = r.map(c => `<td class="${c ? "" : "nil"}">${c ? esc(c) : "∅"}</td>`).join("");
+    const proofs = withProofs && s.proofs[i] && s.proofs[i].length
+      ? `<tr class="proofrow"><td colspan="${s.vars.length}">⊢ ${s.proofs[i].map(esc).join(" · ")}</td></tr>`
+      : "";
+    return `<tr>${tds}</tr>${proofs}`;
+  }).join("");
+  return `<table class="sp"><thead><tr>${hdr}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function render() {
+  if (!state) return;
+  $("modeTag").textContent = "mode: " + state.mode;
+
+  $("pipeline").innerHTML = state.actions.map((a, i) => {
+    const cls = i < state.pos ? "done" : i === state.pos && !state.done ? "now" : "";
+    const [kind, gloss] = classify(a);
+    return `<div class="act ${cls}" onclick="runTo(${i})" title="${esc(gloss)}">
+              <span class="ord">${i}</span>
+              <span class="alg">${esc(prettyAlg(a))}</span>
+            </div>`;
+  }).join("") || "<em style='font-size:12px;color:#999'>no actions</em>";
+
+  $("rowcount").textContent = "(" + state.rows.length + " row" + (state.rows.length === 1 ? "" : "s") + ")";
+  if (prevRowCount !== null && prevRowCount !== state.rows.length) {
+    const grow = state.rows.length > prevRowCount;
+    $("delta").innerHTML = `rows: ${prevRowCount} → <b class="${grow ? "grow" : "shrink"}">${state.rows.length}</b>`;
+  } else
+    $("delta").innerHTML = "";
+  $("rswrap").innerHTML = rsTable(state, $("showProofs").checked);
+
+  const extras = [];
+  if (state.asserted.length)
+    extras.push(`<details><summary>${state.asserted.length} asserted triple(s)</summary><pre>` +
+                state.asserted.map(esc).join("\n") + "</pre></details>");
+  if (state.actions.some(a => a.startsWith("(test")))
+    extras.push(`test: <b>${state.lastTest ? "yes" : "no"}</b>`);
+  $("extras").innerHTML = extras.join(" ");
+}
+</script>
+</body>
+</html>

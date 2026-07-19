@@ -31,6 +31,8 @@
 
 namespace sw = w3c_sw;
 
+#include "algae3serve.inc"
+
 namespace {
 
     sw::AtomFactory F;
@@ -301,6 +303,8 @@ namespace {
 
 int main (int argc, char** argv) {
     bool debug = false, algebra = false, proofs = false, sortedBindings = false;
+    int servePort = 0;
+    std::string serveDir = ".";
     int modeOverride = -1;
     std::vector<std::string> files;
 
@@ -310,6 +314,8 @@ int main (int argc, char** argv) {
 	else if (arg == "--algebra") algebra = true;
 	else if (arg == "--proofs") proofs = true;
 	else if (arg == "--sorted-bindings") sortedBindings = true; // test-golden format
+	else if (arg == "--serve" && i+1 < argc) servePort = atoi(argv[++i]);
+	else if (arg == "--serve-dir" && i+1 < argc) serveDir = argv[++i];
 	else if (arg == "--mode" && i+1 < argc) {
 	    std::string m = argv[++i];
 	    if (m == "topdown") modeOverride = sw::a3::EVAL_topdown;
@@ -321,6 +327,8 @@ int main (int argc, char** argv) {
 	} else
 	    files.push_back(arg);
     }
+    if (servePort > 0)
+	return a3serve::serve(servePort, &F, serveDir);
     if (files.empty()) {
 	std::cerr << "usage: algae3 [--algebra] [--proofs] [--mode m] [--debug] file.a3 ...\n";
 	return 2;
