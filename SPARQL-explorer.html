@@ -83,8 +83,10 @@ Start the server with e.g.
     <textarea id="script" rows="14" placeholder="# paste an Algae 3 script (load / ask / collect ...)"></textarea>
   </div>
   <div>
-    <h2>Source SPARQL (reference only)</h2>
-    <textarea id="sparql" rows="14" placeholder="# optionally paste the SPARQL this pipeline compiles"></textarea>
+    <h2>Source SPARQL
+      <button onclick="compileSparql()" style="margin-left:8px">Compile &rarr; a3</button>
+      <span id="cstat" style="font-weight:normal;font-size:11px;color:#888"></span></h2>
+    <textarea id="sparql" rows="14" placeholder="# paste raw SPARQL (.rq) here and Compile - or reference only"></textarea>
   </div>
 </div>
 
@@ -151,6 +153,12 @@ window.loadScriptURL = async () => {
   const u = $("scriptURL").value.trim();
   if (!u) return;
   try {
+    if (/\.rq$/.test(u)) {   // raw SPARQL: fetch + compile client-side
+      $("sparql").value = await (await fetch(u)).text();
+      await compileSparql();
+      setStatus("fetched + compiled " + u + " - Load into debugger to begin");
+      return;
+    }
     $("script").value = await (await fetch(u)).text();
     // convention: a sibling .rq with the same stem is the SPARQL source
     const rq = u.replace(/(-topdown|-bottomup)?\.a3$/, ".rq");
@@ -210,6 +218,24 @@ window.doTry = async () => {
     $("tryout").textContent = r.error ? "parse error: " + r.error
       : `over ${r.rowsNow} rows: +${r.extended} extended, −${r.dropped} dropped (discarded)`;
   } catch (e) { $("tryout").textContent = "server error: " + e.message; }
+};
+
+/* SPARQL -> a3: sparqljs (CDN, loaded on demand) + ./sparql-to-a3.js
+ * (the top-down structural compilation of doc/sparql-to-algae3.md sec. 3) */
+window.compileSparql = async () => {
+  const q = $("sparql").value;
+  if (!q.trim()) { $("cstat").textContent = "nothing to compile"; return; }
+  try {
+    $("cstat").textContent = "compiling\u2026";
+    const [SparqlJs, s2a3] = await Promise.all([
+      import("https://esm.sh/sparqljs?bundle").then(m => m.default ?? m),
+      import("./sparql-to-a3.js"),
+    ]);
+    $("script").value = s2a3.compileText(q, SparqlJs.Parser);
+    $("cstat").textContent = "compiled (top-down structural translation)";
+  } catch (e) {
+    $("cstat").textContent = "compile error: " + e.message;
+  }
 };
 
 /* run the whole pipeline under both modes; show final tables side by side */
