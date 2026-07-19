@@ -1,0 +1,41 @@
+# Evidence-appraisal instance data (abstracted from a production component
+# catalog: components -> evidence, Film -> Observational, Port -> Rnc,
+# diameterInInches -> pValue, material -> effectMeasure).
+PREFIX ex: <http://a.example/ns#>
+PREFIX ev: <http://a.example/evidence#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+ex:Observational rdfs:subClassOf ex:Evidence .
+ex:Rnc rdfs:subClassOf ex:Evidence .
+
+## Pooled analyses
+ev:MA-1 a ex:PooledAnalysis ;
+  ex:onObservational ev:OBS-2214 ;
+  ex:onRnc ev:RNC-0859.1 .
+
+## Observational studies
+ev:OBS-2214 a ex:Observational ;
+  ex:registryId "OBS-2214" ;
+  ex:name "Cohort of 2214 adults" ;
+  ex:effectMeasure ex:OddsRatio .
+
+## Randomized controlled trials (one family, four arms)
+ev:RNC-0859.1 a ex:Rnc ;
+  ex:trialFamily "RNC-0859" ;
+  ex:pValue .15625 ;
+  ex:name "multi-arm trial (arm 1)" .
+
+ev:RNC-0859.2 a ex:Rnc ;
+  ex:trialFamily "RNC-0859" ;
+  ex:pValue .25 ;
+  ex:name "multi-arm trial (arm 2)" .
+
+ev:RNC-0859.3 a ex:Rnc ;
+  ex:trialFamily "RNC-0859" ;
+  ex:pValue .375 ;
+  ex:name "multi-arm trial (arm 3)" .
+
+ev:RNC-0859.4 a ex:Rnc ;
+  ex:trialFamily "RNC-0859" ;
+  ex:pValue .5 ;
+  ex:name "multi-arm trial (arm 4)" .

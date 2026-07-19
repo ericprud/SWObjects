@@ -1,0 +1,45 @@
+# Evidence groups (abstracted from component groups).
+PREFIX ex: <http://a.example/ns#>
+PREFIX ev: <http://a.example/evidence#>
+PREFIX evgrp: <http://a.example/evgrp/>
+
+evgrp:MetaAnalyses1 a ex:Group ;
+  ex:name "MetaAnalyses1(?)" ;
+  ex:member [ ex:evidence ev:MA-1 ] .
+
+evgrp:RecentCohorts a ex:Group ;
+  ex:name "cohorts started within 2y" ;
+  ex:member
+    <#RecentCohorts_OBS-2214> ,
+    <#RecentCohorts_DOES_NOT_EXIST> .
+  <#RecentCohorts_OBS-2214> ex:evidence ev:OBS-2214 .
+  <#RecentCohorts_DOES_NOT_EXIST> ex:evidence ev:DOES_NOT_EXIST .
+
+evgrp:PeerReviewedCohorts a ex:Group ;
+  ex:name "peer-reviewed cohorts" ;
+  ex:member
+    [ ex:evidence ev:OBS-0999 ] ,
+    [ ex:evidence ev:OBS-2214 ] .
+
+evgrp:ConfoundedStudies a ex:Group ;
+  ex:name "confounding-prone studies" ;
+  ex:member
+    [ ex:evidence ev:OBS-2214 ] ,
+    [ ex:evidence ev:OBS-0990 ] .
+
+evgrp:PreregisteredStudies a ex:Group ;
+  ex:name "preregistered studies" ;
+  # does NOT include ev:OBS-2214
+  ex:member [ ex:evidence ev:OBS-0990 ] .
+
+evgrp:PeerReviewedCohortsEXCLUDED a ex:Group ;
+  ex:name "peer-reviewed cohorts" ;
+  ex:member
+    [ ex:evidence ev:OBS-0999EXCLUDED ] ,
+    [ ex:evidence ev:OBS-2214EXCLUDED ] .
+
+evgrp:ConfoundedStudiesEXCLUDED a ex:Group ;
+  ex:name "confounded studies" ;
+  ex:member
+    [ ex:evidence ev:OBS-2214EXCLUDED ] ,
+    [ ex:evidence ev:OBS-0990EXCLUDED ] .

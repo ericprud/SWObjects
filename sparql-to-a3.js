@@ -25,7 +25,10 @@ function term(t) {
   switch (t.termType) {
   case "NamedNode": return "<" + t.value + ">";
   case "Variable":  return "?" + t.value;
-  case "BlankNode": return "_:" + t.value.replace(/[^A-Za-z0-9_]/g, "_");
+  case "BlankNode": /* query blank nodes are existential variables scoped to
+     the BGP (SPARQL 4.1.4); Algae 3 blank nodes do not join across `.`
+     boundaries, so compile them as variables with a reserved prefix */
+    return "?_bn_" + t.value.replace(/[^A-Za-z0-9_]/g, "_");
   case "Literal": {
     const lex = '"' + t.value.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
     const dt = t.datatype?.value;

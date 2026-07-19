@@ -630,9 +630,17 @@ namespace a3 {
 	    if (!path.empty() && path[0] != '/' && !e.baseDir.empty())
 		path = e.baseDir + "/" + path;
 	    std::ifstream check(path.c_str());
-	    if (!check.good())
+	    if (!check.good() && path[0] == '/' && !e.baseDir.empty()) {
+		/* a bare `file:` base yields pseudo-absolute /rel paths;
+		 * retry relative to the script directory */
+		std::string rel = e.baseDir + path;
+		std::ifstream retry(rel.c_str());
+		if (retry.good())
+		    path = rel;
+	    }
+	    std::ifstream check2(path.c_str());
+	    if (!check2.good())
 		throw std::string("load: cannot open \"") + path + "\"";
-	    check.close();
 	    IStreamContext istr(path, IStreamContext::FILE);
 	    /* a fresh driver per load: its private bnode map standardizes
 	     * blank nodes apart, making load a graph MERGE; `as` leaves the

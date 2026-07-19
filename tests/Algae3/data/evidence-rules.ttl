@@ -1,0 +1,202 @@
+# Evidence-appraisal rules in DNF (abstracted from a production rule set;
+# same selectors/disjuncts/conjuncts, polarities and olo:index ordering).
+@prefix evgrp: <http://a.example/evgrp/> .
+@prefix ex: <http://a.example/ns#> .
+@prefix olo: <http://purl.org/ontology/olo/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#pubbias> a ex:CorroborationRule,
+  ex:Rule ;
+  ex:action <#pubbias_action0> ;
+  ex:label "publication-bias" ;
+  ex:selector <#pubbias_selector0>,
+  <#pubbias_selector1> .
+
+<#confound> a ex:Rule,
+  ex:SingleEvidenceRule ;
+  ex:action <#confound_action0> ;
+  ex:label "confound-sensitive" ;
+  ex:selector <#confound_selector0> .
+
+<#underpow> a ex:CorroborationRule,
+  ex:Rule ;
+  ex:action <#underpow_action0> ;
+  ex:label "underpowered" ;
+  ex:selector <#underpow_selector0>,
+  <#underpow_selector1> .
+
+<#pubbias_action0> ex:message "publication-bias" ;
+  ex:severity ex:Critical .
+
+<#pubbias_selector0> ex:or <#pubbias_selector0_or0>,
+  <#pubbias_selector0_or1> ;
+  olo:index 0 .
+
+<#pubbias_selector0_or0> ex:and <#pubbias_selector0_or0_and0>,
+  <#pubbias_selector0_or0_and2>,
+  <#pubbias_selector0_or0_and3> ;
+  olo:index 0 .
+
+<#pubbias_selector0_or0_and0> ex:evidenceGroup evgrp:RecentCohorts ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#pubbias_selector0_or0_and2> ex:attribute ex:effectMeasure ;
+  ex:eq ex:OddsRatio ;
+  ex:polarity ex:pos ;
+  olo:index 2 .
+
+<#pubbias_selector0_or0_and3> ex:attribute ex:effectMeasure ;
+  ex:eq ex:AdjustedOddsRatio ;
+  ex:polarity ex:neg ;
+  olo:index 3 .
+
+<#pubbias_selector0_or1> ex:and <#pubbias_selector0_or1_and0>,
+  <#pubbias_selector0_or1_and2> ;
+  olo:index 1 .
+
+<#pubbias_selector0_or1_and0> ex:evidenceGroup evgrp:PeerReviewedCohorts ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#pubbias_selector0_or1_and2> ex:attribute ex:effectMeasure ;
+  ex:eq ex:OddsRatio ;
+  ex:polarity ex:pos ;
+  olo:index 2 .
+
+<#pubbias_selector1> ex:or <#pubbias_selector1_or0> ;
+  olo:index 1 .
+
+<#pubbias_selector1_or0> ex:and <#pubbias_selector1_or0_and0> ;
+  olo:index 0 .
+
+<#pubbias_selector1_or0_and0> ex:attribute ex:pValue ;
+  ex:ge 0.5 ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#confound_action0> ex:message "confound-sensitive" ;
+  ex:severity ex:Critical .
+
+<#confound_selector0> ex:or <#confound_selector0_or0>,
+  <#confound_selector0_or1> ;
+  olo:index 0 .
+
+<#confound_selector0_or0> ex:and <#confound_selector0_or0_and0>,
+  <#confound_selector0_or0_and1>,
+  <#confound_selector0_or0_and2>,
+  <#confound_selector0_or0_and3> ;
+  ex:description """
+   RecentCohorts
+∧ in ConfoundedStudies
+∧ effectMeasure=OddsRatio
+∧ ¬effectMeasure=HazardRatio
+      """ ;
+  olo:index 0 .
+
+<#confound_selector0_or0_and0> ex:evidenceGroup evgrp:RecentCohorts ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#confound_selector0_or0_and1> ex:evidenceGroup evgrp:ConfoundedStudies ;
+  ex:polarity ex:pos ;
+  olo:index 1 .
+
+<#confound_selector0_or0_and2> ex:attribute ex:effectMeasure ;
+  ex:eq ex:OddsRatio ;
+  ex:polarity ex:pos ;
+  olo:index 2 .
+
+<#confound_selector0_or0_and3> ex:attribute ex:effectMeasure ;
+  ex:eq ex:HazardRatio ;
+  ex:polarity ex:neg ;
+  olo:index 3 .
+
+<#confound_selector0_or1> ex:and <#confound_selector0_or1_and0>,
+  <#confound_selector0_or1_and1>,
+  <#confound_selector0_or1_and2> ;
+  ex:description """
+   PeerReviewedCohorts
+∧ in ConfoundedStudies
+∧ effectMeasure=OddsRatio
+      """ ;
+  olo:index 1 .
+
+<#confound_selector0_or1_and0> ex:evidenceGroup evgrp:PeerReviewedCohorts ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#confound_selector0_or1_and1> ex:evidenceGroup evgrp:ConfoundedStudies ;
+  ex:polarity ex:pos ;
+  olo:index 1 .
+
+<#confound_selector0_or1_and2> ex:attribute ex:effectMeasure ;
+  ex:eq ex:OddsRatio ;
+  ex:polarity ex:pos ;
+  olo:index 2 .
+
+<#underpow_action0> ex:message "underpowered" ;
+  ex:severity ex:Critical .
+
+<#underpow_selector0> ex:or <#underpow_selector0_or0>,
+  <#underpow_selector0_or1> ;
+  olo:index 0 .
+
+<#underpow_selector0_or0> ex:and <#underpow_selector0_or0_and0>,
+  <#underpow_selector0_or0_and1>,
+  <#underpow_selector0_or0_and2>,
+  <#underpow_selector0_or0_and3> ;
+  olo:index 0 .
+
+<#underpow_selector0_or0_and0> ex:evidenceGroup evgrp:RecentCohorts ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#underpow_selector0_or0_and1> ex:evidenceGroup evgrp:ConfoundedStudies ;
+  ex:polarity ex:pos ;
+  olo:index 1 .
+
+<#underpow_selector0_or0_and2> ex:attribute ex:effectMeasure ;
+  ex:eq ex:OddsRatio ;
+  ex:polarity ex:pos ;
+  olo:index 2 .
+
+<#underpow_selector0_or0_and3> ex:attribute ex:effectMeasure ;
+  ex:eq ex:HazardRatio ;
+  ex:polarity ex:neg ;
+  olo:index 3 .
+
+<#underpow_selector0_or1> ex:and <#underpow_selector0_or1_and0>,
+  <#underpow_selector0_or1_and1>,
+  <#underpow_selector0_or1_and2>,
+  <#underpow_selector0_or1_and3> ;
+  olo:index 1 .
+
+<#underpow_selector0_or1_and0> ex:evidenceGroup evgrp:PeerReviewedCohorts ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+
+<#underpow_selector0_or1_and1> ex:evidenceGroup evgrp:ConfoundedStudies ;
+  ex:polarity ex:pos ;
+  olo:index 1 .
+
+<#underpow_selector0_or1_and2> ex:attribute ex:effectMeasure ;
+  ex:eq ex:OddsRatio ;
+  ex:polarity ex:pos ;
+  olo:index 2 .
+
+<#underpow_selector0_or1_and3> ex:evidenceGroup evgrp:PreregisteredStudies ;
+  ex:polarity ex:neg ;
+  olo:index 3 .
+
+<#underpow_selector1> ex:or <#underpow_selector1_or0> ;
+  olo:index 1 .
+
+<#underpow_selector1_or0> ex:and <#underpow_selector1_or0_and0> ;
+  olo:index 0 .
+
+<#underpow_selector1_or0_and0> ex:attribute ex:pValue ;
+  ex:lt 0.25 ;
+  ex:polarity ex:pos ;
+  olo:index 0 .
+

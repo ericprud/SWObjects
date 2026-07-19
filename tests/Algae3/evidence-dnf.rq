@@ -1,0 +1,167 @@
+# Evidence-appraisal DNF rule engine (abstracted from a production query:
+# components -> evidence; the recommendation UNION arm removed).
+# A rule fires when ALL selectors pass; a selector passes when ANY disjunct
+# passes; a disjunct passes when ALL its conjuncts pass - universal
+# quantification by counting, at two levels.
+BASE <file:>
+PREFIX ex:   <http://a.example/ns#>
+PREFIX ev:   <http://a.example/evidence#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT (STRAFTER(STR(?rule), "#") AS ?ruleHash) ?message ?evidences ?log
+FROM <data/evidence-rules.ttl>
+FROM <data/evidence-groups.ttl>
+FROM <data/evidence.ttl>
+WHERE { {
+  ?rule a ex:Rule ; ex:action [ ex:message ?message ] .
+  {
+    SELECT ?rule
+           (COUNT(?selector) AS ?selectorsPassed)
+           (CONCAT(IF(isIRI(?rule), STRAFTER(STR(?rule), "#"), "[]"), "(",
+             GROUP_CONCAT(?selLogStr; SEPARATOR=" + "),
+           ")") AS ?log)
+           (GROUP_CONCAT(IF(isIRI(?evidence), STRAFTER(STR(?evidence), "#"), "[]"); SEPARATOR=", ") AS ?evidences)
+    WHERE {
+      SELECT ?rule ?selector ?evidence ?selLogStr WHERE {
+        ?rule ex:selector ?selector .
+        {
+          SELECT ?evidence ?selector
+                 (CONCAT(IF(isIRI(?selector), STRAFTER(STR(?selector), "#"), "[]"), "(", IF(isIRI(?evidence), STRAFTER(STR(?evidence), "#"), "[]"), ", ",
+                   GROUP_CONCAT(?disjLogStr; SEPARATOR="∨"),
+                 ")") AS ?selLog)
+          WHERE {
+            SELECT ?evidence ?selector ?disjunct ?disjLogStr WHERE {
+              ?selector ex:or ?disjunct
+              {
+                SELECT ?evidence ?disjunct
+                       (COUNT(?conjunct) AS ?conjunctsPassed)
+                       (CONCAT(IF(isIRI(?disjunct), STRAFTER(STR(?disjunct), "#"), "[]"), "(",
+                         GROUP_CONCAT(IF(isIRI(?conjunct), STRAFTER(STR(?conjunct), "#"), "[]"); SEPARATOR="∧"),
+                       ")") AS ?disjLog)
+                WHERE {
+                  SELECT ?evidence ?disjunct ?conjunct WHERE {
+                    ?disjunct ex:and ?conjunct .
+                    {
+                      # group membership
+                      {
+                        # positive — component IS in conjunct's group
+                        VALUES ?evidence {
+                          <http://a.example/evidence#1>
+                          <http://a.example/evidence#OBS-2214>
+                          <http://a.example/evidence#RNC-0859.1>
+                          <http://a.example/evidence#2>
+                          
+                        }
+                        ?conjunct ex:polarity ex:pos .
+                        ?conjunct ex:evidenceGroup ?group .
+                        ?group ex:member ?membership .
+                        ?membership ex:evidence ?evidence .
+                      } UNION {
+                        # negative — component is NOT in conjunct's group
+                        VALUES ?evidence {
+                          <http://a.example/evidence#1>
+                          <http://a.example/evidence#OBS-2214>
+                          <http://a.example/evidence#RNC-0859.1>
+                          <http://a.example/evidence#2>
+                          
+                        }
+                        ?conjunct ex:polarity ex:neg .
+                        ?conjunct ex:evidenceGroup [] . # force scope to componentGroup atoms
+                        MINUS {
+                          ?conjunct ex:evidenceGroup ?group .
+                          ?group ex:member ?membership .
+                          ?membership ex:evidence ?evidence
+                        }
+                      }
+                    } UNION {
+                      # attribute comparison
+                      {
+                        # positive and negative — attribute's relative value does/does NOT match comparator
+                        VALUES ?evidence {
+                          <http://a.example/evidence#1>
+                          <http://a.example/evidence#OBS-2214>
+                          <http://a.example/evidence#RNC-0859.1>
+                          <http://a.example/evidence#2>
+                          
+                        }
+                        ?conjunct ex:polarity ?polarity .
+                        ?conjunct ex:attribute ?pred ; ?comparator ?threshold .
+                        FILTER(?comparator IN (ex:eq,
+                                               ex:lt, ex:gt,
+                                               ex:le, ex:ge))
+                        ?evidence ?pred ?actual .
+                        BIND (
+                          IF(?comparator = ex:eq, ?actual =  ?threshold,
+                          IF(?comparator = ex:lt, ?actual <  ?threshold,
+                          IF(?comparator = ex:gt, ?actual >  ?threshold,
+                          IF(?comparator = ex:le, ?actual <= ?threshold,
+                          IF(?comparator = ex:ge, ?actual >= ?threshold,
+                             false)))))
+                          AS ?cmpPass
+                        )
+                        FILTER ((?polarity = ex:pos) = ?cmpPass)
+                      }
+                    } UNION {
+                      # type
+                      {
+                        # positive — component has stated type
+                        VALUES ?evidence {
+                          <http://a.example/evidence#1>
+                          <http://a.example/evidence#OBS-2214>
+                          <http://a.example/evidence#RNC-0859.1>
+                          <http://a.example/evidence#2>
+                          
+                        }
+                        ?conjunct ex:polarity ex:pos .
+                        ?conjunct ex:type ?requiredType .
+                        ?evidence a ?requiredType
+                      } UNION {
+                        # negative — component does NOT have stated type
+                        VALUES ?evidence {
+                          <http://a.example/evidence#1>
+                          <http://a.example/evidence#OBS-2214>
+                          <http://a.example/evidence#RNC-0859.1>
+                          <http://a.example/evidence#2>
+                          
+                        }
+                        ?conjunct ex:polarity ex:neg .
+                        ?conjunct ex:type [] . # force scope to ex:type atoms
+                        MINUS {
+                          ?conjunct ex:type ?requiredType .
+                          ?evidence a ?requiredType
+                        }
+                      }
+                    }
+                  }
+                  ORDER BY ?conjunct
+                }
+                GROUP BY ?evidence ?disjunct
+              }
+              { SELECT ?disjunct (COUNT(*) AS ?conjunctCount)
+                WHERE {
+                ?disjunct ex:and ?conjunct .
+                }
+                GROUP BY ?disjunct
+              }
+              FILTER (?conjunctsPassed = ?conjunctCount)
+              BIND(STR(?disjLog) AS ?disjLogStr)
+            }
+            ORDER BY ?disjunct
+          }
+          GROUP BY ?evidence ?selector
+        }
+        BIND(STR(?selLog) AS ?selLogStr)
+      }
+      ORDER BY ?selector
+    }
+    GROUP BY ?rule
+  }
+  { SELECT ?rule (COUNT(*) AS ?selectorCount)
+    WHERE {
+    ?rule ex:selector ?selector .
+    }
+    GROUP BY ?rule
+  }
+  FILTER (?selectorCount = ?selectorsPassed)
+} }
+ORDER BY ?message ?evidences ?ruleHash

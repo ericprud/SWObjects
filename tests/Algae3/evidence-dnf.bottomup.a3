@@ -1,0 +1,83 @@
+# compiled from SPARQL (sparql-to-algae3.md section 4, bottom-up:
+#  groups scoped to their in-scope variables; out-of-scope
+#  expression variables renamed apart; OPTIONAL-immediate
+#  filters absorbed at the LeftJoin)
+require <http://www.w3.org/ns/algae3#eval-bottomup>
+prefix ex: <http://a.example/ns#>
+prefix ev: <http://a.example/evidence#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+base <file:>
+load <file:data/evidence-rules.ttl>
+load <file:data/evidence-groups.ttl>
+load <file:data/evidence.ttl>
+
+ask ( scope ( ?rule a <http://a.example/ns#Rule> ;
+                <http://a.example/ns#action> ?_bn_g_3 .
+          ?_bn_g_3 <http://a.example/ns#message> ?message .
+          scope ( scope ( ask ( scope ( ask ( ?rule <http://a.example/ns#selector> ?selector .
+                              scope ( scope ( ask ( scope ( ask ( ?selector <http://a.example/ns#or> ?disjunct .
+                                                  scope ( scope ( ask ( scope ( ask ( ?disjunct <http://a.example/ns#and> ?conjunct .
+                                                                      ( scope ( ( scope ( bindings (?evidence) { (<http://a.example/evidence#1>) (<http://a.example/evidence#OBS-2214>) (<http://a.example/evidence#RNC-0859.1>) (<http://a.example/evidence#2>) } .
+                                                                              ?conjunct <http://a.example/ns#polarity> <http://a.example/ns#pos> ;
+                                                                                        <http://a.example/ns#evidenceGroup> ?group .
+                                                                              ?group <http://a.example/ns#member> ?membership .
+                                                                              ?membership <http://a.example/ns#evidence> ?evidence ) share (?evidence ?conjunct ?group ?membership)
+                                                                          |&
+                                                                            scope ( ( bindings (?evidence) { (<http://a.example/evidence#1>) (<http://a.example/evidence#OBS-2214>) (<http://a.example/evidence#RNC-0859.1>) (<http://a.example/evidence#2>) } .
+                                                                              ?conjunct <http://a.example/ns#polarity> <http://a.example/ns#neg> ;
+                                                                                        <http://a.example/ns#evidenceGroup> ?_bn_g_4
+                                                                                |! ( scope ( ?conjunct <http://a.example/ns#evidenceGroup> ?group .
+                                                                                     ?group <http://a.example/ns#member> ?membership .
+                                                                                     ?membership <http://a.example/ns#evidence> ?evidence ) share (?conjunct ?group ?membership ?evidence) ) ) ) share (?evidence ?conjunct) ) ) share (?evidence ?conjunct ?group ?membership)
+                                                                      |&
+                                                                        scope ( bindings (?evidence) { (<http://a.example/evidence#1>) (<http://a.example/evidence#OBS-2214>) (<http://a.example/evidence#RNC-0859.1>) (<http://a.example/evidence#2>) } .
+                                                                          ?conjunct <http://a.example/ns#polarity> ?polarity ;
+                                                                                    <http://a.example/ns#attribute> ?pred ;
+                                                                                    ?comparator ?threshold .
+                                                                          ?evidence ?pred ?actual .
+                                                                          let (?cmpPass if((?comparator == <http://a.example/ns#eq>), (?actual == ?threshold), if((?comparator == <http://a.example/ns#lt>), (?actual < ?threshold), if((?comparator == <http://a.example/ns#gt>), (?actual > ?threshold), if((?comparator == <http://a.example/ns#le>), (?actual <= ?threshold), if((?comparator == <http://a.example/ns#ge>), (?actual >= ?threshold), false)))))) .
+                                                                          {oneof(?comparator, <http://a.example/ns#eq>, <http://a.example/ns#lt>, <http://a.example/ns#gt>, <http://a.example/ns#le>, <http://a.example/ns#ge>)} .
+                                                                          {((?polarity == <http://a.example/ns#pos>) == ?cmpPass)} ) share (?evidence ?conjunct ?polarity ?pred ?comparator ?threshold ?actual ?cmpPass)
+                                                                      |&
+                                                                        scope ( ( scope ( bindings (?evidence) { (<http://a.example/evidence#1>) (<http://a.example/evidence#OBS-2214>) (<http://a.example/evidence#RNC-0859.1>) (<http://a.example/evidence#2>) } .
+                                                                              ?conjunct <http://a.example/ns#polarity> <http://a.example/ns#pos> ;
+                                                                                        <http://a.example/ns#type> ?requiredType .
+                                                                              ?evidence a ?requiredType ) share (?evidence ?conjunct ?requiredType)
+                                                                          |&
+                                                                            scope ( ( bindings (?evidence) { (<http://a.example/evidence#1>) (<http://a.example/evidence#OBS-2214>) (<http://a.example/evidence#RNC-0859.1>) (<http://a.example/evidence#2>) } .
+                                                                              ?conjunct <http://a.example/ns#polarity> <http://a.example/ns#neg> ;
+                                                                                        <http://a.example/ns#type> ?_bn_g_5
+                                                                                |! ( scope ( ?conjunct <http://a.example/ns#type> ?requiredType .
+                                                                                     ?evidence a ?requiredType ) share (?conjunct ?requiredType ?evidence) ) ) ) share (?evidence ?conjunct) ) ) share (?evidence ?conjunct ?requiredType) ) )
+                                                                      collect (?evidence ?disjunct ?conjunct)
+                                                                        order by ?conjunct
+                                                                    ) share (?evidence ?disjunct ?conjunct) )
+                                                              collect (?evidence ?disjunct (count(?conjunct) as ?conjunctsPassed) (concat(if(isIRI(?disjunct), strafter(str(?disjunct), "#"), "[]"), "(", group_concat(if(isIRI(?conjunct), strafter(str(?conjunct), "#"), "[]"), "∧"), ")") as ?disjLog))
+                                                                by (?evidence ?disjunct)
+                                                            ) share (?evidence ?disjunct ?conjunctsPassed ?disjLog) ) share (?evidence ?disjunct ?conjunctsPassed ?disjLog) .
+                                                  scope ( scope ( ask ( ?disjunct <http://a.example/ns#and> ?conjunct )
+                                                              collect (?disjunct (count() as ?conjunctCount))
+                                                                by (?disjunct)
+                                                            ) share (?disjunct ?conjunctCount) ) share (?disjunct ?conjunctCount) .
+                                                  let (?disjLogStr str(?disjLog)) .
+                                                  {(?conjunctsPassed == ?conjunctCount)} )
+                                                  collect (?evidence ?selector ?disjunct ?disjLogStr)
+                                                    order by ?disjunct
+                                                ) share (?evidence ?selector ?disjunct ?disjLogStr) )
+                                          collect (?evidence ?selector (concat(if(isIRI(?selector), strafter(str(?selector), "#"), "[]"), "(", if(isIRI(?evidence), strafter(str(?evidence), "#"), "[]"), ", ", group_concat(?disjLogStr, "∨"), ")") as ?selLog))
+                                            by (?evidence ?selector)
+                                        ) share (?evidence ?selector ?selLog) ) share (?evidence ?selector ?selLog) .
+                              let (?selLogStr str(?selLog)) )
+                              collect (?rule ?selector ?evidence ?selLogStr)
+                                order by ?selector
+                            ) share (?rule ?selector ?evidence ?selLogStr) )
+                      collect (?rule (count(?selector) as ?selectorsPassed) (concat(if(isIRI(?rule), strafter(str(?rule), "#"), "[]"), "(", group_concat(?selLogStr, " + "), ")") as ?log) (group_concat(if(isIRI(?evidence), strafter(str(?evidence), "#"), "[]"), ", ") as ?evidences))
+                        by (?rule)
+                    ) share (?rule ?selectorsPassed ?log ?evidences) ) share (?rule ?selectorsPassed ?log ?evidences) .
+          scope ( scope ( ask ( ?rule <http://a.example/ns#selector> ?selector )
+                      collect (?rule (count() as ?selectorCount))
+                        by (?rule)
+                    ) share (?rule ?selectorCount) ) share (?rule ?selectorCount) .
+          {(?selectorCount == ?selectorsPassed)} ) share (?rule ?message ?selectorsPassed ?log ?evidences ?selectorCount) )
+collect ((strafter(str(?rule), "#") as ?ruleHash) ?message ?evidences ?log)
+  order by ?message ?evidences ?ruleHash
