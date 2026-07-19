@@ -72,6 +72,100 @@ packages/extension-map examples):
 
   bin/sparql --shex-manifest tests/ShExMap/manifest.yaml
 
+# Algae 3
+
+lib/Algae3Parser.ypp, lib/Algae3Scanner.lpp and lib/Algae3.{hpp,cpp}
+implement Algae 3, a pipeline-of-actions query language (a modernized
+Algae2); bin/algae3 is the CLI. The language itself — data model,
+actions, pattern combinators, the two evaluation modes — is specified
+in the proposal repo, https://github.com/ericprud/algae3 (doc/).
+
+Run the examples from tests/ (load paths are relative):
+
+  cd tests
+  ../bin/algae3 Algae3/evidence-dnf.topdown.a3     # the flagship (below)
+  ../bin/algae3 --mode bottomup Algae3/evidence-dnf.bottomup.a3
+  ../bin/algae3 --proofs Algae3/rule.a3            # per-row provenance
+  ../bin/algae3 --algebra Algae3/connectives.a3    # print the algebra tree
+  ../bin/algae3 --debug Algae3/negation-scoped-topdown.a3   # REPL debugger
+                # step/next/into/where/print/bindings/watch/try/mode/break/run/reset
+  ../bin/algae3 --serve 8080 Algae3/evidence-dnf.topdown.a3
+                # then open SPARQL-explorer.html (repo root): paste a raw
+                # .rq and sparql-to-a3.js compiles it to either mode and
+                # steps the evaluation visually
+
+tests/test_Algae3.cpp is the suite (golden results plus differential
+topdown-vs-bottomup runs); tests/Algae3/regen-compiled.mjs regenerates
+the compiled .a3 forms from the .rq sources via sparql-to-a3.js.
+
+The flagship query, tests/Algae3/evidence-dnf.rq, is a DNF rule engine
+abstracted from a production query: a rule fires when ALL selectors
+pass, a selector when ANY disjunct passes, a disjunct when ALL its
+conjuncts pass — universal quantification by counting, at two levels,
+with the proof log assembled by nested GROUP_CONCATs:
+
+  SELECT (STRAFTER(STR(?rule), "#") AS ?ruleHash) ?message ?evidences ?log
+  FROM <data/evidence-rules.ttl>
+  FROM <data/evidence-groups.ttl>
+  FROM <data/evidence.ttl>
+  WHERE { {
+    ?rule a ex:Rule ; ex:action [ ex:message ?message ] .
+    { SELECT ?rule (COUNT(?selector) AS ?selectorsPassed) … (…AS ?log) …
+      WHERE {
+        ?rule ex:selector ?selector .
+        { SELECT ?evidence ?selector … WHERE {
+            ?selector ex:or ?disjunct
+            { SELECT ?evidence ?disjunct (COUNT(?conjunct) AS ?conjunctsPassed) …
+              WHERE {
+                ?disjunct ex:and ?conjunct .
+                {   # conjunct kinds: group membership (via bnode
+                    # memberships!), attribute comparison, type test —
+                    # each with positive and MINUS-based negative polarity
+                    …
+                } } GROUP BY ?evidence ?disjunct }
+            { SELECT ?disjunct (COUNT(*) AS ?conjunctCount) WHERE {
+                ?disjunct ex:and ?conjunct . } GROUP BY ?disjunct }
+            FILTER (?conjunctsPassed = ?conjunctCount)   # ALL conjuncts
+        } } GROUP BY ?rule } }
+    { SELECT ?rule (COUNT(*) AS ?selectorCount) WHERE {
+        ?rule ex:selector ?selector . } GROUP BY ?rule }
+    FILTER (?selectorCount = ?selectorsPassed)           # ALL selectors
+  } }
+  ORDER BY ?message ?evidences ?ruleHash
+
+(abridged — see the file for the runnable whole). Expected: two rows,
+"confound-sensitive" firing on OBS-2214 and "underpowered" on
+OBS-2214 + RNC-0859.1, each with a log like
+confound(confound_selector0(OBS-2214, …or0(…and0∧…)∨…or1(…))).
+Both compiled forms agree across both evaluation modes.
+
+# Told bnodes (BNodeResolver)
+
+lib/BNodeResolver.{hpp,cpp} emulates "told bnodes" (rejected in SPARQL
+1.0): executing over a SPARQL endpoint, each response blank node is
+identified by a minimal uniqueness-verified fragment of in/out arcs
+(found by instrumenting the query with interrogation round trips,
+recursing through neighbor bnodes) and interned to a stable proxy that
+later queries can mention. RemoteGraphProvider caches fetched triple
+patterns with subsumption and feeds both ShEx validation over an
+endpoint (Validator::NeighborhoodSource) and remote Algae 3 execution
+(Engine::remote). The algorithm is written up in the algae3 repo,
+doc/told-bnodes.md.
+
+Run it:
+
+  ctest --test-dir build -R BNodeResolver     # or:
+  cd tests && ../build/test_BNodeResolver
+
+The suite runs everything against a client that freshly relabels every
+response bnode, so nothing can pass by label luck. Its flagship case
+executes evidence-dnf.topdown.a3 (the query above, whose group
+memberships are anonymous bnodes) purely through that client — no
+local load — and requires the exact local golden results, proof logs
+included. CLI `attach` to a live endpoint additionally needs an HTTP
+SPARQL client wired into a3::Engine::attachClientFactory; only the
+in-process test client exists today.
+
 # More info
 
 To learn more about SWObjects, checkout some tutorials given at SWAT4LS in 2010 and 2011:
