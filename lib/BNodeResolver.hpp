@@ -37,6 +37,10 @@
 #include <vector>
 
 namespace w3c_sw {
+
+    class SWWEBagent;
+    class SWSAXparser;
+
 namespace bnr {
 
     /** one response row: variable name (no '?') -> term */
@@ -61,6 +65,25 @@ namespace bnr {
 	size_t queriesServed;
 	RelabelingLocalClient (AtomFactory* F, RdfDB* db)
 	    : F(F), db(db), queriesServed(0) {  }
+	virtual Table select (const std::string& query);
+    };
+
+    /** SPARQL protocol client over HTTP: POSTs the query form-urlencoded to
+     * the endpoint and parses the application/sparql-results+xml response.
+     * Response bnodes come out fresh per response (the XML parser keeps a
+     * per-parse bnode map) - exactly the semantics BNodeResolver expects.
+     * Plain http only (the ASIO agent does not speak TLS); requires a build
+     * with SWOBJ_HTTP_CLIENT=ON (the default) - throws from the constructor
+     * otherwise. */
+    class HTTPSPARQLClient : public SPARQLClient {
+	AtomFactory* F;
+	SWWEBagent* agent;      // owned
+	SWSAXparser* xmlParser; // owned
+	std::string endpoint;
+    public:
+	size_t queriesServed;
+	HTTPSPARQLClient (AtomFactory* F, std::string endpoint);
+	virtual ~HTTPSPARQLClient ();
 	virtual Table select (const std::string& query);
     };
 

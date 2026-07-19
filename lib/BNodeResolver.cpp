@@ -1,8 +1,15 @@
 /* BNodeResolver.cpp - told-bnode emulation (see BNodeResolver.hpp). */
 
+/* the NEEDDEF requests must precede the FIRST (possibly transitive)
+ * inclusion of the interface headers */
+#define NEEDDEF_W3C_SW_WEBAGENT
+#define NEEDDEF_W3C_SW_SAXPARSER
+
 #include "BNodeResolver.hpp"
 #include "SPARQLParser.hpp"
 #include "ResultSet.hpp"
+#include "../interface/WEBagent.hpp"
+#include "../interface/SAXparser.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -35,6 +42,46 @@ namespace bnr {
 		}
 		row[b->first->getLexicalValue()] = v;
 	    }
+	    ret.push_back(row);
+	}
+	return ret;
+    }
+
+    /* --------------------------------------------------------- HTTP client --- */
+
+    HTTPSPARQLClient::HTTPSPARQLClient (AtomFactory* F, std::string endpoint)
+	: F(F), agent(NULL), xmlParser(NULL), endpoint(endpoint), queriesServed(0) {
+#if HTTP_CLIENT == SWOb_DISABLED
+	throw std::string("HTTPSPARQLClient: built without an HTTP client "
+			  "(configure with -DSWOBJ_HTTP_CLIENT=ON)");
+#else
+	agent = new W3C_SW_WEBAGENT<>();
+#endif
+#if XML_PARSER == SWOb_DISABLED
+	throw std::string("HTTPSPARQLClient: built without an XML parser "
+			  "(needed for application/sparql-results+xml)");
+#else
+	xmlParser = new W3C_SW_SAXPARSER();
+#endif
+    }
+
+    HTTPSPARQLClient::~HTTPSPARQLClient () {
+	delete xmlParser;
+	delete agent;
+    }
+
+    Table HTTPSPARQLClient::select (const std::string& query) {
+	++queriesServed;
+	SWWEBagent::ParameterList p;
+	p.set("query", query);
+	boost::shared_ptr<IStreamContext> resp = agent->post(endpoint.c_str(), p);
+	ResultSet rs(F, xmlParser, *resp); // fresh bnodes per parse
+
+	Table ret;
+	for (ResultSetConstIterator r = rs.begin(); r != rs.end(); ++r) {
+	    Row row;
+	    for (BindingSetConstIterator b = (*r)->begin(); b != (*r)->end(); ++b)
+		row[b->first->getLexicalValue()] = b->second.tterm;
 	    ret.push_back(row);
 	}
 	return ret;

@@ -23,6 +23,7 @@
 #include "SWObjects.hpp"
 #include "Algae3.hpp"
 #include "Algae3Parser.hpp"
+#include "BNodeResolver.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -301,7 +302,14 @@ namespace {
 
 } // namespace
 
+/** `attach <http://…/sparql> name` gets a live SPARQL protocol client;
+ * BNodeResolver re-identifies response bnodes across round trips. */
+static sw::bnr::SPARQLClient* makeHTTPClient (const std::string& iri, sw::AtomFactory* F) {
+    return new sw::bnr::HTTPSPARQLClient(F, iri);
+}
+
 int main (int argc, char** argv) {
+    sw::a3::Engine::attachClientFactory = &makeHTTPClient;
     bool debug = false, algebra = false, proofs = false, sortedBindings = false;
     int servePort = 0;
     std::string serveDir = ".";

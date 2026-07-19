@@ -160,11 +160,28 @@ Run it:
 The suite runs everything against a client that freshly relabels every
 response bnode, so nothing can pass by label luck. Its flagship case
 executes evidence-dnf.topdown.a3 (the query above, whose group
-memberships are anonymous bnodes) purely through that client — no
+memberships are anonymous bnodes) purely through such a client — no
 local load — and requires the exact local golden results, proof logs
-included. CLI `attach` to a live endpoint additionally needs an HTTP
-SPARQL client wired into a3::Engine::attachClientFactory; only the
-in-process test client exists today.
+included; a second copy of that case drives an in-process HTTP
+endpoint through the real protocol client.
+
+`attach` in an .a3 script runs against a live endpoint (bin/algae3
+installs an HTTPSPARQLClient factory; plain http — the ASIO agent
+doesn't speak TLS). Demo with bin/sparql serving the evidence data
+(from tests/):
+
+  ../bin/sparql --serve http://127.0.0.1:8098/sparql \
+      -d Algae3/data/evidence.ttl \
+      -d Algae3/data/evidence-groups.ttl \
+      -d Algae3/data/evidence-rules.ttl &
+  sed 's|^load .*|attach <http://127.0.0.1:8098/sparql> ep|' \
+      Algae3/evidence-dnf.topdown.a3 | awk '!/^attach/ || !seen++' > /tmp/attach.a3
+  ../bin/algae3 /tmp/attach.a3        # == the local results, proof logs included
+
+Endpoint data should use absolute IRIs: relative ones resolve
+differently between data load and query parse, so they cannot survive
+the protocol round trip (the evidence fixtures carry explicit absolute
+bases for exactly this reason).
 
 # More info
 

@@ -1,5 +1,8 @@
 # Evidence-appraisal rules in DNF (abstracted from a production rule set;
 # same selectors/disjuncts/conjuncts, polarities and olo:index ordering).
+# The base is absolute so rule IRIs survive the SPARQL protocol round trip
+# (relative IRIs resolve differently between data load and query parse).
+@base <http://a.example/rules> .
 @prefix evgrp: <http://a.example/evgrp/> .
 @prefix ex: <http://a.example/ns#> .
 @prefix olo: <http://purl.org/ontology/olo/core#> .

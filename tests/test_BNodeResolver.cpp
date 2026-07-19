@@ -14,6 +14,7 @@
 
 #include "SWObjects.hpp"
 #include "BNodeResolver.hpp"
+#include "SPARQLParser.hpp"
 #include "TurtleParser.hpp"
 #include "ShExSchema.hpp"
 #include "ShExCParser.hpp"
@@ -22,8 +23,11 @@
 #include "Logging.hpp"
 
 #include <boost/test/unit_test.hpp>
+#include <boost/asio.hpp>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 namespace sw = w3c_sw;
 
@@ -260,6 +264,186 @@ namespace {
 	    out += *it + "\n";
 	return out;
     }
+}
+
+namespace {
+    /* An in-process SPARQL protocol endpoint: accepts HTTP POSTs of
+     * form-urlencoded query=, executes against its RdfDB, answers
+     * application/sparql-results+xml. Response bnode labels are only
+     * meaningful within one response; the client's XML parse maps them to
+     * fresh terms per response - standard endpoint relabeling for free. */
+    struct MiniEndpoint {
+	sw::RdfDB db;
+	boost::asio::io_context io;
+	boost::asio::ip::tcp::acceptor acceptor;
+	std::thread thread;
+	bool stopping;
+	size_t queriesServed;
+
+	MiniEndpoint ()
+	    : acceptor(io, boost::asio::ip::tcp::endpoint(
+			   boost::asio::ip::make_address("127.0.0.1"), 0)),
+	      stopping(false), queriesServed(0) {
+	    loadTurtle(db, "Algae3/data/evidence.ttl");
+	    loadTurtle(db, "Algae3/data/evidence-groups.ttl");
+	    loadTurtle(db, "Algae3/data/evidence-rules.ttl");
+	    thread = std::thread(&MiniEndpoint::run, this);
+	}
+	~MiniEndpoint () {
+	    stopping = true;
+	    boost::system::error_code ec;
+	    acceptor.close(ec);
+	    if (thread.joinable()) thread.join();
+	}
+	std::string url () const {
+	    std::ostringstream ss;
+	    ss << "http://127.0.0.1:" << acceptor.local_endpoint().port() << "/sparql";
+	    return ss.str();
+	}
+
+	static std::string urlDecode (const std::string& s) {
+	    std::string ret;
+	    for (size_t i = 0; i < s.size(); ++i) {
+		if (s[i] == '+') ret += ' ';
+		else if (s[i] == '%' && i + 2 < s.size()) {
+		    ret += (char)strtol(s.substr(i+1, 2).c_str(), NULL, 16);
+		    i += 2;
+		} else ret += s[i];
+	    }
+	    return ret;
+	}
+
+	void run () {
+	    while (!stopping) {
+		boost::asio::ip::tcp::socket sock(io);
+		boost::system::error_code ec;
+		acceptor.accept(sock, ec);
+		if (ec) return; // acceptor closed - shut down
+		try { handle(sock); } catch (...) {  }
+	    }
+	}
+
+	void handle (boost::asio::ip::tcp::socket& sock) {
+	    boost::asio::streambuf buf;
+	    boost::system::error_code ec;
+	    boost::asio::read_until(sock, buf, "\r\n\r\n", ec);
+	    if (ec) return;
+	    std::istream in(&buf);
+	    std::string line;
+	    size_t contentLength = 0;
+	    std::getline(in, line); // request line
+	    while (std::getline(in, line) && line != "\r") {
+		std::string lower = line;
+		std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+		if (lower.compare(0, 15, "content-length:") == 0)
+		    contentLength = atoi(line.substr(15).c_str());
+	    }
+	    std::string body;
+	    { std::ostringstream got; got << &buf; body = got.str(); }
+	    while (body.size() < contentLength) {
+		char chunk[4096];
+		size_t n = sock.read_some(boost::asio::buffer(chunk), ec);
+		if (ec) break;
+		body.append(chunk, n);
+	    }
+
+	    /* extract the query= form parameter */
+	    std::string query;
+	    for (size_t at = 0; at < body.size(); ) {
+		size_t amp = body.find('&', at);
+		if (amp == std::string::npos) amp = body.size();
+		size_t eq = body.find('=', at);
+		if (eq != std::string::npos && eq < amp
+		    && body.substr(at, eq - at) == "query")
+		    query = urlDecode(body.substr(eq + 1, amp - eq - 1));
+		at = amp + 1;
+	    }
+
+	    std::string respBody, status = "200 OK";
+	    try {
+		++queriesServed;
+		sw::SPARQLDriver driver("", &F);
+		sw::IStreamContext istr(query, sw::IStreamContext::STRING);
+		sw::Operation* op = driver.parse(istr);
+		sw::ResultSet rs(&F);
+		op->execute(&db, &rs);
+		delete op;
+		respBody = rs.toString(sw::MediaType("application/sparql-results+xml"));
+	    } catch (...) {
+		status = "400 Bad Request";
+		respBody = "query failed";
+	    }
+	    std::ostringstream resp;
+	    resp << "HTTP/1.0 " << status << "\r\n"
+		 << "Content-Type: application/sparql-results+xml\r\n"
+		 << "Content-Length: " << respBody.size() << "\r\n"
+		 << "Connection: close\r\n\r\n" << respBody;
+	    boost::asio::write(sock, boost::asio::buffer(resp.str()), ec);
+	    sock.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	}
+    };
+
+    sw::bnr::SPARQLClient* makeHTTPClient (const std::string& iri, sw::AtomFactory* F) {
+	return new sw::bnr::HTTPSPARQLClient(F, iri);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( http_client_told_bnodes ) {
+    /* the resolver machinery over a real HTTP SPARQL protocol round trip:
+     * proxies must be stable across separately parsed responses */
+    MiniEndpoint ep;
+    sw::bnr::HTTPSPARQLClient client(&F, ep.url());
+    sw::bnr::BNodeResolver resolver(&F, &client);
+    std::string where = std::string("<") + EVG + "PeerReviewedCohorts> <" + EX + "member> ?m . "
+	+ "?m <" + EX + "evidence> ?e . ";
+    std::string q = "SELECT ?m ?e WHERE { " + where + "}";
+
+    sw::bnr::Table t1 = resolver.select(q, where);
+    BOOST_REQUIRE_EQUAL(t1.size(), 2u);
+    BOOST_CHECK(resolver.isProxy(t1[0]["m"]));
+    BOOST_CHECK(t1[0]["m"] != t1[1]["m"]);
+
+    sw::bnr::Table t2 = resolver.select(q, where);
+    std::set<const sw::TTerm*> first, second;
+    first.insert(t1[0]["m"]); first.insert(t1[1]["m"]);
+    second.insert(t2[0]["m"]); second.insert(t2[1]["m"]);
+    BOOST_CHECK(first == second);
+    BOOST_CHECK_EQUAL(client.queriesServed, ep.queriesServed);
+}
+
+BOOST_AUTO_TEST_CASE( attach_runs_flagship_against_http_endpoint ) {
+    /* the full chain the attach action promises: `attach <http://…> ep` in
+     * the script -> Engine::attachClientFactory -> HTTPSPARQLClient ->
+     * BNodeResolver -> provider fault-in - no local load, golden results */
+    MiniEndpoint ep;
+    sw::a3::Engine::attachClientFactory = &makeHTTPClient;
+
+    std::string script = readFile("Algae3/evidence-dnf.topdown.a3");
+    std::string rewritten;
+    std::istringstream lines(script);
+    std::string line;
+    bool attached = false;
+    while (std::getline(lines, line))
+	if (line.compare(0, 5, "load ") == 0) {
+	    if (!attached) { // first load's position gets the attach
+		rewritten += "attach <" + ep.url() + "> ep\n";
+		attached = true;
+	    }
+	} else
+	    rewritten += line + "\n";
+    BOOST_REQUIRE(attached);
+
+    sw::a3::Query q;
+    sw::Algae3Driver driver("", &F);
+    sw::IStreamContext istr(rewritten, sw::IStreamContext::STRING);
+    driver.parse(istr, &q);
+
+    sw::a3::Engine e(&F, q.mode);
+    std::string got = runA3Sorted(q, e);
+    sw::a3::Engine::attachClientFactory = NULL;
+
+    BOOST_CHECK_EQUAL(got, readFile("Algae3/expected/evidence-dnf.expected"));
+    BOOST_CHECK_GT(ep.queriesServed, 0u);
 }
 
 BOOST_AUTO_TEST_CASE( algae3_remote_evidence_dnf ) {
