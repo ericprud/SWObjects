@@ -221,3 +221,34 @@ with rationale, no code change warranted), or **[open]**.
 - CI: the `sanitize` job (ubuntu, `-fsanitize=address`,
   `ASAN_OPTIONS=detect_leaks=1`) gates `test_DAWG`, `test_ShEx`,
   `test_QueryMap`, and the ShExMap CLI.
+
+## Post-close findings (2026-07-19)
+
+- **[fixed] csv02 flake (CSV leading-empty-cell asymmetry).** Once
+  `test_SPARQL11` began gating CI, `sparql11_results_csv_tsv/csv02`
+  failed intermittently (~5% locally, once on the macOS runner). Root
+  cause, pre-existing: the CSV results parser turned a *leading*
+  empty cell (line starting with `,`) into Unbound (the `col == 0`
+  delimiter branch skipped binding) while empty cells anywhere else
+  parse as `""`; and the CSV serializer emits columns in interned-
+  variable pointer order, which varies run to run. Whenever an
+  unbound-heavy column landed first, round-tripped rows disagreed
+  with the reference parse. Fix: a leading empty CSV cell now binds
+  `""` like any other empty cell (CSV cannot express unbound); TSV
+  keeps Unbound, which its format does distinguish. Exposed today
+  because the logging facade shifted allocation order. A related
+  wart, recorded not fixed: result-set column order (and thus CSV/
+  table serialization order) is pointer-nondeterministic; tests
+  compare parsed structures so it is benign, but byte-stable output
+  would need an ordered `knownVars`.
+- `test_SPARQL11`'s negativeSyntax paths still leak ~93 KB/run under
+  LSan: `Select` trees land in `<p_Operation>`-typed slots, which
+  deliberately carry no `%destructor` (the accept-path cleanup would
+  destroy the tree handed to the caller — found the hard way).
+  Per-symbol (not per-type) destructors for the non-root
+  Operation-typed nonterminals would close this; error-path-only,
+  so it does not gate the sanitizer job.
+- `test_SPARQL` under `detect_leaks=1` fails spuriously: spawned
+  `bin/sparql` children report their own leaks, exit nonzero, and
+  the harness's `BOOST_REQUIRE(ChildRet == 0)` treats that as test
+  failure. Run it with `detect_leaks=0` (it is ASan-clean).

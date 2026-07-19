@@ -308,6 +308,17 @@ namespace w3c_sw {
 			if (col == 0 && what[Delimiter].matched) {
 			    if (col > (int)headers.size()-1)
 				headers.push_back(inventColumName(headers.size()));
+			    if (delimStr == ",") {
+				// CSV cannot express unbound; a leading empty cell
+				// is an empty string like empty cells anywhere else
+				// in the row. (TSV can distinguish, so it keeps
+				// Unbound.)
+				if (curRow == NULL) {
+				    curRow = new Result(this);
+				    insert(this->end(), curRow);
+				}
+				set(curRow, headers[0], atomFactory->getRDFLiteral(""), false);
+			    }
 			    ++col;
 			}
 

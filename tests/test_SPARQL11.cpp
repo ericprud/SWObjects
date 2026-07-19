@@ -447,7 +447,8 @@ BOOST_AUTO_TEST_SUITE( sparql11_results_csv_tsv )
 			    SIZE(namedGraphs_in), request, true);	       \
 	const char* type = "text/csv";		       \
 	std::string asCSV = measured.toString(type);		       \
-	/* w3c_sw_LINEN << "as " << type << ":\n" << asCSV; */	       \
+	if (getenv("SWOBJ_DUMP_CSV") != NULL)			       \
+	    std::cerr << "asCSV [[\n" << asCSV << "]]\n";	       \
 	IStreamContext istr(asCSV, IStreamContext::STRING, type);	       \
 	TTerm::String2BNode bnodeMap;				       \
 	ResultSet parsed(&F, istr, measured.isOrdered(), &bnodeMap);       \
