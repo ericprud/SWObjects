@@ -1,0 +1,13 @@
+@prefix ex: <http://a.example/ns#> .
+@prefix c: <http://a.example/component/> .
+# one rule, one selector, one disjunct, one positive membership conjunct
+ex:rule1 a ex:Rule ; ex:label "membership rule" ; ex:action ex:act1 ;
+         ex:ruleType "advice" ; ex:selector ex:sel1 .
+ex:act1 ex:message "component is in group A" ; ex:severity ex:warn .
+ex:sel1 ex:or ex:disj1 .
+ex:disj1 ex:and ex:conj1 .
+ex:conj1 ex:polarity ex:pos ; ex:componentGroup ex:groupA .
+ex:groupA ex:member ex:m1 .
+ex:m1 ex:component c:PLACEHOLDER .
+# a library recommendation for the union's second branch
+ex:rec1 a ex:LibraryRecommendation ; ex:source c:PLACEHOLDER ; ex:target c:newlib .

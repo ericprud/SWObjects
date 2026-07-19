@@ -1,0 +1,7 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix d1: <http://purl.org/dc/elements/1.1/> .
+@prefix a: <http://www.w3.org/2000/10/annotation-ns#> .
+@prefix ex: <http://example.org/> .
+ex:annot1 rdf:type a:Annotation ; d1:creator "Joe" ; a:annotates ex:doc1 .
+ex:annot2 rdf:type a:Annotation ; d1:creator "Joe" ; a:annotates ex:doc2 .
+ex:annot3 rdf:type a:Annotation ; d1:creator "Sue" ; a:annotates ex:doc1 .

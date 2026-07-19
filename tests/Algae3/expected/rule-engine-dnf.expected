@@ -1,0 +1,2 @@
+?components="PLACEHOLDER";?log="rec1";?message="newlib";?ruleHash="|LIB";?ruleName="";?ruleType="";?severity="";
+?components="PLACEHOLDER";?log="rule1(sel1(PLACEHOLDER, disj1(conj1)))";?message="component is in group A";?ruleHash="rule1";?ruleName="membership rule";?ruleType="advice";?severity="warn";

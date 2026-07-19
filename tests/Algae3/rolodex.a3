@@ -1,0 +1,14 @@
+# Rolodex example from the Algae HOWTO, with an optional and a constraint.
+ns Rolodex=<http://example.org/rolodex#>
+ns foaf=<http://xmlns.com/foaf/0.1/>
+
+load <data/rolodex.ttl>
+
+ask (?friend a Rolodex:Friend .
+     ?friend Rolodex:Address ?addrNode .
+     ?addrNode Rolodex:Street ?street .
+     ?friend Rolodex:age ?age {?age >= 18 && ?age < 24} .
+     ~(?friend foaf:mbox ?mbox) .
+     !(?friend Rolodex:doNotCall true)
+)
+collect distinct (?friend ?street ?mbox) order by ?street limit 10 offset 5

@@ -1,0 +1,4 @@
+@prefix vcard: <http://www.w3.org/2001/vcard-rdf/3.0#> .
+@prefix p: <http://example.org/people/> .
+p:eric vcard:Family "Prud'hommeaux" ; vcard:Given "Eric" .
+p:dan  vcard:Family "Connolly" ; vcard:Given "Dan" .

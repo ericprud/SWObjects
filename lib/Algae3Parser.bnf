@@ -1,0 +1,98 @@
+# Location: lib/Algae3Parser.bnf
+# Algae 3 grammar - yacker-style EBNF.
+# The generated yacc grammar (Algae3Parser.y) expands each repetition with the
+# conventions used across the SWObjects parser family:
+#   X*        -> _QX_E_Star        X?      -> _QX_E_Opt        X+ -> _QX_E_Plus
+#   ( A B )*  -> _Q_O_QA_E_S_QB_E_C_E_Star over _O_QA_E_S_QB_E_C ::= A B
+# GT_xxx names punctuation terminals; IT_xxx names keyword terminals.
+
+[1]   Query           ::= Statement*
+[2]   Statement       ::= Directive | Action
+[3]   Directive       ::= NsDecl | BaseDecl | Require
+[4]   NsDecl          ::= 'ns' NAME '=' IRIREF          # Algae2 heritage form
+                        | 'prefix' PNAME_NS IRIREF      # Turtle-style alias
+[5]   BaseDecl        ::= 'base' IRIREF
+[6]   Require         ::= 'require' IRIREF
+[7]   Action          ::= Load | Attach | Ask | Collect | Test | Assert
+                        | FwRule | Let | Bindings | CurlyFilter
+[8]   Load            ::= ('load' | 'read') IRIREF ('as' GraphName)? ParamList?
+[9]   GraphName       ::= IRIREF | PNAME
+[10]  ParamList       ::= '(' Param* ')'
+[11]  Param           ::= NAME '=' Literal
+[12]  Attach          ::= 'attach' IRIREF NAME ParamList?
+[13]  Ask             ::= 'ask' DbSpec? '(' GraphPattern ')'
+[14]  DbSpec          ::= NAME | IRIREF
+[15]  Test            ::= 'test' '(' GraphPattern ')'
+[16]  Assert          ::= 'assert' ('into' GraphTerm)? '(' GraphPattern ')'
+[17]  FwRule          ::= 'fwrule' Ask Assert | 'fwrule' Assert Ask
+[18]  Let             ::= 'let' '(' VAR Expression ')'
+[19]  Bindings        ::= 'bindings' '(' VAR+ ')' '{' Row* '}'
+[20]  Row             ::= '(' RowTerm+ ')'
+[21]  RowTerm         ::= Term | 'UNDEF'
+[22]  Collect         ::= 'collect' 'distinct'? '(' CollectVars ')'
+                          OrderClause? LimitClause? OffsetClause?
+[23]  CollectVars     ::= VAR+ | '*'
+[24]  OrderClause     ::= 'order' 'by' OrderCond+
+[25]  OrderCond       ::= VAR | 'asc' '(' Expression ')' | 'desc' '(' Expression ')'
+[26]  LimitClause     ::= 'limit' INTEGER
+[27]  OffsetClause    ::= 'offset' INTEGER
+
+# ---- graph patterns --------------------------------------------------------
+# Connectives, loosest first: '||' (orelse), '|&' (union), '|-' (munion),
+# '|!' (diff) are left-associative and bind equally; '.' (conjunction) binds
+# tighter.  A trailing '.' is permitted before ')' or a connective, as in
+# Algae2's  '(' graphPattern '.'? ')'  (realized by ConjTail in the yacc).
+
+[28]  GraphPattern    ::= Conjunction ( ('||' | '|&' | '|-' | '|!') Conjunction )*
+[29]  Conjunction     ::= UnaryPattern ( '.' UnaryPattern )* '.'?
+[30]  UnaryPattern    ::= Decl
+                        | '~' UnaryPattern              # optional (optjoin / leftjoin)
+                        | '!' UnaryPattern              # negation (notexists / minus)
+                        | '(' GraphPattern ')'
+                        | InGraph
+                        | Scope
+                        | CurlyFilter
+[31]  InGraph         ::= 'in' GraphTerm '(' GraphPattern ')'
+[32]  Scope           ::= 'scope' '(' GraphPattern ')' 'share' '(' VAR* ')'
+[33]  CurlyFilter     ::= Constraint
+[34]  Decl            ::= Term PropObjectList
+[35]  PropObjectList  ::= VerbObjectList ( ';' VerbObjectList )*
+[36]  VerbObjectList  ::= Verb ObjectList
+[37]  ObjectList      ::= ObjectC ( ',' ObjectC )*
+[38]  ObjectC         ::= Term Constraint?
+[39]  Constraint      ::= '{' Expression '}'
+[40]  Verb            ::= 'a' | IRIREF | PNAME | VAR
+[41]  GraphTerm       ::= IRIREF | PNAME | VAR
+[42]  Term            ::= IRIREF | PNAME | VAR | BLANK_LABEL | ANON | Literal
+[43]  Literal         ::= STRING ( LANGTAG | '^^' ( IRIREF | PNAME ) )?
+                        | INTEGER | DECIMAL | DOUBLE | 'true' | 'false'
+
+# ---- constraint expressions ------------------------------------------------
+# C-style precedence, Algae2 heritage ('==', '!=', '&&', '||').
+
+[44]  Expression      ::= OrExpr
+[45]  OrExpr          ::= AndExpr ( '||' AndExpr )*
+[46]  AndExpr         ::= RelExpr ( '&&' RelExpr )*
+[47]  RelExpr         ::= AddExpr ( ('==' | '!=' | '<' | '>' | '<=' | '>=') AddExpr )?
+[48]  AddExpr         ::= MulExpr ( ('+' | '-') MulExpr )*
+[49]  MulExpr         ::= UnaryExpr ( ('*' | '/') UnaryExpr )*
+[50]  UnaryExpr       ::= Primary | '!' UnaryExpr | '-' UnaryExpr
+[51]  Primary         ::= VAR | IRIREF | PNAME
+                        | (PNAME | NAME) '(' ArgList? ')'      # function call
+                        | Literal | '(' Expression ')'
+[52]  ArgList         ::= Expression ( ',' Expression )*
+
+# ---- terminals -------------------------------------------------------------
+[53]  IRIREF          ::= '<' [^<>"{}|^`\]-[#x00-#x20]* '>'
+[54]  PNAME           ::= PN_PREFIX? ':' PN_LOCAL
+[55]  PNAME_NS        ::= PN_PREFIX? ':'
+[56]  BLANK_LABEL     ::= '_:' PN_LOCAL
+[57]  VAR             ::= '?' (PN_CHARS_U | [0-9])+
+[58]  NAME            ::= PN_PREFIX
+[59]  STRING          ::= '"' ([^"\\#xA] | ECHAR)* '"' | "'" ([^'\\#xA] | ECHAR)* "'"
+[60]  LANGTAG         ::= '@' [a-zA-Z]+ ('-' [a-zA-Z0-9]+)*
+[61]  INTEGER         ::= [+-]? [0-9]+
+[62]  DECIMAL         ::= [+-]? [0-9]+ '.' [0-9]*
+[63]  DOUBLE          ::= [+-]? ([0-9]+ '.' [0-9]* | [0-9]+) [eE] [+-]? [0-9]+
+[64]  ANON            ::= '[' WS* ']'
+# comments run from '#' to end of line; whitespace is insignificant

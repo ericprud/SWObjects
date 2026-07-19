@@ -1,0 +1,134 @@
+# Top-down Algae 3 rendering of rule-engine-dnf.rq (anonymized DNF rule engine).
+#
+# What top-down evaluation buys, compared to the SPARQL source:
+#   - ONE component injection: the `bindings` below flows through every djoin,
+#     scope and negation.  The SPARQL source must repeat its VALUES block in
+#     all six branches - most critically the negative-polarity ones, whose
+#     MINUS is vacuous without a bound ?component on its left.
+#   - Negative polarity is the intuitive `!( ... )`: correlated on the
+#     inherited ?conjunct and ?component.
+#   - SPARQL's SELECT-in-SELECT layers (pre-ordering feeding aggregation)
+#     become scoped sub-pipelines: ask, an ordering collect, an aggregating
+#     collect with `by`.
+require <http://www.w3.org/ns/algae3#eval-topdown>
+ns ex=<http://a.example/ns#>
+
+load <data/rule-engine.ttl>
+
+bindings (?component) { (<http://a.example/component/PLACEHOLDER>) }
+
+ask (
+  (
+    ?rule a ex:Rule ;
+          ex:label ?ruleName ;
+          ex:action ?act .
+    ?act ex:message ?message ; ex:severity ?severityUri .
+    ~( ?rule ex:ruleType ?ruleType ) .
+    !( ?rule ex:lifecycleState "archived" ) .
+
+    # per-rule: all selectors pass, with a concatenated evaluation log
+    scope (
+      ask ( ?rule ex:selector ?selector .
+
+            # per-(component, selector): some disjunct passes
+            scope (
+              ask ( ?selector ex:or ?disjunct .
+
+                    # per-(component, disjunct): every conjunct passes
+                    scope (
+                      ask ( ?disjunct ex:and ?conjunct .
+                            (
+                              # group membership, positive / negative
+                              ( ?conjunct ex:polarity ex:pos ;
+                                          ex:componentGroup ?group .
+                                ?group ex:member ?membership .
+                                ?membership ex:component ?component
+                              |&
+                                ?conjunct ex:polarity ex:neg ;
+                                          ex:componentGroup [] .
+                                !( ?conjunct ex:componentGroup ?ngroup .
+                                   ?ngroup ex:member ?nmembership .
+                                   ?nmembership ex:component ?component )
+                              )
+                            |&
+                              # attribute comparison  (ex:eq lt gt le ge)
+                              ?conjunct ex:polarity ?polarity ;
+                                        ex:attribute ?pred ;
+                                        ?comparator ?threshold .
+                              {oneof(?comparator, ex:eq, ex:lt, ex:gt, ex:le, ex:ge)} .
+                              ?component ?pred ?actual .
+                              let (?cmpPass
+                                if(?comparator == ex:eq, ?actual == ?threshold,
+                                if(?comparator == ex:lt, ?actual <  ?threshold,
+                                if(?comparator == ex:gt, ?actual >  ?threshold,
+                                if(?comparator == ex:le, ?actual <= ?threshold,
+                                if(?comparator == ex:ge, ?actual >= ?threshold,
+                                   false)))))) .
+                              {(?polarity == ex:pos) == ?cmpPass}
+                            |&
+                              # type check, positive / negative
+                              ( ?conjunct ex:polarity ex:pos ;
+                                          ex:type ?requiredType .
+                                ?component a ?requiredType
+                              |&
+                                ?conjunct ex:polarity ex:neg ;
+                                          ex:type [] .
+                                !( ?conjunct ex:type ?nrequiredType .
+                                   ?component a ?nrequiredType )
+                              )
+                            ) .
+                            let (?conjLabel if(isIRI(?conjunct), strafter(str(?conjunct), "#"), str(?conjunct)))
+                      )
+                      collect (?component ?disjunct ?conjunct ?conjLabel) order by ?conjunct
+                      collect (?component ?disjunct
+                               (count(?conjunct) as ?conjunctsPassed)
+                               (concat(if(isIRI(?disjunct), strafter(str(?disjunct), "#"), str(?disjunct)),
+                                       "(", group_concat(?conjLabel, "∧"), ")") as ?disjLog))
+                        by (?component ?disjunct)
+                    ) share (?component ?disjunct ?conjunctsPassed ?disjLog) .
+
+                    scope ( ask ( ?disjunct ex:and ?anyConjunct )
+                            collect (?disjunct (count(?anyConjunct) as ?conjunctCount)) by (?disjunct)
+                    ) share (?disjunct ?conjunctCount) .
+                    {?conjunctsPassed == ?conjunctCount} .
+                    let (?disjLogStr str(?disjLog))
+              )
+              collect (?component ?selector ?disjunct ?disjLogStr) order by ?disjunct
+              collect (?component ?selector
+                       (concat(if(isIRI(?selector), strafter(str(?selector), "#"), str(?selector)),
+                               "(", replace(str(?component), "^.*[#/]", ""), ", ",
+                               group_concat(?disjLogStr, "∨"), ")") as ?selLog))
+                by (?component ?selector)
+            ) share (?component ?selector ?selLog) .
+            let (?selLogStr str(?selLog))
+      )
+      collect (?rule ?selector ?component ?selLogStr) order by ?selector
+      collect (?rule
+               (count(distinct ?selector) as ?selectorsPassed)
+               (concat(if(isIRI(?rule), strafter(str(?rule), "#"), str(?rule)),
+                       "(", group_concat(?selLogStr, " + "), ")") as ?log)
+               (group_concat(distinct replace(str(?component), "^.*[#/]", ""), ", ") as ?components))
+        by (?rule)
+    ) share (?rule ?selectorsPassed ?log ?components) .
+
+    scope ( ask ( ?rule ex:selector ?anySelector )
+            collect (?rule (count(?anySelector) as ?selectorCount)) by (?rule)
+    ) share (?rule ?selectorCount) .
+    {?selectorCount == ?selectorsPassed}
+  )
+  |&
+  # Library replacement recommendations
+  scope (
+    ask ( ?recommendation a ex:LibraryRecommendation ;
+                          ex:source ?component ;
+                          ex:target ?library )
+    collect (("#|LIB" as ?rule) ("" as ?ruleName) ("" as ?ruleType) ("" as ?severityUri)
+             (replace(str(?library), "^.*[#/]", "") as ?message)
+             (replace(str(?component), "^.*[#/]", "") as ?components)
+             (replace(str(?recommendation), "^.*[#/]", "") as ?log))
+  ) share (?rule ?ruleName ?ruleType ?severityUri ?message ?components ?log)
+)
+collect ((strafter(str(?rule), "#") as ?ruleHash)
+         ?ruleName ?ruleType
+         (strafter(str(?severityUri), "#") as ?severity)
+         ?message ?components ?log)

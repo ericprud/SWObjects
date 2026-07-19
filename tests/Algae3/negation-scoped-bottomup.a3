@@ -1,0 +1,27 @@
+# Bottom-up (SPARQL-faithful) compilation of negation-scoped.rq.  Each UNION
+# branch is scoped; the VALUES injection appears inside each branch, on the
+# left of the |! (MINUS), exactly as the SPARQL workaround requires - the
+# repetition the top-down version does away with.
+require <http://www.w3.org/ns/algae3#eval-bottomup>
+ns ex=<http://a.example/ns#>
+
+load <data/negation.ttl>
+
+ask (
+  scope ( bindings (?component) { (<http://a.example/component/PLACEHOLDER>) } .
+          ?conjunct ex:polarity ex:pos ;
+                    ex:componentGroup ?group .
+          ?group ex:member ?membership .
+          ?membership ex:component ?component
+        ) share (?conjunct ?component)
+  |&
+  scope ( ( bindings (?component) { (<http://a.example/component/PLACEHOLDER>) } .
+            ?conjunct ex:polarity ex:neg ;
+                      ex:componentGroup []
+          )
+          |! ( ?conjunct ex:componentGroup ?group .
+               ?group ex:member ?membership .
+               ?membership ex:component ?component )
+        ) share (?conjunct ?component)
+)
+collect (?conjunct ?component)

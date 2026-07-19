@@ -1,0 +1,16 @@
+# The same SPARQL query compiled in BOTTOM-UP mode: each group becomes a
+# fresh-scoped subpattern exporting only its in-scope variables, and the
+# out-of-scope ?v in the innermost FILTER is renamed apart to ?v_1
+# (unbound there, so the filter errors and eliminates - exactly SPARQL's
+# bottom-up answer {v=1, w=9} with ?u unbound).
+require <http://www.w3.org/ns/algae3#eval-bottomup>
+prefix : <http://example.org/ns#>
+
+load <data/d.ttl>
+
+ask ( scope ( :a :p ?v ) share (?v) .
+      ~ scope ( :b :q ?w .
+                ~ scope ( :c :r ?u . {?v_1 == 1} ) share (?u)
+              ) share (?w ?u)
+)
+collect (*)

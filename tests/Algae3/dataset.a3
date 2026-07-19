@@ -1,0 +1,11 @@
+# Dataset construction: load = FROM, load..as = FROM NAMED, in = GRAPH.
+ns dc=<http://purl.org/dc/elements/1.1/>
+
+load <data/background.ttl>
+load <data/g1.ttl> as <http://example.org/g1>
+load <data/g2.ttl> as <http://example.org/g2>
+
+ask ( ?doc dc:title ?title .
+      in ?g ( ?doc dc:creator ?who )
+)
+collect (?doc ?title ?g ?who)

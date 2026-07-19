@@ -1,0 +1,4 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix ex: <http://example.org/> .
+ex:doc1 dc:title "Moby Dick" .
+ex:doc2 dc:title "Walden" .

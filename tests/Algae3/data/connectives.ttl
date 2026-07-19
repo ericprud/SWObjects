@@ -1,0 +1,4 @@
+@prefix ex: <http://example.org/#> .
+ex:b1 a ex:Book ; ex:name "Dune" ; ex:localId "b1" ; ex:price 8 .
+ex:f1 a ex:Film ; ex:name "Alien" ; ex:localId "f1" ; ex:globalId "f1" ; ex:price 12 .
+ex:b2 a ex:Book ; ex:name "Kim" ; ex:globalId "b2" ; ex:price 5 ; ex:discontinued true .

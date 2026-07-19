@@ -1,0 +1,919 @@
+/* -*- mode: c++ -*-
+ * Algae3Parser.ypp - bison grammar for Algae 3, following the SWObjects
+ * parser family conventions and the reference grammar
+ * ../algae3/lib/Algae3Parser.{bnf,y} (yacker rule names: _QX_E_Star,
+ * _QX_E_Opt, _Q_O_QGT_SEMI_E_S_QVerbObjectList_E_C_E_Star, ...).
+ *
+ * Unlike the reference parser (which emits S-expression strings), the
+ * actions build the a3:: AST over SWObjects terms (lib/Algae3.hpp).
+ * The evaluation mode - require <http://www.w3.org/ns/algae3#eval-topdown>
+ * (default) | eval-bottomup - is recorded on the Query; connective nodes are
+ * mode-neutral and the evaluator interprets them per mode.
+ */
+
+%require "3.2"
+%define parse.trace
+%defines
+%skeleton "lalr1.cc"
+%define api.namespace {w3c_sw}
+%define api.parser.class {Algae3Parser}
+%locations
+%define api.location.type {w3c_sw::location}
+%parse-param { class Algae3Driver& driver }
+%define parse.error verbose
+
+%code requires {
+
+#include "SWObjects.hpp"
+#include "ParserCommon.hpp"
+#include "Algae3.hpp"
+
+namespace w3c_sw {
+
+namespace a3 {
+    /* parse-time carriers for property/object lists */
+    struct ObjC { const TTerm* o; const Expression* c; };
+    struct Po { const TTerm* v; const TTerm* o; const Expression* c; };
+} // namespace a3
+
+class Algae3Scanner;
+
+/** Driver: connects the Algae3Parser and Algae3Scanner and accumulates the
+ * parsed a3::Query. */
+class Algae3Driver : public YaccDriver {
+    friend class Algae3Parser;
+    friend class Algae3Scanner;
+protected:
+    location* yylloc;
+
+public:
+    a3::Query* query; // borrowed from caller during parse
+
+    Algae3Driver (std::string baseURI, AtomFactory* atomFactory)
+	: YaccDriver(baseURI, atomFactory), yylloc(NULL), query(NULL)
+    {  }
+
+    ~Algae3Driver () {
+	/* free mid-parse state stranded by a parse error */
+	delete curCollect;
+	delete pipelineHead;
+	for (std::vector<a3::Projection>::const_iterator it = pendingProjs.begin();
+	     it != pendingProjs.end(); ++it)
+	    delete it->expr;
+	for (std::vector<a3::OrderCond>::const_iterator it = pendingOrders.begin();
+	     it != pendingOrders.end(); ++it)
+	    delete it->expr;
+    }
+
+    /* parse-time scratch */
+    std::vector<std::vector<const TTerm*> > pendingRows;
+    std::vector<a3::Projection> pendingProjs;
+    std::vector<a3::OrderCond> pendingOrders;
+    a3::Collect* curCollect = NULL;
+    const a3::Action* pipelineHead = NULL;
+
+    std::vector<a3::Projection>* takeProjs () {
+	std::vector<a3::Projection>* ret = new std::vector<a3::Projection>(pendingProjs);
+	pendingProjs.clear();
+	return ret;
+    }
+    std::vector<a3::OrderCond>* takeOrders () {
+	std::vector<a3::OrderCond>* ret = new std::vector<a3::OrderCond>(pendingOrders);
+	pendingOrders.clear();
+	return ret;
+    }
+
+    /** Parse an Algae 3 document into intoQuery. Throws ParserException on
+     * failure. */
+    void parse (IStreamContext& in, a3::Query* intoQuery);
+
+    /** Parse a bare pattern (the debugger's `try` command). Returns NULL on
+     * parse failure with the message in errMsg. */
+    const a3::Pattern* parsePattern (std::string text, std::string& errMsg);
+
+    class Algae3Scanner* lexer;
+
+    /* --- scanner callbacks --- */
+    const URI* iriref (const char* yytext, size_t yyleng) {
+	return getAbsoluteURI(std::string(yytext+1, yyleng-2));
+    }
+    const URI* pname (const char* yytext, location* loc) {
+	std::string s(yytext);
+	size_t colon = s.find(':');
+	const URI* nspace = getNamespace(s.substr(0, colon), true);
+	if (nspace == NULL)
+	    nspace = prefixError(s.substr(0, colon), *loc);
+	return getAbsoluteURI(nspace->getLexicalValue() + s.substr(colon+1));
+    }
+    const TTerm* variable (const char* name) { return atomFactory->getVariable(name); }
+    const TTerm* blankLabel (const char* name) { return atomFactory->getBNode(name, &bnodeMap); }
+    const TTerm* anonBNode () { return atomFactory->createBNode(); }
+    std::string* unesc (const char* s, size_t len) {
+	std::string ret;
+	for (size_t i = 0; i < len; ++i) {
+	    if (s[i] == '\\' && i+1 < len) {
+		++i;
+		switch (s[i]) {
+		case 'n': ret += '\n'; break;
+		case 't': ret += '\t'; break;
+		case 'r': ret += '\r'; break;
+		case 'b': ret += '\b'; break;
+		case 'f': ret += '\f'; break;
+		default: ret += s[i];
+		}
+	    } else
+		ret += s[i];
+	}
+	return new std::string(ret);
+    }
+    const TTerm* integerLit (const char* s) { return atomFactory->getNumericRDFLiteral(s, atoi(s), TTerm::URI_xsd_integer); }
+    const TTerm* decimalLit (const char* s) { return atomFactory->getNumericRDFLiteral(s, (float)atof(s), TTerm::URI_xsd_decimal); }
+    const TTerm* doubleLit (const char* s) { return atomFactory->getNumericRDFLiteral(s, atof(s), TTerm::URI_xsd_double); }
+
+    /* --- action helpers --- */
+
+    void requireFeature (const URI* iri) {
+	std::string s = iri->getLexicalValue();
+	query->features.push_back(s);
+	if (s.find("algae3#eval-bottomup") != std::string::npos)
+	    query->mode = a3::EVAL_bottomup;
+	else if (s.find("algae3#eval-topdown") != std::string::npos)
+	    query->mode = a3::EVAL_topdown;
+    }
+
+    /** subject x property/object list -> DeclPattern of interned triples */
+    const a3::Pattern* decl (const TTerm* subj, std::vector<a3::Po>* pol) {
+	a3::DeclPattern* d = new a3::DeclPattern();
+	for (std::vector<a3::Po>::const_iterator it = pol->begin(); it != pol->end(); ++it) {
+	    d->triples.push_back(atomFactory->getTriple(subj, it->v, it->o));
+	    d->constraints.push_back(it->c);
+	}
+	delete pol;
+	return d;
+    }
+
+    /** clone an expression (oneof desugaring needs the scrutinee once per
+     * disjunct) */
+    const Expression* dup (const Expression* e);
+
+    /** name(args) -> AggregateExpr | builtin FunctionCall | oneof desugar.
+     * Throws via error() for unknown names. */
+    const Expression* call (std::string name, bool distinct,
+			    ProductionVector<const Expression*>* args,
+			    const location& loc);
+    /** pname(args) -> extension function call by IRI */
+    const Expression* callIRI (const URI* name, ProductionVector<const Expression*>* args);
+};
+
+} // namespace w3c_sw
+
+}
+
+%union {
+    const w3c_sw::URI*				p_URI;
+    const w3c_sw::TTerm*			p_TTerm;
+    std::string*				p_string;
+    const w3c_sw::Expression*			p_Expression;
+    w3c_sw::ProductionVector<const w3c_sw::Expression*>* p_Expressions;
+    const w3c_sw::a3::Pattern*			p_Pattern;
+    w3c_sw::a3::ConjPattern*			p_Conj;
+    const w3c_sw::a3::Action*			p_Action;
+    const w3c_sw::a3::Ask*			p_Ask;
+    const w3c_sw::a3::AssertAction*		p_Assert;
+    w3c_sw::a3::BindingsAction*			p_Bindings;
+    w3c_sw::a3::Collect*			p_Collect;
+    w3c_sw::a3::ScopePattern*			p_Scope;
+    std::vector<w3c_sw::a3::ObjC>*		p_ObjList;
+    std::vector<w3c_sw::a3::Po>*		p_PoList;
+    std::vector<const w3c_sw::TTerm*>*		p_TTerms;
+    std::vector<w3c_sw::a3::Projection>*	p_Projs;
+    std::vector<w3c_sw::a3::OrderCond>*		p_Orders;
+    std::vector<const w3c_sw::a3::Action*>*	p_Pipeline;
+    bool					b;
+}
+
+%code {
+#include "Algae3Scanner.hpp"
+#undef yylex
+#define yylex driver.lexer->lexWrapper
+}
+
+%token __EOF__ 0 "end of file"
+
+%token IT_ns IT_prefix IT_base IT_require IT_load IT_read IT_as IT_attach
+%token IT_ask IT_collect IT_distinct IT_order IT_by IT_asc IT_desc
+%token IT_limit IT_offset IT_test IT_assert IT_into IT_fwrule IT_let
+%token IT_bindings IT_UNDEF IT_in IT_scope IT_share IT_true IT_false A_KW
+%token GT_LPAREN GT_RPAREN GT_LCURLEY GT_RCURLEY
+%token GT_DOT GT_SEMI GT_COMMA GT_EQUAL GT_TILDE GT_BANG
+%token GT_OR2 GT_UNION GT_MUNION GT_DIFF GT_AND2
+%token GT_EQ2 GT_NE GT_LT GT_GT GT_LE GT_GE
+%token GT_PLUS GT_MINUS GT_TIMES GT_DIVIDE GT_DTYPE ANON
+
+%token <p_URI> IRIREF PNAME
+%token <p_string> PNAME_NS NAME STRING LANGTAG
+%token <p_TTerm> VAR BLANK_LABEL INTEGER DECIMAL DOUBLE
+
+%type <p_Action> Action Load Attach Test Assert FwRule Let
+%type <p_Ask> Ask
+%type <p_Assert> AssertOnly
+%type <p_Bindings> Bindings _QRow_E_Star
+%type <p_Collect> Collect
+%type <p_URI> GraphName
+%type <p_TTerm> _Q_O_QIT_as_E_S_QGraphName_E_C_E_Opt _QIntoClause_E_Opt
+%type <p_TTerm> Term Verb GraphTerm Literal RowTerm
+%type <p_Pattern> GraphPattern UnaryPattern Decl InGraph CurlyFilter Conjunction
+%type <p_Scope> Scope
+%type <p_PoList> PropObjectList VerbObjectList
+%type <p_PoList> _Q_O_QGT_SEMI_E_S_QVerbObjectList_E_C_E_Star _O_QGT_SEMI_E_S_QVerbObjectList_E_C
+%type <p_ObjList> ObjectList ObjectC _Q_O_QGT_COMMA_E_S_QObjectC_E_C_E_Star _O_QGT_COMMA_E_S_QObjectC_E_C
+%type <p_Conj> ConjTail
+%type <p_Expression> Constraint _QConstraint_E_Opt Expression OrExpr AndExpr
+%type <p_Expression> RelExpr AddExpr MulExpr UnaryExpr Primary
+%type <p_Expressions> _QArgList_E_Opt ArgList
+%type <b> _QIT_distinct_E_Opt
+%type <p_TTerms> _QVar_E_Plus _QVar_E_Star _QByClause_E_Opt _QRowTerm_E_Plus
+%type <p_Projs> ProjectionList _QProjection_E_Plus
+%type <p_Orders> _QOrderClause_E_Opt OrderClause _QOrderCond_E_Plus
+%type <p_Pipeline> Pipeline
+
+/* Free semantic values discarded when a parse fails. Interned values
+ * (URIs, TTerms) belong to the AtomFactory and get no destructor. */
+%destructor { delete $$; } <p_string> <p_Expression> <p_Pattern> <p_Conj>
+			   <p_Action> <p_Ask> <p_Assert> <p_Bindings>
+			   <p_Collect> <p_Scope> <p_ObjList> <p_TTerms>
+			   <p_Orders>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<w3c_sw::a3::Po>::const_iterator it = $$->begin(); it != $$->end(); ++it)
+	    delete it->c;
+	delete $$;
+    }
+} <p_PoList>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<w3c_sw::a3::Projection>::const_iterator it = $$->begin(); it != $$->end(); ++it)
+	    delete it->expr;
+	delete $$;
+    }
+} <p_Projs>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<const w3c_sw::a3::Action*>::const_iterator it = $$->begin(); it != $$->end(); ++it)
+	    delete *it;
+	delete $$;
+    }
+} <p_Pipeline>
+%destructor { delete $$; } <p_Expressions>
+
+%%
+
+Query:
+    _QStatement_E_Star
+;
+
+_QStatement_E_Star:
+    /* empty */
+  | _QStatement_E_Star Statement
+;
+
+Statement:
+    Directive
+  | Action	{ driver.query->actions.push_back($1); }
+;
+
+Directive: NsDecl | BaseDecl | Require ;
+
+/* Algae2 heritage: `ns a=<...>`; Turtle-style alias: `prefix a: <...>` */
+NsDecl:
+    IT_ns NAME GT_EQUAL IRIREF	{ driver.addPrefix(*$2, $4); delete $2; }
+  | IT_ns A_KW GT_EQUAL IRIREF	{ driver.addPrefix("a", $4); }
+  | IT_prefix PNAME_NS IRIREF	{ driver.addPrefix(*$2, $3); delete $2; }
+;
+
+BaseDecl: IT_base IRIREF	{ driver.setBase($2->getLexicalValue()); } ;
+
+Require: IT_require IRIREF	{ driver.requireFeature($2); } ;
+
+Action:
+    Load | Attach | Test | Assert | FwRule | Let
+  | Ask		{ $$ = $1; }
+  | Collect	{ $$ = $1; }
+  | Bindings	{ $$ = $1; }
+  | CurlyFilter	{ /* a standalone { expr } action (HAVING position) */
+		  const w3c_sw::a3::FilterPattern* f = dynamic_cast<const w3c_sw::a3::FilterPattern*>($1);
+		  $$ = new w3c_sw::a3::FilterAction(f->expr);
+		  const_cast<w3c_sw::a3::FilterPattern*>(f)->expr = NULL;
+		  delete f; }
+;
+
+/* `load <iri>` merges into the working graph (SPARQL FROM);
+ * `load <iri> as <g>` loads as named graph <g> (FROM NAMED);
+ * `read` is the deprecated Algae2 spelling. Params parsed and ignored. */
+Load:
+    IT_load IRIREF _Q_O_QIT_as_E_S_QGraphName_E_C_E_Opt _QParamList_E_Opt
+		{ $$ = new w3c_sw::a3::Load($2, $3); }
+  | IT_read IRIREF _Q_O_QIT_as_E_S_QGraphName_E_C_E_Opt _QParamList_E_Opt
+		{ $$ = new w3c_sw::a3::Load($2, $3); }
+;
+
+_Q_O_QIT_as_E_S_QGraphName_E_C_E_Opt:
+    /* empty */		{ $$ = NULL; }
+  | IT_as GraphName	{ $$ = $2; }
+;
+
+GraphName: IRIREF | PNAME ;
+
+_QParamList_E_Opt: /* empty */ | ParamList ;
+
+ParamList: GT_LPAREN _QParam_E_Star GT_RPAREN ;
+
+_QParam_E_Star: /* empty */ | _QParam_E_Star Param ;
+
+Param: NAME GT_EQUAL Literal	{ delete $1; } ;
+
+Attach:
+    IT_attach IRIREF NAME _QParamList_E_Opt
+		{ $$ = new w3c_sw::a3::Attach($2, *$3); delete $3; }
+;
+
+Ask:
+    IT_ask _QDbSpec_E_Opt GT_LPAREN GraphPattern GT_RPAREN
+		{ $$ = new w3c_sw::a3::Ask($4); }
+;
+
+_QDbSpec_E_Opt:
+    /* empty */
+  | NAME	{ delete $1; /* Algae2 attach-database selector; ignored */ }
+  | IRIREF
+;
+
+Test:
+    IT_test GT_LPAREN GraphPattern GT_RPAREN
+		{ $$ = new w3c_sw::a3::Test($3); }
+;
+
+Assert: AssertOnly	{ $$ = $1; } ;
+
+AssertOnly:
+    IT_assert _QIntoClause_E_Opt GT_LPAREN GraphPattern GT_RPAREN
+		{ $$ = new w3c_sw::a3::AssertAction($2, $4); }
+;
+
+_QIntoClause_E_Opt:
+    /* empty */		{ $$ = NULL; }
+  | IT_into GraphTerm	{ $$ = $2; }
+;
+
+FwRule:
+    IT_fwrule Ask AssertOnly	{ $$ = new w3c_sw::a3::FwRule($2, $3); }
+  | IT_fwrule AssertOnly Ask	{ $$ = new w3c_sw::a3::FwRule($3, $2); }
+;
+
+Let:
+    IT_let GT_LPAREN VAR Expression GT_RPAREN
+		{ $$ = new w3c_sw::a3::Let($3, $4); }
+;
+
+Bindings:
+    IT_bindings GT_LPAREN _QVar_E_Plus GT_RPAREN GT_LCURLEY _QRow_E_Star GT_RCURLEY
+		{ $$ = $6;
+		  $$->vars = *$3;
+		  delete $3;
+		  $$->rows.swap(driver.pendingRows);
+		  for (size_t r = 0; r < $$->rows.size(); ++r)
+		      if ($$->rows[r].size() != $$->vars.size())
+			  driver.error(@6, "bindings row width differs from variable list");
+		}
+;
+
+_QRow_E_Star:
+    /* empty */			{ $$ = new w3c_sw::a3::BindingsAction(); }
+  | _QRow_E_Star Row		{ $$ = $1; /* Row appended via driver.curRow */ }
+;
+
+Row:
+    GT_LPAREN _QRowTerm_E_Plus GT_RPAREN
+		{ driver.pendingRows.push_back(*$2);
+		  delete $2; }
+;
+
+_QRowTerm_E_Plus:
+    RowTerm			{ $$ = new std::vector<const w3c_sw::TTerm*>(1, $1); }
+  | _QRowTerm_E_Plus RowTerm	{ $$ = $1; $$->push_back($2); }
+;
+
+RowTerm:
+    Term
+  | IT_UNDEF	{ $$ = NULL; }
+;
+
+Collect:
+    IT_collect _QIT_distinct_E_Opt GT_LPAREN ProjectionList GT_RPAREN
+	_QByClause_E_Opt _QOrderClause_E_Opt _QLimitClause_E_Opt _QOffsetClause_E_Opt
+		{ $$ = driver.curCollect;
+		  driver.curCollect = NULL;
+		  $$->distinct = $2;
+		  if ($4 != NULL) {
+		      $$->projections = *$4;
+		      delete $4;
+		  } else
+		      $$->star = true;
+		  if ($6 != NULL) { $$->groupBy = *$6; delete $6; }
+		  if ($7 != NULL) { $$->order = *$7; delete $7; }
+		}
+;
+
+_QIT_distinct_E_Opt:
+    /* empty */		{ $$ = false; driver.curCollect = new w3c_sw::a3::Collect(); }
+  | IT_distinct		{ $$ = true; driver.curCollect = new w3c_sw::a3::Collect(); }
+;
+
+ProjectionList:
+    _QProjection_E_Plus	{ $$ = $1; }
+  | GT_TIMES		{ $$ = NULL; }
+;
+
+_QProjection_E_Plus:
+    Projection			{ $$ = driver.takeProjs(); }
+  | _QProjection_E_Plus Projection	{ $$ = $1;
+		  std::vector<w3c_sw::a3::Projection>* nw = driver.takeProjs();
+		  $$->insert($$->end(), nw->begin(), nw->end());
+		  delete nw; }
+;
+
+Projection:
+    VAR		{ driver.pendingProjs.push_back(w3c_sw::a3::Projection($1, NULL)); }
+  | GT_LPAREN Expression IT_as VAR GT_RPAREN
+		{ driver.pendingProjs.push_back(w3c_sw::a3::Projection($4, $2)); }
+;
+
+/* group before aggregate projections apply (SPARQL GROUP BY); a following
+ * standalone { expr } action plays HAVING. */
+_QByClause_E_Opt:
+    /* empty */		{ $$ = NULL; }
+  | IT_by GT_LPAREN _QVar_E_Plus GT_RPAREN	{ $$ = $3; }
+;
+
+_QVar_E_Plus:
+    VAR			{ $$ = new std::vector<const w3c_sw::TTerm*>(1, $1); }
+  | _QVar_E_Plus VAR	{ $$ = $1; $$->push_back($2); }
+;
+
+_QVar_E_Star:
+    /* empty */		{ $$ = new std::vector<const w3c_sw::TTerm*>(); }
+  | _QVar_E_Star VAR	{ $$ = $1; $$->push_back($2); }
+;
+
+_QOrderClause_E_Opt:
+    /* empty */		{ $$ = NULL; }
+  | OrderClause		{ $$ = $1; }
+;
+
+OrderClause:
+    IT_order IT_by _QOrderCond_E_Plus	{ $$ = $3; }
+;
+
+_QOrderCond_E_Plus:
+    OrderCond			{ $$ = driver.takeOrders(); }
+  | _QOrderCond_E_Plus OrderCond	{ $$ = $1;
+		  std::vector<w3c_sw::a3::OrderCond>* nw = driver.takeOrders();
+		  $$->insert($$->end(), nw->begin(), nw->end());
+		  delete nw; }
+;
+
+OrderCond:
+    VAR		{ driver.pendingOrders.push_back(w3c_sw::a3::OrderCond(false, new w3c_sw::TTermExpression($1))); }
+  | IT_asc GT_LPAREN Expression GT_RPAREN
+		{ driver.pendingOrders.push_back(w3c_sw::a3::OrderCond(false, $3)); }
+  | IT_desc GT_LPAREN Expression GT_RPAREN
+		{ driver.pendingOrders.push_back(w3c_sw::a3::OrderCond(true, $3)); }
+;
+
+_QLimitClause_E_Opt:
+    /* empty */
+  | IT_limit INTEGER	{ driver.curCollect->limit = atol($2->getLexicalValue().c_str()); }
+;
+
+_QOffsetClause_E_Opt:
+    /* empty */
+  | IT_offset INTEGER	{ driver.curCollect->offset = atol($2->getLexicalValue().c_str()); }
+;
+
+/* ---- graph patterns ------------------------------------------------- */
+
+GraphPattern:
+    Conjunction				{ $$ = $1; }
+  | GraphPattern GT_OR2 Conjunction	{ $$ = new w3c_sw::a3::ConnPattern(w3c_sw::a3::ConnPattern::OrElse, $1, $3); }
+  | GraphPattern GT_UNION Conjunction	{ $$ = new w3c_sw::a3::ConnPattern(w3c_sw::a3::ConnPattern::Union, $1, $3); }
+  | GraphPattern GT_MUNION Conjunction	{ $$ = new w3c_sw::a3::ConnPattern(w3c_sw::a3::ConnPattern::MUnion, $1, $3); }
+  | GraphPattern GT_DIFF Conjunction	{ $$ = new w3c_sw::a3::ConnPattern(w3c_sw::a3::ConnPattern::Diff, $1, $3); }
+;
+
+/* `.` separates; a trailing `.` before `)` or a connective is permitted, as
+ * in Algae2's `'(' graphPattern '.'? ')'`. */
+Conjunction:
+    UnaryPattern ConjTail
+		{ if ($2->elts.empty()) {
+		      delete $2;
+		      $$ = $1;
+		  } else {
+		      $2->elts.insert($2->elts.begin(), $1);
+		      $$ = $2;
+		  } }
+;
+
+ConjTail:
+    /* empty */			{ $$ = new w3c_sw::a3::ConjPattern(); }
+  | GT_DOT			{ $$ = new w3c_sw::a3::ConjPattern(); }
+  | GT_DOT UnaryPattern ConjTail
+		{ $$ = $3; $$->elts.insert($$->elts.begin(), $2); }
+;
+
+UnaryPattern:
+    Decl
+  | GT_TILDE UnaryPattern	{ $$ = new w3c_sw::a3::UnaryPattern(w3c_sw::a3::UnaryPattern::Optional, $2); }
+  | GT_BANG UnaryPattern	{ $$ = new w3c_sw::a3::UnaryPattern(w3c_sw::a3::UnaryPattern::Negation, $2); }
+  | GT_LPAREN GraphPattern GT_RPAREN	{ $$ = $2; }
+  | InGraph
+  | Scope			{ $$ = $1; }
+  | CurlyFilter
+  | Bindings			{ $$ = new w3c_sw::a3::ActionPattern($1); }   /* inline VALUES */
+  | Let				{ $$ = new w3c_sw::a3::ActionPattern($1); }   /* inline BIND */
+;
+
+InGraph:
+    IT_in GraphTerm GT_LPAREN GraphPattern GT_RPAREN
+		{ $$ = new w3c_sw::a3::InGraphPattern($2, $4); }
+;
+
+/* scope: evaluate a pattern - or a whole sub-pipeline (subquery form) - in
+ * its own variable scope, exporting only the shared variables. */
+Scope:
+    IT_scope GT_LPAREN GraphPattern GT_RPAREN IT_share GT_LPAREN _QVar_E_Star GT_RPAREN
+		{ $$ = new w3c_sw::a3::ScopePattern();
+		  $$->pattern = $3;
+		  $$->share = *$7;
+		  delete $7; }
+  | IT_scope GT_LPAREN Pipeline GT_RPAREN IT_share GT_LPAREN _QVar_E_Star GT_RPAREN
+		{ $$ = new w3c_sw::a3::ScopePattern();
+		  $$->pipeline = *$3;
+		  delete $3;
+		  $$->share = *$7;
+		  delete $7; }
+;
+
+/* A sub-pipeline may not begin with a bare { expr } filter, a bindings or a
+ * let (those readings belong to GraphPattern); any other action may lead,
+ * and any action may follow. */
+Pipeline:
+    PipelineHead	{ $$ = new std::vector<const w3c_sw::a3::Action*>(1, driver.pipelineHead);
+			  driver.pipelineHead = NULL; }
+  | Pipeline Action	{ $$ = $1; $$->push_back($2); }
+;
+
+PipelineHead:
+    Load	{ driver.pipelineHead = $1; }
+  | Ask		{ driver.pipelineHead = $1; }
+  | Collect	{ driver.pipelineHead = $1; }
+  | Test	{ driver.pipelineHead = $1; }
+;
+
+CurlyFilter:
+    Constraint	{ $$ = new w3c_sw::a3::FilterPattern($1); }
+;
+
+Decl:
+    Term PropObjectList		{ $$ = driver.decl($1, $2); }
+;
+
+PropObjectList:
+    VerbObjectList _Q_O_QGT_SEMI_E_S_QVerbObjectList_E_C_E_Star
+		{ $$ = $1; $$->insert($$->end(), $2->begin(), $2->end()); delete $2; }
+;
+
+_Q_O_QGT_SEMI_E_S_QVerbObjectList_E_C_E_Star:
+    /* empty */			{ $$ = new std::vector<w3c_sw::a3::Po>(); }
+  | _Q_O_QGT_SEMI_E_S_QVerbObjectList_E_C_E_Star _O_QGT_SEMI_E_S_QVerbObjectList_E_C
+		{ $$ = $1; $$->insert($$->end(), $2->begin(), $2->end()); delete $2; }
+;
+
+_O_QGT_SEMI_E_S_QVerbObjectList_E_C:
+    GT_SEMI VerbObjectList	{ $$ = $2; }
+;
+
+VerbObjectList:
+    Verb ObjectList
+		{ $$ = new std::vector<w3c_sw::a3::Po>();
+		  for (std::vector<w3c_sw::a3::ObjC>::const_iterator it = $2->begin();
+		       it != $2->end(); ++it) {
+		      w3c_sw::a3::Po po = { $1, it->o, it->c };
+		      $$->push_back(po);
+		  }
+		  delete $2; }
+;
+
+ObjectList:
+    ObjectC _Q_O_QGT_COMMA_E_S_QObjectC_E_C_E_Star
+		{ $$ = $1; $$->insert($$->end(), $2->begin(), $2->end()); delete $2; }
+;
+
+_Q_O_QGT_COMMA_E_S_QObjectC_E_C_E_Star:
+    /* empty */			{ $$ = new std::vector<w3c_sw::a3::ObjC>(); }
+  | _Q_O_QGT_COMMA_E_S_QObjectC_E_C_E_Star _O_QGT_COMMA_E_S_QObjectC_E_C
+		{ $$ = $1; $$->insert($$->end(), $2->begin(), $2->end()); delete $2; }
+;
+
+_O_QGT_COMMA_E_S_QObjectC_E_C:
+    GT_COMMA ObjectC		{ $$ = $2; }
+;
+
+ObjectC:
+    Term _QConstraint_E_Opt
+		{ $$ = new std::vector<w3c_sw::a3::ObjC>();
+		  w3c_sw::a3::ObjC oc = { $1, $2 };
+		  $$->push_back(oc); }
+;
+
+_QConstraint_E_Opt:
+    /* empty */		{ $$ = NULL; }
+  | Constraint		{ $$ = $1; }
+;
+
+Constraint:
+    GT_LCURLEY Expression GT_RCURLEY	{ $$ = $2; }
+;
+
+Verb:
+    A_KW	{ $$ = w3c_sw::TTerm::RDF_type; }
+  | IRIREF	{ $$ = $1; }
+  | PNAME	{ $$ = $1; }
+  | VAR
+;
+
+GraphTerm:
+    IRIREF	{ $$ = $1; }
+  | PNAME	{ $$ = $1; }
+  | VAR
+;
+
+Term:
+    IRIREF	{ $$ = $1; }
+  | PNAME	{ $$ = $1; }
+  | VAR
+  | BLANK_LABEL
+  | ANON	{ $$ = driver.anonBNode(); }
+  | Literal
+;
+
+Literal:
+    STRING	{ $$ = driver.atomFactory->getRDFLiteral(*$1, NULL, NULL); delete $1; }
+  | STRING LANGTAG
+		{ $$ = driver.atomFactory->getRDFLiteral(*$1, NULL, new w3c_sw::LANGTAG(*$2)); delete $1; delete $2; }
+  | STRING GT_DTYPE IRIREF
+		{ $$ = driver.atomFactory->getRDFLiteral(*$1, $3, NULL); delete $1; }
+  | STRING GT_DTYPE PNAME
+		{ $$ = driver.atomFactory->getRDFLiteral(*$1, $3, NULL); delete $1; }
+  | INTEGER | DECIMAL | DOUBLE
+  | IT_true	{ $$ = w3c_sw::TTerm::BOOL_true; }
+  | IT_false	{ $$ = w3c_sw::TTerm::BOOL_false; }
+;
+
+/* ---- constraint expressions ----------------------------------------- */
+
+Expression: OrExpr ;
+
+OrExpr:
+    AndExpr
+  | OrExpr GT_OR2 AndExpr
+		{ w3c_sw::ProductionVector<const w3c_sw::Expression*>* v
+		      = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+		  v->push_back($3);
+		  $$ = new w3c_sw::BooleanDisjunction($1, v); }
+;
+
+AndExpr:
+    RelExpr
+  | AndExpr GT_AND2 RelExpr
+		{ w3c_sw::ProductionVector<const w3c_sw::Expression*>* v
+		      = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+		  v->push_back($3);
+		  $$ = new w3c_sw::BooleanConjunction($1, v); }
+;
+
+RelExpr:
+    AddExpr
+  | AddExpr GT_EQ2 AddExpr	{ $$ = new w3c_sw::ComparatorExpression(new w3c_sw::BooleanEQ($1, $3)); }
+  | AddExpr GT_NE AddExpr	{ $$ = new w3c_sw::ComparatorExpression(new w3c_sw::BooleanNE($1, $3)); }
+  | AddExpr GT_LT AddExpr	{ $$ = new w3c_sw::ComparatorExpression(new w3c_sw::BooleanLT($1, $3)); }
+  | AddExpr GT_GT AddExpr	{ $$ = new w3c_sw::ComparatorExpression(new w3c_sw::BooleanGT($1, $3)); }
+  | AddExpr GT_LE AddExpr	{ $$ = new w3c_sw::ComparatorExpression(new w3c_sw::BooleanLE($1, $3)); }
+  | AddExpr GT_GE AddExpr	{ $$ = new w3c_sw::ComparatorExpression(new w3c_sw::BooleanGE($1, $3)); }
+;
+
+AddExpr:
+    MulExpr
+  | AddExpr GT_PLUS MulExpr
+		{ w3c_sw::ProductionVector<const w3c_sw::Expression*>* v
+		      = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+		  v->push_back($3);
+		  $$ = new w3c_sw::ArithmeticSum($1, v); }
+  | AddExpr GT_MINUS MulExpr
+		{ w3c_sw::ProductionVector<const w3c_sw::Expression*>* v
+		      = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+		  v->push_back(new w3c_sw::ArithmeticNegation($3));
+		  $$ = new w3c_sw::ArithmeticSum($1, v); }
+;
+
+MulExpr:
+    UnaryExpr
+  | MulExpr GT_TIMES UnaryExpr
+		{ w3c_sw::ProductionVector<const w3c_sw::Expression*>* v
+		      = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+		  v->push_back($3);
+		  $$ = new w3c_sw::ArithmeticProduct($1, v); }
+  | MulExpr GT_DIVIDE UnaryExpr
+		{ w3c_sw::ProductionVector<const w3c_sw::Expression*>* v
+		      = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+		  v->push_back(new w3c_sw::ArithmeticInverse($3));
+		  $$ = new w3c_sw::ArithmeticProduct($1, v); }
+;
+
+UnaryExpr:
+    Primary
+  | GT_BANG UnaryExpr	{ $$ = new w3c_sw::BooleanNegation($2); }
+  | GT_MINUS UnaryExpr	{ $$ = new w3c_sw::ArithmeticNegation($2); }
+;
+
+Primary:
+    VAR		{ $$ = new w3c_sw::TTermExpression($1); }
+  | IRIREF	{ $$ = new w3c_sw::TTermExpression($1); }
+  | PNAME GT_LPAREN _QArgList_E_Opt GT_RPAREN
+		{ $$ = driver.callIRI($1, $3); }
+  | NAME GT_LPAREN _QArgList_E_Opt GT_RPAREN
+		{ $$ = driver.call(*$1, false, $3, @1); delete $1; }
+  | NAME GT_LPAREN IT_distinct _QArgList_E_Opt GT_RPAREN
+		{ $$ = driver.call(*$1, true, $4, @1); delete $1; }
+  | PNAME	{ $$ = new w3c_sw::TTermExpression($1); }
+  | Literal	{ $$ = new w3c_sw::TTermExpression($1); }
+  | GT_LPAREN Expression GT_RPAREN	{ $$ = $2; }
+;
+
+_QArgList_E_Opt:
+    /* empty */		{ $$ = new w3c_sw::ProductionVector<const w3c_sw::Expression*>(); }
+  | ArgList		{ $$ = $1; }
+;
+
+ArgList:
+    Expression		{ $$ = new w3c_sw::ProductionVector<const w3c_sw::Expression*>();
+			  $$->push_back($1); }
+  | ArgList GT_COMMA Expression	{ $$ = $1; $$->push_back($3); }
+;
+
+%%
+
+/* -------------------------------------------------------------------------- */
+
+#include "SWObjectDuplicator.hpp"
+
+namespace w3c_sw {
+
+void Algae3Parser::error (const Algae3Parser::location_type& l, const std::string& m) {
+    driver.error(l, m);
+}
+
+const Expression* Algae3Driver::dup (const Expression* e) {
+    SWObjectDuplicator d(atomFactory);
+    e->express(&d);
+    return d.last.expression;
+}
+
+const Expression* Algae3Driver::callIRI (const URI* name,
+					 ProductionVector<const Expression*>* args) {
+    return new FunctionCallExpression(new FunctionCall(name, new ArgList(args)));
+}
+
+const Expression* Algae3Driver::call (std::string name, bool distinct,
+				      ProductionVector<const Expression*>* args,
+				      const location& loc) {
+    /* aggregates -> AggregateExpr (evaluated over the current group) */
+    a3::AggregateExpr::Func af;
+    bool isAgg = true;
+    if (name == "count") af = a3::AggregateExpr::Count;
+    else if (name == "sum") af = a3::AggregateExpr::Sum;
+    else if (name == "min") af = a3::AggregateExpr::Min;
+    else if (name == "max") af = a3::AggregateExpr::Max;
+    else if (name == "avg") af = a3::AggregateExpr::Avg;
+    else if (name == "sample") af = a3::AggregateExpr::Sample;
+    else if (name == "group_concat") af = a3::AggregateExpr::GroupConcat;
+    else isAgg = false;
+    if (isAgg) {
+	std::string sep = " ";
+	const Expression* arg = NULL;
+	if (args->size() > 0)
+	    arg = (*args->begin());
+	if (af == a3::AggregateExpr::GroupConcat && args->size() > 1) {
+	    /* separators are plain second arguments (settled design) */
+	    const TTermExpression* te = dynamic_cast<const TTermExpression*>(*(args->begin()+1));
+	    const RDFLiteral* lit = te == NULL ? NULL
+		: dynamic_cast<const RDFLiteral*>(te->getTTerm());
+	    if (lit == NULL)
+		error(loc, "group_concat separator must be a plain literal");
+	    sep = lit->getLexicalValue();
+	}
+	/* detach the first arg; free the carrier and any separator arg */
+	std::vector<const Expression*> held(args->begin(), args->end());
+	args->clear();
+	delete args;
+	for (size_t i = 1; i < held.size(); ++i)
+	    delete held[i];
+	return new a3::AggregateExpr(af, distinct, arg, sep);
+    }
+
+    /* oneof(x, e1, e2, ...) stands in for SPARQL IN (`in` is the GRAPH
+     * keyword; settled design) - desugared to (x==e1 || x==e2 || ...) */
+    if (name == "oneof") {
+	if (args->size() < 2)
+	    error(loc, "oneof(x, e1, ...) needs at least two arguments");
+	std::vector<const Expression*> held(args->begin(), args->end());
+	args->clear();
+	delete args;
+	const Expression* scrutinee = held[0];
+	ProductionVector<const Expression*>* alts = new ProductionVector<const Expression*>();
+	for (size_t i = 1; i < held.size(); ++i) {
+	    const Expression* lhs = i+1 < held.size() ? dup(scrutinee) : scrutinee;
+	    alts->push_back(new ComparatorExpression(new BooleanEQ(lhs, held[i])));
+	}
+	const Expression* first = *alts->begin();
+	ProductionVector<const Expression*>* rest = new ProductionVector<const Expression*>();
+	for (std::vector<const Expression*>::const_iterator it = alts->begin()+1;
+	     it != alts->end(); ++it)
+	    rest->push_back(*it);
+	alts->clear();
+	delete alts;
+	return new BooleanDisjunction(first, rest);
+    }
+
+    /* builtins (manifest expression-builtin-map) */
+    const URI* func =
+	name == "bound"     ? TTerm::FUNC_bound :
+	name == "if"        ? TTerm::FUNC_if :
+	name == "coalesce"  ? TTerm::FUNC_coalesce :
+	name == "str"       ? TTerm::FUNC_str :
+	name == "strafter"  ? TTerm::FUNC_substring_after :
+	name == "replace"   ? TTerm::FUNC_replace :
+	name == "concat"    ? TTerm::FUNC_concat :
+	name == "regex"     ? TTerm::FUNC_matches :
+	name == "datatype"  ? TTerm::FUNC_datatype :
+	name == "lang"      ? TTerm::FUNC_lang :
+	name == "iri"       ? TTerm::FUNC_iri :
+	name == "isIRI"     ? TTerm::FUNC_isIRI :
+	name == "isURI"     ? TTerm::FUNC_isIRI :
+	name == "isBlank"   ? TTerm::FUNC_isBlank :
+	name == "isLiteral" ? TTerm::FUNC_isLiteral :
+	NULL;
+    if (func == NULL) {
+	error(loc, "unknown function \"" + name + "\""); // throws
+	return NULL;
+    }
+    return new FunctionCallExpression(new FunctionCall(func, new ArgList(args)));
+}
+
+void Algae3Driver::parse (IStreamContext& in, a3::Query* intoQuery) {
+    a3::Query* outerQuery = query; // parsePattern may nest inside a parse
+    query = intoQuery;
+    streamname = in.nameStr;
+    Algae3Scanner scanner(this, in.p);
+    scanner.set_debug(trace_scanning);
+    lexer = &scanner;
+    Algae3Parser parser(*this);
+    parser.set_debug_level(trace_parsing);
+    parser.parse();
+    lexer = NULL;
+    query = outerQuery;
+}
+
+const a3::Pattern* Algae3Driver::parsePattern (std::string text, std::string& errMsg) {
+    a3::Query q;
+    q.mode = a3::EVAL_topdown;
+    try {
+	IStreamContext istr("ask ( " + text + " )", IStreamContext::STRING);
+	parse(istr, &q);
+    } catch (ParserException& e) {
+	errMsg = e.what();
+	return NULL;
+    } catch (std::string& e) {
+	errMsg = e;
+	return NULL;
+    }
+    if (q.actions.size() != 1)
+	{ errMsg = "expected a single pattern"; return NULL; }
+    const a3::Ask* ask = dynamic_cast<const a3::Ask*>(q.actions[0]);
+    if (ask == NULL)
+	{ errMsg = "expected a pattern"; return NULL; }
+    const a3::Pattern* ret = ask->pattern;
+    const_cast<a3::Ask*>(ask)->pattern = NULL; // transfer ownership; ~Ask is NULL-safe
+    return ret;
+}
+
+} // namespace w3c_sw

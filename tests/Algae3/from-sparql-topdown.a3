@@ -1,0 +1,19 @@
+# SPARQL compiled to Algae 3, TOP-DOWN mode (the Algae-native reading).
+#
+#   SELECT * FROM <http://example.org/d>
+#   WHERE { :a :p ?v
+#           OPTIONAL { :b :q ?w
+#                      OPTIONAL { :c :r ?u FILTER(?v = 1) } } }
+#
+# Bindings flow into nested patterns: ?v is visible to the inner FILTER.
+# Over data { :a :p 1 . :b :q 9 . :c :r 7 } this yields {v=1, w=9, u=7}.
+require <http://www.w3.org/ns/algae3#eval-topdown>
+prefix : <http://example.org/ns#>
+
+load <data/d.ttl>
+
+ask ( :a :p ?v .
+      ~( :b :q ?w .
+         ~( :c :r ?u . {?v == 1} ) )
+)
+collect (*)

@@ -1,0 +1,10 @@
+@prefix ex: <http://example.org/#> .
+ex:alice a ex:Author .
+ex:bala  a ex:Author .
+ex:carol a ex:Author .
+ex:k1 ex:by ex:alice ; ex:title "Axioms" .
+ex:k2 ex:by ex:alice ; ex:title "Basins" .
+ex:k3 ex:by ex:alice ; ex:title "Chutes" .
+ex:k4 ex:by ex:bala  ; ex:title "Dunes" .
+ex:k5 ex:by ex:carol ; ex:title "Eddies" .
+ex:k6 ex:by ex:carol ; ex:title "Fjords" .

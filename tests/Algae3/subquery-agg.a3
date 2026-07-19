@@ -1,0 +1,16 @@
+# Subqueries are scoped sub-pipelines: ask + collect with (expr as ?v)
+# projections and a `by` grouping clause.  The trailing { ?n >= 2 } plays
+# HAVING; sorting and limit sit on the outer collect.
+ns ex=<http://example.org/#>
+
+load <data/books.ttl>
+
+ask ( ?author a ex:Author .
+      scope ( ask ( ?book ex:by ?author ; ex:title ?title )
+              collect (?author (count(distinct ?book) as ?n)
+                               (group_concat(?title, ", ") as ?titles))
+                by (?author)
+            ) share (?author ?n ?titles) .
+      {?n >= 2}
+)
+collect (?author ?n) order by desc(?n) limit 5

@@ -1,0 +1,157 @@
+/* test_Algae3 - evaluate the Algae 3 manifest entries (vendored from
+ * ../algae3/examples per examples/manifesty.yaml) and differential-test the
+ * two evaluation modes. nested-optional and negation-scoped-topdown have
+ * documented, intended divergences; everything else must agree.
+ */
+
+#define BOOST_TEST_MODULE Algae3
+
+#include "SWObjects.hpp"
+#include "Algae3.hpp"
+#include "Algae3Parser.hpp"
+#include "Logging.hpp"
+
+#include <boost/test/unit_test.hpp>
+#include <fstream>
+#include <sstream>
+
+namespace sw = w3c_sw;
+
+namespace {
+    sw::AtomFactory F;
+
+    sw::a3::Query* parseFile (const std::string& path) {
+	std::ifstream in(path.c_str(), std::ios::binary);
+	BOOST_REQUIRE_MESSAGE(in.good(), "cannot open " + path);
+	std::ostringstream ss;
+	ss << in.rdbuf();
+	sw::a3::Query* q = new sw::a3::Query();
+	sw::Algae3Driver driver("", &F);
+	sw::IStreamContext istr(ss.str(), sw::IStreamContext::STRING);
+	istr.nameStr = path;
+	driver.parse(istr, q);
+	return q;
+    }
+
+    /** run and render rows as a sorted multiset of binding strings
+     * (row order is not part of the comparison unless ordered) */
+    std::string runSorted (const sw::a3::Query& q, sw::a3::EvalMode mode) {
+	sw::a3::Engine e(&F, mode);
+	e.baseDir = "Algae3";
+	sw::a3::Query& mq = const_cast<sw::a3::Query&>(q);
+	sw::a3::EvalMode saved = mq.mode;
+	mq.mode = mode;
+	e.run(mq);
+	mq.mode = saved;
+	std::vector<std::string> rows;
+	for (sw::ResultSetConstIterator it = e.rs->begin(); it != e.rs->end(); ++it) {
+	    std::vector<std::string> cells;
+	    for (sw::BindingSetConstIterator b = (*it)->begin(); b != (*it)->end(); ++b)
+		cells.push_back(b->first->toString() + "=" + b->second.tterm->toString() + ";");
+	    std::sort(cells.begin(), cells.end());
+	    std::string row;
+	    for (std::vector<std::string>::const_iterator c = cells.begin(); c != cells.end(); ++c)
+		row += *c;
+	    rows.push_back(row);
+	}
+	std::sort(rows.begin(), rows.end());
+	std::ostringstream out;
+	for (std::vector<std::string>::const_iterator it = rows.begin(); it != rows.end(); ++it)
+	    out << *it << "\n";
+	return out.str();
+    }
+
+    /** golden comparison against tests/Algae3/expected/<name>.expected */
+    void goldenTest (const char* name) {
+	std::string base = std::string("Algae3/") + name;
+	sw::a3::Query* q = parseFile(base + ".a3");
+	std::string got = runSorted(*q, q->mode);
+	std::ifstream exp((std::string("Algae3/expected/") + name + ".expected").c_str());
+	BOOST_REQUIRE_MESSAGE(exp.good(), std::string("missing expected file for ") + name);
+	std::ostringstream want;
+	want << exp.rdbuf();
+	BOOST_CHECK_EQUAL(got, want.str());
+	delete q;
+    }
+
+    /** both modes agree on this entry */
+    void agreeTest (const char* name) {
+	sw::a3::Query* q = parseFile(std::string("Algae3/") + name + ".a3");
+	std::string td = runSorted(*q, sw::a3::EVAL_topdown);
+	std::string bu = runSorted(*q, sw::a3::EVAL_bottomup);
+	BOOST_CHECK_MESSAGE(td == bu, std::string(name) + " modes diverge:\ntopdown:\n"
+			    + td + "bottomup:\n" + bu);
+	delete q;
+    }
+}
+
+/* golden results, evaluated in each file's required mode */
+BOOST_AUTO_TEST_CASE( bgp )                 { goldenTest("annotations"); }
+BOOST_AUTO_TEST_CASE( optional_filter_negation ) { goldenTest("rolodex"); }
+BOOST_AUTO_TEST_CASE( dataset )             { goldenTest("dataset"); }
+BOOST_AUTO_TEST_CASE( connectives )         { goldenTest("connectives"); }
+BOOST_AUTO_TEST_CASE( nested_optional_topdown )  { goldenTest("from-sparql-topdown"); }
+BOOST_AUTO_TEST_CASE( nested_optional_bottomup ) { goldenTest("from-sparql-bottomup"); }
+BOOST_AUTO_TEST_CASE( negation_scoped_topdown )  { goldenTest("negation-scoped-topdown"); }
+BOOST_AUTO_TEST_CASE( negation_scoped_bottomup ) { goldenTest("negation-scoped-bottomup"); }
+BOOST_AUTO_TEST_CASE( subquery_agg )        { goldenTest("subquery-agg"); }
+BOOST_AUTO_TEST_CASE( rule_engine_dnf )     { goldenTest("rule-engine-dnf"); }
+
+BOOST_AUTO_TEST_CASE( fwrule_test_action ) {
+    sw::a3::Query* q = parseFile("Algae3/rule.a3");
+    sw::a3::Engine e(&F, q->mode);
+    e.baseDir = "Algae3";
+    e.run(*q);
+    BOOST_CHECK(e.lastTest); // vcard -> foaf rule makes the test succeed
+    BOOST_CHECK_EQUAL(e.asserted.size(), 4u); // 2 people x 2 triples, no dups
+    delete q;
+}
+
+/* differential: modes must agree everywhere they are documented to */
+BOOST_AUTO_TEST_CASE( agree_annotations )  { agreeTest("annotations"); }
+BOOST_AUTO_TEST_CASE( agree_rolodex )      { agreeTest("rolodex"); }
+BOOST_AUTO_TEST_CASE( agree_dataset )      { agreeTest("dataset"); }
+BOOST_AUTO_TEST_CASE( agree_subquery_agg ) { agreeTest("subquery-agg"); }
+
+/* ... and diverge exactly where documented */
+BOOST_AUTO_TEST_CASE( diverge_nested_optional ) {
+    sw::a3::Query* q = parseFile("Algae3/from-sparql-topdown.a3");
+    std::string td = runSorted(*q, sw::a3::EVAL_topdown);
+    std::string bu = runSorted(*q, sw::a3::EVAL_bottomup);
+    /* top-down: the inner filter sees the inherited ?v -> {v=1,w=9,u=7};
+     * forced bottom-up, the inner optional's operand evaluates from the unit
+     * result set, ?v is unbound there, the filter errors and eliminates ->
+     * {v=1,w=9} with ?u unbound */
+    BOOST_CHECK_MESSAGE(td != bu, "nested-optional modes should diverge");
+    BOOST_CHECK(td.find("?u=7") != std::string::npos);
+    BOOST_CHECK(bu.find("?u") == std::string::npos);
+    delete q;
+}
+
+BOOST_AUTO_TEST_CASE( diverge_negation_scoped ) {
+    /* the manifest's core problem: forced bottom-up, the correlated `!`
+     * becomes a Minus whose right side has no bound ?component on its left
+     * within the negative branch - disjoint domains => vacuous => the
+     * failing conjunct is NOT removed */
+    sw::a3::Query* q = parseFile("Algae3/negation-scoped-topdown.a3");
+    std::string td = runSorted(*q, sw::a3::EVAL_topdown);
+    std::string bu = runSorted(*q, sw::a3::EVAL_bottomup);
+    BOOST_CHECK_MESSAGE(td != bu, "negation-scoped-topdown forced bottom-up should diverge");
+    BOOST_CHECK(td.find("conjNegPass") != std::string::npos); // correlated ! keeps it
+    BOOST_CHECK(td.find("conjNegFail") == std::string::npos);
+    /* forced bottom-up, the union branch is isolated: the naive MINUS's left
+     * lacks ?component, so its compatibility test cannot discriminate the
+     * group members and removes BOTH neg conjuncts */
+    BOOST_CHECK(bu.find("conjNegPass") == std::string::npos);
+    delete q;
+}
+
+/* the two mode-specific renderings of negation-scoped agree with each other */
+BOOST_AUTO_TEST_CASE( negation_scoped_renderings_agree ) {
+    sw::a3::Query* td = parseFile("Algae3/negation-scoped-topdown.a3");
+    sw::a3::Query* bu = parseFile("Algae3/negation-scoped-bottomup.a3");
+    BOOST_CHECK_EQUAL(runSorted(*td, sw::a3::EVAL_topdown),
+		      runSorted(*bu, sw::a3::EVAL_bottomup));
+    delete td;
+    delete bu;
+}

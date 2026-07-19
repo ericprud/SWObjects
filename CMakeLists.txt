@@ -140,7 +140,7 @@ set(PARSER_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/parsers)
 file(MAKE_DIRECTORY ${PARSER_GEN_DIR})
 
 set(SWOBJ_PARSER_STEMS
-    SPARQL SPARQLalgebra Turtle Trig MapSet SQL JSONresults ShExC)
+    SPARQL SPARQLalgebra Turtle Trig MapSet SQL JSONresults ShExC Algae3)
 
 set(SWOBJ_GENERATED_SOURCES "")
 foreach(stem IN LISTS SWOBJ_PARSER_STEMS)
@@ -167,6 +167,7 @@ add_library(SWObjects STATIC
   lib/ShExShapeMap.cpp
   lib/ShExManifest.cpp
   lib/ShExMap.cpp
+  lib/Algae3.cpp
   lib/SWObjects.cpp
   ${SWOBJ_GENERATED_SOURCES}
 )
@@ -230,7 +231,7 @@ target_precompile_headers(SWObjects PRIVATE lib/SWObjects.hpp)
 
 # The tools land in the source-tree bin/ directory (gitignored), as with the
 # old Makefile; the tests shell out to ../bin/sparql .
-foreach(tool sparql parseAndFree)
+foreach(tool sparql parseAndFree algae3)
   add_executable(${tool} bin/${tool}.cpp)
   target_link_libraries(${tool} PRIVATE SWObjects
     Boost::program_options Boost::filesystem)

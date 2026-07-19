@@ -1,0 +1,13 @@
+# fwrule and test (Algae2 rules feature, 2004/06/20-rules).
+require <http://www.w3.org/ns/algae3#rules>
+ns vcard=<http://www.w3.org/2001/vcard-rdf/3.0#>
+ns foaf=<http://xmlns.com/foaf/0.1/>
+
+load <data/cards.ttl>
+
+fwrule ask (?name vcard:Family ?family .
+            ?name vcard:Given ?given)
+    assert (?name foaf:family_name ?family .
+            ?name foaf:givenname ?given)
+
+test (?x foaf:family_name "Prud'hommeaux")

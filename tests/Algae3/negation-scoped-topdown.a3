@@ -1,0 +1,25 @@
+# Top-down compilation of negation-scoped.rq: ONE binding site.  The `!`
+# negation inherits ?conjunct and ?component from the enclosing djoin, so no
+# per-branch re-injection is needed - the correlated negation is just the
+# intuitive formulation.
+require <http://www.w3.org/ns/algae3#eval-topdown>
+ns ex=<http://a.example/ns#>
+
+load <data/negation.ttl>
+
+bindings (?component) { (<http://a.example/component/PLACEHOLDER>) }
+
+ask (
+  ( ?conjunct ex:polarity ex:pos ;
+              ex:componentGroup ?group .
+    ?group ex:member ?membership .
+    ?membership ex:component ?component
+  |&
+    ?conjunct ex:polarity ex:neg ;
+              ex:componentGroup [] .
+    !( ?conjunct ex:componentGroup ?group2 .
+       ?group2 ex:member ?m2 .
+       ?m2 ex:component ?component )
+  )
+)
+collect (?conjunct ?component)

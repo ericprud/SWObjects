@@ -1,0 +1,24 @@
+@prefix Rolodex: <http://example.org/rolodex#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix p: <http://example.org/people/> .
+p:ann   a Rolodex:Friend ; Rolodex:Address p:annAddr ;   Rolodex:age 19 ; foaf:mbox <mailto:ann@x> .
+p:annAddr Rolodex:Street "Ash Way" .
+p:bob   a Rolodex:Friend ; Rolodex:Address p:bobAddr ;   Rolodex:age 20 ; foaf:mbox <mailto:bob@x> .
+p:bobAddr Rolodex:Street "Birch St" .
+p:cid   a Rolodex:Friend ; Rolodex:Address p:cidAddr ;   Rolodex:age 21 .
+p:cidAddr Rolodex:Street "Cedar Ave" .
+p:dee   a Rolodex:Friend ; Rolodex:Address p:deeAddr ;   Rolodex:age 22 ; foaf:mbox <mailto:dee@x> .
+p:deeAddr Rolodex:Street "Dogwood Ln" .
+p:eve   a Rolodex:Friend ; Rolodex:Address p:eveAddr ;   Rolodex:age 23 ; foaf:mbox <mailto:eve@x> .
+p:eveAddr Rolodex:Street "Elm St" .
+p:fay   a Rolodex:Friend ; Rolodex:Address p:fayAddr ;   Rolodex:age 18 ; foaf:mbox <mailto:fay@x> .
+p:fayAddr Rolodex:Street "Fir Rd" .
+p:gus   a Rolodex:Friend ; Rolodex:Address p:gusAddr ;   Rolodex:age 19 ; foaf:mbox <mailto:gus@x> .
+p:gusAddr Rolodex:Street "Gum Ct" .
+# excluded: age out of range
+p:old   a Rolodex:Friend ; Rolodex:Address p:oldAddr ;   Rolodex:age 44 ; foaf:mbox <mailto:old@x> .
+p:oldAddr Rolodex:Street "Aged Pl" .
+# excluded: doNotCall
+p:hal   a Rolodex:Friend ; Rolodex:Address p:halAddr ;   Rolodex:age 20 ; foaf:mbox <mailto:hal@x> ;
+        Rolodex:doNotCall true .
+p:halAddr Rolodex:Street "Beech Blvd" .

@@ -1,0 +1,20 @@
+# The Algae connective family: || (orelse), |& (union), |- (munion), |! (diff),
+# plus let and bindings.
+ns ex=<http://example.org/#>
+
+load <data/connectives.ttl>
+
+let (?threshold 10)
+
+bindings (?kind ?label) {
+  (ex:book "book")
+  (ex:film "film")
+  (UNDEF "anything")
+}
+
+ask ( (?x ex:preferredName ?name || ?x ex:name ?name) .
+      (?x a ex:Book |& ?x a ex:Film) .
+      (?x ex:localId ?id |- ?x ex:globalId ?id) .
+      ( ?x ex:price ?p {?p < ?threshold} |! ?x ex:discontinued true )
+)
+collect (?x ?name ?id ?p)

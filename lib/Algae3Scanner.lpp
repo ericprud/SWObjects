@@ -1,0 +1,147 @@
+/* -*- mode: c++ -*-
+ * Algae3Scanner.lpp - flex scanner for Algae 3.
+ * Lexical layer per ../algae3/lib/Algae3Parser.bnf terminals [53]-[64]:
+ * Turtle/SPARQL-style IRIREF, PNAME, typed and language-tagged literals;
+ * keywords per Algae2 (ns, read, attach, ask, collect, require, fwrule, ...).
+ */
+
+%{ /*** C/C++ Declarations ***/
+
+#include "Algae3Parser.hpp"
+#include "Algae3Scanner.hpp"
+
+typedef w3c_sw::Algae3Parser::token token;
+typedef w3c_sw::Algae3Parser::token_type token_type;
+
+#define yyterminate() return token::__EOF__
+#define YY_NO_UNISTD_H
+
+%}
+
+%option c++
+%option prefix="Algae3"
+%option batch
+%option debug
+%option nodefault
+%option warn
+%option noyywrap nounput
+
+%{
+#define YY_USER_ACTION  yylloc->columns(yyleng);
+#define YY_FATAL_ERROR(msg) do { throw msg; } while(0)
+%}
+
+PN_CHARS_BASE		[A-Za-z]
+PN_CHARS_U		({PN_CHARS_BASE}|"_")
+PN_CHARS		({PN_CHARS_U}|[-0-9])
+PN_PREFIX		{PN_CHARS_BASE}(({PN_CHARS}|".")*{PN_CHARS})?
+PN_LOCAL		({PN_CHARS_U}|[0-9])(({PN_CHARS}|".")*{PN_CHARS})?
+IRIREF			"<"[^<>\"{}|^`\\ \t\r\n]*">"
+VARNAME			({PN_CHARS_U}|[0-9])+
+LINEFEED		\r\n|\r|\n
+
+%%
+
+%{
+    yylloc->step();
+%}
+
+[ \t]+			{ yylloc->step(); }
+{LINEFEED}		{ yylloc->lines(1); yylloc->step(); }
+"#"[^\r\n]*		{ yylloc->step(); }
+
+"ns"			{ return token::IT_ns; }
+"prefix"		{ return token::IT_prefix; }
+"base"			{ return token::IT_base; }
+"require"		{ return token::IT_require; }
+"load"			{ return token::IT_load; }
+"read"			{ return token::IT_read; }
+"as"			{ return token::IT_as; }
+"attach"		{ return token::IT_attach; }
+"ask"			{ return token::IT_ask; }
+"collect"		{ return token::IT_collect; }
+"distinct"		{ return token::IT_distinct; }
+"order"			{ return token::IT_order; }
+"by"			{ return token::IT_by; }
+"asc"			{ return token::IT_asc; }
+"desc"			{ return token::IT_desc; }
+"limit"			{ return token::IT_limit; }
+"offset"		{ return token::IT_offset; }
+"test"			{ return token::IT_test; }
+"assert"		{ return token::IT_assert; }
+"into"			{ return token::IT_into; }
+"fwrule"		{ return token::IT_fwrule; }
+"let"			{ return token::IT_let; }
+"bindings"		{ return token::IT_bindings; }
+"UNDEF"			{ return token::IT_UNDEF; }
+"in"			{ return token::IT_in; }
+"scope"			{ return token::IT_scope; }
+"share"			{ return token::IT_share; }
+"true"			{ return token::IT_true; }
+"false"			{ return token::IT_false; }
+"a"			{ return token::A_KW; }
+
+{IRIREF}		{ yylval->p_URI = driver->iriref(yytext, yyleng); return token::IRIREF; }
+{PN_PREFIX}?":"{PN_LOCAL} { yylval->p_URI = driver->pname(yytext, yylloc); return token::PNAME; }
+{PN_PREFIX}?":"		{ yylval->p_string = new std::string(yytext, yyleng-1); return token::PNAME_NS; }
+"_:"{PN_LOCAL}		{ yylval->p_TTerm = driver->blankLabel(yytext+2); return token::BLANK_LABEL; }
+"?"{VARNAME}		{ yylval->p_TTerm = driver->variable(yytext+1); return token::VAR; }
+{PN_PREFIX}		{ yylval->p_string = new std::string(yytext, yyleng); return token::NAME; }
+
+\"([^\"\\\r\n]|\\.)*\"	{ yylval->p_string = driver->unesc(yytext+1, yyleng-2); return token::STRING; }
+\'([^\'\\\r\n]|\\.)*\'	{ yylval->p_string = driver->unesc(yytext+1, yyleng-2); return token::STRING; }
+"@"[A-Za-z]+(-[A-Za-z0-9]+)* { yylval->p_string = new std::string(yytext+1, yyleng-1); return token::LANGTAG; }
+
+[+-]?[0-9]+"."[0-9]*[eE][+-]?[0-9]+ { yylval->p_TTerm = driver->doubleLit(yytext); return token::DOUBLE; }
+[+-]?[0-9]+[eE][+-]?[0-9]+           { yylval->p_TTerm = driver->doubleLit(yytext); return token::DOUBLE; }
+[+-]?[0-9]+"."[0-9]*	{ yylval->p_TTerm = driver->decimalLit(yytext); return token::DECIMAL; }
+[+-]?[0-9]+		{ yylval->p_TTerm = driver->integerLit(yytext); return token::INTEGER; }
+
+"["[ \t\r\n]*"]"	{ return token::ANON; }
+"^^"			{ return token::GT_DTYPE; }
+"||"			{ return token::GT_OR2; }
+"|&"			{ return token::GT_UNION; }
+"|-"			{ return token::GT_MUNION; }
+"|!"			{ return token::GT_DIFF; }
+"&&"			{ return token::GT_AND2; }
+"=="			{ return token::GT_EQ2; }
+"!="			{ return token::GT_NE; }
+"<="			{ return token::GT_LE; }
+">="			{ return token::GT_GE; }
+"<"			{ return token::GT_LT; }
+">"			{ return token::GT_GT; }
+"("			{ return token::GT_LPAREN; }
+")"			{ return token::GT_RPAREN; }
+"{"			{ return token::GT_LCURLEY; }
+"}"			{ return token::GT_RCURLEY; }
+"."			{ return token::GT_DOT; }
+";"			{ return token::GT_SEMI; }
+","			{ return token::GT_COMMA; }
+"="			{ return token::GT_EQUAL; }
+"~"			{ return token::GT_TILDE; }
+"!"			{ return token::GT_BANG; }
+"+"			{ return token::GT_PLUS; }
+"-"			{ return token::GT_MINUS; }
+"*"			{ return token::GT_TIMES; }
+"/"			{ return token::GT_DIVIDE; }
+
+.			{ throw std::string("unexpected character '") + yytext + "'"; }
+
+%%
+
+/* This implementation of Algae3FlexLexer::yylex() is required to fill the
+ * vtable of the class Algae3FlexLexer. We define the scanner's main yylex
+ * function via YY_DECL to reside in the Algae3Scanner class instead. */
+
+#ifdef yylex
+#undef yylex
+#endif
+
+int Algae3FlexLexer::yylex () {
+    std::cerr << "in Algae3FlexLexer::yylex() !" << std::endl;
+    return 0;
+}
+
+void w3c_sw::Algae3Scanner::set_debug (bool b) {
+    yy_flex_debug = b;
+}

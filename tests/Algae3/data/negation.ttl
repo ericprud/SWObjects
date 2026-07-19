@@ -1,0 +1,14 @@
+@prefix ex: <http://a.example/ns#> .
+@prefix c: <http://a.example/component/> .
+# positive conjunct: passes when the component IS in its group
+ex:conjPos ex:polarity ex:pos ; ex:componentGroup ex:groupA .
+ex:groupA ex:member ex:mA1 .
+ex:mA1 ex:component c:PLACEHOLDER .
+# negative conjunct 1: its group does NOT contain the component -> passes
+ex:conjNegPass ex:polarity ex:neg ; ex:componentGroup ex:groupB .
+ex:groupB ex:member ex:mB1 .
+ex:mB1 ex:component c:other .
+# negative conjunct 2: its group DOES contain the component -> fails
+ex:conjNegFail ex:polarity ex:neg ; ex:componentGroup ex:groupC .
+ex:groupC ex:member ex:mC1 .
+ex:mC1 ex:component c:PLACEHOLDER .
