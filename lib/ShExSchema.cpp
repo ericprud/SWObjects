@@ -1209,6 +1209,8 @@ namespace ShEx {
 	}
 	std::vector<DataTriple> matchables, nonMatchables;
 	if (neighIn == NULL) {
+	    if (neighborhoodSource != NULL)
+		neighborhoodSource->ensure(node); // remote: fault in the neighborhood
 	    // the SP/PO indexes make this linear in the neighbourhood
 	    // instead of the graph
 	    const BasicGraphPattern::triple_iterator end;

@@ -168,6 +168,7 @@ add_library(SWObjects STATIC
   lib/ShExManifest.cpp
   lib/ShExMap.cpp
   lib/Algae3.cpp
+  lib/BNodeResolver.cpp
   lib/SWObjects.cpp
   ${SWOBJ_GENERATED_SOURCES}
 )

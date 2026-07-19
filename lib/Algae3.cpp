@@ -17,6 +17,7 @@
  */
 
 #include "Algae3.hpp"
+#include "BNodeResolver.hpp"
 #include "TurtleParser.hpp"
 
 #include <algorithm>
@@ -25,6 +26,8 @@
 
 namespace w3c_sw {
 namespace a3 {
+
+    bnr::SPARQLClient* (*Engine::attachClientFactory) (const std::string&, AtomFactory*) = NULL;
 
     const std::vector<const Result*>* Engine::currentGroup = NULL;
     const std::map<const Result*, ProofSet>* Engine::currentProofs = NULL;
@@ -89,7 +92,15 @@ namespace a3 {
 	rs = new ResultSet(atomFactory); // the unit result set
     }
 
-    Engine::~Engine () { delete rs; }
+    Engine::~Engine () {
+	delete rs;
+	for (std::vector<bnr::RemoteGraphProvider*>::const_iterator it = ownedProviders.begin();
+	     it != ownedProviders.end(); ++it)
+	    delete *it;
+	for (std::vector<bnr::SPARQLClient*>::const_iterator it = ownedClients.begin();
+	     it != ownedClients.end(); ++it)
+	    delete *it;
+    }
 
     ResultSet* Engine::unitRS () const { return new ResultSet(atomFactory); }
 
@@ -222,6 +233,8 @@ namespace a3 {
 	    const TTerm* s = lookup(tp->getS());
 	    const TTerm* p = lookup(tp->getP());
 	    const TTerm* o = lookup(tp->getO());
+	    if (e.remote != NULL)
+		e.remote->ensurePattern(s, p, o); // remote fault-in (told bnodes expand)
 	    const BasicGraphPattern::triple_iterator end;
 	    for (BasicGraphPattern::triple_iterator ti = graph->getTripleIterator(s, p, o);
 		 ti != end; ++ti) {
@@ -652,8 +665,16 @@ namespace a3 {
 	}
 
 	virtual void visit (const Attach& a) {
-	    throw std::string("attach (external database \"") + a.name
-		+ "\") is parsed for Algae2 compatibility but not evaluable here";
+	    if (Engine::attachClientFactory == NULL)
+		throw std::string("attach (external database \"") + a.name
+		    + "\"): no SPARQL client factory registered";
+	    bnr::SPARQLClient* client
+		= Engine::attachClientFactory(a.driver->getLexicalValue(), e.atomFactory);
+	    e.ownedClients.push_back(client);
+	    bnr::RemoteGraphProvider* provider = new bnr::RemoteGraphProvider(
+		e.atomFactory, client, e.db.ensureGraph(DefaultGraph));
+	    e.ownedProviders.push_back(provider);
+	    e.remote = provider;
 	}
 
 	virtual void visit (const Ask& a) { e.ask(*a.pattern); }

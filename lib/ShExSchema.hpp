@@ -488,6 +488,15 @@ namespace ShEx {
 
     class Validator {
     public:
+	/** When validating over a remote endpoint, a NeighborhoodSource
+	 * faults the focus node's neighborhood into `data` before matching
+	 * (see lib/BNodeResolver.hpp RemoteGraphProvider). */
+	struct NeighborhoodSource {
+	    virtual ~NeighborhoodSource () {  }
+	    virtual void ensure (const TTerm* focus) = 0;
+	};
+	NeighborhoodSource* neighborhoodSource = NULL; // borrowed
+
 	Validator (const Schema& schema, const BasicGraphPattern& data)
 	    : schema(schema), data(data) {  }
 	~Validator ();

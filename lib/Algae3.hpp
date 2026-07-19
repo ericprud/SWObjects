@@ -23,6 +23,7 @@
 #include <vector>
 
 namespace w3c_sw {
+namespace bnr { class RemoteGraphProvider; struct SPARQLClient; }
 namespace a3 {
 
     enum EvalMode { EVAL_topdown, EVAL_bottomup };
@@ -335,6 +336,17 @@ namespace a3 {
 	EvalMode mode;
 	bool lastTest;           // set by `test`
 	std::string baseDir;     // directory for resolving load paths
+
+	/** remote execution: when set, bgpmatch faults each substituted
+	 * triple pattern through the provider (told-bnode seeds expand to
+	 * their identifying fragments) before matching the local cache */
+	bnr::RemoteGraphProvider* remote = NULL; // borrowed unless via attach
+	/** `attach <endpoint> name` creates a provider over a client from
+	 * this factory (tests inject a local relabeling double) */
+	static bnr::SPARQLClient* (*attachClientFactory) (const std::string& iri,
+							  AtomFactory* atomFactory);
+	std::vector<bnr::SPARQLClient*> ownedClients;        // from attach
+	std::vector<bnr::RemoteGraphProvider*> ownedProviders;
 
 	/** rows are sw::Results inside an sw::ResultSet (so sw::Expression
 	 * evaluation applies natively); proofs keyed by row pointer. */
