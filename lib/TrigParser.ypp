@@ -172,6 +172,11 @@ public:
 #include "RdfDB.hpp"
 %}
 
+
+/* Free semantic values discarded on parse errors; interned terms
+ * (<p_TTerm> <p_URI>) belong to the AtomFactory. */
+%destructor { delete $$; } <p_string> <p_LANGTAG>
+%destructor { delete $$.langtag; } <p_uri_or_langtag>
 %% /*** Grammar Rules ***/
 
  /*** BEGIN Trig language structure. ***/

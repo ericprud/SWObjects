@@ -139,6 +139,7 @@ public:
 	// curBGP is conjoined into curOp as soon as it is created
 	// (ensureBasicGraphPattern), so deleting curOp covers it
 	delete curOp;
+	delete curExprList; // never aliases a parser stack slot (saved lists are swapped out)
     }
 
 protected:
@@ -536,7 +537,43 @@ public:
 
 /* END TokenBlock */
 
-//%destructor { delete $$; } BlankNode
+
+
+
+
+/* Free semantic values discarded when a parse fails. No destructor for:
+ * AtomFactory-interned values (<p_TTerm> <p_URI> <p_Variable> <p_RDFLiteral>
+ * <p_NumericRDFLiteral> <p_BooleanRDFLiteral>, interned URIs in
+ * <p_UsingPair>) -- the factory owns them; <p_TableOperation> -- mid-rule
+ * actions park driver.curOp (freed by ~SPARQLDriver) in slots of this type;
+ * <p_Operation> -- the result handed to the caller, which bison's
+ * accept-path cleanup would otherwise destroy. */
+%destructor { delete $$; } <p_string> <p_LANGTAG> <p_RSName>
+			   <p_Delete> <p_Insert> <p_ExpressionAliaseList>
+			   <p_ExpressionAlias> <p_VarSet> <p_DatasetClauses>
+			   <p_DatasetClause> <p_WhereClause>
+			   <p_SolutionModifier> <p_ValuesClause>
+			   <p_Expression> <p_Expressions> <p_ArgList>
+			   <p_PropertyPath> <p_UsingPairs>
+%destructor {
+    if ($$ != NULL) {
+	$$->clear(); // elements are interned TTerms
+	delete $$;
+    }
+} <p_TTerms>
+%destructor { delete $$.expression; } <p_OrderConditionPair>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<w3c_sw::s_OrderConditionPair>::const_iterator it = $$->begin();
+	     it != $$->end(); ++it)
+	    delete it->expression;
+	delete $$;
+    }
+} <p_OrderConditions>
+%destructor { delete $$.del; delete $$.ins; } <p_DeleteInsert>
+%destructor { delete $$.varSet; } <p_Project>
+%destructor { delete $$.comp; } <p_ComparatorSense>
+%destructor { delete $$.langtag; } <p_uri_or_langtag>
 
  /*** END SPARQL language tokens. ***/
 

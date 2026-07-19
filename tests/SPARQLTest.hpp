@@ -9,6 +9,7 @@
  * $Id: test_GraphMatch.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
+#include "Logging.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>

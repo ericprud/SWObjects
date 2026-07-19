@@ -2,6 +2,7 @@
  *
  */
 
+#include "Logging.hpp"
 #include <iostream>
 #include "SQL.hpp"
 #include "SQLParser.hpp"

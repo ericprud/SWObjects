@@ -1,5 +1,8 @@
-/** Logging: SWObjects logging using the Boost Log library.
- * 
+/** Logging: the Boost.Log backend behind LoggingFacade.hpp.
+ *
+ * Emitting translation units only need the facade (w3c_sw_LOG); include
+ * THIS header where logging is configured:
+ *
  * Enable logging to e.g. std::clog with:
  *   boost::shared_ptr<Logger::Sink_t> logSink= Logger::prepare();
  *   Logger::addStream(logSink, boost::shared_ptr<std::ostream>
@@ -8,17 +11,18 @@
  *   Logger::getLabelLevel("Default")= Logger::severity_level(Logger::engineer);
  * or with the built-in parser:
  *   parseLevelString("*:1,IO:3");
- * 
+ *
  * Boost unit_tests may prepare the logger by invoking the macro
  *   w3c_sw_PREPARE_TEST_LOGGER("--log");
  * and passing command like arguments like "--debug *:1,IO:3".
- * 
+ *
  * $Id: Logging.hpp,v 1.26 2008-12-04 23:00:15 eric Exp $
  */
 
 #ifndef LOGGING_HH
 # define LOGGING_HH
 
+#include "LoggingFacade.hpp"
 #include "prfxbuf.hpp"
 
 #include <set>
@@ -27,6 +31,7 @@
 
 #include "boost/bind.hpp"
 #include "boost/format.hpp"
+#include "boost/lexical_cast.hpp"
 #include "boost/log/attributes.hpp"
 #include "boost/log/common.hpp"
 #include "boost/log/expressions.hpp"
@@ -56,36 +61,6 @@ namespace w3c_sw {
 
     namespace Logger {
 
-	enum severity_level {
-	    critical = -3,
-	    error = -2,
-	    warning = -1,
-	    admin = 0,
-	    info = 1,
-	    support = 2,
-	    engineer = 3
-	};
-
-	// The formatting logic for the severity level
-	template< typename CharT, typename TraitsT >
-	inline std::basic_ostream< CharT, TraitsT >& operator<< (std::basic_ostream< CharT, TraitsT >& strm, severity_level lvl) {
-	    const int str_offset = 3;
-	    static const char* const str[] = {
-		"3      ",
-		" 2     ",
-		"  1    ",
-		"   0   ",
-		"    1  ",
-		"     2 ",
-		"      3"
-	    };
-	    if (static_cast< std::size_t >(lvl + str_offset) < (sizeof(str) / sizeof(*str)))
-		strm << str[lvl + str_offset];
-	    else
-		strm << static_cast< int >(lvl);
-	    return strm;
-	}
-
 	typedef boost::log::sources::severity_channel_logger_mt<severity_level> SWObjectsLogger;
 
 	BOOST_LOG_ATTRIBUTE_KEYWORD(a_channel, "Channel", std::string)
@@ -104,40 +79,6 @@ namespace w3c_sw {
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(SQLLog, SWObjectsLogger, (boost::log::keywords::channel = "SQL"));
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(ServiceLog, SWObjectsLogger, (boost::log::keywords::channel = "Service"));
 	BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS(ProcessLog, SWObjectsLogger, (boost::log::keywords::channel = "Process"));
-
-	extern severity_level DefaultLog_level;
-	extern severity_level RewriteLog_level;
-	extern severity_level IOLog_level;
-	extern severity_level ParsingLog_level;
-	extern severity_level GraphMatchLog_level;
-	extern severity_level SQLLog_level;
-	extern severity_level ServiceLog_level;
-	extern severity_level ProcessLog_level;
-
-	typedef std::map<std::string, severity_level*> LabelToLevel_t;
-	extern LabelToLevel_t LabelToLevel;
-	extern std::vector<const char*> Labels;
-
-	struct LabelInitializer {
-	    LabelInitializer () {
-		Labels.push_back("Default"); LabelToLevel["Default"] = &DefaultLog_level; LabelToLevel["default"] = &DefaultLog_level; LabelToLevel["DEFAULT"] = &DefaultLog_level; LabelToLevel[""] = &DefaultLog_level;
-		Labels.push_back("Rewrite"); LabelToLevel["Rewrite"] = &RewriteLog_level; LabelToLevel["rewrite"] = &RewriteLog_level; LabelToLevel["REWRITE"] = &RewriteLog_level;
-		Labels.push_back("IO"); LabelToLevel["IO"] = &IOLog_level; LabelToLevel["io"] = &IOLog_level; LabelToLevel["IO"] = &IOLog_level; LabelToLevel["i/o"] = &IOLog_level; LabelToLevel["I/O"] = &IOLog_level;
-		Labels.push_back("IO"); LabelToLevel["PARSING"] = &ParsingLog_level; LabelToLevel["parsing"] = &ParsingLog_level; LabelToLevel["Parsing"] = &ParsingLog_level; LabelToLevel["PARSE"] = &ParsingLog_level; LabelToLevel["parse"] = &ParsingLog_level;
-		Labels.push_back("GraphMatch"); LabelToLevel["GraphMatch"] = &GraphMatchLog_level; LabelToLevel["graphmatch"] = &GraphMatchLog_level; LabelToLevel["GRAPHMATCH"] = &GraphMatchLog_level;
-		Labels.push_back("SQL"); LabelToLevel["SQL"] = &SQLLog_level; LabelToLevel["sql"] = &SQLLog_level; LabelToLevel["SQL"] = &SQLLog_level;
-		Labels.push_back("Service"); LabelToLevel["Service"] = &ServiceLog_level; LabelToLevel["service"] = &ServiceLog_level; LabelToLevel["SERVICE"] = &ServiceLog_level;
-		Labels.push_back("Process"); LabelToLevel["Process"] = &ProcessLog_level; LabelToLevel["process"] = &ProcessLog_level; LabelToLevel["PROCESS"] = &ProcessLog_level;
-	    }
-	};
-
-	extern int depth;
-
-	inline int indent (int incrementalDepth) {
-	    int oldDepth = depth;
-	    depth += incrementalDepth;
-	    return oldDepth;
-	}
 
 	namespace logging = boost::log;
 
@@ -179,11 +120,11 @@ namespace w3c_sw {
 
 	    if (logging::value_ref< tag::a_line_id::value_type, tag::a_line_id > line_id = rec[a_line_id])
 		prfxstr << format("%08x") % line_id.get() << ": ";
-            // prfxstr << std::hex << std::setw(8) << std::right << line_id.get() << ": ";
+	        // prfxstr << std::hex << std::setw(8) << std::right << line_id.get() << ": ";
 
 	    if (logging::value_ref< tag::a_channel::value_type, tag::a_channel > channel = rec[a_channel])
 		prfxstr << format("%-11s") % channel.get() << " ";
-            // prfxstr << std::left << std::setw(11) << channel.get() << " ";
+	        // prfxstr << std::left << std::setw(11) << channel.get() << " ";
 
 	    prfxstr << "[-" << rec[a_severity] << "+] ";
 
@@ -205,18 +146,6 @@ namespace w3c_sw {
 	}
 
 	typedef boost::log::sinks::synchronous_sink< boost::log::sinks::text_ostream_backend > Sink_t;
-
-	/*
-	inline bool GTDefault (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= DefaultLog_level; }
-	inline bool GTRewrite (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= RewriteLog_level; }
-	inline bool GTIO (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= IOLog_level; }
-	inline bool GTParsing (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= ParsingLog_level; }
-	inline bool GTGraphMatch (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= GraphMatchLog_level; }
-	inline bool GTSQL (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= SQLLog_level; }
-	inline bool GTService (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= ServiceLog_level; }
-	inline bool GTProcess (logging::value_ref< severity_level, tag::a_severity > const& l) { return l <= ProcessLog_level; }
-	*/
-	inline bool Logging (severity_level l, severity_level r) { return r <= l; }
 
 	inline bool LabelBasedFilter
 	(
@@ -247,23 +176,7 @@ namespace w3c_sw {
 	    boost::shared_ptr< Sink_t > sink(new Sink_t());
 	    core->add_sink(sink);
 
-	    // This works:
-	    /*
-	      core->set_filter
-	      (
-	      (a_channel == ""           && boost::phoenix::bind(&GTDefault,    a_severity.or_throw())) ||
-	      (a_channel == "Rewrite"    && boost::phoenix::bind(&GTRewrite,    a_severity.or_throw())) ||
-	      (a_channel == "I/O"        && boost::phoenix::bind(&GTIO,         a_severity.or_throw())) ||
-	      (a_channel == "Parsing"    && boost::phoenix::bind(&GTParsing,    a_severity.or_throw())) ||
-	      (a_channel == "GraphMatch" && boost::phoenix::bind(&GTGraphMatch, a_severity.or_throw())) ||
-	      (a_channel == "SQL"        && boost::phoenix::bind(&GTSQL,        a_severity.or_throw())) ||
-	      (a_channel == "Service"    && boost::phoenix::bind(&GTService,    a_severity.or_throw())) ||
-	      (a_channel == "Process"    && boost::phoenix::bind(&GTProcess,    a_severity.or_throw()))
-	      );
-	    */
-	    // But this looks simpler:
 	    core->set_filter(boost::phoenix::bind(&LabelBasedFilter, a_channel.or_none(), a_severity.or_throw()));
-	    // Also, take a look at this: http://www.boost.org/doc/libs/1_55_0/libs/log/doc/html/log/detailed/expressions.html#log.detailed.expressions.predicates.channel_severity_filter
 
 	    { // Begin: lock backend
 		Sink_t::locked_backend_ptr backend = sink->locked_backend();
@@ -273,6 +186,7 @@ namespace w3c_sw {
 		sink->set_formatter(boost::phoenix::bind(&myFormatter, boost::log::expressions::stream, boost::log::expressions::record));
 	    } // End: Locked backend
 
+	    sinkActive = true; // the facade's w3c_sw_LOG now builds records
 	    return sink;
 	}
 
@@ -329,7 +243,7 @@ namespace w3c_sw {
 	    for (std::vector<std::string>::const_iterator it = logs.begin();
 		 it != logs.end(); ++it) {
 		w3c_sw::Logger::getLabelLevel(*it) = w3c_sw::Logger::severity_level(level);
-		BOOST_LOG_SEV(w3c_sw::Logger::DefaultLog::get(), w3c_sw::Logger::support) << "log level \"" << *it << "\" set to " << level << ".";
+		w3c_sw_LOG(DefaultLog, w3c_sw::Logger::support) << "log level \"" << *it << "\" set to " << level << ".";
 	    }
 	}
 
@@ -381,29 +295,11 @@ namespace w3c_sw {
 		}
 		start = next;
 	    } while (start != std::string::npos);
-
-	    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
-
-	    // Add a global scope attribute
-	    if (false)
-		core->add_global_attribute(a_scope.get_name(),
-					   boost::log::attributes::named_scope());
-	    if (false)
-		core->add_global_attribute(a_thread_id.get_name(),
-					   boost::log::attributes::current_thread_id());
-
-	    // Add some attributes too
-	    if (false)
-		core->add_global_attribute(a_timestamp.get_name(),
-					   boost::log::attributes::utc_clock());
-	    if (false)
-		core->add_global_attribute(a_line_id.get_name(),
-					   boost::log::attributes::counter< unsigned int >());
 	}
 
 	/** prepare - a simple prepare interface for scanning a set of
 	 * main-style argv arguments for a given logging flag.
-	 * 
+	 *
 	 * @argc - a count of arguments.
 	 * @argv - an array of arguments.
 	 * @flag - the flag to look for.
@@ -429,7 +325,7 @@ namespace w3c_sw {
 
 	/** w3c_sw_PREPARE_TEST_LOGGER - set up a logger based on boost
 	 *  unit_test arguments.
-	 * 
+	 *
 	 * @FLAG - a command line flag, like "--log", to provide logging
 	 * arguments. Note, you must avoid arguments which boost::unit_test
 	 * swallows, like "-d".
@@ -445,31 +341,6 @@ struct PrepareBoostTestLogger { \
 BOOST_GLOBAL_FIXTURE( PrepareBoostTestLogger );
 
     } /* namespace Logger */
-
-/* The definitions of the Logger globals live in SWObjects.cpp (see
- * w3c_sw_DEFINE_LOGGER_GLOBALS); a macro-conditional block here would be
- * skipped when this header is precompiled. */
-#define w3c_sw_DEFINE_LOGGER_GLOBALS \
-    namespace w3c_sw { \
-    namespace Logger { \
-	int depth; \
-\
-	severity_level DefaultLog_level; \
-	severity_level RewriteLog_level; \
-	severity_level IOLog_level; \
-	severity_level ParsingLog_level; \
-	severity_level GraphMatchLog_level; \
-	severity_level SQLLog_level; \
-	severity_level ServiceLog_level; \
-	severity_level ProcessLog_level; \
-\
-	LabelToLevel_t LabelToLevel; \
-	std::vector<const char*> Labels; \
-	namespace { \
-	    LabelInitializer TheLabelInitializer; \
-	} \
-    } /* namespace Logger */ \
-    } /* namespace w3c_sw */
 
 } // namespace w3c_sw
 

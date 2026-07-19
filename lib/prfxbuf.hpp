@@ -46,6 +46,15 @@
 #include <istream>
 #include <vector>
 
+/* stream-size type, historically defined by SWObjects.hpp (int on old MSVC) */
+#ifndef _w3c_sw_STREAMSIZE
+#  ifdef _MSC_VER
+#    define _w3c_sw_STREAMSIZE int
+#  else
+#    define _w3c_sw_STREAMSIZE std::streamsize
+#  endif
+#endif
+
 class prfxbuf: public std::streambuf {
 
 protected:

@@ -70,7 +70,7 @@ namespace w3c_sw {
 	/** mappedBNodesEquals -- test that Results are identical after a BNode mapping */
 	bool mappedBNodesEquals (const Result& ref, BiDiBNodeMap& refBNodes2myBNodes) const {
 	    if (size() != ref.size()) {
-		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << ref.toString() << "->size: " << ref.size() << " != " << toString() << "->size: " << size() << std::endl;
+		w3c_sw_LOG(GraphMatchLog, Logger::info) << ref.toString() << "->size: " << ref.size() << " != " << toString() << "->size: " << size() << std::endl;
 		return false;
 	    }
 	    std::set<const TTerm*> yourVars;
@@ -81,7 +81,7 @@ namespace w3c_sw {
 		 myBinding != ref.end(); ++myBinding) {
 		const TTerm* var = myBinding->first;
 		if (yourVars.erase(var) == 0) {
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "r missing: " << var->toString() << std::endl;
+		    w3c_sw_LOG(GraphMatchLog, Logger::info) << "r missing: " << var->toString() << std::endl;
 		    return false;
 		}
 		const TTerm* yours = find(var)->second.tterm;
@@ -93,12 +93,12 @@ namespace w3c_sw {
 		    yours = mine;
 		}
 		if (yours != mine) {
-		    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << var->toString() << ": l:" << yours->toString("text/ntriples") << " != r:" << myBinding->second.tterm->toString("text/ntriples") << std::endl;
+		    w3c_sw_LOG(GraphMatchLog, Logger::info) << var->toString() << ": l:" << yours->toString("text/ntriples") << " != r:" << myBinding->second.tterm->toString("text/ntriples") << std::endl;
 		    return false;
 		}
 	    }
 	    if (yourVars.size() != 0) {
-		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "l missing: " << (*yourVars.begin())->toString() << std::endl;
+		w3c_sw_LOG(GraphMatchLog, Logger::info) << "l missing: " << (*yourVars.begin())->toString() << std::endl;
 		return false;
 	    }
 	    return true;
@@ -459,7 +459,7 @@ namespace w3c_sw {
 		/* Copy ResultSets */
 		ResultSet self(*this);
 		ResultSet newRef(ref);
-		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << self.toString() << newRef.toString();
+		w3c_sw_LOG(GraphMatchLog, Logger::info) << self.toString() << newRef.toString();
 
 		/* Sort according to variables in this ResultSet. Record the
 		   rows we couldn't sort so compareOrdered can handle them
@@ -475,7 +475,7 @@ namespace w3c_sw {
 		AscendingOrder rComp(newRef.getOrderedVars(), &rUnordered);
 		newRef.results.sort(rComp);
 
-		BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "comparing\n" << self.toString("text/sparql-results;datatypes=explicit") << "against\n" << newRef.toString("text/sparql-results;datatypes=explicit");
+		w3c_sw_LOG(GraphMatchLog, Logger::info) << "comparing\n" << self.toString("text/sparql-results;datatypes=explicit") << "against\n" << newRef.toString("text/sparql-results;datatypes=explicit");
 		return self.compareOrdered(newRef, lUnordered, rUnordered);
 	    }
 	}
@@ -667,9 +667,9 @@ namespace w3c_sw {
 			break;
 		    if (Logger::Logging(Logger::GraphMatchLog_level, Logger::info)) {
 			while (myRow != results.end())
-			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "r missing result: " << **myRow++ << std::endl;
+			    w3c_sw_LOG(GraphMatchLog, Logger::info) << "r missing result: " << **myRow++ << std::endl;
 			while (yourRow != ref.results.end())
-			    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "l missing result: " << **yourRow++ << std::endl;
+			    w3c_sw_LOG(GraphMatchLog, Logger::info) << "l missing result: " << **yourRow++ << std::endl;
 		    }
 		    return false;
 		}

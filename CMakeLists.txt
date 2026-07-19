@@ -158,6 +158,7 @@ endforeach()
 
 add_library(SWObjects STATIC
   lib/exs.cpp
+  lib/Logging.cpp
   lib/ParserCommon.cpp
   lib/RdfDB.cpp
   lib/RdfQueryDB.cpp

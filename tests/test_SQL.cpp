@@ -8,6 +8,7 @@
 
 #define BOOST_TEST_MODULE SQL
 
+#include "Logging.hpp"
 #include <iostream>
 #include "SWObjects.hpp"
 #include "SQL.hpp"

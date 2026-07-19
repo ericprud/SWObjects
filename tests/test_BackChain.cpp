@@ -5,6 +5,7 @@
 
 #define BOOST_TEST_MODULE BackChain
 
+#include "Logging.hpp"
 #include <map>
 #include <vector>
 #include "SWObjects.hpp"

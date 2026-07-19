@@ -3,6 +3,7 @@
  */
 
 #include "../interface/SQLclient.hpp"
+#include <boost/shared_ptr.hpp>
 
 #ifndef INCLUDED_interface_SQLclient_Oracle_hpp
  #define INCLUDED_interface_SQLclient_Oracle_hpp

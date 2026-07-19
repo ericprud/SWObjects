@@ -8,6 +8,7 @@
 
 #define BOOST_TEST_MODULE SADI
 
+#include "Logging.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>

@@ -45,3 +45,44 @@ jobs:
       - name: Run test suites
         run: >
           ctest --test-dir build --output-on-failure --timeout 600
+
+  # Ownership regressions gate here: these suites are leak-clean under
+  # LeakSanitizer and must stay that way.
+  sanitize:
+    name: leak-check (ASan/LSan)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake bison flex libfl-dev libexpat1-dev uuid-dev \
+            libboost-dev libboost-regex-dev libboost-thread-dev \
+            libboost-filesystem-dev libboost-date-time-dev \
+            libboost-program-options-dev libboost-iostreams-dev \
+            libboost-log-dev libboost-test-dev \
+            xsltproc
+
+      - name: Fetch W3C test suites
+        run: sh tests/fetch-test-suites.sh
+
+      - name: Configure with AddressSanitizer
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O1"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"
+
+      - name: Build
+        run: cmake --build build -j4 --target test_DAWG test_ShEx test_QueryMap sparql
+
+      - name: Leak-check test suites
+        working-directory: tests
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+        run: |
+          ../build/test_DAWG
+          ../build/test_ShEx
+          ../build/test_QueryMap
+          ../bin/sparql --shex-manifest ShExMap/manifest.yaml

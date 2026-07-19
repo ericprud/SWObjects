@@ -319,6 +319,38 @@ public:
 #define yylex driver.lexer->lex
 %}
 
+
+/* Free semantic values discarded when a parse fails. No destructor for:
+ * interned values (<p_TTerm> <p_URI> <p_Variable> <p_TriplePattern>
+ * literals); <p_op>/<p_Operation>/<p_BasicGraphPattern> (parked or
+ * caller-owned results). */
+%destructor { delete $$; } <p_string> <p_LANGTAG> <p_DatasetClause>
+			   <p_DatasetClauses> <p_Delete> <p_Insert>
+			   <p_Expression> <p_Expressions>
+			   <p_ExpressionAliaseList> <p_conj>
+%destructor { delete $$.expression; } <p_OrderConditionPair>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<w3c_sw::s_OrderConditionPair>::const_iterator it = $$->begin();
+	     it != $$->end(); ++it)
+	    delete it->expression;
+	delete $$;
+    }
+} <p_OrderConditions>
+%destructor { delete $$.del; delete $$.ins; } <p_DeleteInsert>
+%destructor { delete $$.langtag; } <p_uri_or_langtag>
+%destructor {
+    delete $$.varSet;
+    delete $$.p_SolutionModifier;
+    if ($$.p_OrderConditions != NULL) {
+	for (std::vector<w3c_sw::s_OrderConditionPair>::const_iterator it = $$.p_OrderConditions->begin();
+	     it != $$.p_OrderConditions->end(); ++it)
+	    delete it->expression;
+	delete $$.p_OrderConditions;
+    }
+    delete $$.p_having;
+    delete $$.p_WhereClause;
+} <p_protoSelect>
 %% /*** Grammar Rules ***/
 
  /*** BEGIN SPARQLalgebra - Change the grammar rules below ***/

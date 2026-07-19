@@ -3,6 +3,7 @@
  * $Id: test_SPARQL.cpp,v 1.5 2008-12-04 22:37:09 eric Exp $
  */
 
+#include "Logging.hpp"
 #include <iostream>
 #include <fstream>
 #define NEEDDEF_W3C_SW_SAXPARSER

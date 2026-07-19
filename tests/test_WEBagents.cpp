@@ -12,6 +12,7 @@
 // for ipv6 #define SERVER_ADDRESS "0::0"
 #define SERVER_PORT "8088"
 
+#include "Logging.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>

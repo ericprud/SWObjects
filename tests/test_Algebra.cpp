@@ -8,6 +8,7 @@
 
 #define BOOST_TEST_MODULE Algebra
 
+#include "Logging.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>

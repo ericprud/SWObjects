@@ -3,6 +3,7 @@
  */
 
 #include <set>
+#include <boost/shared_ptr.hpp>
 #include "ResultSet.hpp"
 #include "SWObjectDuplicator.hpp"
 #include "XMLQueryExpressor.hpp"
@@ -186,7 +187,7 @@ namespace w3c_sw {
 	std::stringstream ss;
 	ss << "__col" << s;
 	const TTerm* ret = atomFactory->getVariable(ss.str());
-	BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+	w3c_sw_LOG(ParsingLog, Logger::engineer)
 	    << "adding name for column " << s << ": " << ret->toString() << "\n";
 	return ret;
     }
@@ -245,7 +246,7 @@ namespace w3c_sw {
 			 ")");
 
 
-	BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::support)
+	w3c_sw_LOG(ParsingLog, Logger::support)
 	    << *this << "+ " << sptr.mediaType.toString() << ",[[\n" << str << "]]\n";
 
 	boost::match_flag_type flags = boost::match_perl | boost::match_continuous;
@@ -256,7 +257,7 @@ namespace w3c_sw {
 		// 	w3c_sw_LINEN << i << ": \"" << (what[i].matched ? what[i] : std::string("--")) << "\"\n";
 
 		if (what[NewLine].matched) {
-		    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+		    w3c_sw_LOG(ParsingLog, Logger::engineer)
 			<< "ending " << (atHeaderRow ? "header" : "data") << " row " << lineNo << "\n";
 		    atHeaderRow = false;
 		    ++lineNo;
@@ -299,7 +300,7 @@ namespace w3c_sw {
 			} else {
 			    addOrderedVar(tterm);
 			    headers.push_back(tterm);
-			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+			    w3c_sw_LOG(ParsingLog, Logger::engineer)
 				<< "adding name for column " << headers.size() - 1 << ": " << headers[headers.size() - 1]->toString() << "\n";
 			}
 		    } else {
@@ -314,7 +315,7 @@ namespace w3c_sw {
 			if (what[Empty].matched) {
 			    if (col > (int)headers.size()-1)
 				headers.push_back(inventColumName(headers.size()));
-			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+			    w3c_sw_LOG(ParsingLog, Logger::engineer)
 				<< "no value for column " << col << ": " << headers[col]->toString() << "\n";
 			    ++col;
 			} else {
@@ -326,7 +327,7 @@ namespace w3c_sw {
 				curRow = new Result(this);
 				insert(this->end(), curRow);
 			    }
-			    BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::engineer)
+			    w3c_sw_LOG(ParsingLog, Logger::engineer)
 				<< "value for column " << col << ": " << headers[lastCol]->toString() << " is " << tterm->toString() << "\n";
 			    set(curRow, headers[lastCol], tterm, false);
 			}
@@ -340,7 +341,7 @@ namespace w3c_sw {
 	    }
 	}
 
-	BOOST_LOG_SEV(Logger::ParsingLog::get(), Logger::support)
+	w3c_sw_LOG(ParsingLog, Logger::support)
 	    << "produced\n" << *this;
 
     }
@@ -415,15 +416,15 @@ namespace w3c_sw {
 	    sptr.mediaType.match("text/columns") ? plain : srt;
 
 	while (regex_search(start, end, what, expr, flags)) {
-	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+	    w3c_sw_LOG(DefaultLog, Logger::engineer)
 		<< "matched \"" << std::string
 		(what[WholeString].first, what[WholeString].second) << "\"\n";
 	    if (what[BoxChars].first != what[BoxChars].second) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		w3c_sw_LOG(DefaultLog, Logger::engineer)
 		    << "skipping box chars: \"" << std::string
 		    (what[BoxChars].first, what[BoxChars].second) << "\"\n";
 	    } else if (what[CapturedTerm].first == what[CapturedTerm].second) {
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		w3c_sw_LOG(DefaultLog, Logger::engineer)
 		    << "end of header or solution\n";
 		firstRow = false;
 		col = 0;
@@ -431,7 +432,7 @@ namespace w3c_sw {
 	    } else if (what[NullBinding].first != what[NullBinding].second) {
 		if (firstRow) {
 		    const BNode* b = atomFactory->createBNode();
-		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    w3c_sw_LOG(DefaultLog, Logger::engineer)
 			<< "fresh header variable: " << b->toString() << "\n";
 		    addOrderedVar(b);
 		    headers.push_back(b);
@@ -440,16 +441,16 @@ namespace w3c_sw {
 			curRow = new Result(this);
 			insert(this->end(), curRow);
 		    }
-		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		    w3c_sw_LOG(DefaultLog, Logger::engineer)
 			<< headers[col]->toString() << "unbound\n";
 		    ++col;
 		}
 	    } else {
 		std::string term(what[CapturedTerm].first, what[CapturedTerm].second);
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		w3c_sw_LOG(DefaultLog, Logger::engineer)
 		    << "term text: \"" << term << "\"\n";
 		const TTerm* tterm = atomFactory->getTTerm(term, bnodeMap);
-		BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+		w3c_sw_LOG(DefaultLog, Logger::engineer)
 		    << "term: " << tterm->toString() << "\n";
 		if (firstRow) {
 		    addOrderedVar(tterm);
@@ -465,7 +466,7 @@ namespace w3c_sw {
 
 	    /* Start after the end of the stuff we just parsed. */
 	    start = what[WholeString].second; 
-	    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer)
+	    w3c_sw_LOG(DefaultLog, Logger::engineer)
 		<< "starting again at: \"" << std::string(start, end).substr(0, 20) << "\"\n";
 	}
 	if (start != end) {
@@ -947,7 +948,7 @@ namespace w3c_sw {
                 if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
                     SPARQLSerializer s;
                     pos2expr[*knownVar]->express(&s);
-                    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
+                    w3c_sw_LOG(ServiceLog, Logger::engineer)
                         << "Error evaluating " << s.str() << " on " << row->toString();
                 }
                 BindingSetIterator old = row->find(*knownVar);
@@ -1024,7 +1025,7 @@ namespace w3c_sw {
 		    ss << ", ";
 		ss << (*it)->str();
 	    }
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "vars and exprs tracked during project: " << ss.str() << "\n";
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "vars and exprs tracked during project: " << ss.str() << "\n";
 	}
 
 	/* Map groupIndex to sole row with that GROUP BY pattern. */
@@ -1098,7 +1099,7 @@ namespace w3c_sw {
 			if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
 			    SPARQLSerializer s;
 			    (*expr)->express(&s);
-			    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer)
+			    w3c_sw_LOG(ServiceLog, Logger::engineer)
 				<< "Evaluating " << s.str() << " removes row " << (*row)->toString();
 			}
 			delete *row;
@@ -1135,14 +1136,14 @@ namespace w3c_sw {
 	if (Logger::Logging(Logger::ServiceLog_level, Logger::engineer)) {
 	    SPARQLSerializer s;
 	    expression->express(&s);
-	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "Filtering on " << s.str();
+	    w3c_sw_LOG(ServiceLog, Logger::engineer) << "Filtering on " << s.str();
 	}
 	for (ResultSetIterator it = begin(); it != end(); ) {
 	    if (atomFactory->eval(expression, *it, db) == true) {
-		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "    keep " << (*it)->toString();
+		w3c_sw_LOG(ServiceLog, Logger::engineer) << "    keep " << (*it)->toString();
 		++it;
 	    } else {
-		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::support ) << "  strike " << (*it)->toString();
+		w3c_sw_LOG(ServiceLog, Logger::support) << "  strike " << (*it)->toString();
 		delete *it;
 		it = erase(it);
 	    }

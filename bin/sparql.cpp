@@ -4,6 +4,7 @@
 
  * $Id$ */
 
+#include "Logging.hpp"
 #include <iostream>
 #include <fstream>
 #include <iterator>
@@ -288,12 +289,12 @@ void validate (boost::any& /* v */, const std::vector<std::string>& values, logg
     const std::string& s = po::validators::get_single_string(values);
     try {
 	std::ofstream* fstream = new std::ofstream(s.c_str());
-	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Opening log file \"" << s << "\".";
+	w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Opening log file \"" << s << "\".";
 	if (!fstream->is_open())
 	    throw sw::StringException(s + " is not open");
 	sw::Logger::addStream(LogSink, boost::shared_ptr< std::ostream >(fstream));
     } catch (std::exception&) {
-	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::error) << "Unable to open logging file \"" << s << "\".";
+	w3c_sw_LOG(DefaultLog, sw::Logger::error) << "Unable to open logging file \"" << s << "\".";
     }
 }
 
@@ -520,9 +521,9 @@ void validate (boost::any&, const std::vector<std::string>& values, langName*, i
 	    throw boost::program_options::VALIDATION_ERROR(std::string("invalid value: \"").append(s).append("\""));
 	}
 	if (!TheServer.engine.dataMediaType)
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data language mediatype.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Using no data language mediatype.\n";
 	else
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data language mediatype " << *TheServer.engine.dataMediaType << ".\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Using data language mediatype " << *TheServer.engine.dataMediaType << ".\n";
     }
 }
 struct langType { };
@@ -554,9 +555,9 @@ void validate (boost::any&, const std::vector<std::string>& values, langType*, i
 	    TheServer.engine.dataMediaType = s;
 	}
 	if (!TheServer.engine.dataMediaType)
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using no data mediatype mediatype.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Using no data mediatype mediatype.\n";
 	else
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using data mediatype mediatype " << *TheServer.engine.dataMediaType << ".\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Using data mediatype mediatype " << *TheServer.engine.dataMediaType << ".\n";
     }
 }
 
@@ -570,7 +571,7 @@ void validateBase(const std::vector<std::string>& values, const sw::TTerm** setM
 	    (s == ".") ? CwdURI : 
 	    (s == ":") ? copySource : 
 	    TheServer.engine.htparseWrapper(s, *setMe);
-	BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
+	w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Setting " << argName << " URI to " << (*setMe)->getLexicalValue() << ".\n";
     }
 }
 
@@ -599,7 +600,7 @@ void validate (boost::any&, const std::vector<std::string>& values, outPut*, int
     const std::string& s = po::validators::get_single_string(values);
     const sw::TTerm* abs(TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI));
     Output = MyLoadEntry(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
-    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << TheServer.engine.baseUriMessage() << ".\n";
+    w3c_sw_LOG(IOLog, sw::Logger::info) << "Sending output to " << abs->getLexicalValue() << TheServer.engine.baseUriMessage() << ".\n";
 }
 
 /* Overload of relURI to validate --in-place arguments. */
@@ -609,7 +610,7 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
     const std::string& s = po::validators::get_single_string(values);
     if (s == ".") {
 	TheServer.engine.inPlace = true;
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Manipulating other input data.\n";
+	w3c_sw_LOG(IOLog, sw::Logger::info) << "Manipulating other input data.\n";
     } else {
 	const sw::TTerm* abs(TheServer.engine.htparseWrapper(s, TheServer.engine.argBaseURI));
 	LoadList.enqueue(NULL, abs, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
@@ -621,7 +622,7 @@ void validate (boost::any&, const std::vector<std::string>& values, inPlace*, in
 		o << " with base URI " << TheServer.engine.baseURI->getLexicalValue() << ".\n";
 	    if (TheServer.engine.dataMediaType)
 		o << " with media type " << *TheServer.engine.dataMediaType;
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << o.str();
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << o.str();
 	}
     }
 }
@@ -641,7 +642,7 @@ void validate (boost::any&, const std::vector<std::string>& values, dataURI*, in
 	if (TheServer.engine.dataMediaType)
 	    o << " with media type " << *TheServer.engine.dataMediaType;
 	o << ".\n";
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << o.str();
+	w3c_sw_LOG(IOLog, sw::Logger::support) << o.str();
     }
 }
 
@@ -690,7 +691,7 @@ void validate (boost::any&, const std::vector<std::string>& values, mapURI*, int
 	if (TheServer.engine.baseURI != NULL)
 	    o << " with base URI " << TheServer.engine.baseURI->getLexicalValue();
 	o << ".\n";
-	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
+	w3c_sw_LOG(RewriteLog, sw::Logger::info) << o.str();
     }
 }
 
@@ -706,7 +707,7 @@ void validate (boost::any&, const std::vector<std::string>& values, mapString*, 
 	if (TheServer.engine.baseURI != NULL)
 	    o << " with base URI " << TheServer.engine.baseURI->getLexicalValue();
 	o << ".\n";
-	BOOST_LOG_SEV(sw::Logger::RewriteLog::get(), sw::Logger::info) << o.str();
+	w3c_sw_LOG(RewriteLog, sw::Logger::info) << o.str();
     }
 }
 
@@ -731,18 +732,18 @@ void validate (boost::any&, const std::vector<std::string>& values, orderedURI*,
 	if (NamedGraphName->getLexicalValue() == ".")
 	    NamedGraphName = vald;
 	LoadList.enqueue(NamedGraphName, vald, TheServer.engine.baseURI, TheServer.engine.dataMediaType);
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info)
+	w3c_sw_LOG(IOLog, sw::Logger::info)
 	    << "Reading named graph " << NamedGraphName->toString()
 	    << " from " << vald->getLexicalValue()
 	    << TheServer.engine.baseUriMessage() << ".\n";
 	NamedGraphName = NULL;
     } else if (Query == NULL && ServerURI.empty()) {
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Query resource: " << vald->getLexicalValue() << ".\n";
+	w3c_sw_LOG(IOLog, sw::Logger::info) << "Query resource: " << vald->getLexicalValue() << ".\n";
 	Query = vald;
 	QueryBaseUri = TheServer.engine.baseURI;
 	QueryMediaType = TheServer.engine.dataMediaType;
     } else {
-	BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "View: " << vald->getLexicalValue() << ".\n";
+	w3c_sw_LOG(IOLog, sw::Logger::info) << "View: " << vald->getLexicalValue() << ".\n";
 	Maps.push_back(vald);
     }
 }
@@ -1047,7 +1048,7 @@ int main(int ac, char* av[])
 	}
     
 	if (vm.count("bnode-detailed-label")) {
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Creating detailed bnode labels.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Creating detailed bnode labels.\n";
 	    sw::YaccDriver::defaultDescriptiveBNodeLabels = true;
 	}
 
@@ -1097,53 +1098,53 @@ int main(int ac, char* av[])
 	}
 
 	if (vm.count("post")) {
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using HTTP POST.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Using HTTP POST.\n";
 	    sw::ServiceGraphPattern::defaultHTTPmethod = sw::ServiceGraphPattern::HTTP_METHOD_POST;
 	}
 
 	if (vm.count("federation-use-filters")) {
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Using FILTER for query federation.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Using FILTER for query federation.\n";
 	    sw::ServiceGraphPattern::useFilters = true;
 	}
 
 	if (vm.count("federation-row-limit")) {
 	    size_t rows = vm["federation-row-limit"].as<size_t>();
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Limiting result set federation to" << rows << " rows.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Limiting result set federation to" << rows << " rows.\n";
 	    sw::ServiceGraphPattern::defaultFederationRowLimit = rows;
 	}
 
 	if (vm.count("federation-skip-simplifier")) {
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "Disabling federation query simplifier.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "Disabling federation query simplifier.\n";
             TheServer.engine.queryMapper.skipSimplifier = true;
 	}
 
 	if (vm.count("server-strict-HTTP")) {
-	    BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::info) << "HTTP server will expect strict conformance with HTTP specification.\n";
+	    w3c_sw_LOG(IOLog, sw::Logger::info) << "HTTP server will expect strict conformance with HTTP specification.\n";
 	    TheServer.config.request.allowBareNewlines_ = false;
 	}
 
         if (vm.count("utf-8")) {
-	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to utf-8.\n";
+	    w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Switching to utf-8.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BoxChars;
         }
 
         if (vm.count("ascii")) {
-	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to ASCII.\n";
+	    w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Switching to ASCII.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::AsciiBoxChars;
         }
 
         if (vm.count("bold")) {
-	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Switching to bold-bordered boxes.\n";
+	    w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Switching to bold-bordered boxes.\n";
 	    sw::BoxChars::GBoxChars = &sw::BoxChars::Utf8BldChars;
         }
 
         if (vm.count("no-exec")) {
-	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Execution suppressed.\n";
+	    w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Execution suppressed.\n";
             TheServer.engine.noExec = true;
         }
 
         if (vm.count("quiet")) {
-	    BOOST_LOG_SEV(sw::Logger::DefaultLog::get(), sw::Logger::info) << "Non-debug messages supressed.\n";
+	    w3c_sw_LOG(DefaultLog, sw::Logger::info) << "Non-debug messages supressed.\n";
             Quiet = true;
         }
 
@@ -1325,14 +1326,14 @@ int main(int ac, char* av[])
 		    size_t size = TheServer.engine.db.size();
 		    if (size > sw::RdfDB::DebugEnumerateLimit) {
 			size_t graphCount = TheServer.engine.db.getGraphNames().size();
-			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support)
+			w3c_sw_LOG(IOLog, sw::Logger::support)
 			    << "Loaded "
 			    << size << " triple" << (size == 1 ? "" : "s")
 			    << " into "
 			    << graphCount << " graph" << (graphCount == 1 ? "" : "s")
 			    << ".\n";
 		    } else
-			BOOST_LOG_SEV(sw::Logger::IOLog::get(), sw::Logger::support) << "<loadedData>\n" << TheServer.engine.db << "</loadedData>\n";
+			w3c_sw_LOG(IOLog, sw::Logger::support) << "<loadedData>\n" << TheServer.engine.db << "</loadedData>\n";
 		}
 	    }
 

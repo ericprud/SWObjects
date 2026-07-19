@@ -93,7 +93,7 @@ namespace w3c_sw {
 		if (attrs->value(NS_grddl, "transformation", &t)) {
 		    std::vector<std::string> args;
 		    args.push_back(t);
-		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+		    w3c_sw_LOG(ProcessLog, Logger::info)
 			<< "GRDDL attribute transformation encountered -- GRDDLing with stylesheet \""
 			<< t << "\".";
 		    throw ChangeMediaTypeException("application/rdf+xml", args);
@@ -103,7 +103,7 @@ namespace w3c_sw {
 		    std::vector<std::string> args;
 		    attrs->value("", "href", &t);
 		    args.push_back(t);
-		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+		    w3c_sw_LOG(ProcessLog, Logger::info)
 			<< "GRDDL link header rel=\"transformation\" encountered -- GRDDLing with stylesheet \""
 			<< t << "\".";
 		    throw ChangeMediaTypeException("application/rdf+xml", args);

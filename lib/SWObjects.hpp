@@ -72,7 +72,9 @@ std::string iterStr (InputIterator first, InputIterator last) {
   #ifndef SWIG
     #define POSIX_cat "c:/cygwin/bin/cat"
   #endif
-  #define _w3c_sw_STREAMSIZE int
+  #ifndef _w3c_sw_STREAMSIZE
+    #define _w3c_sw_STREAMSIZE int
+  #endif
 #else /* !_MSC_VER */
   #include <errno.h>
 
@@ -89,10 +91,12 @@ std::string iterStr (InputIterator first, InputIterator last) {
   #ifndef SWIG
     #define POSIX_cat "/bin/cat"
   #endif
-  #define _w3c_sw_STREAMSIZE std::streamsize
+  #ifndef _w3c_sw_STREAMSIZE
+    #define _w3c_sw_STREAMSIZE std::streamsize
+  #endif
 #endif /* !_MSC_VER */
 
-#include "Logging.hpp"
+#include "LoggingFacade.hpp"
 
 /* non-portable debug messages */
 #ifdef _MSC_VER
@@ -137,6 +141,7 @@ std::string iterStr (InputIterator first, InputIterator last) {
 #endif /* (!defined(_MSC_VER) || _MSC_VER >= 1500) */
 
 #include <boost/iostreams/categories.hpp>  // source_tag
+#include <boost/lexical_cast.hpp>
 
 namespace w3c_sw {
 
@@ -2348,6 +2353,9 @@ class TableOperation : public Base {
 protected:
 #ifdef SWOBJ_DEBUG_DOUBLE_DELETE
     static std::set<const TableOperation*> liveOps;
+public:
+    static const std::set<const TableOperation*>& live () { return liveOps; }
+protected:
     TableOperation () : Base() { liveOps.insert(this); }
     TableOperation (const TableOperation& ref);
 public:
@@ -2799,7 +2807,7 @@ public:
 	_prepareBindings(op);
     }
     void _prepareBindings(const TableOperation* op);
-    ~Bind () {  }
+    ~Bind () { delete m_expr; } // m_label is interned; the AtomFactory owns it
 
     virtual void bindVariables(const RdfDB*, ResultSet* rs) const;
     virtual void construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {

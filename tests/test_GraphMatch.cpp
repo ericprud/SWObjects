@@ -5,6 +5,7 @@
 
 #define BOOST_TEST_MODULE GraphMatch
 
+#include "Logging.hpp"
 #include <map>
 #include <vector>
 #include "SWObjects.hpp"

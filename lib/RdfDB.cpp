@@ -135,7 +135,7 @@ namespace w3c_sw {
 		for (std::vector<std::string>::const_iterator it = e.args.begin();
 		     it != e.args.end(); ++it)
 		    o << " " << *it;
-		BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::engineer) << o.str();
+		w3c_sw_LOG(ProcessLog, Logger::engineer) << o.str();
 	    }
 	    rb.replay();
 	    boost::iostreams::stream_buffer<StreamRewinder::Device> sb2(rb.device);
@@ -206,7 +206,7 @@ namespace w3c_sw {
 			 */
 			BasicGraphPattern* found = findGraph(graphName);
 			if (found == NULL && GetGraphArguments == true) {
-			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Loading graph " << graphName->toString() << std::endl;
+			    w3c_sw_LOG(IOLog, Logger::info) << "Loading graph " << graphName->toString() << std::endl;
 			    IStreamContext istr(graphName->getLexicalValue(), IStreamContext::FILE, NULL, NULL); // @@ no web
 			    found = const_cast<RdfDB*>(this)->ensureGraph(graphName); // !! const cheat
 			    const_cast<RdfDB*>(this)->loadData(found, istr, graphName->getLexicalValue(), 
@@ -284,7 +284,7 @@ namespace w3c_sw {
 			 */
 			BasicGraphPattern* found = findGraph(graphName);
 			if (found == NULL && GetGraphArguments == true) {
-			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Loading graph " << graphName->toString() << std::endl;
+			    w3c_sw_LOG(IOLog, Logger::info) << "Loading graph " << graphName->toString() << std::endl;
 			    IStreamContext istr(graphName->getLexicalValue(), IStreamContext::FILE, NULL, NULL); // @@ no web
 			    found = const_cast<RdfDB*>(this)->ensureGraph(graphName); // !! const cheat
 			    const_cast<RdfDB*>(this)->loadData(found, istr, graphName->getLexicalValue(), 

@@ -119,6 +119,9 @@ protected:
 	    if (curOp == NULL)
 		ensureBasicGraphPattern();
 	    curOp = new Filter(curOp, curFilter->m_Expressions.begin(), curFilter->m_Expressions.end());
+	    // the Filter now owns the expressions; free the carrier
+	    curFilter->m_Expressions.clear();
+	    delete curFilter;
 	}
 	curFilter = was;
     }
@@ -445,6 +448,33 @@ public:
 #define yylex driver.lexer->lexWrapper
 %}
 
+
+/* Free semantic values discarded when a parse fails. No destructor for
+ * interned values, <p_TableOperation> (mid-rule actions park driver.curOp,
+ * freed by ~MapSetDriver) or <p_Operation> (caller-owned result). */
+%destructor { delete $$; } <p_string> <p_LANGTAG> <p_ExpressionAliaseList>
+			   <p_ExpressionAlias> <p_VarSet> <p_DatasetClauses>
+			   <p_DatasetClause> <p_WhereClause>
+			   <p_SolutionModifier> <p_ValuesClause>
+			   <p_Expression> <p_Expressions> <p_ArgList>
+%destructor {
+    if ($$ != NULL) {
+	$$->clear(); // elements are interned TTerms
+	delete $$;
+    }
+} <p_TTerms>
+%destructor { delete $$.expression; } <p_OrderConditionPair>
+%destructor {
+    if ($$ != NULL) {
+	for (std::vector<w3c_sw::s_OrderConditionPair>::const_iterator it = $$->begin();
+	     it != $$->end(); ++it)
+	    delete it->expression;
+	delete $$;
+    }
+} <p_OrderConditions>
+%destructor { delete $$.varSet; } <p_Project>
+%destructor { delete $$.comp; } <p_ComparatorSense>
+%destructor { delete $$.langtag; } <p_uri_or_langtag>
 %% /*** Grammar Rules ***/
 
  /*** BEGIN MapSet - Change the grammar rules below ***/
@@ -2555,11 +2585,11 @@ void w3c_sw::MapSetParser::error(const MapSetParser::location_type& l,
 
 namespace w3c_sw {
 
-    MapSetDriver::MapSetDriver (std::string baseURI, AtomFactory* atomFactory) : 
-	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL), 
-	curBGP(NULL), curFilter(NULL), 
-	curResultSet(NULL), curResult(NULL), curExprList(NULL), 
-	root(NULL), unnestTree(false), 
+    MapSetDriver::MapSetDriver (std::string baseURI, AtomFactory* atomFactory) :
+	YaccDriver(baseURI, atomFactory), curSubject(NULL), curPredicate(NULL),
+	curBGP(NULL), curFilter(NULL), curOp(NULL),
+	curResultSet(NULL), curResult(NULL), curExprList(NULL),
+	root(NULL), unnestTree(false),
 	lastRuleTerm(TTerm::Unbound, TTerm::Unbound),
 	lastRuleTermSet(false)
 {
@@ -2567,6 +2597,16 @@ namespace w3c_sw {
 
     MapSetDriver::~MapSetDriver ()
 {
+    // free mid-parse state stranded when a parse error unwinds
+    if (curFilter != NULL) {
+	for (std::vector<const Expression*>::const_iterator it = curFilter->m_Expressions.begin();
+	     it != curFilter->m_Expressions.end(); ++it)
+	    delete *it;
+	delete curFilter;
+    }
+    // curBGP is conjoined into curOp as soon as it is created
+    delete curOp;
+    delete curExprList;
 }
 
 MapSet* MapSetDriver::parse (IStreamContext& in)

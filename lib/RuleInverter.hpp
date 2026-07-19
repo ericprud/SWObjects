@@ -312,7 +312,7 @@ namespace w3c_sw {
 #ifndef APPLY_VARMAPS_INDISCRIMINATELY
  	    opRS->applyMaps(uriMaps);
 #endif
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "produced result set" << std::endl << opRS->toString() << std::endl;
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "produced result set" << std::endl << opRS->toString() << std::endl;
 
 	    /* 05 — For each rule solution S in RScd:
 	     * http://www.w3.org/2008/07/MappingRules/#_05
@@ -349,9 +349,9 @@ namespace w3c_sw {
 
 	    }
 	    if (res == NULL)
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "yielding no transformed query disjoint." << std::endl << std::endl;
+		w3c_sw_LOG(RewriteLog, Logger::info) << "yielding no transformed query disjoint." << std::endl << std::endl;
 	    else
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "yielding transformed query disjoint:" << std::endl << *res << std::endl;
+		w3c_sw_LOG(RewriteLog, Logger::info) << "yielding transformed query disjoint:" << std::endl << *res << std::endl;
 	    return opRS;
 	}
     };
@@ -489,7 +489,7 @@ namespace w3c_sw {
 	    if (Logger::Logging(Logger::RewriteLog_level, Logger::info)) {
 		SPARQLSerializer sparqlizer(MediaType(), NULL, "  ", SPARQLSerializer::DEBUG_graphs);
 		constructRuleBodyAsConsequent->express(&sparqlizer);
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "product rule head (SPARQL):" << std::endl << sparqlizer.str() << std::endl;
+		w3c_sw_LOG(RewriteLog, Logger::info) << "product rule head (SPARQL):" << std::endl << sparqlizer.str() << std::endl;
 	    }
 	    p_SolutionModifier->express(this);
 

@@ -516,12 +516,12 @@ namespace w3c_sw {
 
 		    if (alternative != opts.begin()) {
 			Logger::indent(-3);
-			BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "UNION" << std::endl;
+			w3c_sw_LOG(RewriteLog, Logger::info) << "UNION" << std::endl;
 			Logger::indent(3);
 		    }
 		    if (opts.size() > 1)
-			BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "alternative: ";
-		    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << alternative->str();
+			w3c_sw_LOG(RewriteLog, Logger::info) << "alternative: ";
+		    w3c_sw_LOG(RewriteLog, Logger::info) << alternative->str();
 
 		    std::vector<const TableOperation*> conjoints;
 		    for (Rule2rs::const_iterator rule = alternative->begin();
@@ -530,9 +530,9 @@ namespace w3c_sw {
 			     res != rule->second.rs.end(); ++res) {
 			    TableOperation* bgp = Instantiator(rule->first.body, *res, atomFactory, varUniquifier.uniquePrefix(rule->first.label)).apply();
 
-			    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "bindings: " << **res << " instantiates as:\n";
+			    w3c_sw_LOG(RewriteLog, Logger::info) << "bindings: " << **res << " instantiates as:\n";
 			    Logger::indent(3);
-			    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << bgp->toString(MediaType("text/turtle"));
+			    w3c_sw_LOG(RewriteLog, Logger::info) << bgp->toString(MediaType("text/turtle"));
 			    Logger::indent(-3);
 
 			    conjoints.push_back(bgp);
@@ -543,9 +543,15 @@ namespace w3c_sw {
 			conjoints.size() == 1 ? conjoints[0] :
 			new TableConjunction(conjoints.begin(), conjoints.end());
 
-		    if (opts.size() > 1 && op != NULL)
-			ret->addTableOperation(op, false);
-		    else
+		    if (opts.size() > 1) {
+			if (op != NULL)
+			    ret->addTableOperation(op, false);
+			else {
+			    // an unmatchable alternative poisons the union
+			    delete ret;
+			    return NULL;
+			}
+		    } else
 			return op; // ret = op loses const-ness.
 		}
 		Logger::indent(-3);
@@ -723,9 +729,9 @@ namespace w3c_sw {
 		 it != p_TriplePatterns->end(); it++)
 		bindings.match(bgp, graphName, *it);
 
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "transforming bgp: " << *bgp << " -> [[\n";
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "transforming bgp: " << *bgp << " -> [[\n";
 	    last.tableOperation = (TableOperation*)bindings.instantiate(varUniquifier); // @@ LIES
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "]]\n";
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "]]\n";
 	}
 	virtual void namedGraphPattern (const NamedGraphPattern* const self, const TTerm* p_name, bool /*p_allOpts*/, const ProductionVector<const TriplePattern*>* p_TriplePatterns) {
 	    p_name->express(this);
@@ -835,7 +841,7 @@ namespace w3c_sw {
 		name = atomFactory->getRDFLiteral(ss.str());
 	    }
 	    Rule r = RuleParser().parseConstruct(rule, name);
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "adding rule: " << r.toString();
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "adding rule: " << r.toString();
 	    rules.push_back(r);
 	}
 
@@ -860,6 +866,7 @@ namespace w3c_sw {
 	    virtual void minusGraphPattern (const MinusGraphPattern* const self, const TableOperation* a) { note(self); RecursiveExpressor::minusGraphPattern(self, a); }
 	    virtual void graphGraphPattern (const GraphGraphPattern* const self, const TTerm* a, const TableOperation* b) { note(self); RecursiveExpressor::graphGraphPattern(self, a, b); }
 	    virtual void serviceGraphPattern (const ServiceGraphPattern* const self, const TTerm* a, const TableOperation* b, e_Silence c, AtomFactory* d, bool e) { note(self); RecursiveExpressor::serviceGraphPattern(self, a, b, c, d, e); }
+	    virtual void subSelect (const SubSelect* const self, const Select* a) { note(self); RecursiveExpressor::subSelect(self, a); }
 	};
 
 	/** Print tree structure with node pointers. */
@@ -883,9 +890,29 @@ namespace w3c_sw {
 
 	/** Map a SPARQL operation over the consequents of #rules to an operation over the antecedents of #rules. */
 	const Operation* map (const Operation* query, const ResultSet* mappingConstants = NULL) {
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+	    std::set<const TableOperation*> preExisting = TableOperation::live();
+#endif
 	    QueryWalker walker(rules, atomFactory, sharedVars, nodeShare);
 	    walker.setMappingConstants(mappingConstants);
 	    const Operation* op = walker.mapQuery(query);
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+	    {
+		OpCollector reach;
+		op->express(&reach);
+		query->express(&reach);
+		for (std::vector<Rule>::const_iterator r = rules.begin(); r != rules.end(); ++r) {
+		    r->head->express(&reach);
+		    r->body->express(&reach);
+		}
+		const std::set<const TableOperation*>& now = TableOperation::live();
+		for (std::set<const TableOperation*>::const_iterator it = now.begin();
+		     it != now.end(); ++it)
+		    if (preExisting.find(*it) == preExisting.end()
+			&& reach.seen.find(*it) == reach.seen.end())
+			fprintf(stderr, "walker dropped %p (%s)\n", (void*)*it, typeid(**it).name());
+	    }
+#endif
             if (skipSimplifier)
                 return op;
 	    BGPSimplifier dup(atomFactory);  // removing the dup breaks test_QueryMap/healthCare/cabig/bg_hl7
@@ -918,6 +945,24 @@ namespace w3c_sw {
 	    SWObjectCanonicalizer c(atomFactory);
 	    dup.last.operation->express(&c);
 	    delete dup.last.operation;
+#ifdef SWOBJ_DEBUG_DOUBLE_DELETE
+	    {
+		// anything created during this map() and reachable from
+		// neither the result nor the rules is a leak
+		OpCollector reach;
+		c.last.operation->express(&reach);
+		for (std::vector<Rule>::const_iterator r = rules.begin(); r != rules.end(); ++r) {
+		    r->head->express(&reach);
+		    r->body->express(&reach);
+		}
+		const std::set<const TableOperation*>& now = TableOperation::live();
+		for (std::set<const TableOperation*>::const_iterator it = now.begin();
+		     it != now.end(); ++it)
+		    if (preExisting.find(*it) == preExisting.end()
+			&& reach.seen.find(*it) == reach.seen.end())
+			fprintf(stderr, "map() dropped %p (%s)\n", (void*)*it, typeid(**it).name());
+	    }
+#endif
 	    return c.last.operation;
 	}
     }; // class ChainingMapper

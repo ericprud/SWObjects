@@ -106,7 +106,7 @@ namespace w3c_sw {
 		GraphSerializer ser(rs, lexicalCompare);
 		toMatch->express(&ser);
 		std::string q = ser.getSelectString() + '{' + ser.str() + ser.getFederationString() + '}';
-		BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << "Querying <" << srvc << "> for\n" << q;
+		w3c_sw_LOG(ServiceLog, sw::Logger::info) << "Querying <" << srvc << "> for\n" << q;
 		for (std::string::const_iterator it = q.begin(); it != q.end(); ++it) {
 		    if (*it == ' ')
 			u << '+';
@@ -133,7 +133,7 @@ namespace w3c_sw {
 
 		/* Parse results into a ResultSet. */
 		ResultSet red(atomFactory, xmlParser, s.begin(), s.end());
-		BOOST_LOG_SEV(sw::Logger::ServiceLog::get(), sw::Logger::info) << " yielded\n" << red;
+		w3c_sw_LOG(ServiceLog, sw::Logger::info) << " yielded\n" << red;
 
 		/* Join those results against our initial results. */
 		rs->joinIn(&red);

@@ -3,6 +3,7 @@
  * $Id: ServerInteraction.hpp,v 1 $
  */
 
+#include "Logging.hpp"
 #include <stdio.h>
 #include <assert.h>
 #include <sys/wait.h>   /* header for waitpid() and various macros */
@@ -122,7 +123,7 @@ namespace w3c_sw {
 				  exe + " " + substituteQueryVariables(serverParams, port) + 
 				  " --serve " + serverURL);
 	    // serverCmd += " 2>&1 | tee -a server.mon";
-	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+	    w3c_sw_LOG(ProcessLog, w3c_sw::Logger::info)
 		<< "serverCmd: " << serverCmd << std::endl;
 	    serverPipe = popen(serverCmd.c_str(), "r");
 	    if (serverPipe == NULL)
@@ -250,7 +251,7 @@ namespace w3c_sw {
 	    : ResultSet(atomFactory)
 	{
 	    IStreamContext istr(query, IStreamContext::STRING);
-	    BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+	    w3c_sw_LOG(ProcessLog, w3c_sw::Logger::info)
 		<< "query: " << query << std::endl;
 	    SPARQLDriver sparqlParser("", atomFactory);
 	    try {
@@ -262,7 +263,7 @@ namespace w3c_sw {
 		op->execute(&d, this);
 		delete op;
 	    } catch (ParserException& ex) {
-		BOOST_LOG_SEV(w3c_sw::Logger::ProcessLog::get(), w3c_sw::Logger::info)
+		w3c_sw_LOG(ProcessLog, w3c_sw::Logger::info)
 		    << "parser error: " << ex.what() << std::endl;
 	    }
 	}
@@ -398,7 +399,7 @@ namespace w3c_sw {
 
 	void invoke (std::string clientCmd) {
 	    // clientCmd += " | tee client.mon 2>&1";
-	    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+	    w3c_sw_LOG(ProcessLog, Logger::info)
 		<< "clientCmd: " << clientCmd << std::endl;
 	    char line[80];
 

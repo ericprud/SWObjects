@@ -8,6 +8,7 @@
 
 #define BOOST_TEST_MODULE LDP
 
+#include "Logging.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -69,7 +70,7 @@ struct EvaluatedPOSTresponseResultSet : public w3c_sw::ResultSet {
 		o << "POSTing text/turtle [[\n" << postData.c_str() << "]] to " << service;
 		o << " yielded  media type " << *istr->mediaType;
 		o << ".\n";
-		BOOST_LOG_SEV(w3c_sw::Logger::IOLog::get(), w3c_sw::Logger::info) << o.str();
+		w3c_sw_LOG(IOLog, w3c_sw::Logger::info) << o.str();
 	    }
 	    d.loadData(d.ensureGraph(w3c_sw::DefaultGraph), *istr, service, service, &F);
 	}

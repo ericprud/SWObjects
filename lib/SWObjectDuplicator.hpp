@@ -804,7 +804,8 @@ namespace w3c_sw {
 	bool elideSubSelect;
 
 	GraphAndServiceMerger (AtomFactory* atomFactory)
-	    : SWObjectDuplicator(atomFactory), lastGraphName(NULL), lastServiceName(NULL), changed(false) {  }
+	    : SWObjectDuplicator(atomFactory), lastGraphName(NULL), lastServiceName(NULL),
+	      changed(false), elideSubSelect(false) {  }
 	virtual void tableConjunction (const TableConjunction* const, const ProductionVector<const TableOperation*>* p_TableOperations) {
 	    const TTerm* parentLastGraphName = lastGraphName; lastGraphName = NULL;
 	    const TTerm* parentLastServiceName = lastServiceName; lastServiceName = NULL;

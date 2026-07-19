@@ -4,6 +4,7 @@
  */
 
 #include "../interface/SQLclient.hpp"
+#include <boost/shared_ptr.hpp>
 
 #ifndef INCLUDED_interface_SQLclient_Postgres_hpp
 #define INCLUDED_interface_SQLclient_Postgres_hpp

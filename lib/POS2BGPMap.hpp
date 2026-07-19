@@ -444,8 +444,8 @@ namespace w3c_sw {
 	    if (p_VarSet != NULL) p_VarSet->express(&ctor);
 	    w3c_sw_NOW("finding corefs");
 	    ctor.findCorefs(op);
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Consequents:" << std::endl << consequents.dump();
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "Consequents:" << std::endl << consequents.dump();
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "OuterGraphs:" << std::endl << ctor.dumpOuterGraphs();
 	}
 	~Consequents () {
 	    for (ConsequentMapList::iterator maps = consequents.begin();

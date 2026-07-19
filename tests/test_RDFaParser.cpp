@@ -9,6 +9,7 @@
 
 #define BOOST_TEST_MODULE RDFaParser
 
+#include "Logging.hpp"
 #include <map>
 #include <vector>
 

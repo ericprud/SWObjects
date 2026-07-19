@@ -9,6 +9,7 @@
 #ifdef INOTIFY_LIB
 #ifndef _MSC_VER
 #include <sys/inotify.h>
+#include <boost/shared_ptr.hpp>
 #include <sys/epoll.h>
 
 #define EVENT_SIZE  (sizeof (struct inotify_event))
@@ -176,7 +177,7 @@ namespace w3c_sw {
 				       : "application/sparql-results+xml; charset=UTF-8");
 		    rs.toXml(&xml);
 		    sout << xml.str();
-		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+		    w3c_sw_LOG(ProcessLog, Logger::info)
 			<< "SADI invocation returning [[\n" << xml.str() << "\n]].\n";
 		    ++engine.served;
 		    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
@@ -197,7 +198,7 @@ namespace w3c_sw {
 		    // 			     istr, engine.resultSet, &execDB);
 		    engine.loadDataOrResults(sw::DefaultGraph, "ldpInput",
 					     engine.baseURI, istr, engine.resultSet, &execDB);
-		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+		    w3c_sw_LOG(IOLog, Logger::info)
 			<< "parsing " << req.getContentType().c_str()
 			<< " [[\n" << req.getBody() << "\n]]"
 			<< " yielded [[\n" << execDB.str() << "\n]].\n";
@@ -225,7 +226,7 @@ namespace w3c_sw {
 		    rep.status = webserver::reply::ok;
 		    rep.setContentType("text/trig");
 		    sout << constructed.str();
-		    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+		    w3c_sw_LOG(ProcessLog, Logger::info)
 			<< "LDP invocation returning [[\n" << constructed.str() << "\n]].\n";
 		    ++engine.served;
 		    if (engine.stopAfter != engine.RunForever && --engine.stopAfter == 0) {
@@ -682,7 +683,7 @@ namespace w3c_sw {
 			if (parm != req.parms.end() && parm->second != "") {
 			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
 			    queryLoadList.enqueue(NULL, abs, engine.baseURI, engine.dataMediaType);
-			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+			    w3c_sw_LOG(IOLog, Logger::info)
 				<< "Reading default graph from " << parm->second
 				<< engine.baseUriMessage() << ".\n";
 			}
@@ -690,7 +691,7 @@ namespace w3c_sw {
 			while (parm != req.parms.end() && parm->first == "namedGraph" && parm->second != "") {
 			    const TTerm* abs(engine.htparseWrapper(parm->second, engine.argBaseURI));
 			    queryLoadList.enqueue(abs, abs, engine.baseURI, engine.dataMediaType);
-			    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+			    w3c_sw_LOG(IOLog, Logger::info)
 				<< "Reading named graph " << parm->second
 				<< " from " << parm->second
 				<< engine.baseUriMessage() << ".\n";
@@ -710,7 +711,7 @@ namespace w3c_sw {
 		rep.setContent(sout.str());
 		return webserver::reply::ok;
 	    } catch (ParserException& e) {
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+		w3c_sw_LOG(IOLog, Logger::error)
 		    << e.what() << std::endl;
 		rep.status = webserver::reply::bad_request;
 		rep.setContentType("text/html");
@@ -735,7 +736,7 @@ namespace w3c_sw {
 	    std::ostringstream sout;
 
 	    rep.status = webserver::reply::bad_request;
-	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+	    w3c_sw_LOG(IOLog, Logger::error)
 		<< what << std::endl;
 	    head(sout, "Q&amp;D SPARQL Server Error");
 	    sout << 
@@ -985,7 +986,7 @@ struct SimpleEngine {
 		    cmd << " ";
 		cmd << *iToken;
 	    }
-	    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
+	    w3c_sw_LOG(ProcessLog, Logger::info) << "Executing \"" << cmd.str().c_str() << "\".\n";
 	    FILE *p = POSIX_popen(cmd.str().c_str(), "r"); // 
 	    assert(p != NULL);
 	    char buf[100];
@@ -1002,7 +1003,7 @@ struct SimpleEngine {
 	    for (std::vector<std::string>::const_iterator iCreatedFile = createdFiles.begin();
 		 iCreatedFile != createdFiles.end(); ++iCreatedFile)
 		if (POSIX_unlink(iCreatedFile->c_str()) != 0)
-		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::error)
+		    w3c_sw_LOG(IOLog, Logger::error)
 			<< "error unlinking " << *iCreatedFile << ": " << strerror(errno);
 	    IStreamContext istr2(istr.nameStr, pis, mediaType.c_str());
 	    return engine.db.loadData(target, istr2, nameStr, baseURI, atomFactory, nsMap);
@@ -1122,7 +1123,7 @@ struct SimpleEngine {
 		    outres = regex_replace(outres, it->from, it->to, boost::match_default | boost::format_perl | boost::format_first_only);
 
 		if (outres != u->getLexicalValue()) { // @@ cheesy hack -- should check returns from regex_match, but i don't know how it's constructed.
-		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading " << name->toString() << " from " << outres << engine.baseUriMessage() << ".\n";
+		    w3c_sw_LOG(IOLog, Logger::info) << "Reading " << name->toString() << " from " << outres << engine.baseUriMessage() << ".\n";
 		    try {
 			IStreamContext istr(outres, IStreamContext::FILE, NULL, &engine.webClient);
 			loadData(finalEnsureGraph(name), istr, engine.uriString(engine.baseURI), 
@@ -1146,7 +1147,7 @@ struct SimpleEngine {
 		OStreamContext optr(it->path, OStreamContext::FILE,
 					engine.dataMediaType.c_str(),
 					&engine.webClient);
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
+		w3c_sw_LOG(IOLog, Logger::info) << "Writing " << it->name->toString() << " to " << it->path << ".\n";
 		*optr << RdfDB::ensureGraph(it->name)->toString(optr.mediaType.c_str(), &engine.nsAccumulator);
 	    }
 	    clearGraphLog();
@@ -1406,7 +1407,7 @@ struct SimpleEngine {
 	    query = delMe;
 
 	if (queryMapper.getRuleCount() > 0) {
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "Transforming user query by applying " << queryMapper.getRuleCount() << " rule maps.\n";
 	    const Operation* transformed(queryMapper.map(query, mappingConstants));
 	    if (delMe != NULL)
 		delete delMe;
@@ -1416,7 +1417,7 @@ struct SimpleEngine {
 	if (Logger::Logging(Logger::RewriteLog_level, Logger::info)) {
 	    SPARQLAlgebraSerializer s;
 	    query->express(&s);
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::support) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
+	    w3c_sw_LOG(RewriteLog, Logger::support) << "<Query_algebra>\n" << s.str() << "</Query_algebra>" << std::endl;
 	}
 
 	bool executed = false;
@@ -1438,16 +1439,16 @@ struct SimpleEngine {
 	    finalQuery = sqlizer.getSQLstring();
 
 	    bool doSQLquery = noExec == false && sqlConnectInfo.initialized();
-	    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::info) << "SQL: " << std::endl;
+	    w3c_sw_LOG(SQLLog, Logger::info) << "SQL: " << std::endl;
 	    if (printQuery || doSQLquery == false) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::info) << "Final query: " << ".\n";
+		w3c_sw_LOG(SQLLog, Logger::info) << "Final query: " << ".\n";
 		std::cout << finalQuery << std::endl;
 	    } else
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::info) << "SQL Query: " << finalQuery << std::endl;
+		w3c_sw_LOG(SQLLog, Logger::info) << "SQL Query: " << finalQuery << std::endl;
 
 	    if (doSQLquery == true) {
 #ifdef SQL_CLIENT_NONE
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::error) <<
+		w3c_sw_LOG(SQLLog, Logger::error) <<
 		    "Unable to connect to " << sqlConnectInfo.sqlConnectString() << " .\n"
 		    "No SQL client libraries linked in.\n";
 #else /* !SQL_CLIENT_NONE */
@@ -1476,7 +1477,7 @@ struct SimpleEngine {
 		if (!defaultGraphURI.empty())
 		    p.set("default-graph-uri", defaultGraphURI);
 		if (printQuery) {
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << "Service query: " << std::endl;
+		    w3c_sw_LOG(ServiceLog, Logger::info) << "Service query: " << std::endl;
 		    std::cout << serviceURI << " " << p << std::endl;
 		}
 		if (noExec == false) {
@@ -1499,7 +1500,7 @@ struct SimpleEngine {
 		}
 	    } else {
 		if (printQuery) {
-		    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Final query: " << ".\n";
+		    w3c_sw_LOG(RewriteLog, Logger::info) << "Final query: " << ".\n";
 		    std::cout << query->toString() << std::endl;
 		}
 		if (noExec == false) {
@@ -1539,7 +1540,7 @@ struct SimpleEngine {
 		if (baseURI != NULL)
 		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
 		o << " into result set.\n";
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
+		w3c_sw_LOG(IOLog, Logger::info) << o.str();
 	    }
 	    ResultSet loaded(&atomFactory, &xmlParser, istr);
 	    rs.joinIn(&loaded);
@@ -1559,7 +1560,7 @@ struct SimpleEngine {
 		if (baseURI != NULL)
 		    o << " with base URI <" << baseURI->getLexicalValue() << ">";
 		o << " into result set.\n";
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
+		w3c_sw_LOG(IOLog, Logger::info) << o.str();
 	    }
 	    TTerm::String2BNode bnodeMap;
 	    ResultSet loaded(&atomFactory, istr, false, &bnodeMap);
@@ -1580,7 +1581,7 @@ struct SimpleEngine {
 		if (graph != NULL)
 		    o << " into " << graph->toString();
 		o << ".\n";
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
+		w3c_sw_LOG(IOLog, Logger::info) << o.str();
 	    }
 	    std::string parserBaseURI =
 		baseURI ? uriString(baseURI) :

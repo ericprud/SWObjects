@@ -8,6 +8,7 @@
  #define INCLUDED_interface_WEBagent_boostASIO_hpp
 
 #include <stack>
+#include <boost/shared_ptr.hpp>
 #include <map>
 #include <boost/regex.hpp>
 #include <boost/asio.hpp>
@@ -146,7 +147,7 @@ namespace w3c_sw {
 
 #ifdef LOGGING_HH
 		{
-		    BOOST_LOG_SEV(w3c_sw::Logger::IOLog::get(), w3c_sw::Logger::support) << "Request: " << request_stream.str() << "\n";
+		    w3c_sw_LOG(IOLog, w3c_sw::Logger::support) << "Request: " << request_stream.str() << "\n";
 		    std::ostream rs(&request);
 		    rs << request_stream.str();
 		}

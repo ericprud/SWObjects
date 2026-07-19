@@ -10,6 +10,7 @@
  #define INCLUDED_interface_WEBagent_hpp
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 #include "SWObjects.hpp"
 #include "WEButil.hpp"
 
@@ -81,7 +82,7 @@ namespace w3c_sw {
 		}
 		if (matches[2].matched)
 		    ret = web_util::base64_decode(ret);
-		BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info)
+		w3c_sw_LOG(IOLog, Logger::info)
 		    << "data: URL percent-unescaped "
 		    << (matches[2].matched ? "and base64-decoded " : "")
 		    << "as \"" << ret << "\".\n";

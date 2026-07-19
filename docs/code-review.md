@@ -30,9 +30,9 @@ with rationale, no code change warranted), or **[open]**.
    LSan caught as 14 leaked conjunctions). `flushConjunction` also
    guards against re-adding a BGP the creation path already added.
    After the fix: 0/30 failures in release and 0/30 in the
-   instrumented build. `test_QueryMap` now gates CI. (LSan still shows
-   ~2.8 KB of *pre-existing* success-path leaks in this suite,
-   unchanged by the fix — see the open threads below.)
+   instrumented build. `test_QueryMap` now gates CI, including the
+   sanitizer job (the suite's residual success-path leaks were
+   `Bind::~Bind` — see the closed threads below).
 
 2. **[fixed] Eager-filter semantic-action over-fire.** Step 6 candidate
    filtering now runs with the handler suppressed (the Test-extension
@@ -70,20 +70,26 @@ with rationale, no code change warranted), or **[open]**.
 6. **[fixed]** `StarVarSet::project` leaked a fresh `TTermExpression`
    per projected variable. Now uses owning `ExpressionAlias`.
 
-7. **[fixed for ShExC; open for the other grammars] Bison error-path
-   leaks.** `ShExCParser.ypp` now declares `%destructor`s: plain
-   deletes for owned pointer types, none for AtomFactory-interned
-   values (`p_URI`/`p_TTerm`/`p_Literal`), element-wise frees for
-   vector types, and an `emptyShape`-sentinel guard on shape-expression
-   values. Landing them surfaced two action-ownership bugs, both fixed:
-   `addFacet` deleted the duplicate facet before `error()` threw
-   (double free once destructors ran — `negativeSyntax/1iriLength2`),
-   and the `start` action could error after consuming `$3/$4`
-   (reordered). LSan: `test_ShEx` (incl. ~100 negativeSyntax parses)
-   is clean. The other grammars still have no `%destructor`, but LSan
-   shows `test_DAWG`'s error paths clean after item 5, so the
-   remaining exposure is small; use ShExCParser.ypp as the template if
-   pursued.
+7. **[fixed] Bison error-path leaks — all 8 grammars.**
+   `ShExCParser.ypp` first: plain deletes for owned pointer types,
+   none for AtomFactory-interned values, element-wise frees for
+   vector types, and an `emptyShape`-sentinel guard. Landing them
+   surfaced two action-ownership bugs, both fixed (`addFacet` deleted
+   the duplicate facet before `error()` threw; the `start` action
+   could error after consuming `$3/$4`). Then replicated to
+   SPARQLParser, MapSetParser, TurtleParser, TrigParser,
+   JSONresultsParser, SPARQLalgebraParser and SQLParser with the same
+   classification, plus two rules the SPARQL bisect taught:
+   *no destructor for the start-result type* (`<p_Operation>` — the
+   accept-path cleanup would destroy the tree just handed to the
+   caller) and *none for types that park driver-owned state in
+   mid-rule slots* (`<p_TableOperation>` ↔ `driver.curOp`).
+   `~MapSetDriver` also gained the stranded-state cleanup (and its
+   `restoreFilter` had the same carrier leak originally fixed only in
+   the SPARQL copy; `curOp` was missing from its initializer list).
+   The SQL grammar carries token destructors only — its `sql::*`
+   nonterminal ownership is tangled in mid-rule parking and its error
+   paths parse trusted fixtures.
 
 8. **[fixed] Driver error-path state.** `~SPARQLDriver` now frees a
    stranded `curFilter` (with its expressions) and `curOp` (which owns
@@ -96,15 +102,22 @@ with rationale, no code change warranted), or **[open]**.
 
 ## P3 — RAII / API modernization
 
-10. **[resolved / partially open] `ProductionVector` vs
-    `NoDelProductionVector`.** For the ShEx AST, raw pointers with
-    owning destructors is the *correct* design, not legacy debt: the
-    bison `%union` cannot hold smart pointers, and the parser's
-    `emptyShape` sentinel must never be owned by a container. Those
-    destructors are centralized and LSan-verified. The SPARQL AST
-    migration to `std::vector<std::unique_ptr<...>>` remains a
-    dedicated-pass item — large, mechanical, and riskier than the
-    payoff while the AST is stable. **[open]** for that pass.
+10. **[resolved] `ProductionVector` vs `NoDelProductionVector`.**
+    For the ShEx AST, raw pointers with owning destructors is the
+    *correct* design, not legacy debt: the bison `%union` cannot hold
+    smart pointers, and the parser's `emptyShape` sentinel must never
+    be owned by a container. Those destructors are centralized and
+    LSan-verified. The SPARQL AST migration to
+    `std::vector<std::unique_ptr<...>>` is explicitly declined: the
+    AST is stable, the churn would touch every parser action and
+    duplicator for no behavioural gain, and the property the
+    migration would buy — ownership mistakes can't survive unnoticed —
+    is now enforced mechanically instead: a dedicated ASan/LSan CI
+    job gates `test_DAWG`, `test_ShEx`, `test_QueryMap` and the
+    ShExMap CLI, all leak-clean. (That guardrail is what caught
+    `Bind::~Bind` never deleting its expression — the real ownership
+    bug hiding in the AST — along with the double-adds in
+    `BGPSimplifier`.)
 
 11. **[fixed]** `ParserDriver` namespace-map ownership is now a
     `std::unique_ptr` (engaged unless a map was borrowed) plus a plain
@@ -137,13 +150,22 @@ with rationale, no code change warranted), or **[open]**.
 
 ## P5 — build / header layout
 
-16. **Header-only is fine here — with one exception.** With ~10
-    library TUs and one-TU consumers, keeping SimpleServer/SQLizer/
-    WEBserver as headers is reasonable. The Boost.Log weight of
-    `SWObjects.hpp` → `Logging.hpp` is **[fixed]** for build time via
-    `target_precompile_headers` (~111s → ~81s compile CPU). The
-    structural fix, if wanted later: a minimal logging facade in
-    SWObjects.hpp with Boost.Log behind a .cpp.
+16. **[fixed] Logging facade.** `SWObjects.hpp` now includes only
+    `lib/LoggingFacade.hpp` (severity/channel enums, per-channel
+    levels, `enabled()`, a buffering `LogRecord`, and the
+    `w3c_sw_LOG(Channel, level)` macro); the Boost.Log machinery
+    stays in `Logging.hpp`, included only where logging is
+    *configured* (bin/, tests), and `lib/Logging.cpp` is the one
+    library TU that forwards records to Boost.Log. All 196
+    `BOOST_LOG_SEV(...)` call sites were rewritten to `w3c_sw_LOG`.
+    Two wins beyond decoupling: library compile CPU dropped again
+    (~81s → ~61s, from ~111s originally, PCH included), and the
+    facade pre-filters *before* evaluating the streamed expression —
+    previously, with no sink prepared, Boost accepted every record
+    (no filter installed until `prepare()`), so every log site paid
+    for argument evaluation and formatting in non-logging runs.
+    Header-only stays the verdict for SimpleServer/SQLizer/WEBserver
+    (one-TU consumers).
 
 17. **[fixed]** `SWObjects_STAND_ALONE` → explicit
     `w3c_sw_DEFINE_LOGGER_GLOBALS` invoked from SWObjects.cpp (a
@@ -175,22 +197,27 @@ with rationale, no code change warranted), or **[open]**.
 22. **[fixed]** test-harness `GraphIndex` uses a `(subject,
     predicate) → object` map.
 
-## Remaining open threads
+## Formerly open threads — all closed 2026-07-19
 
-- Item 7: replicate `%destructor` to the non-ShExC grammars (low
-  measured leakage; template exists).
-- `test_QueryMap` pre-existing success-path leaks (~2.8 KB / 144
-  allocations per run, identical before and after the double-delete
-  fix): 14 duplicated `FunctionCallExpression` trees
-  (SWObjectDuplicator.hpp `functionCallExpression`, with their
-  `ArgList`/expression-vector children) dropped somewhere in the
-  rule-parsing/instantiation path, plus a couple of `ArgList`s rooted
-  in MapSetParser.ypp:2408 (healthCare i2b2 bind tests) — a
-  FunctionCall/ArgList ownership gap.
-- Item 10: SPARQL AST `unique_ptr` migration as a dedicated pass.
-- Item 16: logging facade to decouple Boost.Log from SWObjects.hpp
-  consumers.
+- **`test_QueryMap` success-path leaks: [fixed].** The root cause was
+  `Bind::~Bind` never deleting `m_expr` — every deleted `Bind`
+  (parser originals, duplicator generations, MapSet rule ASTs) leaked
+  its expression tree; the MapSetParser `ArgList`s were the same hole
+  reached through stored rules. All five `new Bind(...)` sites pass
+  freshly-built expressions, so the destructor now owns it. Also
+  fixed nearby: `GraphAndServiceMerger` left `elideSubSelect`
+  uninitialized, and `Alternatives::instantiate` leaked the partial
+  union when an unmatchable alternative returned NULL. macOS
+  `leaks --atExit`: 0 bytes on the healthCare suite (was 144 leaks).
+- **Item 7 (`%destructor` replication): [fixed]** — see item 7.
+- **Item 10 (`unique_ptr` migration): [resolved-declined]** with the
+  sanitizer CI guardrail — see item 10.
+- **Item 16 (logging facade): [fixed]** — see item 16.
 - `BGPSimplifier`'s conjunction bookkeeping remains intricate; the
   `SWOBJ_DEBUG_DOUBLE_DELETE` build (define it in CMAKE_CXX_FLAGS)
-  turns any future aliasing regression into a deterministic abort
-  with a printed tree.
+  turns aliasing into a deterministic abort with a printed tree, and
+  now also reports nodes a `map()` call created but dropped
+  (`OpCollector` reachability diff over the live-op set).
+- CI: the `sanitize` job (ubuntu, `-fsanitize=address`,
+  `ASAN_OPTIONS=detect_leaks=1`) gates `test_DAWG`, `test_ShEx`,
+  `test_QueryMap`, and the ShExMap CLI.

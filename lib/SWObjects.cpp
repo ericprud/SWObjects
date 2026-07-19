@@ -6,6 +6,7 @@
  */
 
 #include "SWObjects.hpp"
+#include <boost/shared_ptr.hpp>
 w3c_sw_DEFINE_LOGGER_GLOBALS // this translation unit owns the Logger globals
 #ifdef SWOBJ_DEBUG_DOUBLE_DELETE
 namespace w3c_sw { std::set<const TableOperation*> TableOperation::liveOps; }
@@ -372,13 +373,13 @@ StreamContext<T>::StreamContext (std::string name, T* def, e_opts opts,
 		    && nameStr.compare(0, 6, "https:")
 		    && nameStr.compare(0, 4, "ftp:")
 		    && nameStr.compare(0, 5, "data:"))) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Reading web resource " << nameStr << std::endl;
+	w3c_sw_LOG(IOLog, Logger::info) << "Reading web resource " << nameStr << std::endl;
 	boost::shared_ptr<IStreamContext> s(webAgent->get(nameStr.c_str()));
 	if (p_mediaType == NULL) {
-	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << nameStr << "'s reported media type is " << webAgent->getMediaType() << ".";
+	    w3c_sw_LOG(IOLog, Logger::info) << nameStr << "'s reported media type is " << webAgent->getMediaType() << ".";
 	    mediaType = webAgent->getMediaType().c_str();
 	} else {
-	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << "Overriding " << nameStr << "'s reported media type (" << webAgent->getMediaType() << ") with " << p_mediaType << ".";
+	    w3c_sw_LOG(IOLog, Logger::info) << "Overriding " << nameStr << "'s reported media type (" << webAgent->getMediaType() << ") with " << p_mediaType << ".";
 	    mediaType = p_mediaType;
 	}
 	
@@ -412,7 +413,7 @@ IStreamContext::IStreamContext (std::string name, e_opts opts,
     : StreamContext<std::istream>(name, &std::cin, opts, 
 				  p_mediaType, webAgent) {
     if (p == NULL) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Stream constructed to read file " << nameStr << ".\n";
+	w3c_sw_LOG(IOLog, Logger::support) << "Stream constructed to read file " << nameStr << ".\n";
 	std::ifstream* istr = new std::ifstream(nameStr.c_str());
 	malloced = true;
 	p = istr;
@@ -426,7 +427,7 @@ OStreamContext::OStreamContext (std::string name, e_opts opts,
     : StreamContext<std::ostream>(name, &std::cout, opts, 
 				  p_mediaType, webAgent) {
     if (p == NULL) {
-	BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << "Stream constructed to write file " << nameStr << ".\n";
+	w3c_sw_LOG(IOLog, Logger::support) << "Stream constructed to write file " << nameStr << ".\n";
 	std::ofstream* ostr = new std::ofstream(nameStr.c_str());
 	malloced = true;
 	p = ostr;
@@ -2099,7 +2100,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     }
 
     const TTerm* AtomFactory::getTTerm (std::string posStr, TTerm::String2BNode* bnodeMap) {
-	BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::engineer) << "creating RDF term for \"" << posStr << "\"." << std::endl;
+	w3c_sw_LOG(DefaultLog, Logger::engineer) << "creating RDF term for \"" << posStr << "\"." << std::endl;
 	if (posStr[0] == '<' && posStr[posStr.size()-1] == '>')
 	    return getURI(posStr.substr(1, posStr.size()-2));
 	if (posStr[0] == '_' && posStr[1] == ':')
@@ -2144,7 +2145,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	 const Validator& v = it->second;
 	 boost::match_results<std::string::const_iterator> what;
 	 if (!regex_search(value, what, v.pattern, boost::match_default)) {
-	     BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "pattern \"" << v.pattern << "\" failed to match \"" << value << "\"." << std::endl;
+	     w3c_sw_LOG(GraphMatchLog, Logger::info) << "pattern \"" << v.pattern << "\" failed to match \"" << value << "\"." << std::endl;
 	     throw TypeError(value, datatype);
 	 }
 	 if (v.intmin != RANGE_unlimited || v.intmax != RANGE_unlimited) {
@@ -2164,7 +2165,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		 throw TypeError(value, datatype);
 	 }
 #else /* REGEX_LIB == SWOb_BOOST */
-	 BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::info) << "unable to validate that \"" << value << "\" is a " << datatype << " without boost regular expression" << std::endl;
+	 w3c_sw_LOG(GraphMatchLog, Logger::info) << "unable to validate that \"" << value << "\" is a " << datatype << " without boost regular expression" << std::endl;
 #endif /* REGEX_LIB != SWOb_BOOST */
     }
 
@@ -2845,7 +2846,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
     ResultSet* Modify::execute (RdfDB* db, ResultSet* rs) const {
 	if (!rs) rs = new ResultSet(rs->getAtomFactory());
 
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Modifying database\n" << *db << std::endl;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "Modifying database\n" << *db << std::endl;
 
 	// with
 	BasicGraphPattern* oldDefault = NULL;
@@ -2855,7 +2856,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 		throw std::runtime_error
 		    ("can't make non-existent graph " + with->toString() + " the default graph");
 	    oldDefault = db->assignDefaultGraph(from);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "hiding default graph\n";
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "hiding default graph\n";
 	}
 
 	RdfDB* queryDB = db;
@@ -2880,26 +2881,26 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 			target->addTriplePattern(*it);
 		}
 	    }
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "seeing database\n" << *db << std::endl;
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "seeing database\n" << *db << std::endl;
 	}
 
 	if (m_WhereClause != NULL) {
 	    m_WhereClause->bindVariables(queryDB, rs);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "produced result set\n" << *rs << std::endl;
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "produced result set\n" << *rs << std::endl;
 	}
 	rs->resultType = ResultSet::RESULT_Graphs;
 	if (m_delete != NULL) {
 	    m_delete->execute(db, rs);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "after deleting:\n" << *db << std::endl;
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "after deleting:\n" << *db << std::endl;
 	}
 	if (m_insert != NULL) {
 	    m_insert->execute(db, rs);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "after inserting:\n" << *db << std::endl;
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "after inserting:\n" << *db << std::endl;
 	}
 
 	if (oldDefault != NULL) {
 	    db->assignDefaultGraph(oldDefault);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "restoring default graph\n";
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "restoring default graph\n";
 	}
 	return rs;
     }
@@ -3285,7 +3286,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 
     void ValuesClause::bindVariables (const RdfDB* /* db */, ResultSet* rs) const {
 	rs->joinIn(m_ResultSet);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "BINDINGS produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "BINDINGS produced\n" << *rs;
     }
 
     void Print::bindVariables (const RdfDB* db, ResultSet* rs) const {
@@ -3321,7 +3322,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	     it != m_Expressions.end(); it++)
 	    island.restrictResults(*it, db);
 	rs->joinIn(&island);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "FILTER produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "FILTER produced\n" << *rs;
     }
 
     void TableConjunction::bindVariables (const RdfDB* db, ResultSet* rs) const {
@@ -3330,7 +3331,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	     it != m_TableOperations.end() && rs->size() > 0; it++)
 	    (*it)->bindVariables(db, &island);
 	rs->joinIn(&island);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Conjunction produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "Conjunction produced\n" << *rs;
     }
 
     void TableConjunction::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {
@@ -3365,7 +3366,7 @@ void RecursiveExpressor::valuesClause (const ValuesClause* const, const ResultSe
 	    }
 	}
 	rs->joinIn(&island);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "UNION produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "UNION produced\n" << *rs;
     }
 
     void SubSelect::bindVariables (const RdfDB* db, ResultSet* rs) const {
@@ -3436,7 +3437,7 @@ compared against
 
     void BasicGraphPattern::bindVariables (ResultSet* rs, const BasicGraphPattern* toMatch,
 					   const TTerm* graphVar, const TTerm* graphName) const {
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "matching " << *toMatch;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "matching " << *toMatch;
 	for (std::vector<const TriplePattern*>::const_iterator constraint = toMatch->m_TriplePatterns.begin();
 	     constraint != toMatch->m_TriplePatterns.end(); constraint++) {
 	    for (ResultSetIterator row = rs->begin() ; row != rs->end(); ) {
@@ -3485,7 +3486,7 @@ compared against
 		}
 	    }
 	}
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "produced\n" << *rs;
     }
     void BasicGraphPattern::triple_iterator::operator++ () {
 	++triple;
@@ -3994,7 +3995,7 @@ compared against
 	    || varsIntersection.size() == 0
 	    || rs->size() > ServiceGraphPattern::defaultFederationRowLimit) {
 	    p.set("query", query->toString());
-	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+	    w3c_sw_LOG(ServiceLog, Logger::info)
 		<< "Querying <" << service->getLexicalValue() << "> for\n" << query->toString() << "\n";
 	} else if (ServiceGraphPattern::useFilters) {
 	    /*
@@ -4004,13 +4005,13 @@ compared against
 	    const Operation* rsConstrained =
 		rs->getConstrainedOperation(query);
 	    p.set("query", rsConstrained->toString());
-	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+	    w3c_sw_LOG(ServiceLog, Logger::info)
 		<< "Querying <" << service->getLexicalValue() << "> for\n" << rsConstrained->toString() << "\n";
 	    delete rsConstrained;
 	} else {
 	    // ... or some FILTERs on the operation.
 	    p.set("query", query->toString() + rs->getBindingsString(varsIntersection));
-	    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+	    w3c_sw_LOG(ServiceLog, Logger::info)
 		<< "Querying <" << service->getLexicalValue() << "> for\n" << query->toString() + rs->getBindingsString(varsIntersection) << "\n";
 	}
 	delete query;
@@ -4022,7 +4023,7 @@ compared against
 		ServiceGraphPattern::ServiceMap.find(mappedEndpoint);
 	    if (m != ServiceGraphPattern::ServiceMap.end()) {
 		mappedEndpoint = m->second;
-		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info)
+		w3c_sw_LOG(ServiceLog, Logger::info)
 		    << "Service name <" << m->first << "> will be resolved at " << m->second << "\n";
 	    }
 	}
@@ -4053,7 +4054,7 @@ compared against
 			<< ".\n";
 		else
 		    o << "\n" << red;
-		BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::info) << o.str();
+		w3c_sw_LOG(ServiceLog, Logger::info) << o.str();
 	    }
 
 	    /* Join those results against our initial results. */
@@ -4069,17 +4070,17 @@ compared against
 		_constructQuery(graph, m_TableOperation, rs, atomFactory, db->xmlParser, db->webAgent);
 	    } catch (std::exception& e) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
+		    w3c_sw_LOG(ServiceLog, Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << e.what() << std::endl;
 		else
 		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + e.what();
 	    } catch (std::string& s) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
+		    w3c_sw_LOG(ServiceLog, Logger::warning) << "SERVICE " << graph->toString() << " produced error: " << s << std::endl;
 		else
 		    throw std::string() + "SERVICE " + graph->toString() + " produced error: " + s;
 	    } catch (...) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced an unclassified error" << std::endl;
+		    w3c_sw_LOG(ServiceLog, Logger::warning) << "SERVICE " << graph->toString() << " produced an unclassified error" << std::endl;
 		else
 		    throw std::string() + "SERVICE " + graph->toString() + " produced an unclassified error";
 	    }
@@ -4111,17 +4112,17 @@ compared against
 			    failed = false;
 			} catch (std::exception& e) {
 			    if (m_Silence == SILENT_Yes)
-				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << e.what() << std::endl;
+				w3c_sw_LOG(ServiceLog, Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << e.what() << std::endl;
 			    else
 				throw std::string() + "SERVICE " + graphName->toString() + " produced error: " + e.what();
 			} catch (std::string& s) {
 			    if (m_Silence == SILENT_Yes)
-				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << s << std::endl;
+				w3c_sw_LOG(ServiceLog, Logger::warning) << "SERVICE " << graphName->toString() << " produced error: " << s << std::endl;
 			    else
 				throw std::string() + "SERVICE " + graphName->toString() + " produced error: " + s;
 			} catch (...) {
 			    if (m_Silence == SILENT_Yes)
-				BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SERVICE " << graph->toString() << " produced an unclassified error" << std::endl;
+				w3c_sw_LOG(ServiceLog, Logger::warning) << "SERVICE " << graph->toString() << " produced an unclassified error" << std::endl;
 			    else
 				throw std::string() + "SERVICE " + graph->toString() + " produced an unclassified error";
 			}
@@ -4146,7 +4147,7 @@ compared against
 		outerRow = rs->erase(outerRow);
 	    }
 	}
-	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "SERVICE produced\n" << *rs;
+	w3c_sw_LOG(ServiceLog, Logger::engineer) << "SERVICE produced\n" << *rs;
     }
 
     void ServiceGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
@@ -4232,7 +4233,7 @@ compared against
 	    if (istr->mediaType)
 		o << " with media type " << *istr->mediaType;
 	    o << ".\n";
-	    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::info) << o.str();
+	    w3c_sw_LOG(IOLog, Logger::info) << o.str();
 	}
     }
     void SADIGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
@@ -4245,12 +4246,12 @@ compared against
 		_invokeSADI(graph->getLexicalValue().c_str(), m_ConstructTemplate, rs, rs->getAtomFactory(), requestDB, &responseDB);
 	    } catch (std::exception& e) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
+		    w3c_sw_LOG(ServiceLog, Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
 		else
 		    throw std::string() + "SADI " + graph->toString() + " produced error: " + e.what();
 	    } catch (std::string& s) {
 		if (m_Silence == SILENT_Yes)
-		    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
+		    w3c_sw_LOG(ServiceLog, Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
 		else
 		    throw std::string() + "SADI " + graph->toString() + " produced error: " + s;
 	    }
@@ -4274,13 +4275,13 @@ compared against
 			outerRow = rs->erase(outerRow);
 		    } catch (std::exception& e) {
 			if (m_Silence == SILENT_Yes) {
-			    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
+			    w3c_sw_LOG(ServiceLog, Logger::warning) << "SADI " << graph->toString() << " produced error: " << e.what() << std::endl;
 			    ++outerRow;
 			} else
 			    throw std::string() + "SADI " + graph->toString() + " produced error: " + e.what();
 		    } catch (std::string& s) {
 			if (m_Silence == SILENT_Yes) {
-			    BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
+			    w3c_sw_LOG(ServiceLog, Logger::warning) << "SADI " << graph->toString() << " produced error: " << s << std::endl;
 			    ++outerRow;
 			} else
 			    throw std::string() + "SADI " + graph->toString() + " produced error: " + s;
@@ -4290,7 +4291,7 @@ compared against
 		throw std::string("Sadi name must be an IRI; attempted to call SADI ").append(m_VarOrIRIref->toString());
 	}
 	m_WhereClause->bindVariables(&responseDB, rs);
-	BOOST_LOG_SEV(Logger::ServiceLog::get(), Logger::engineer) << "SADI produced\n" << *rs;
+	w3c_sw_LOG(ServiceLog, Logger::engineer) << "SADI produced\n" << *rs;
     }
     void SADIGraphPattern::construct (RdfDB* /* target */, const ResultSet* /* rs */, BNodeEvaluator* /* evaluator */, BasicGraphPattern* /* bgp */) const {
 	w3c_sw_NEED_IMPL("@@SADIGraphPattern::construct not yet written");
@@ -4307,14 +4308,14 @@ compared against
 	ResultSet optRS(rs->getAtomFactory()); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, &m_Expressions, ResultSet::OP_outer);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "OPTIONAL produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "OPTIONAL produced\n" << *rs;
     }
 
     void MinusGraphPattern::bindVariables (const RdfDB* db, ResultSet* rs) const {
 	ResultSet optRS(rs->getAtomFactory()); // no AtomFactory
 	m_TableOperation->bindVariables(db, &optRS);
 	rs->joinIn(&optRS, NULL, ResultSet::OP_minus);
-	BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "MINUS produced\n" << *rs;
+	w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "MINUS produced\n" << *rs;
     }
 
     void BasicGraphPattern::construct (RdfDB* target, const ResultSet* rs, BNodeEvaluator* evaluator, BasicGraphPattern* bgp) const {

@@ -544,12 +544,12 @@ namespace w3c_sw {
 	    virtual Expression* clone() const = 0;
 	    std::string str () const { return toString(); }
 	    bool logNotMappable (const Expression& r) const {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << toString() << " doesn't map to " << r.toString();
 		return false;
 	    }
 	    bool logNotEqual (const Expression& r) const {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << toString() << " != " << r.toString();
 		return false;
 	    }
@@ -1586,12 +1586,12 @@ namespace w3c_sw {
 
 	    // dupes from Expression
 	    bool logNotMappable (const Join& r) const {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << toString() << "\ndoesn't map to" << r.toString();
 		return false;
 	    }
 	    bool logNotEqual (const Join& r) const {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << toString() << " != " << r.toString();
 		return false;
 	    }
@@ -1701,7 +1701,7 @@ namespace w3c_sw {
 		    && (alias == r.alias))
 		    return true;
 		// dupe from Expression and Join
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << toString() << " doesn't map to " << r.toString();
 		return map.fail();
 	    }
@@ -1709,7 +1709,7 @@ namespace w3c_sw {
 		if (*exp == *r.exp && alias == r.alias)
 		    return true;
 		// dupe from Expression and Join
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << toString() << " != " << r.toString();
 		return false;
 	    }
@@ -1971,19 +1971,19 @@ namespace w3c_sw {
 	    // w3c_sw_LINEN << "map: " << map.str() << "\n";
 	    const char* f = "SQL Query non-isomorphism in ";
 	    if (!(distinct == r.distinct)) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "distinct: " << distinct << "!=" << r.distinct << "\n";
 		map.fail();
 		return false;
 	    }
 	    if (!(limit == r.limit)) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "limit: " << limit << "!=" << r.limit << "\n";
 		map.fail();
 		return false;
 	    }
 	    if (!(offset == r.offset)) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "offset: " << offset << "!=" << r.offset << "\n";
 		map.fail();
 		return false;
@@ -1991,18 +1991,18 @@ namespace w3c_sw {
 	    // if (!ptrequal(selects.begin(), selects.end(), r.selects.begin())) {
 	    if (!map.permute(std::set<const AliasedSelect*>(  selects.begin(),   selects.end()),
 			     std::set<const AliasedSelect*>(r.selects.begin(), r.selects.end()))) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "selects:\n" << selects << "\n does not map to \n" << r.selects << "\n";
 		return false;
 	    }
 	    if (!map.orderedMap(joins.begin(), joins.end(), r.joins.begin())) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "joins:\n" << joins << "\n does not map to \n" << r.joins << "\n";
 		return false;
 	    }
 	    if (!map.permute(std::set<const Expression*>(  constraints.begin(),   constraints.end()),
 			     std::set<const Expression*>(r.constraints.begin(), r.constraints.end()))) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "constraints:\n" << constraints << "\n does not map to \n" << r.constraints << "\n";
 		return false;
 	    }
@@ -2012,7 +2012,7 @@ namespace w3c_sw {
 		std::vector<sql::OrderedExpression>::const_iterator rit = r.orderBy.begin();
 		for (; lit != end; ++lit, ++rit)
 		    if (!((*lit).mapsTo(*rit, map))) {
-			BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+			w3c_sw_LOG(SQLLog, Logger::engineer)
 			    << f << "orderBy:\n" << orderBy << "\n does not map to \n" << r.orderBy << "\n";
 			return false;
 		    }
@@ -2022,17 +2022,17 @@ namespace w3c_sw {
 	inline bool SQLQuery::finalEq (const SQLQuery& r) const { // not needed in SQLQueryBase
 	    const char* f = "SQL Query inequivalence in ";
 	    if (!(distinct == r.distinct)) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "distinct: " << distinct << "!=" << r.distinct << "\n";
 		return false;
 	    }
 	    if (!(limit == r.limit)) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "limit: " << limit << "!=" << r.limit << "\n";
 		return false;
 	    }
 	    if (!(offset == r.offset)) {
-		BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		w3c_sw_LOG(SQLLog, Logger::engineer)
 		    << f << "offset: " << offset << "!=" << r.offset << "\n";
 		return false;
 	    }
@@ -2043,7 +2043,7 @@ namespace w3c_sw {
 		dereferencer<AliasedSelect> vrd(r.selects);
 		OnezFine of;
 		if (!permute::equals(vld, vrd, of)) {
-		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    w3c_sw_LOG(SQLLog, Logger::engineer)
 			<< f << "selects:\n" << selects << "\n != \n" << r.selects << "\n";
 		    return false;
 		}
@@ -2054,7 +2054,7 @@ namespace w3c_sw {
 		dereferencer<Join> vrd(r.joins);
 		OnezFine of;
 		if (!permute::equals(vld, vrd, of)) {
-		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    w3c_sw_LOG(SQLLog, Logger::engineer)
 			<< f << "joins:\n" << joins << "\n != \n" << r.joins << "\n";
 		    return false;
 		}
@@ -2065,7 +2065,7 @@ namespace w3c_sw {
 		dereferencer<const Expression> vrd(r.constraints);
 		OnezFine of;
 		if (!permute::equals(vld, vrd, of)) {
-		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    w3c_sw_LOG(SQLLog, Logger::engineer)
 			<< f << "constraints:\n" << constraints << "\n != \n" << r.constraints << "\n";
 		    return false;
 		}
@@ -2074,7 +2074,7 @@ namespace w3c_sw {
 	    {
 		OnezFine of;
 		if (!permute::equals(orderBy, r.orderBy, of)) {
-		    BOOST_LOG_SEV(Logger::SQLLog::get(), Logger::engineer)
+		    w3c_sw_LOG(SQLLog, Logger::engineer)
 			<< f << "orderBy:\n" << orderBy << "\n != \n" << r.orderBy << "\n";
 		    return false;
 		}

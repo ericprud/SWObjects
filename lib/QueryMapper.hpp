@@ -67,14 +67,14 @@ namespace w3c_sw {
 	    /* # 02 — For each rule R in MRs, with an antecedent A and a consequent C:
 	     * http://www.w3.org/2008/07/MappingRules/#_02
 	     */
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "Firing " << invertedRules.size() << " rules againsts user query disjoint " << std::endl << 
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "Firing " << invertedRules.size() << " rules againsts user query disjoint " << std::endl << 
 		*userQueryDisjoint << std::endl << 
 		"(as DB):" << std::endl << 
 		userQueryAsAssertions << std::endl;
 	    for (std::vector<MappingConstruct*>::iterator invertedRule = invertedRules.begin();
 		 invertedRule != invertedRules.end(); ++invertedRule) {
 
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "matched against rule head (expressed as a pattern)" << std::endl << 
+		w3c_sw_LOG(RewriteLog, Logger::info) << "matched against rule head (expressed as a pattern)" << std::endl << 
 		    *(*invertedRule)->getRuleBody() << std::endl;
 		/* # 03 — Treat C as a query, each triple being optional.
 		 * http://www.w3.org/2008/07/MappingRules/#_03

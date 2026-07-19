@@ -226,7 +226,7 @@ public:
 	// if (errors.size() == 1)
 	//     throw errors[0];
 	if (Global::Force)
-	    BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::error)
+	    w3c_sw_LOG(ProcessLog, Logger::error)
 		<< "proceeding despite " << errors.size()
 		<< " error" << (errors.size()==1 ? "" : "s")
 		// << " from parsing \"" << nameStr << "\""

@@ -252,7 +252,7 @@ namespace w3c_sw {
 	    if (it != map.end()) {
 		std::vector<std::string> args;
 		args.push_back(it->second.transform);
-		BOOST_LOG_SEV(Logger::ProcessLog::get(), Logger::info)
+		w3c_sw_LOG(ProcessLog, Logger::info)
 		    << "GRDDL link header rel=\"transformation\" encountered -- \""
 		    << it->second.transform << "\" transforms to \"" << it->second.mediaType << "\".";
 		throw ChangeMediaTypeException(it->second.mediaType, args);

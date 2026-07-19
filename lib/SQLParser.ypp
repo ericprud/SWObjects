@@ -322,6 +322,10 @@ typedef struct {parser::NoCtorDataType type; int size;} l_TypeSize;
 #define yylex driver.lexer->lex
 %}
 
+
+/* Free discarded token values. Nonterminal sql::* values are left to the
+ * driver/AST ownership (several are parked across mid-rule actions). */
+%destructor { delete $$; } <p_NAME>
 %% /*** Grammar Rules ***/
 
  /*** BEGIN sql - Change the grammar rules below ***/

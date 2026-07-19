@@ -49,7 +49,7 @@ namespace w3c_sw {
 		name = atomFactory->getRDFLiteral(ss.str());
 	    }
 	    Rule r = RuleParser().parseConstruct(rule, name);
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "adding rule: " << r.toString();
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "adding rule: " << r.toString();
 	    rules.push_back(r);
 	}
 
@@ -62,7 +62,7 @@ namespace w3c_sw {
 	    ResultSet island(rs->getAtomFactory());
 	    RdfDB::bindVariables(&island, graph, toMatch);
 
-	    BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "matching: " << *toMatch << "\nagainst ground facts got:\n" << island;
+	    w3c_sw_LOG(RewriteLog, Logger::info) << "matching: " << *toMatch << "\nagainst ground facts got:\n" << island;
 
 	    std::vector<const TriplePattern*> ground;
 	    Bindings bindings(atomFactory, rules, sharedVars, nodeShare);
@@ -84,9 +84,9 @@ namespace w3c_sw {
 
 // w3c_sw_LINEN << "opts: " << bindings.alternatives.opts.str() << "\n";
 	    if (bindings.failed.size() > 0) {
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "unable to match\n" << bindings.failed.toString(toMatch);
+		w3c_sw_LOG(RewriteLog, Logger::info) << "unable to match\n" << bindings.failed.toString(toMatch);
 	    } else {
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "reachable by rules: " << bindings << " -> [[\n";
+		w3c_sw_LOG(RewriteLog, Logger::info) << "reachable by rules: " << bindings << " -> [[\n";
 		ResultSet disjoint(rs->getAtomFactory());
 
 		Bindings::Alternatives::VarUniquifier varUniquifier;
@@ -108,11 +108,11 @@ namespace w3c_sw {
 		    }
 		    conj.clear(); // don't delete gp
 		}
-		BOOST_LOG_SEV(Logger::RewriteLog::get(), Logger::info) << "]]\n";
+		w3c_sw_LOG(RewriteLog, Logger::info) << "]]\n";
 	    }
 
 	    rs->joinIn(&island);
-	    BOOST_LOG_SEV(Logger::GraphMatchLog::get(), Logger::engineer) << "Backward chaining produced\n" << *rs;
+	    w3c_sw_LOG(GraphMatchLog, Logger::engineer) << "Backward chaining produced\n" << *rs;
 	}
     };
 

@@ -27,6 +27,7 @@ EGP
 /ssl
 /experimentsexamples/functionExtension.so
 build/
+build-*/
 tests/TurtleTests/
 tests/TriGTests/
 tests/RDFXMLTests/

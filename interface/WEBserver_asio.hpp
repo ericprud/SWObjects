@@ -588,13 +588,13 @@ namespace w3c_sw {
 		    struct tm tm;
 		    time(&now);
 		    gmtime_r(&now, &tm);
-		    BOOST_LOG_SEV(Logger::DefaultLog::get(), Logger::admin) << std::setfill('0')
+		    w3c_sw_LOG(DefaultLog, Logger::admin) << std::setfill('0')
 			<< socket_.remote_endpoint().address().to_string() << " - - ["
 			<< tm.tm_year + 1900 << "-" << std::setw(2) << tm.tm_mon << "-" << std::setw(2) << tm.tm_mday
 			<< "T" << std::setw(2) << tm.tm_hour << ":" << std::setw(2) << tm.tm_min << ":" << std::setw(2) << tm.tm_sec << "]"
 			<< "\"" << request_->method << " " << request_->uri << " " << request_->http_version_major << "." << request_->http_version_minor << "\" "
 			<< reply_.status << " " << reply_.content.size() << std::endl;
-		    BOOST_LOG_SEV(Logger::IOLog::get(), Logger::support) << *request_ << reply_;
+		    w3c_sw_LOG(IOLog, Logger::support) << *request_ << reply_;
 
 		    boost::asio::async_write(socket_, reply_.to_buffers(request_->method == "HEAD"),
 		     boost::asio::bind_executor(strand_,
