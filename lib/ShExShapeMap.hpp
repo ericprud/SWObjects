@@ -53,15 +53,53 @@ namespace ShEx {
 	    : base(base), namespaces(namespaces) {  }
     };
 
+    /** Where a {FOCUS <p> o} / {s <p> FOCUS} triple pattern in a shape map
+     * draws its candidates from: a local graph already in memory (the
+     * default; see LocalPatternMatcher) or, e.g., a live SPARQL endpoint
+     * (see bin/sparql's --shex-endpoint, which implements one against
+     * bnr::BNodeResolver so candidate blank nodes are told-bnode-safe). */
+    struct PatternMatcher {
+	virtual ~PatternMatcher () {  }
+	/** ?FOCUS p o ; o == NULL matches any object. */
+	virtual void matchFocusSubject (const TTerm* p, const TTerm* o,
+					std::vector<const TTerm*>& into) = 0;
+	/** s p ?FOCUS ; s == NULL matches any subject. */
+	virtual void matchFocusObject (const TTerm* s, const TTerm* p,
+				       std::vector<const TTerm*>& into) = 0;
+    };
+
+    /** The original behavior: matches within a BasicGraphPattern already
+     * resident in memory. */
+    struct LocalPatternMatcher : public PatternMatcher {
+	const BasicGraphPattern& data;
+	LocalPatternMatcher (const BasicGraphPattern& data) : data(data) {  }
+	virtual void matchFocusSubject (const TTerm* p, const TTerm* o,
+					std::vector<const TTerm*>& into);
+	virtual void matchFocusObject (const TTerm* s, const TTerm* p,
+				       std::vector<const TTerm*>& into);
+    };
+
     /** Parse a query/fixed shape map in the compact syntax, expanding triple
-     * patterns against data. "_:label" nodes are resolved through
+     * patterns through `matcher`. "_:label" nodes are resolved through
      * dataBNodeMap when given. Throws ShapeMapError. */
     std::vector<Association> parseQueryMap (const std::string& text,
 					    AtomFactory* atomFactory,
 					    const PrefixEnv& nodeEnv,
 					    const PrefixEnv& shapeEnv,
-					    const BasicGraphPattern& data,
+					    PatternMatcher& matcher,
 					    TTerm::String2BNode* dataBNodeMap = NULL);
+
+    /** Convenience overload for a shape map matched against a local graph
+     * (the pre-existing behavior; used by manifest-style tests). */
+    inline std::vector<Association> parseQueryMap (const std::string& text,
+						    AtomFactory* atomFactory,
+						    const PrefixEnv& nodeEnv,
+						    const PrefixEnv& shapeEnv,
+						    const BasicGraphPattern& data,
+						    TTerm::String2BNode* dataBNodeMap = NULL) {
+	LocalPatternMatcher matcher(data);
+	return parseQueryMap(text, atomFactory, nodeEnv, shapeEnv, matcher, dataBNodeMap);
+    }
 
     /** Parse the shexTest JSON fixed map format:
      * [{"node": "iri-or-literal", "shape": "iri"}, ...]. */

@@ -17,13 +17,13 @@ namespace ShEx {
 	    AtomFactory* atomFactory;
 	    const PrefixEnv& nodeEnv;
 	    const PrefixEnv& shapeEnv;
-	    const BasicGraphPattern& data;
+	    PatternMatcher& matcher;
 
 	    MapParser (const std::string& text, AtomFactory* atomFactory,
 		       const PrefixEnv& nodeEnv, const PrefixEnv& shapeEnv,
-		       const BasicGraphPattern& data)
+		       PatternMatcher& matcher)
 		: text(text), pos(0), atomFactory(atomFactory),
-		  nodeEnv(nodeEnv), shapeEnv(shapeEnv), data(data) {  }
+		  nodeEnv(nodeEnv), shapeEnv(shapeEnv), matcher(matcher) {  }
 
 	    void error (const std::string& msg) {
 		std::stringstream ss;
@@ -179,20 +179,10 @@ namespace ShEx {
 			error("triple pattern predicate must be an IRI");
 		    if ((skind == 0) == (okind == 0))
 			error("triple pattern needs FOCUS in subject or object");
-		    for (std::vector<const TriplePattern*>::const_iterator it = data.begin();
-			 it != data.end(); ++it) {
-			if ((*it)->getP() != p)
-			    continue;
-			if (skind == 0) { // subject is FOCUS
-			    if (okind == 2 && (*it)->getO() != o)
-				continue;
-			    into.push_back((*it)->getS());
-			} else { // object is FOCUS
-			    if (skind == 2 && (*it)->getS() != s)
-				continue;
-			    into.push_back((*it)->getO());
-			}
-		    }
+		    if (skind == 0) // subject is FOCUS
+			matcher.matchFocusSubject(p, okind == 2 ? o : NULL, into);
+		    else // object is FOCUS
+			matcher.matchFocusObject(skind == 2 ? s : NULL, p, into);
 		    return;
 		}
 		if (c == '_' && pos + 1 < text.size() && text[pos+1] == ':') {
@@ -261,13 +251,29 @@ namespace ShEx {
 	};
     } // namespace
 
+    void LocalPatternMatcher::matchFocusSubject (const TTerm* p, const TTerm* o,
+						 std::vector<const TTerm*>& into) {
+	for (std::vector<const TriplePattern*>::const_iterator it = data.begin();
+	     it != data.end(); ++it)
+	    if ((*it)->getP() == p && (o == NULL || (*it)->getO() == o))
+		into.push_back((*it)->getS());
+    }
+
+    void LocalPatternMatcher::matchFocusObject (const TTerm* s, const TTerm* p,
+						std::vector<const TTerm*>& into) {
+	for (std::vector<const TriplePattern*>::const_iterator it = data.begin();
+	     it != data.end(); ++it)
+	    if ((*it)->getP() == p && (s == NULL || (*it)->getS() == s))
+		into.push_back((*it)->getO());
+    }
+
     std::vector<Association> parseQueryMap (const std::string& text,
 					    AtomFactory* atomFactory,
 					    const PrefixEnv& nodeEnv,
 					    const PrefixEnv& shapeEnv,
-					    const BasicGraphPattern& data,
+					    PatternMatcher& matcher,
 					    TTerm::String2BNode* dataBNodeMap) {
-	MapParser p(text, atomFactory, nodeEnv, shapeEnv, data);
+	MapParser p(text, atomFactory, nodeEnv, shapeEnv, matcher);
 	TTerm::String2BNode transientBNodes;
 	return p.parse(dataBNodeMap != NULL ? dataBNodeMap : &transientBNodes);
     }

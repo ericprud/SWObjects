@@ -17,6 +17,7 @@
 #include "SPARQLParser.hpp"
 #include "TurtleParser.hpp"
 #include "ShExSchema.hpp"
+#include "ShExShapeMap.hpp"
 #include "ShExCParser.hpp"
 #include "Algae3.hpp"
 #include "Algae3Parser.hpp"
@@ -242,6 +243,91 @@ BOOST_AUTO_TEST_CASE( shex_validation_over_endpoint ) {
     sw::ShEx::Validator rv2(schema, *cacheDB.ensureGraph(sw::DefaultGraph));
     rv2.neighborhoodSource = &src;
     BOOST_CHECK_EQUAL(rv2.validate(prereg, groupShape), localPrereg);
+}
+
+namespace {
+    /** bin/sparql's --shex-endpoint RemotePatternMatcher, mirrored here so
+     * the {FOCUS <p> _} / {_ <p> FOCUS} remote-resolution path (one round
+     * trip through BNodeResolver::select, told-bnode-safe) gets automated
+     * regression coverage independent of the CLI binary. */
+    struct TestRemotePatternMatcher : public sw::ShEx::PatternMatcher {
+	sw::bnr::BNodeResolver& resolver;
+	TestRemotePatternMatcher (sw::bnr::BNodeResolver& resolver) : resolver(resolver) {  }
+	virtual void matchFocusSubject (const sw::TTerm* p, const sw::TTerm* o,
+					std::vector<const sw::TTerm*>& into) {
+	    run("?bnrFocus " + sw::bnr::sparqlTerm(p) + " "
+		+ (o == NULL ? "?bnrAny" : sw::bnr::sparqlTerm(o)) + " . ", into);
+	}
+	virtual void matchFocusObject (const sw::TTerm* s, const sw::TTerm* p,
+				       std::vector<const sw::TTerm*>& into) {
+	    run((s == NULL ? "?bnrAny" : sw::bnr::sparqlTerm(s)) + " "
+		+ sw::bnr::sparqlTerm(p) + " ?bnrFocus . ", into);
+	}
+	void run (const std::string& where, std::vector<const sw::TTerm*>& into) {
+	    sw::bnr::Table t = resolver.select("SELECT DISTINCT ?bnrFocus WHERE { " + where + "}", where);
+	    for (sw::bnr::Table::const_iterator r = t.begin(); r != t.end(); ++r) {
+		sw::bnr::Row::const_iterator it = r->find("bnrFocus");
+		if (it != r->end())
+		    into.push_back(it->second);
+	    }
+	}
+    };
+}
+
+BOOST_AUTO_TEST_CASE( shex_query_map_over_endpoint ) {
+    /* {FOCUS ex:member _}@<GroupShape> should find every group (fixed AND
+     * bnode-membership groups alike) with one SPARQL round trip, matching
+     * exactly what a local {FOCUS ex:member _} match against the full
+     * local graph would find - and every found group must validate. */
+    Endpoint ep;
+    std::string schemaText = std::string()
+	+ "PREFIX ex: <" + EX + ">\n"
+	+ "<GroupShape> { ex:name . ; ex:member @<MembershipShape>+ }\n"
+	+ "<MembershipShape> { ex:evidence IRI }\n";
+    sw::ShEx::Schema schema;
+    sw::ShExDriver driver("", &F);
+    sw::IStreamContext istr(schemaText, sw::IStreamContext::STRING);
+    driver.parse(istr, &schema);
+    schema.checkStructure();
+    const sw::TTerm* groupShape = F.getURI("GroupShape");
+    const sw::TTerm* memberPred = F.getURI(std::string(EX) + "member");
+
+    /* local ground truth: every distinct group-with-members */
+    std::set<std::string> localGroups;
+    {
+	sw::RdfDB local;
+	loadTurtle(local, "Algae3/data/evidence.ttl");
+	loadTurtle(local, "Algae3/data/evidence-groups.ttl");
+	const sw::BasicGraphPattern::triple_iterator end;
+	for (sw::BasicGraphPattern::triple_iterator ti
+		 = local.ensureGraph(sw::DefaultGraph)->getTripleIterator(NULL, memberPred, NULL);
+	     ti != end; ++ti)
+	    localGroups.insert((*ti)->getS()->toString());
+    }
+
+    sw::RdfDB cacheDB;
+    sw::bnr::RemoteGraphProvider provider(&F, &ep.client, cacheDB.ensureGraph(sw::DefaultGraph));
+    TestRemotePatternMatcher matcher(provider.resolver);
+    sw::ShEx::PrefixEnv env("", driver.getNamespaceMap()); // schema's PREFIX ex: for both sides
+    std::vector<sw::ShEx::Association> assocs = sw::ShEx::parseQueryMap(
+	"{FOCUS ex:member _}@<GroupShape>", &F, env, env, matcher);
+    BOOST_CHECK_EQUAL(assocs.size(), localGroups.size());
+
+    struct Src : public sw::ShEx::Validator::NeighborhoodSource {
+	sw::bnr::RemoteGraphProvider& p;
+	Src (sw::bnr::RemoteGraphProvider& p) : p(p) {  }
+	virtual void ensure (const sw::TTerm* focus) { p.ensureNode(focus); }
+    } src(provider);
+    sw::ShEx::Validator v(schema, *cacheDB.ensureGraph(sw::DefaultGraph));
+    v.neighborhoodSource = &src;
+    std::set<std::string> foundGroups;
+    for (std::vector<sw::ShEx::Association>::const_iterator it = assocs.begin();
+	 it != assocs.end(); ++it) {
+	foundGroups.insert(it->node->toString());
+	BOOST_CHECK_MESSAGE(v.validate(it->node, it->shape),
+			    "expected " + it->node->toString() + " to conform to GroupShape");
+    }
+    BOOST_CHECK(foundGroups == localGroups);
 }
 
 namespace {

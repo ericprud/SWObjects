@@ -52,6 +52,8 @@ namespace sw = w3c_sw;
 
 #include "SimpleServer.hpp"
 #include "ShExManifest.hpp"
+#include "ShExCParser.hpp"
+#include "BNodeResolver.hpp"
 
 #ifndef _MSC_VER
 #include <dlfcn.h>
@@ -814,6 +816,36 @@ std::string adjustPath (std::string nameStr) {
     return nameStr;
 }
 
+/** --shex-endpoint's PatternMatcher: a {FOCUS <p> o} / {s <p> FOCUS} query
+ * pattern draws its candidates from one SPARQL round trip through the
+ * BNodeResolver (told-bnode-safe: a bnode FOCUS gets a stable proxy the
+ * same way a neighborhood fetch would). */
+struct RemotePatternMatcher : public sw::ShEx::PatternMatcher {
+    sw::bnr::BNodeResolver& resolver;
+    RemotePatternMatcher (sw::bnr::BNodeResolver& resolver) : resolver(resolver) {  }
+
+    virtual void matchFocusSubject (const sw::TTerm* p, const sw::TTerm* o,
+				    std::vector<const sw::TTerm*>& into) {
+	run("?bnrFocus " + sw::bnr::sparqlTerm(p) + " "
+	    + (o == NULL ? "?bnrAny" : sw::bnr::sparqlTerm(o)) + " . ", into);
+    }
+    virtual void matchFocusObject (const sw::TTerm* s, const sw::TTerm* p,
+				   std::vector<const sw::TTerm*>& into) {
+	run((s == NULL ? "?bnrAny" : sw::bnr::sparqlTerm(s)) + " "
+	    + sw::bnr::sparqlTerm(p) + " ?bnrFocus . ", into);
+    }
+
+private:
+    void run (const std::string& where, std::vector<const sw::TTerm*>& into) {
+	sw::bnr::Table t = resolver.select("SELECT DISTINCT ?bnrFocus WHERE { " + where + "}", where);
+	for (sw::bnr::Table::const_iterator r = t.begin(); r != t.end(); ++r) {
+	    sw::bnr::Row::const_iterator it = r->find("bnrFocus");
+	    if (it != r->end())
+		into.push_back(it->second);
+	}
+    }
+};
+
 sw::Operation* parseQuery (const sw::TTerm* query) {
     std::string querySpec = query->getLexicalValue();
     sw::IStreamContext::e_opts opts = 
@@ -1019,6 +1051,22 @@ int main(int ac, char* av[])
 	     "  index: [0-9]+ | '*'\n"
 	     "0-based; '*' as a range or endpoint selects all entries; \"5-2\" "
 	     "runs 5,4,3,2; e.g. \"2-5,*\" runs 2,3,4,5 and then everything.")
+            ("shex-endpoint", po::value<std::string>(),
+	     "validate --shex-map against live data at this SPARQL protocol "
+	     "endpoint (plain http; used with --shex-schema and --shex-map). "
+	     "Response blank nodes are re-identified across the round trips "
+	     "this needs by lib/BNodeResolver.hpp (see the algae3 repo's "
+	     "doc/told-bnodes.md); node neighborhoods are fetched and cached "
+	     "as validation visits them.")
+            ("shex-schema", po::value<std::string>(),
+	     "ShExC schema (file path or URL) for --shex-endpoint")
+            ("shex-map", po::value<std::string>(),
+	     "shape map for --shex-endpoint: fixed associations "
+	     "(\"node@shape,node@!shape,...\"; \"@START\" for the start shape; "
+	     "\"@!shape\" asserts the node should NOT conform) or ONE query "
+	     "pattern (\"{FOCUS <p> _}@shape\" / \"{_ <p> FOCUS}@shape\"), "
+	     "whose FOCUS candidates are fetched from the endpoint with one "
+	     "round trip before validating each.")
             ;
 
         po::options_description cmdline_options;
@@ -1095,6 +1143,76 @@ int main(int ac, char* av[])
 		    ++failures;
 	    }
 	    return failures > 125 ? 125 : failures;
+	}
+
+	if (vm.count("shex-endpoint")) {
+	    /* Validate a shape map against a live SPARQL endpoint and exit. */
+	    if (!vm.count("shex-schema") || !vm.count("shex-map")) {
+		std::cerr << "--shex-endpoint requires --shex-schema and --shex-map\n";
+		return 2;
+	    }
+	    sw::AtomFactory atomFactory;
+	    std::string endpoint = vm["shex-endpoint"].as<std::string>();
+	    std::string schemaSpec = vm["shex-schema"].as<std::string>();
+
+	    sw::ShEx::Schema schema;
+	    sw::ShExDriver schemaDriver(schemaSpec, &atomFactory);
+	    sw::RdfDB db(NULL, &TheServer.engine.xmlParser);
+	    sw::BasicGraphPattern* cache = db.ensureGraph(sw::DefaultGraph);
+	    std::vector<sw::ShEx::Association> associations;
+	    sw::bnr::HTTPSPARQLClient* client = NULL;
+	    try {
+		sw::IStreamContext sistr(schemaSpec, sw::IStreamContext::STDIN,
+					 NULL, &TheServer.engine.webClient);
+		schemaDriver.parse(sistr, &schema);
+		schema.checkStructure();
+
+		client = new sw::bnr::HTTPSPARQLClient(&atomFactory, endpoint);
+		sw::bnr::RemoteGraphProvider provider(&atomFactory, client, cache);
+		RemotePatternMatcher matcher(provider.resolver);
+		/* no separate "data document" exists here, so the map's node
+		 * side borrows the schema's PREFIX declarations too */
+		sw::ShEx::PrefixEnv nodeEnv(endpoint, schemaDriver.getNamespaceMap());
+		sw::ShEx::PrefixEnv shapeEnv(schemaSpec, schemaDriver.getNamespaceMap());
+		associations = sw::ShEx::parseQueryMap(vm["shex-map"].as<std::string>(),
+						       &atomFactory, nodeEnv, shapeEnv, matcher);
+		if (associations.empty()) {
+		    std::cerr << "shape map matched no nodes\n";
+		    delete client;
+		    return 1;
+		}
+
+		struct Src : public sw::ShEx::Validator::NeighborhoodSource {
+		    sw::bnr::RemoteGraphProvider& p;
+		    Src (sw::bnr::RemoteGraphProvider& p) : p(p) {  }
+		    virtual void ensure (const sw::TTerm* focus) { p.ensureNode(focus); }
+		} src(provider);
+
+		sw::ShEx::Validator validator(schema, *cache);
+		validator.neighborhoodSource = &src;
+		int failures = 0;
+		for (std::vector<sw::ShEx::Association>::const_iterator it = associations.begin();
+		     it != associations.end(); ++it) {
+		    bool conformant = validator.validate(it->node, it->shape);
+		    bool asAsserted = conformant != it->negated;
+		    std::cout << it->node->toString() << "@" << (it->negated ? "!" : "")
+			      << (it->shape ? it->shape->toString() : std::string("START"))
+			      << ": " << (conformant ? "conformant" : "nonconformant")
+			      << (asAsserted ? "" : " -- unexpected") << "\n";
+		    if (!asAsserted)
+			++failures;
+		}
+		delete client;
+		return failures > 125 ? 125 : failures;
+	    } catch (std::exception& e) {
+		std::cerr << "shex-endpoint: " << e.what() << "\n";
+		delete client;
+		return 1;
+	    } catch (std::string& e) {
+		std::cerr << "shex-endpoint: " << e << "\n";
+		delete client;
+		return 1;
+	    }
 	}
 
 	if (vm.count("post")) {
