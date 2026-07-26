@@ -52,13 +52,25 @@ negativeSyntax, negativeStructure and validation manifests);
 tests/fetch-test-suites.sh clones the test data.
 
 bin/sparql runs shex-webapp-style validation manifests (JSON or YAML;
-see lib/ShExManifest.hpp and tests/ShExManifest/):
+see lib/ShExManifest.hpp and tests/ShExManifest/) — a manifest entry
+names a schema and data (inline or by URL, relative to the manifest),
+a shape map, and the expected overall status:
 
   bin/sparql --shex-manifest tests/ShExManifest/manifest.yaml
-  bin/sparql --shex-manifest m.json --shex-run '2-5,0'
+  bin/sparql --shex-manifest tests/ShExManifest/manifest.json --shex-run '2-5,0'
 
 --shex-run selects 0-based entries: ranges like "1", "2-5", "5-2"
-(descending) or "*" (everything), comma-separated.
+(descending) or "*" (everything), comma-separated; omitted, it runs
+every entry. Each entry prints PASS/FAIL against its expected status,
+then one line per shape-map association:
+
+  $ bin/sparql --shex-manifest tests/ShExManifest/manifest.yaml --shex-run 0
+  [0] clinical observation / with birthdate: conformant, expected conformant -- PASS
+    <.../Obs1>@START: conformant
+    <.../Patient2>@!<.../ObservationShape>: nonconformant
+
+The exit code is the number of entries whose actual status didn't match
+`expected` (capped at 125); 0 means every entry passed.
 
 lib/ShExMap.{hpp,cpp} implements the http://shex.io/extensions/Map/#
 semantic-action language for mapping between two schemas: validating
@@ -70,7 +82,17 @@ outputShape, createRoot, staticVars and optional expectedBindingsURL /
 outputDataURL comparisons (see tests/ShExMap/, ported from shex.js's
 packages/extension-map examples):
 
-  bin/sparql --shex-manifest tests/ShExMap/manifest.yaml
+  $ bin/sparql --shex-manifest tests/ShExMap/manifest.yaml --shex-run 0
+  [0] BP / simple: conformant, expected conformant -- PASS
+    <tag:BPfhir123>@START: conformant
+  <tag:b0> <http://dam.example/med#name> "Walker, Alice" .
+  <tag:b0> <http://dam.example/med#systolic> _:b0xb58c24d20 .
+  _:b0xb58c24d20 <http://dam.example/med#value> 110 .
+  _:b0xb58c24d20 <http://dam.example/med#units> "mmHg" .
+  ...
+
+(the materialized graph prints only when the entry's bindings and
+output matched their expectations, i.e. the map ran clean).
 
 --shex-endpoint validates a shape map against a *live* SPARQL protocol
 endpoint instead of an in-memory graph: node neighborhoods are fetched
@@ -78,25 +100,34 @@ and cached as validation visits them (lib/BNodeResolver.hpp's
 RemoteGraphProvider wired in as Validator::NeighborhoodSource), so
 response blank nodes crossing the round trips this needs are told-bnode-
 safe (see the algae3 repo's doc/told-bnodes.md). Fixed associations and
-ONE query pattern are both supported — the pattern's FOCUS candidates
+ONE query pattern are both supported - the pattern's FOCUS candidates
 are fetched with a single additional round trip
 (lib/ShExShapeMap.hpp's PatternMatcher abstracts this from the existing
 local-graph matching, now LocalPatternMatcher). Demo (from tests/, with
-bin/sparql itself serving the evidence data):
+bin/sparql itself serving the evidence data over the SPARQL protocol):
 
   ../bin/sparql --serve http://127.0.0.1:8099/sparql \
-      -d Algae3/data/evidence.ttl -d Algae3/data/evidence-groups.ttl
+      -d Algae3/data/evidence.ttl -d Algae3/data/evidence-groups.ttl &
+
+  # a fixed association:
   ../bin/sparql --shex-endpoint http://127.0.0.1:8099/sparql \
       --shex-schema schema.shex \
       --shex-map 'evgrp:PeerReviewedCohorts@<GroupShape>'
-  # or validate every node matching a pattern in one go:
+  # -> <http://a.example/evgrp/PeerReviewedCohorts>@<.../GroupShape>: conformant
+
+  # "@!shape" asserts the node should NOT conform (a nonzero exit code
+  # counts mismatches, matching --shex-manifest's PASS/FAIL convention):
+  ../bin/sparql --shex-endpoint http://127.0.0.1:8099/sparql \
+      --shex-schema schema.shex \
+      --shex-map 'evgrp:PeerReviewedCohorts@!<GroupShape>'    # exit 1: it DOES conform
+
+  # or validate every node matching a pattern in one round trip - here,
+  # every group with an ex:member arc, bnode memberships included:
   ../bin/sparql --shex-endpoint http://127.0.0.1:8099/sparql \
       --shex-schema schema.shex --shex-map '{FOCUS ex:member _}@<GroupShape>'
 
 Node-side prefixes in --shex-map borrow the schema's own PREFIX
 declarations (there's no separate "data document" to carry its own).
-"@!shape" asserts the node should NOT conform (exit code counts
-mismatches, matching --shex-manifest's PASS/FAIL convention).
 
 # Algae 3
 
